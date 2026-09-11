@@ -80,7 +80,8 @@ create table school_coordinators (
 create table students (
   id uuid primary key default gen_random_uuid(),
   profile_id uuid references profiles(id) on delete set null, -- null when added by a school without their own login
-  school_id uuid references schools(id) on delete set null,   -- null for an independent (self-registered) student
+  school_id uuid references schools(id) on delete set null,   -- set once matched to a registered school account
+  school_name_input text,                                     -- free-text school name as typed at signup, before/without a school match
   full_name text not null,
   date_of_birth date,
   gender text,
