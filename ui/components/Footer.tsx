@@ -31,22 +31,22 @@ const columns = [
 
 export function Footer() {
   return (
-    <footer className="mt-24 border-t border-black/10 bg-zinc-50 dark:border-white/10 dark:bg-zinc-950">
+    <footer className="mt-24 border-t border-border bg-surface-muted">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 py-12 sm:grid-cols-4">
         <div className="col-span-2 sm:col-span-1">
-          <span className="rounded bg-teal-600 px-2 py-1 text-sm font-semibold text-white">FCS</span>
-          <p className="mt-3 max-w-xs text-sm text-zinc-500 dark:text-zinc-400">
+          <span className="rounded-md bg-accent px-2 py-1 text-sm font-semibold text-accent-foreground">FCS</span>
+          <p className="mt-3 max-w-xs text-sm text-muted">
             Future Competence Series — competitions that build real-world skills for Primary,
             Middle and Secondary students.
           </p>
         </div>
         {columns.map((col) => (
           <div key={col.title}>
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{col.title}</h3>
-            <ul className="mt-3 space-y-2 text-sm text-zinc-500 dark:text-zinc-400">
+            <h3 className="text-sm font-semibold text-foreground">{col.title}</h3>
+            <ul className="mt-3 space-y-2 text-sm text-muted">
               {col.links.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="hover:text-teal-700 dark:hover:text-teal-400">
+                  <Link href={link.href} className="hover:text-accent">
                     {link.label}
                   </Link>
                 </li>
@@ -55,7 +55,7 @@ export function Footer() {
           </div>
         ))}
       </div>
-      <div className="border-t border-black/10 px-6 py-6 text-xs text-zinc-500 dark:border-white/10 dark:text-zinc-500">
+      <div className="border-t border-border px-6 py-6 text-xs text-muted">
         <p>
           © {new Date().getFullYear()} Future Competence Series. Privacy, terms and safeguarding
           notices apply to all student data and photo publication.

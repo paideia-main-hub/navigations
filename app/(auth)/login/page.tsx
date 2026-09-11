@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { login, type ActionState } from "@/lib/actions/auth";
+import { login, type ActionState } from "@/domain/auth/actions";
 
 const initialState: ActionState = { error: null };
 
@@ -11,28 +11,28 @@ export default function LoginPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Log in</h1>
-      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <h1 className="text-2xl font-bold text-foreground">Log in</h1>
+      <p className="mt-1 text-sm text-muted">
         Students, school coordinators, judges and admins all sign in here.
       </p>
 
       <form action={formAction} className="mt-6 space-y-4">
         <div>
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Email</label>
+          <label className="text-sm font-medium text-foreground">Email</label>
           <input
             type="email"
             name="email"
             required
-            className="mt-1 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-teal-500 dark:border-white/15 dark:bg-zinc-950"
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Password</label>
+          <label className="text-sm font-medium text-foreground">Password</label>
           <input
             type="password"
             name="password"
             required
-            className="mt-1 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-teal-500 dark:border-white/15 dark:bg-zinc-950"
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
           />
         </div>
 
@@ -41,14 +41,14 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-full bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-60"
+          className="w-full rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-60"
         >
           {pending ? "Logging in…" : "Log in"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-        New here? <Link href="/register" className="font-semibold text-teal-700 dark:text-teal-400">Register</Link>
+      <p className="mt-6 text-center text-sm text-muted">
+        New here? <Link href="/register" className="font-semibold text-accent">Register</Link>
       </p>
     </div>
   );

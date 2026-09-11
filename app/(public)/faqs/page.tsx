@@ -25,12 +25,12 @@ const faqs = [
 export default function FAQsPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">FAQs</h1>
+      <h1 className="text-3xl font-bold text-foreground">FAQs</h1>
       <div className="mt-8 space-y-4">
         {faqs.map((f) => (
-          <details key={f.question} className="rounded-xl border border-black/10 p-4 dark:border-white/10">
-            <summary className="cursor-pointer font-medium text-zinc-900 dark:text-zinc-50">{f.question}</summary>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{f.answer}</p>
+          <details key={f.question} className="rounded-xl border border-border bg-surface p-4">
+            <summary className="cursor-pointer font-medium text-foreground">{f.question}</summary>
+            <p className="mt-2 text-sm text-muted">{f.answer}</p>
           </details>
         ))}
       </div>

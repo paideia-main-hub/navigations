@@ -1,58 +1,13 @@
-// Temporary in-memory sample data shaped like the Supabase schema
-// (supabase/migrations/0001_init_schema.sql). Swap for real queries once
-// the Supabase project is live — see lib/supabase/server.ts.
+// Data layer: the only place that knows where competition data actually
+// comes from. Right now that's an in-memory sample set; once the Supabase
+// project is live, swap the bodies of these functions for queries against
+// the `competitions` table family (see supabase/migrations/0001_init_schema.sql)
+// and nothing outside this file needs to change — the domain layer only
+// calls these functions, never Supabase directly.
 
-export type AgeCategory = "primary" | "middle" | "secondary";
-export type CompetitionStatus = "draft" | "upcoming" | "open" | "closed" | "archived";
-export type EntryType = "individual" | "team";
+import type { Competition } from "@/domain/competitions/types";
 
-export interface EligibilityRule {
-  category: AgeCategory;
-  minGrade: string;
-  maxGrade: string;
-  teamMinSize?: number;
-  teamMaxSize?: number;
-}
-
-export interface CompetitionStage {
-  stageNumber: number;
-  title: string;
-  format: string;
-  duration: string;
-  taskDescription: string;
-  progressionRule: string;
-}
-
-export interface RubricCriterion {
-  name: string;
-  weight: number;
-}
-
-export interface Winner {
-  studentName: string;
-  schoolName: string;
-  award: "gold" | "silver" | "bronze" | "finalist";
-  photoUrl?: string;
-}
-
-export interface Competition {
-  slug: string;
-  title: string;
-  shortDescription: string;
-  overview: string;
-  domain: string;
-  status: CompetitionStatus;
-  participationType: EntryType | "both";
-  registrationDeadline: string;
-  eventDate: string;
-  eligibility: EligibilityRule[];
-  stages: CompetitionStage[];
-  rubric: RubricCriterion[];
-  faqs: { question: string; answer: string }[];
-  winners: Winner[];
-}
-
-export const competitions: Competition[] = [
+const sampleCompetitions: Competition[] = [
   {
     slug: "young-innovators-challenge",
     title: "Young Innovators Challenge",
@@ -205,20 +160,10 @@ export const competitions: Competition[] = [
   },
 ];
 
-export function getCompetitionBySlug(slug: string) {
-  return competitions.find((c) => c.slug === slug);
+export function getAllCompetitions(): Competition[] {
+  return sampleCompetitions;
 }
 
-export const categoryLabels: Record<AgeCategory, string> = {
-  primary: "Primary",
-  middle: "Middle",
-  secondary: "Secondary",
-};
-
-export const statusLabels: Record<CompetitionStatus, string> = {
-  draft: "Draft",
-  upcoming: "Upcoming",
-  open: "Open",
-  closed: "Closed",
-  archived: "Archived",
-};
+export function getCompetitionBySlug(slug: string): Competition | undefined {
+  return sampleCompetitions.find((c) => c.slug === slug);
+}
