@@ -1,47 +1,111 @@
-// Mock registrations for both the Student and School dashboards. A freshly
-// submitted registration (from the registration wizard) is appended here
-// in-memory for the lifetime of the server process — it is NOT persisted,
-// since there's no database wiring yet. Restarting the dev server resets it.
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Registration, RegistrationStatus } from "@/domain/registrations/types";
 
-import type { Registration } from "@/domain/registrations/types";
+type Row = {
+  id: string;
+  registration_number: string;
+  competition_slug: string;
+  competition_title: string;
+  entry_type: "individual" | "team";
+  status: RegistrationStatus;
+  submitted_at: string;
+  students: { full_name: string } | null;
+  teams: { team_name: string } | null;
+};
 
-const registrations: Registration[] = [
-  {
-    id: "reg-1",
-    registrationNumber: "FCS-2026-00114",
-    competitionSlug: "young-innovators-challenge",
-    competitionTitle: "Young Innovators Challenge",
-    entryType: "team",
-    entrantName: "Circuit Breakers",
-    status: "qualified",
-    submittedAt: "2026-09-02T10:00:00.000Z",
-  },
-  {
-    id: "reg-2",
-    registrationNumber: "FCS-2026-00212",
-    competitionSlug: "digital-literacy-cup",
-    competitionTitle: "Digital Literacy Cup",
-    entryType: "individual",
-    entrantName: "Amara Khan",
-    status: "pending",
-    submittedAt: "2026-09-10T14:30:00.000Z",
-  },
-  {
-    id: "reg-3",
-    registrationNumber: "FCS-2026-00318",
-    competitionSlug: "environmental-science-fair",
-    competitionTitle: "Environmental Science Fair",
-    entryType: "team",
-    entrantName: "EcoWatch",
-    status: "approved",
-    submittedAt: "2026-09-05T09:15:00.000Z",
-  },
-];
-
-export function listRegistrations(): Registration[] {
-  return registrations;
+function toRegistration(row: Row): Registration {
+  return {
+    id: row.id,
+    registrationNumber: row.registration_number,
+    competitionSlug: row.competition_slug,
+    competitionTitle: row.competition_title,
+    entryType: row.entry_type,
+    entrantName: row.entry_type === "individual" ? (row.students?.full_name ?? "—") : (row.teams?.team_name ?? "—"),
+    status: row.status,
+    submittedAt: row.submitted_at,
+  };
 }
 
-export function addRegistration(registration: Registration): void {
-  registrations.push(registration);
+const SELECT = "id, registration_number, competition_slug, competition_title, entry_type, status, submitted_at, students(full_name), teams(team_name)";
+
+export async function listRegistrationsBySchool(supabase: SupabaseClient, schoolId: string): Promise<Registration[]> {
+  const { data, error } = await supabase
+    .from("registrations")
+    .select(SELECT)
+    .eq("school_id", schoolId)
+    .order("submitted_at", { ascending: false });
+
+  if (error || !data) return [];
+  return (data as unknown as Row[]).map(toRegistration);
+}
+
+export async function listRegistrationsByRegistrant(supabase: SupabaseClient, profileId: string): Promise<Registration[]> {
+  const { data, error } = await supabase
+    .from("registrations")
+    .select(SELECT)
+    .eq("registered_by", profileId)
+    .order("submitted_at", { ascending: false });
+
+  if (error || !data) return [];
+  return (data as unknown as Row[]).map(toRegistration);
+}
+
+export interface InsertRegistrationInput {
+  registrationNumber: string;
+  competitionSlug: string;
+  competitionTitle: string;
+  category: string;
+  entryType: "individual" | "team";
+  studentId?: string;
+  teamId?: string;
+  schoolId: string | null;
+  registeredBy: string;
+}
+
+export async function insertRegistration(
+  supabase: SupabaseClient,
+  input: InsertRegistrationInput,
+): Promise<{ id: string | null; error: string | null }> {
+  const id = crypto.randomUUID();
+  const { error } = await supabase.from("registrations").insert({
+    id,
+    registration_number: input.registrationNumber,
+    competition_slug: input.competitionSlug,
+    competition_title: input.competitionTitle,
+    category: input.category,
+    entry_type: input.entryType,
+    student_id: input.studentId ?? null,
+    team_id: input.teamId ?? null,
+    school_id: input.schoolId,
+    registered_by: input.registeredBy,
+    status: "pending",
+  });
+
+  if (error) return { id: null, error: error.message };
+  return { id, error: null };
+}
+
+export async function insertConsentRecords(
+  supabase: SupabaseClient,
+  registrationId: string,
+  registeredBy: string,
+  consent: { terms: boolean; privacy: boolean; results: boolean; photo: boolean },
+): Promise<void> {
+  const now = new Date().toISOString();
+  const typeMap: Record<string, "terms" | "privacy" | "result_publication" | "photo_publication"> = {
+    terms: "terms",
+    privacy: "privacy",
+    results: "result_publication",
+    photo: "photo_publication",
+  };
+
+  await supabase.from("consent_records").insert(
+    Object.entries(consent).map(([key, accepted]) => ({
+      registration_id: registrationId,
+      type: typeMap[key],
+      accepted,
+      accepted_at: accepted ? now : null,
+      accepted_by: registeredBy,
+    })),
+  );
 }

@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
+import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getCompetitionBySlug } from "@/domain/competitions/service";
-import { listSchoolRoster } from "@/domain/students/service";
+import { getCoordinatorSchool } from "@/domain/schools/service";
+import { listSchoolRoster, getOwnStudentProfile } from "@/domain/students/service";
 import { RegistrationWizard } from "@/ui/components/registration/RegistrationWizard";
 
 export default async function CompetitionRegisterPage({
@@ -15,7 +17,7 @@ export default async function CompetitionRegisterPage({
 
   const user = await getCurrentUser();
 
-  if (user?.role === "judge" || user?.role === "admin") {
+  if (!user || user.role === "judge" || user.role === "admin") {
     return (
       <p className="text-muted">
         Only students and school coordinators register for competitions. Switch to a student or
@@ -24,16 +26,35 @@ export default async function CompetitionRegisterPage({
     );
   }
 
-  const isSchool = user?.role === "school_coordinator";
+  const supabase = await createClient();
+  const isSchool = user.role === "school_coordinator";
+
+  if (isSchool) {
+    const school = await getCoordinatorSchool(supabase, user.id);
+    if (!school) {
+      return <p className="text-muted">No school found for this coordinator account.</p>;
+    }
+
+    const roster = await listSchoolRoster(supabase, school.id);
+
+    return (
+      <div>
+        <h1 className="mb-6 text-2xl font-bold text-foreground">Register for {competition.title}</h1>
+        <RegistrationWizard competition={competition} mode="school" schoolId={school.id} roster={roster} />
+      </div>
+    );
+  }
+
+  const ownProfile = await getOwnStudentProfile(supabase, user.id);
 
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold text-foreground">Register for {competition.title}</h1>
       <RegistrationWizard
         competition={competition}
-        mode={isSchool ? "school" : "student"}
-        studentName={!isSchool ? user?.fullName : undefined}
-        roster={isSchool ? listSchoolRoster() : undefined}
+        mode="student"
+        studentName={user.fullName}
+        studentId={ownProfile?.id}
       />
     </div>
   );

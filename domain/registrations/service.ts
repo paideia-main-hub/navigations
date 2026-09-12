@@ -1,42 +1,20 @@
-import { listRegistrations, addRegistration } from "@/data/repositories/registrations.repository";
-import type { Registration, RegistrationStatus } from "./types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  listRegistrationsBySchool,
+  listRegistrationsByRegistrant,
+} from "@/data/repositories/registrations.repository";
+import type { Registration } from "./types";
 
-export function listAllRegistrations(): Registration[] {
-  return listRegistrations();
+export async function listSchoolRegistrations(supabase: SupabaseClient, schoolId: string): Promise<Registration[]> {
+  return listRegistrationsBySchool(supabase, schoolId);
 }
 
-export function upcomingDeadlinesFor(registrations: Registration[], deadlines: Record<string, string>) {
-  return registrations
-    .map((r) => ({ ...r, deadline: deadlines[r.competitionSlug] }))
-    .filter((r) => r.deadline)
-    .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime());
+export async function listMyRegistrations(supabase: SupabaseClient, profileId: string): Promise<Registration[]> {
+  return listRegistrationsByRegistrant(supabase, profileId);
 }
 
-function generateRegistrationNumber(): string {
+export function generateRegistrationNumber(): string {
   const year = new Date().getFullYear();
   const random = Math.floor(1000 + Math.random() * 9000);
   return `FCS-${year}-${random}`;
-}
-
-export interface SubmitRegistrationInput {
-  competitionSlug: string;
-  competitionTitle: string;
-  entryType: "individual" | "team";
-  entrantName: string;
-}
-
-/** Business rule: create a new registration with a generated number and pending status. */
-export function submitRegistration(input: SubmitRegistrationInput): Registration {
-  const registration: Registration = {
-    id: `reg-${Date.now()}`,
-    registrationNumber: generateRegistrationNumber(),
-    competitionSlug: input.competitionSlug,
-    competitionTitle: input.competitionTitle,
-    entryType: input.entryType,
-    entrantName: input.entrantName,
-    status: "pending" as RegistrationStatus,
-    submittedAt: new Date().toISOString(),
-  };
-  addRegistration(registration);
-  return registration;
 }

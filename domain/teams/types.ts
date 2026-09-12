@@ -1,11 +1,11 @@
 export interface TeamMember {
+  studentId: string;
   studentName: string;
-  grade: string;
+  grade: string | null;
 }
 
 export interface Team {
   id: string;
   name: string;
-  competitionSlug: string;
   members: TeamMember[];
 }

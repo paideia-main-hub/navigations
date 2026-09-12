@@ -15,11 +15,17 @@ export function RegistrationWizard({
   competition,
   mode,
   studentName,
+  studentId,
+  schoolId,
   roster = [],
 }: {
   competition: Competition;
   mode: "student" | "school";
+  /** Required for mode="student": the logged-in student's own students.id and full name. */
   studentName?: string;
+  studentId?: string;
+  /** Required for mode="school": the coordinator's schools.id. */
+  schoolId?: string;
   roster?: StudentProfile[];
 }) {
   const [step, setStep] = useState<Step>("eligibility");
@@ -39,6 +45,7 @@ export function RegistrationWizard({
   const [consent, setConsent] = useState({ terms: false, privacy: false, results: false, photo: false });
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<Registration | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const teamMin = matchedRule?.teamMinSize ?? 1;
   const teamMax = matchedRule?.teamMaxSize ?? 10;
@@ -59,9 +66,6 @@ export function RegistrationWizard({
     if (entryType === "individual") {
       return mode === "student" ? studentName ?? "" : roster.find((s) => s.id === selectedStudentId)?.fullName ?? "";
     }
-    if (mode === "student") {
-      return teamName;
-    }
     return teamName;
   }, [entryType, mode, studentName, roster, selectedStudentId, teamName]);
 
@@ -69,14 +73,37 @@ export function RegistrationWizard({
 
   async function handleSubmit() {
     setSubmitting(true);
-    const registration = await submitRegistrationAction({
+    setSubmitError(null);
+
+    const { registration, error } = await submitRegistrationAction({
       competitionSlug: competition.slug,
       competitionTitle: competition.title,
+      category: matchedRule?.category ?? competition.eligibility[0]?.category ?? "primary",
       entryType,
-      entrantName,
+      schoolId: mode === "school" ? (schoolId ?? null) : null,
+      studentId: entryType === "individual" ? (mode === "student" ? studentId : selectedStudentId) : undefined,
+      teamName: entryType === "team" ? teamName : undefined,
+      existingMemberIds:
+        entryType === "team"
+          ? mode === "student"
+            ? studentId
+              ? [studentId]
+              : []
+            : selectedRosterIds
+          : undefined,
+      newTeammateNames: entryType === "team" && mode === "student" ? teamMemberNames.filter((n) => n.trim()) : undefined,
+      entrantNameForDisplay: entrantName,
+      consent,
     });
-    setResult(registration);
+
     setSubmitting(false);
+
+    if (error || !registration) {
+      setSubmitError(error ?? "Something went wrong submitting your registration.");
+      return;
+    }
+
+    setResult(registration);
     setStep("success");
   }
 
@@ -169,17 +196,27 @@ export function RegistrationWizard({
           {entryType === "individual" && mode === "school" && (
             <div>
               <label className="text-sm font-medium text-foreground">Select student</label>
-              <select
-                value={selectedStudentId}
-                onChange={(e) => setSelectedStudentId(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-              >
-                {roster.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.fullName} (Grade {s.grade})
-                  </option>
-                ))}
-              </select>
+              {roster.length === 0 ? (
+                <p className="mt-1 text-sm text-muted">
+                  No students in your roster yet.{" "}
+                  <Link href="/dashboard" className="font-semibold text-accent">
+                    Add a student
+                  </Link>{" "}
+                  first.
+                </p>
+              ) : (
+                <select
+                  value={selectedStudentId}
+                  onChange={(e) => setSelectedStudentId(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                >
+                  {roster.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.fullName} (Grade {s.grade})
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           )}
 
@@ -231,22 +268,32 @@ export function RegistrationWizard({
                   <label className="text-sm font-medium text-foreground">
                     Select team members ({teamMin}–{teamMax})
                   </label>
-                  <div className="mt-1 space-y-2">
-                    {roster.map((s) => (
-                      <label key={s.id} className="flex items-center gap-2 text-sm text-foreground">
-                        <input
-                          type="checkbox"
-                          checked={selectedRosterIds.includes(s.id)}
-                          onChange={(e) =>
-                            setSelectedRosterIds((prev) =>
-                              e.target.checked ? [...prev, s.id] : prev.filter((id) => id !== s.id),
-                            )
-                          }
-                        />
-                        {s.fullName} (Grade {s.grade})
-                      </label>
-                    ))}
-                  </div>
+                  {roster.length === 0 ? (
+                    <p className="mt-1 text-sm text-muted">
+                      No students in your roster yet.{" "}
+                      <Link href="/dashboard" className="font-semibold text-accent">
+                        Add students
+                      </Link>{" "}
+                      first.
+                    </p>
+                  ) : (
+                    <div className="mt-1 space-y-2">
+                      {roster.map((s) => (
+                        <label key={s.id} className="flex items-center gap-2 text-sm text-foreground">
+                          <input
+                            type="checkbox"
+                            checked={selectedRosterIds.includes(s.id)}
+                            onChange={(e) =>
+                              setSelectedRosterIds((prev) =>
+                                e.target.checked ? [...prev, s.id] : prev.filter((id) => id !== s.id),
+                              )
+                            }
+                          />
+                          {s.fullName} (Grade {s.grade})
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -261,7 +308,11 @@ export function RegistrationWizard({
             </button>
             <button
               onClick={() => setStep("consent")}
-              disabled={entryType === "team" && !teamName.trim()}
+              disabled={
+                (entryType === "team" && !teamName.trim()) ||
+                (entryType === "team" && mode === "school" && selectedRosterIds.length < 2) ||
+                (entryType === "individual" && mode === "school" && !selectedStudentId)
+              }
               className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
             >
               Continue
@@ -324,6 +375,7 @@ export function RegistrationWizard({
               <span className="font-medium text-foreground">{entrantName || "—"}</span>
             </p>
           </div>
+          {submitError && <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>}
           <div className="flex gap-3">
             <button
               onClick={() => setStep("consent")}

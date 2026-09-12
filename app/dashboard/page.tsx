@@ -1,5 +1,7 @@
+import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
-import { listAllRegistrations } from "@/domain/registrations/service";
+import { getCoordinatorSchool } from "@/domain/schools/service";
+import { listSchoolRegistrations, listMyRegistrations } from "@/domain/registrations/service";
 import { listSchoolRoster } from "@/domain/students/service";
 import { listSchoolTeams } from "@/domain/teams/service";
 import { listAssignments } from "@/domain/judging/service";
@@ -10,15 +12,21 @@ import { JudgeDashboard } from "@/ui/components/dashboard/JudgeDashboard";
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   const role = user?.role ?? "student";
+  const supabase = await createClient();
 
-  if (role === "school_coordinator") {
-    return (
-      <SchoolDashboard
-        roster={listSchoolRoster()}
-        teams={listSchoolTeams()}
-        registrations={listAllRegistrations()}
-      />
-    );
+  if (role === "school_coordinator" && user) {
+    const school = await getCoordinatorSchool(supabase, user.id);
+    if (!school) {
+      return <p className="text-muted">No school found for this coordinator account.</p>;
+    }
+
+    const [roster, teams, registrations] = await Promise.all([
+      listSchoolRoster(supabase, school.id),
+      listSchoolTeams(supabase, school.id),
+      listSchoolRegistrations(supabase, school.id),
+    ]);
+
+    return <SchoolDashboard school={school} roster={roster} teams={teams} registrations={registrations} />;
   }
 
   if (role === "judge") {
@@ -37,5 +45,6 @@ export default async function DashboardPage() {
     );
   }
 
-  return <StudentDashboard registrations={listAllRegistrations()} />;
+  const registrations = user ? await listMyRegistrations(supabase, user.id) : [];
+  return <StudentDashboard registrations={registrations} />;
 }
