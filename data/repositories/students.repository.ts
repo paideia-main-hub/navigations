@@ -49,6 +49,27 @@ export async function listStudentsBySchool(supabase: SupabaseClient, schoolId: s
   return (data as Row[]).map(toStudent);
 }
 
+export async function updateStudentProfile(
+  supabase: SupabaseClient,
+  studentId: string,
+  input: AddStudentInput,
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from("students")
+    .update({
+      grade: input.grade,
+      date_of_birth: input.dateOfBirth,
+      gender: input.gender,
+      guardian_name: input.guardianName,
+      guardian_relationship: input.guardianRelationship,
+      guardian_email: input.guardianEmail,
+      guardian_mobile: input.guardianMobile,
+    })
+    .eq("id", studentId);
+
+  return { error: error?.message ?? null };
+}
+
 export async function insertStudent(
   supabase: SupabaseClient,
   schoolId: string,

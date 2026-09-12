@@ -9,9 +9,22 @@ export interface Registration {
   competitionTitle: string;
   entryType: "individual" | "team";
   entrantName: string;
+  /** populated for entryType "team": names of every teammate */
+  teamMembers?: string[];
   status: RegistrationStatus;
   submittedAt: string;
 }
+
+export type DisplayStatus = "registered" | "upcoming" | "in_progress" | "qualified" | "completed" | "rejected";
+
+export const displayStatusLabels: Record<DisplayStatus, string> = {
+  registered: "Registered",
+  upcoming: "Upcoming",
+  in_progress: "In Progress",
+  qualified: "Qualified",
+  completed: "Completed",
+  rejected: "Rejected",
+};
 
 export const registrationStatusLabels: Record<RegistrationStatus, string> = {
   pending: "Pending review",

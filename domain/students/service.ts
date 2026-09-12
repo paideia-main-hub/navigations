@@ -4,6 +4,7 @@ import {
   insertStudent,
   insertAdHocStudent,
   findStudentByProfile,
+  updateStudentProfile,
 } from "@/data/repositories/students.repository";
 import type { AddStudentInput, StudentProfile } from "./types";
 
@@ -13,6 +14,14 @@ export async function listSchoolRoster(supabase: SupabaseClient, schoolId: strin
 
 export async function getOwnStudentProfile(supabase: SupabaseClient, profileId: string): Promise<StudentProfile | null> {
   return findStudentByProfile(supabase, profileId);
+}
+
+export async function updateOwnStudentProfile(
+  supabase: SupabaseClient,
+  studentId: string,
+  input: AddStudentInput,
+): Promise<{ error: string | null }> {
+  return updateStudentProfile(supabase, studentId, input);
 }
 
 export async function addStudentToSchool(

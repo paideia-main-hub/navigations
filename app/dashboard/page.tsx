@@ -2,9 +2,10 @@ import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { listSchoolRegistrations, listMyRegistrations } from "@/domain/registrations/service";
-import { listSchoolRoster } from "@/domain/students/service";
+import { listSchoolRoster, getOwnStudentProfile } from "@/domain/students/service";
 import { listSchoolTeams } from "@/domain/teams/service";
 import { listAssignments } from "@/domain/judging/service";
+import { getPublishedResultsFor } from "@/domain/results/service";
 import { StudentDashboard } from "@/ui/components/dashboard/StudentDashboard";
 import { SchoolDashboard } from "@/ui/components/dashboard/SchoolDashboard";
 import { JudgeDashboard } from "@/ui/components/dashboard/JudgeDashboard";
@@ -45,6 +46,13 @@ export default async function DashboardPage() {
     );
   }
 
-  const registrations = user ? await listMyRegistrations(supabase, user.id) : [];
-  return <StudentDashboard registrations={registrations} />;
+  if (!user) return <StudentDashboard fullName="" profile={null} registrations={[]} results={new Map()} />;
+
+  const [profile, registrations] = await Promise.all([
+    getOwnStudentProfile(supabase, user.id),
+    listMyRegistrations(supabase, user.id),
+  ]);
+  const results = await getPublishedResultsFor(supabase, registrations.map((r) => r.id));
+
+  return <StudentDashboard fullName={user.fullName} profile={profile} registrations={registrations} results={results} />;
 }

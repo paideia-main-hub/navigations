@@ -10,7 +10,7 @@ type Row = {
   status: RegistrationStatus;
   submitted_at: string;
   students: { full_name: string } | null;
-  teams: { team_name: string } | null;
+  teams: { team_name: string; team_members: { students: { full_name: string } | null }[] } | null;
 };
 
 function toRegistration(row: Row): Registration {
@@ -21,12 +21,17 @@ function toRegistration(row: Row): Registration {
     competitionTitle: row.competition_title,
     entryType: row.entry_type,
     entrantName: row.entry_type === "individual" ? (row.students?.full_name ?? "—") : (row.teams?.team_name ?? "—"),
+    teamMembers:
+      row.entry_type === "team"
+        ? (row.teams?.team_members ?? []).map((m) => m.students?.full_name).filter((n): n is string => Boolean(n))
+        : undefined,
     status: row.status,
     submittedAt: row.submitted_at,
   };
 }
 
-const SELECT = "id, registration_number, competition_slug, competition_title, entry_type, status, submitted_at, students(full_name), teams(team_name)";
+const SELECT =
+  "id, registration_number, competition_slug, competition_title, entry_type, status, submitted_at, students(full_name), teams(team_name, team_members(students(full_name)))";
 
 export async function listRegistrationsBySchool(supabase: SupabaseClient, schoolId: string): Promise<Registration[]> {
   const { data, error } = await supabase
