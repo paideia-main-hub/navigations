@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/data/supabase/server";
+import { createAdminClient } from "@/data/supabase/admin";
 
 export type ActionState = { error: string | null };
 
@@ -24,6 +25,34 @@ export async function logout() {
   redirect("/login");
 }
 
+/** Creates the auth user via the Admin API (pre-confirmed) instead of the
+ * public signUp() call. signUp() always tries to send a confirmation email
+ * synchronously when "Confirm email" is on in Supabase, which is what was
+ * hitting the free-tier email rate limit. admin.createUser() never sends
+ * mail at all, so sign-up no longer depends on Supabase's email sender. */
+async function createConfirmedUserAndSignIn(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  email: string,
+  password: string,
+  metadata: Record<string, string>,
+): Promise<{ userId: string } | { error: string }> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: metadata,
+  });
+
+  if (error) return { error: error.message };
+  if (!data.user) return { error: "Account creation did not return a user." };
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+  if (signInError) return { error: signInError.message };
+
+  return { userId: data.user.id };
+}
+
 export async function signUpStudent(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const supabase = await createClient();
 
@@ -31,17 +60,14 @@ export async function signUpStudent(_prevState: ActionState, formData: FormData)
   const email = String(formData.get("email"));
   const password = String(formData.get("password"));
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: { data: { full_name: fullName, role: "student" } },
+  const result = await createConfirmedUserAndSignIn(supabase, email, password, {
+    full_name: fullName,
+    role: "student",
   });
-
-  if (error) return { error: error.message };
-  if (!data.user) return { error: "Sign-up did not return a user — check your Supabase auth settings." };
+  if ("error" in result) return { error: result.error };
 
   const { error: studentError } = await supabase.from("students").insert({
-    profile_id: data.user.id,
+    profile_id: result.userId,
     full_name: fullName,
     date_of_birth: String(formData.get("date_of_birth")) || null,
     gender: String(formData.get("gender")) || null,
@@ -54,12 +80,7 @@ export async function signUpStudent(_prevState: ActionState, formData: FormData)
   });
 
   if (studentError) {
-    // Most likely cause: Supabase email confirmation is enabled, so there's no
-    // session yet and RLS blocks the insert until the student confirms their email.
-    return {
-      error:
-        "Account created — check your email to confirm it, then complete your student profile from your dashboard.",
-    };
+    return { error: `Account created, but saving your student profile failed: ${studentError.message}` };
   }
 
   redirect("/dashboard");
@@ -72,18 +93,16 @@ export async function signUpSchool(_prevState: ActionState, formData: FormData):
   const email = String(formData.get("email"));
   const password = String(formData.get("password"));
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: { data: { full_name: coordinatorName, role: "school_coordinator" } },
+  const result = await createConfirmedUserAndSignIn(supabase, email, password, {
+    full_name: coordinatorName,
+    role: "school_coordinator",
   });
-
-  if (error) return { error: error.message };
-  if (!data.user) return { error: "Sign-up did not return a user — check your Supabase auth settings." };
+  if ("error" in result) return { error: result.error };
 
   const { data: school, error: schoolError } = await supabase
     .from("schools")
     .insert({
+      created_by: result.userId,
       official_name: String(formData.get("school_name")),
       school_type: String(formData.get("school_type")) || null,
       city: String(formData.get("city")) || null,
@@ -96,15 +115,12 @@ export async function signUpSchool(_prevState: ActionState, formData: FormData):
     .single();
 
   if (schoolError || !school) {
-    return {
-      error:
-        "Account created — check your email to confirm it, then complete your school profile from your dashboard.",
-    };
+    return { error: `Account created, but saving your school profile failed: ${schoolError?.message}` };
   }
 
   const { error: coordinatorError } = await supabase.from("school_coordinators").insert({
     school_id: school.id,
-    profile_id: data.user.id,
+    profile_id: result.userId,
     designation: String(formData.get("designation")) || null,
     official_email: email,
     mobile: String(formData.get("mobile")) || null,
@@ -112,7 +128,7 @@ export async function signUpSchool(_prevState: ActionState, formData: FormData):
   });
 
   if (coordinatorError) {
-    return { error: "School created but linking your coordinator account failed — contact support." };
+    return { error: `School created, but linking your coordinator account failed: ${coordinatorError.message}` };
   }
 
   redirect("/dashboard");
