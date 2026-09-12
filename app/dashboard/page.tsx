@@ -1,32 +1,41 @@
 import { getCurrentUser } from "@/domain/auth/session";
-
-const copy: Record<string, { title: string; body: string }> = {
-  student: {
-    title: "My Competitions",
-    body: "Registered competitions, deadlines, manuals, resources and results will appear here once you register for a competition.",
-  },
-  school_coordinator: {
-    title: "School Dashboard",
-    body: "Add students, create teams, register for competitions and track results — this dashboard is wired up next.",
-  },
-  judge: {
-    title: "Judging",
-    body: "Assigned rounds, rubrics and scoring will appear here once judge assignments are configured by an admin.",
-  },
-  admin: {
-    title: "Admin Console",
-    body: "Manage competitions, users, registrations, announcements and results — the admin CMS is being built next.",
-  },
-};
+import { listAllRegistrations } from "@/domain/registrations/service";
+import { listSchoolRoster } from "@/domain/students/service";
+import { listSchoolTeams } from "@/domain/teams/service";
+import { listAssignments } from "@/domain/judging/service";
+import { StudentDashboard } from "@/ui/components/dashboard/StudentDashboard";
+import { SchoolDashboard } from "@/ui/components/dashboard/SchoolDashboard";
+import { JudgeDashboard } from "@/ui/components/dashboard/JudgeDashboard";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  const { title, body } = copy[user?.role ?? "student"];
+  const role = user?.role ?? "student";
 
-  return (
-    <div>
-      <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-      <p className="mt-2 max-w-xl text-muted">{body}</p>
-    </div>
-  );
+  if (role === "school_coordinator") {
+    return (
+      <SchoolDashboard
+        roster={listSchoolRoster()}
+        teams={listSchoolTeams()}
+        registrations={listAllRegistrations()}
+      />
+    );
+  }
+
+  if (role === "judge") {
+    return <JudgeDashboard assignments={listAssignments()} />;
+  }
+
+  if (role === "admin") {
+    return (
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Admin Console</h1>
+        <p className="mt-2 max-w-xl text-muted">
+          Manage competitions, users, registrations, announcements and results — the admin CMS is
+          a dedicated build coming next.
+        </p>
+      </div>
+    );
+  }
+
+  return <StudentDashboard registrations={listAllRegistrations()} />;
 }

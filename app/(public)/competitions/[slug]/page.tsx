@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { listCompetitions, getCompetitionBySlug } from "@/domain/competitions/service";
 import { categoryLabels, statusLabels } from "@/domain/competitions/types";
+import { announcementsForCompetition } from "@/domain/announcements/service";
+import { announcementCategoryLabels } from "@/domain/announcements/types";
 import { Tabs } from "@/ui/components/Tabs";
 import { Badge } from "@/ui/components/Badge";
 
@@ -17,6 +19,8 @@ export default async function CompetitionPage({
   const { slug } = await params;
   const competition = getCompetitionBySlug(slug);
   if (!competition) notFound();
+
+  const competitionAnnouncements = announcementsForCompetition(competition.slug);
 
   const tabs = [
     {
@@ -163,7 +167,22 @@ export default async function CompetitionPage({
     {
       id: "announcements",
       label: "Announcements",
-      content: <p className="max-w-2xl text-sm text-muted">No announcements published for this competition yet.</p>,
+      content:
+        competitionAnnouncements.length > 0 ? (
+          <div className="max-w-2xl space-y-3">
+            {competitionAnnouncements.map((a) => (
+              <div key={a.id} className="rounded-xl border border-border bg-surface p-4">
+                <p className="text-xs font-semibold tracking-wide text-accent uppercase">
+                  {announcementCategoryLabels[a.category]}
+                </p>
+                <p className="mt-1 font-semibold text-foreground">{a.title}</p>
+                <p className="mt-1 text-sm text-muted">{a.body}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="max-w-2xl text-sm text-muted">No announcements published for this competition yet.</p>
+        ),
     },
     {
       id: "results",
@@ -218,19 +237,28 @@ export default async function CompetitionPage({
       label: "Register",
       content: (
         <div className="max-w-2xl space-y-4">
-          <p className="text-sm text-muted">Choose how you want to register for {competition.title}.</p>
+          <p className="text-sm text-muted">
+            Already have an account? Register straight from your dashboard.
+          </p>
+          <Link
+            href={`/dashboard/register/${competition.slug}`}
+            className="inline-block rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90"
+          >
+            Register for {competition.title}
+          </Link>
+          <p className="pt-2 text-sm text-muted">New here? Create an account first.</p>
           <div className="flex flex-wrap gap-3">
             <Link
               href={`/register/student?competition=${competition.slug}`}
-              className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90"
+              className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:border-accent"
             >
-              Register as Student
+              Create Student Account
             </Link>
             <Link
               href={`/register/school?competition=${competition.slug}`}
               className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:border-accent"
             >
-              Register via School
+              Create School Account
             </Link>
           </div>
         </div>

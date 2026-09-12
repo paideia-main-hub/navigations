@@ -1,6 +1,6 @@
-export const metadata = { title: "Announcements | Future Competence Series" };
+import { AnnouncementsList } from "./AnnouncementsList";
 
-const categories = ["Registration", "Schedule", "Venue", "Manual Update", "Results", "Final Round", "General Notice"];
+export const metadata = { title: "Announcements | Future Competence Series" };
 
 export default function AnnouncementsPage() {
   return (
@@ -9,17 +9,9 @@ export default function AnnouncementsPage() {
       <p className="mt-2 text-muted">
         Site-wide and competition-specific notices, published by administrators.
       </p>
-      <div className="mt-6 flex flex-wrap gap-2">
-        {categories.map((c) => (
-          <span key={c} className="rounded-full bg-surface-muted px-3 py-1 text-xs font-medium text-muted">
-            {c}
-          </span>
-        ))}
+      <div className="mt-6">
+        <AnnouncementsList />
       </div>
-      <p className="mt-12 text-center text-sm text-muted">
-        No announcements have been published yet. Once the admin CMS is connected, published
-        notices will appear here, filterable by category and competition.
-      </p>
     </div>
   );
 }
