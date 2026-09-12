@@ -12,10 +12,10 @@ export default async function CompetitionRegisterPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const competition = getCompetitionBySlug(slug);
-  if (!competition) notFound();
-
   const user = await getCurrentUser();
+  const supabase = await createClient();
+  const competition = await getCompetitionBySlug(supabase, slug);
+  if (!competition) notFound();
 
   if (!user || user.role === "judge" || user.role === "admin") {
     return (
@@ -26,7 +26,6 @@ export default async function CompetitionRegisterPage({
     );
   }
 
-  const supabase = await createClient();
   const isSchool = user.role === "school_coordinator";
 
   if (isSchool) {

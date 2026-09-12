@@ -1,9 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
+  adminListAllRegistrations,
   listRegistrationsBySchool,
   listRegistrationsByRegistrant,
 } from "@/data/repositories/registrations.repository";
 import type { Competition } from "@/domain/competitions/types";
+import { registrationDeadlineOf, finalEventDateOf } from "@/domain/competitions/service";
 import type { DisplayStatus, Registration } from "./types";
 
 export async function listSchoolRegistrations(supabase: SupabaseClient, schoolId: string): Promise<Registration[]> {
@@ -12,6 +14,13 @@ export async function listSchoolRegistrations(supabase: SupabaseClient, schoolId
 
 export async function listMyRegistrations(supabase: SupabaseClient, profileId: string): Promise<Registration[]> {
   return listRegistrationsByRegistrant(supabase, profileId);
+}
+
+export async function listAllRegistrations(
+  admin: SupabaseClient,
+  filters?: { competitionSlug?: string },
+): Promise<Registration[]> {
+  return adminListAllRegistrations(admin, filters);
 }
 
 export function generateRegistrationNumber(): string {
@@ -30,9 +39,13 @@ export function deriveDisplayStatus(registration: Registration, competition: Com
 
   if (!competition) return "registered";
 
+  const deadlineStr = registrationDeadlineOf(competition);
+  const eventStr = finalEventDateOf(competition);
+  if (!deadlineStr || !eventStr) return "registered";
+
   const now = Date.now();
-  const deadline = new Date(competition.registrationDeadline).getTime();
-  const event = new Date(competition.eventDate).getTime();
+  const deadline = new Date(deadlineStr).getTime();
+  const event = new Date(eventStr).getTime();
 
   if (now < deadline) return "upcoming";
   if (now <= event) return "in_progress";

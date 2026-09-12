@@ -29,6 +29,14 @@ function toSchool(row: Row): School {
   };
 }
 
+/** Admin overview: every registered school, unscoped. Uses the service-role
+ * client (RLS would otherwise restrict this to a coordinator's own school). */
+export async function adminListSchools(admin: SupabaseClient): Promise<School[]> {
+  const { data, error } = await admin.from("schools").select("*").order("official_name");
+  if (error || !data) return [];
+  return (data as Row[]).map(toSchool);
+}
+
 /** Finds the school a coordinator (by profile id) belongs to, via school_coordinators. */
 export async function findSchoolByCoordinator(
   supabase: SupabaseClient,

@@ -2,13 +2,16 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { filterAnnouncements } from "@/domain/announcements/service";
-import { announcementCategoryLabels, type AnnouncementCategory } from "@/domain/announcements/types";
+import type { Announcement, AnnouncementCategory } from "@/domain/announcements/types";
+import { announcementCategoryLabels } from "@/domain/announcements/types";
 import { Badge } from "@/ui/components/Badge";
 
-export function AnnouncementsList() {
+export function AnnouncementsList({ announcements }: { announcements: Announcement[] }) {
   const [category, setCategory] = useState<AnnouncementCategory | "all">("all");
-  const announcements = useMemo(() => filterAnnouncements(category), [category]);
+  const filtered = useMemo(
+    () => (category === "all" ? announcements : announcements.filter((a) => a.category === category)),
+    [announcements, category],
+  );
 
   return (
     <div>
@@ -35,7 +38,7 @@ export function AnnouncementsList() {
       </div>
 
       <div className="mt-8 space-y-4">
-        {announcements.map((a) => (
+        {filtered.map((a) => (
           <div key={a.id} className="rounded-xl border border-border bg-surface p-4">
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone={a.isImportant ? "accent" : "neutral"}>{announcementCategoryLabels[a.category]}</Badge>
@@ -52,7 +55,7 @@ export function AnnouncementsList() {
             <p className="mt-1 text-sm text-muted">{a.body}</p>
           </div>
         ))}
-        {announcements.length === 0 && (
+        {filtered.length === 0 && (
           <p className="py-12 text-center text-sm text-muted">No announcements in this category yet.</p>
         )}
       </div>

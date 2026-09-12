@@ -1,21 +1,27 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { filterCompetitions } from "@/domain/competitions/service";
-import { categoryLabels, statusLabels, type AgeCategory, type CompetitionStatus } from "@/domain/competitions/types";
+import { filterCompetitionsClientSide } from "@/domain/competitions/service";
+import { categoryLabels, statusLabels, type AgeCategory, type Competition, type CompetitionStatus } from "@/domain/competitions/types";
 import { CompetitionCard } from "@/ui/components/CompetitionCard";
 
 type SortOption = "deadline" | "event-date" | "alphabetical";
 
-export function CompetitionsDirectory({ initialQuery }: { initialQuery: string }) {
+export function CompetitionsDirectory({
+  initialQuery,
+  competitions,
+}: {
+  initialQuery: string;
+  competitions: Competition[];
+}) {
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState<AgeCategory | "all">("all");
   const [status, setStatus] = useState<CompetitionStatus | "all">("all");
   const [sort, setSort] = useState<SortOption>("deadline");
 
   const results = useMemo(
-    () => filterCompetitions({ query, category, status, sort }),
-    [query, category, status, sort],
+    () => filterCompetitionsClientSide(competitions, { query, category, status, sort }),
+    [competitions, query, category, status, sort],
   );
 
   return (

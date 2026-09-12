@@ -55,6 +55,24 @@ export async function listRegistrationsByRegistrant(supabase: SupabaseClient, pr
   return (data as unknown as Row[]).map(toRegistration);
 }
 
+/** Admin overview: every registration across every school/student, unscoped,
+ * optionally narrowed to one competition. Filters on the competition_slug
+ * snapshot column (registrations don't carry a real competition_id FK — see
+ * 0004_school_dashboard_real_data.sql) rather than joining a live competition
+ * row, so a competition's slug must stay stable once registrations exist
+ * against it. */
+export async function adminListAllRegistrations(
+  admin: SupabaseClient,
+  filters?: { competitionSlug?: string },
+): Promise<Registration[]> {
+  let query = admin.from("registrations").select(SELECT).order("submitted_at", { ascending: false });
+  if (filters?.competitionSlug) query = query.eq("competition_slug", filters.competitionSlug);
+
+  const { data, error } = await query;
+  if (error || !data) return [];
+  return (data as unknown as Row[]).map(toRegistration);
+}
+
 export interface InsertRegistrationInput {
   registrationNumber: string;
   competitionSlug: string;

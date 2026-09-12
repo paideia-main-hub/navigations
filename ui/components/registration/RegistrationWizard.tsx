@@ -33,8 +33,8 @@ export function RegistrationWizard({
   const [matchedRule, setMatchedRule] = useState<Competition["eligibility"][number] | null>(null);
   const [ineligible, setIneligible] = useState(false);
 
-  const allowIndividual = competition.participationType === "individual" || competition.participationType === "both";
-  const allowTeam = competition.participationType === "team" || competition.participationType === "both";
+  const allowIndividual = competition.supportsIndividual;
+  const allowTeam = competition.supportsTeam;
   const [entryType, setEntryType] = useState<"individual" | "team">(allowIndividual ? "individual" : "team");
 
   const [selectedStudentId, setSelectedStudentId] = useState(roster[0]?.id ?? "");

@@ -8,4 +8,6 @@ export interface Team {
   id: string;
   name: string;
   members: TeamMember[];
+  /** Populated only by admin-overview reads (adminListAllTeams). */
+  schoolName?: string | null;
 }

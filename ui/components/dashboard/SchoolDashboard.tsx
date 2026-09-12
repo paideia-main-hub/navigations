@@ -4,8 +4,9 @@ import type { StudentProfile } from "@/domain/students/types";
 import type { Team } from "@/domain/teams/types";
 import type { Registration } from "@/domain/registrations/types";
 import { registrationStatusLabels } from "@/domain/registrations/types";
-import { getCompetitionBySlug } from "@/domain/competitions/service";
-import { announcementsForCompetition } from "@/domain/announcements/service";
+import { registrationDeadlineOf, finalEventDateOf } from "@/domain/competitions/service";
+import type { Competition } from "@/domain/competitions/types";
+import type { Announcement } from "@/domain/announcements/types";
 import { Badge } from "@/ui/components/Badge";
 import { StatCard } from "./StatCard";
 import { SchoolProfileCard } from "./SchoolProfileCard";
@@ -27,17 +28,17 @@ export function SchoolDashboard({
   roster,
   teams,
   registrations,
+  registeredCompetitions,
+  announcementsByCompetition,
 }: {
   school: School;
   roster: StudentProfile[];
   teams: Team[];
   registrations: Registration[];
+  registeredCompetitions: Competition[];
+  announcementsByCompetition: Map<string, Announcement[]>;
 }) {
   const qualifiedOrFinalists = registrations.filter((r) => r.status === "qualified" || r.status === "finalist");
-
-  const registeredCompetitions = Array.from(new Set(registrations.map((r) => r.competitionSlug)))
-    .map((slug) => getCompetitionBySlug(slug))
-    .filter((c): c is NonNullable<typeof c> => Boolean(c));
 
   return (
     <div>
@@ -142,24 +143,28 @@ export function SchoolDashboard({
         <section className="mt-8">
           <h2 className="mb-3 text-lg font-semibold text-foreground">Deadlines & announcements</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            {registeredCompetitions.map((c) => (
-              <div key={c.slug} className="rounded-xl border border-border bg-surface p-4">
-                <Link href={`/competitions/${c.slug}`} className="font-semibold text-foreground hover:text-accent">
-                  {c.title}
-                </Link>
-                <p className="mt-1 text-sm text-muted">
-                  Registration closes {new Date(c.registrationDeadline).toLocaleDateString()} · Event{" "}
-                  {new Date(c.eventDate).toLocaleDateString()}
-                </p>
-                {announcementsForCompetition(c.slug)
-                  .slice(0, 2)
-                  .map((a) => (
+            {registeredCompetitions.map((c) => {
+              const deadline = registrationDeadlineOf(c);
+              const event = finalEventDateOf(c);
+              return (
+                <div key={c.slug} className="rounded-xl border border-border bg-surface p-4">
+                  <Link href={`/competitions/${c.slug}`} className="font-semibold text-foreground hover:text-accent">
+                    {c.title}
+                  </Link>
+                  <p className="mt-1 text-sm text-muted">
+                    {deadline && `Registration closes ${new Date(deadline).toLocaleDateString()}`}
+                    {deadline && event && " · "}
+                    {event && `Event ${new Date(event).toLocaleDateString()}`}
+                    {!deadline && !event && "Dates not yet scheduled"}
+                  </p>
+                  {(announcementsByCompetition.get(c.slug) ?? []).slice(0, 2).map((a) => (
                     <p key={a.id} className="mt-2 text-xs text-muted">
                       <span className="font-medium text-foreground">{a.title}:</span> {a.body}
                     </p>
                   ))}
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </section>
       )}

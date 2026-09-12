@@ -1,8 +1,17 @@
 import Link from "next/link";
+import { registrationDeadlineOf } from "@/domain/competitions/service";
 import { categoryLabels, statusLabels, type Competition } from "@/domain/competitions/types";
 import { Badge } from "./Badge";
 
+function entryTypeLabel(competition: Competition): string {
+  if (competition.supportsIndividual && competition.supportsTeam) return "Individual & Team";
+  if (competition.supportsTeam) return "Team";
+  return "Individual";
+}
+
 export function CompetitionCard({ competition }: { competition: Competition }) {
+  const deadline = registrationDeadlineOf(competition);
+
   return (
     <Link
       href={`/competitions/${competition.slug}`}
@@ -18,16 +27,14 @@ export function CompetitionCard({ competition }: { competition: Competition }) {
       <p className="text-sm text-muted">{competition.shortDescription}</p>
       <div className="mt-auto flex flex-wrap gap-1.5 pt-1">
         {competition.eligibility.map((e) => (
-          <span key={e.category} className="rounded-md bg-surface-muted px-2 py-0.5 text-xs text-muted">
+          <span key={e.id} className="rounded-md bg-surface-muted px-2 py-0.5 text-xs text-muted">
             {categoryLabels[e.category]}
           </span>
         ))}
-        <span className="rounded-md bg-surface-muted px-2 py-0.5 text-xs text-muted capitalize">
-          {competition.participationType}
-        </span>
+        <span className="rounded-md bg-surface-muted px-2 py-0.5 text-xs text-muted">{entryTypeLabel(competition)}</span>
       </div>
       <p className="text-xs font-medium text-muted">
-        Registration closes {new Date(competition.registrationDeadline).toLocaleDateString()}
+        {deadline ? `Registration closes ${new Date(deadline).toLocaleDateString()}` : "Registration dates not yet scheduled"}
       </p>
     </Link>
   );

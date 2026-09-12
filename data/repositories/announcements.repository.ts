@@ -1,52 +1,90 @@
-import type { Announcement } from "@/domain/announcements/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Announcement, AnnouncementCategory } from "@/domain/announcements/types";
 
-const announcements: Announcement[] = [
-  {
-    id: "an-1",
-    category: "general",
-    title: "2026 season registration is now open",
-    body: "Registration for the 2026 Future Competence Series is open across all 13 competitions. Check each competition's Important Dates tab for its deadline.",
-    publishDate: "2026-09-01T09:00:00.000Z",
-    isImportant: true,
-  },
-  {
-    id: "an-2",
-    competitionSlug: "young-innovators-challenge",
-    competitionTitle: "Young Innovators Challenge",
-    category: "schedule",
-    title: "Stage 2 prototype submission window extended",
-    body: "Due to popular request, the prototype build submission window has been extended by one week.",
-    publishDate: "2026-09-08T12:00:00.000Z",
-  },
-  {
-    id: "an-3",
-    competitionSlug: "public-speaking-championship",
-    competitionTitle: "Public Speaking Championship",
-    category: "results",
-    title: "Grand Final results published",
-    body: "Results for the 2026 Public Speaking Championship Grand Final are now live on the Results & Winners page.",
-    publishDate: "2026-09-12T08:00:00.000Z",
-  },
-  {
-    id: "an-4",
-    competitionSlug: "robotics-arena",
-    competitionTitle: "Robotics Arena",
-    category: "venue",
-    title: "Arena Trials venue confirmed",
-    body: "Arena Trials will be held at the Central Sports Complex, Hall B. Doors open 8:00 AM.",
-    publishDate: "2026-09-10T11:00:00.000Z",
-  },
-  {
-    id: "an-5",
-    competitionSlug: "math-olympiad",
-    competitionTitle: "Future Competence Math Olympiad",
-    category: "manual_update",
-    title: "Updated rubric published",
-    body: "A minor update to the scoring rubric (tie-break clarification) has been published on the competition's Manual tab.",
-    publishDate: "2026-09-09T15:00:00.000Z",
-  },
-];
+type Row = {
+  id: string;
+  category: AnnouncementCategory;
+  title: string;
+  body: string;
+  publish_date: string;
+  expiry_date: string | null;
+  is_important: boolean;
+  competitions: { slug: string; title: string } | null;
+};
 
-export function listAnnouncements(): Announcement[] {
-  return announcements;
+const SELECT = "id, category, title, body, publish_date, expiry_date, is_important, competitions(slug, title)";
+
+function toAnnouncement(row: Row): Announcement {
+  return {
+    id: row.id,
+    competitionSlug: row.competitions?.slug,
+    competitionTitle: row.competitions?.title,
+    category: row.category,
+    title: row.title,
+    body: row.body,
+    publishDate: row.publish_date,
+    isImportant: row.is_important,
+  };
+}
+
+/** Public reads: current (not yet expired) announcements only. */
+export async function listAnnouncements(supabase: SupabaseClient): Promise<Announcement[]> {
+  const { data, error } = await supabase
+    .from("announcements")
+    .select(SELECT)
+    .or(`expiry_date.is.null,expiry_date.gt.${new Date().toISOString()}`)
+    .order("publish_date", { ascending: false });
+
+  if (error || !data) return [];
+  return (data as unknown as Row[]).map(toAnnouncement);
+}
+
+/** Admin overview: every announcement, including expired ones. */
+export async function adminListAnnouncements(admin: SupabaseClient): Promise<Announcement[]> {
+  const { data, error } = await admin.from("announcements").select(SELECT).order("publish_date", { ascending: false });
+  if (error || !data) return [];
+  return (data as unknown as Row[]).map(toAnnouncement);
+}
+
+export interface AnnouncementInput {
+  competitionId: string | null;
+  category: AnnouncementCategory;
+  title: string;
+  body: string;
+  isImportant: boolean;
+}
+
+export async function insertAnnouncement(admin: SupabaseClient, input: AnnouncementInput): Promise<{ error: string | null }> {
+  const { error } = await admin.from("announcements").insert({
+    competition_id: input.competitionId,
+    category: input.category,
+    title: input.title,
+    body: input.body,
+    is_important: input.isImportant,
+  });
+  return { error: error?.message ?? null };
+}
+
+export async function updateAnnouncement(
+  admin: SupabaseClient,
+  id: string,
+  input: AnnouncementInput,
+): Promise<{ error: string | null }> {
+  const { error } = await admin
+    .from("announcements")
+    .update({
+      competition_id: input.competitionId,
+      category: input.category,
+      title: input.title,
+      body: input.body,
+      is_important: input.isImportant,
+    })
+    .eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+/** Soft-expire rather than hard-delete, matching the spec's "create/edit/expire" language. */
+export async function expireAnnouncement(admin: SupabaseClient, id: string): Promise<{ error: string | null }> {
+  const { error } = await admin.from("announcements").update({ expiry_date: new Date().toISOString() }).eq("id", id);
+  return { error: error?.message ?? null };
 }

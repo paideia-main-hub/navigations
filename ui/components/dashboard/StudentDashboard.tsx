@@ -3,8 +3,9 @@ import type { StudentProfile } from "@/domain/students/types";
 import type { Registration, DisplayStatus } from "@/domain/registrations/types";
 import { displayStatusLabels } from "@/domain/registrations/types";
 import { deriveDisplayStatus } from "@/domain/registrations/service";
-import { getCompetitionBySlug } from "@/domain/competitions/service";
-import { announcementsForCompetition } from "@/domain/announcements/service";
+import { registrationDeadlineOf, finalEventDateOf } from "@/domain/competitions/service";
+import type { Competition } from "@/domain/competitions/types";
+import type { Announcement } from "@/domain/announcements/types";
 import type { ResultInfo } from "@/domain/results/types";
 import { Badge } from "@/ui/components/Badge";
 import { StatCard } from "./StatCard";
@@ -28,15 +29,19 @@ export function StudentDashboard({
   profile,
   registrations,
   results,
+  competitionsBySlug,
+  announcementsByCompetition,
 }: {
   fullName: string;
   profile: StudentProfile | null;
   registrations: Registration[];
   results: Map<string, ResultInfo>;
+  competitionsBySlug: Map<string, Competition>;
+  announcementsByCompetition: Map<string, Announcement[]>;
 }) {
   const withCompetition = registrations.map((r) => ({
     registration: r,
-    competition: getCompetitionBySlug(r.competitionSlug),
+    competition: competitionsBySlug.get(r.competitionSlug),
   }));
 
   const displayStatuses = withCompetition.map(({ registration, competition }) =>
@@ -52,7 +57,7 @@ export function StudentDashboard({
   };
 
   const registeredCompetitions = Array.from(new Set(registrations.map((r) => r.competitionSlug)))
-    .map((slug) => getCompetitionBySlug(slug))
+    .map((slug) => competitionsBySlug.get(slug))
     .filter((c): c is NonNullable<typeof c> => Boolean(c));
 
   return (
@@ -104,18 +109,27 @@ export function StudentDashboard({
                 <p className="mt-2 text-xs text-muted">Team: {r.teamMembers.join(", ")}</p>
               )}
 
-              {c && (
-                <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted">
-                  <span>
-                    Registration closes {new Date(c.registrationDeadline).toLocaleDateString()}
-                    {daysUntil(c.registrationDeadline) >= 0 && ` (${daysUntil(c.registrationDeadline)}d)`}
-                  </span>
-                  <span>
-                    Event {new Date(c.eventDate).toLocaleDateString()}
-                    {daysUntil(c.eventDate) >= 0 && ` (${daysUntil(c.eventDate)}d)`}
-                  </span>
-                </div>
-              )}
+              {c &&
+                (() => {
+                  const deadline = registrationDeadlineOf(c);
+                  const event = finalEventDateOf(c);
+                  return (
+                    <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted">
+                      {deadline && (
+                        <span>
+                          Registration closes {new Date(deadline).toLocaleDateString()}
+                          {daysUntil(deadline) >= 0 && ` (${daysUntil(deadline)}d)`}
+                        </span>
+                      )}
+                      {event && (
+                        <span>
+                          Event {new Date(event).toLocaleDateString()}
+                          {daysUntil(event) >= 0 && ` (${daysUntil(event)}d)`}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
 
               <div className="mt-3 flex flex-wrap gap-2">
                 <Link
@@ -158,15 +172,13 @@ export function StudentDashboard({
           <h2 className="mb-3 text-lg font-semibold text-foreground">Announcements</h2>
           <div className="space-y-3">
             {registeredCompetitions.flatMap((c) =>
-              announcementsForCompetition(c.slug)
-                .slice(0, 2)
-                .map((a) => (
-                  <div key={a.id} className="rounded-xl border border-border bg-surface p-4">
-                    <p className="text-xs font-semibold tracking-wide text-accent uppercase">{c.title}</p>
-                    <p className="mt-1 font-medium text-foreground">{a.title}</p>
-                    <p className="text-sm text-muted">{a.body}</p>
-                  </div>
-                )),
+              (announcementsByCompetition.get(c.slug) ?? []).slice(0, 2).map((a) => (
+                <div key={a.id} className="rounded-xl border border-border bg-surface p-4">
+                  <p className="text-xs font-semibold tracking-wide text-accent uppercase">{c.title}</p>
+                  <p className="mt-1 font-medium text-foreground">{a.title}</p>
+                  <p className="text-sm text-muted">{a.body}</p>
+                </div>
+              )),
             )}
           </div>
         </section>

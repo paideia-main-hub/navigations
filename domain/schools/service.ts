@@ -1,9 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { findSchoolByCoordinator, updateSchoolProfile } from "@/data/repositories/schools.repository";
+import { adminListSchools, findSchoolByCoordinator, updateSchoolProfile } from "@/data/repositories/schools.repository";
 import type { School, SchoolProfileInput } from "./types";
 
 export async function getCoordinatorSchool(supabase: SupabaseClient, profileId: string): Promise<School | null> {
   return findSchoolByCoordinator(supabase, profileId);
+}
+
+export async function listAllSchools(admin: SupabaseClient): Promise<School[]> {
+  return adminListSchools(admin);
 }
 
 export async function updateSchool(

@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { createClient } from "@/data/supabase/server";
 import { listOpenAndUpcoming } from "@/domain/competitions/service";
 import { categoryLabels, statusLabels } from "@/domain/competitions/types";
 import { Badge } from "@/ui/components/Badge";
 
-export default function DashboardRegisterPage() {
-  const competitions = listOpenAndUpcoming();
+export default async function DashboardRegisterPage() {
+  const supabase = await createClient();
+  const competitions = await listOpenAndUpcoming(supabase);
 
   return (
     <div>
@@ -23,7 +25,7 @@ export default function DashboardRegisterPage() {
             <p className="font-semibold text-foreground">{c.title}</p>
             <div className="flex flex-wrap gap-1">
               {c.eligibility.map((e) => (
-                <span key={e.category} className="rounded-md bg-surface-muted px-2 py-0.5 text-xs text-muted">
+                <span key={e.id} className="rounded-md bg-surface-muted px-2 py-0.5 text-xs text-muted">
                   {categoryLabels[e.category]}
                 </span>
               ))}
@@ -36,6 +38,7 @@ export default function DashboardRegisterPage() {
             </Link>
           </div>
         ))}
+        {competitions.length === 0 && <p className="text-muted">No competitions are open for registration right now.</p>}
       </div>
     </div>
   );

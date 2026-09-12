@@ -38,6 +38,24 @@ export async function findStudentByProfile(supabase: SupabaseClient, profileId: 
   return toStudent(data as Row);
 }
 
+/** Admin overview: every student across every school, unscoped, joined with
+ * the owning school's name. Uses the service-role client. */
+export async function adminListAllStudents(admin: SupabaseClient): Promise<StudentProfile[]> {
+  const { data, error } = await admin
+    .from("students")
+    .select(
+      "id, full_name, grade, date_of_birth, gender, guardian_name, guardian_relationship, guardian_email, guardian_mobile, school_id, schools(official_name)",
+    )
+    .order("full_name");
+
+  if (error || !data) return [];
+  return (data as unknown as (Row & { school_id: string | null; schools: { official_name: string } | null })[]).map((row) => ({
+    ...toStudent(row),
+    schoolId: row.school_id,
+    schoolName: row.schools?.official_name ?? null,
+  }));
+}
+
 export async function listStudentsBySchool(supabase: SupabaseClient, schoolId: string): Promise<StudentProfile[]> {
   const { data, error } = await supabase
     .from("students")

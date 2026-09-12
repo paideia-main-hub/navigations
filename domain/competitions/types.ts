@@ -1,55 +1,123 @@
 // Domain types for competitions — framework-agnostic, no Supabase or React imports.
 // Mirrors the shape of the `competitions` family of tables in
-// supabase/migrations/0001_init_schema.sql.
+// supabase/migrations/0001_init_schema.sql (plus competition_faqs and
+// competition_winners from 0009/0010).
 
 export type AgeCategory = "primary" | "middle" | "secondary";
 export type CompetitionStatus = "draft" | "upcoming" | "open" | "closed" | "archived";
-export type EntryType = "individual" | "team";
+export type ManualType = "registration_rules" | "guiding_principles" | "complete_manual" | "judging_rubric";
+export type ResourceType = "practice_question" | "sample_task" | "video" | "quiz" | "article";
+export type AwardType = "gold" | "silver" | "bronze" | "finalist" | "merit" | "custom";
+export type EventType = "registration_close" | "round" | "result_date" | "final_event" | "other";
 
 export interface EligibilityRule {
+  id: string;
   category: AgeCategory;
   minGrade: string;
   maxGrade: string;
-  teamMinSize?: number;
-  teamMaxSize?: number;
+  minAge?: number | null;
+  maxAge?: number | null;
+  teamMinSize?: number | null;
+  teamMaxSize?: number | null;
+  notes?: string | null;
 }
 
 export interface CompetitionStage {
+  id: string;
   stageNumber: number;
   title: string;
   format: string;
   duration: string;
   taskDescription: string;
   progressionRule: string;
+  orderIndex: number;
 }
 
 export interface RubricCriterion {
   name: string;
   weight: number;
+  scale?: string | null;
 }
 
-export interface Winner {
+export interface StageRubric {
+  id: string;
+  /** null = a competition-wide rubric not tied to a specific stage. */
+  stageId: string | null;
+  criteria: RubricCriterion[];
+  tieBreakRule: string | null;
+  isPublic: boolean;
+}
+
+export interface Manual {
+  id: string;
+  type: ManualType;
+  title: string;
+  fileUrl: string;
+  versionLabel: string | null;
+  versionDate: string | null;
+}
+
+export interface Resource {
+  id: string;
+  stageId: string | null;
+  type: ResourceType;
+  title: string;
+  content: string | null;
+  videoUrl: string | null;
+  orderIndex: number;
+  downloadAllowed: boolean;
+}
+
+export interface CompetitionFaq {
+  id: string;
+  question: string;
+  answer: string;
+  orderIndex: number;
+}
+
+export interface CompetitionWinner {
+  id: string;
   studentName: string;
   schoolName: string;
-  award: "gold" | "silver" | "bronze" | "finalist";
-  photoUrl?: string;
+  award: AwardType;
+  customAwardLabel: string | null;
+  positionLabel: string | null;
+  photoUrl: string | null;
+  published: boolean;
+  orderIndex: number;
+}
+
+export interface CompetitionEvent {
+  id: string;
+  type: EventType;
+  title: string;
+  eventDate: string;
+  description: string | null;
 }
 
 export interface Competition {
+  id: string;
   slug: string;
   title: string;
   shortDescription: string;
   overview: string;
   domain: string;
   status: CompetitionStatus;
-  participationType: EntryType | "both";
-  registrationDeadline: string;
-  eventDate: string;
+  supportsIndividual: boolean;
+  supportsTeam: boolean;
+  feeRequired: boolean;
+  feeAmount: number | null;
+  season: string | null;
   eligibility: EligibilityRule[];
   stages: CompetitionStage[];
-  rubric: RubricCriterion[];
-  faqs: { question: string; answer: string }[];
-  winners: Winner[];
+  rubrics: StageRubric[];
+  manuals: Manual[];
+  resources: Resource[];
+  faqs: CompetitionFaq[];
+  winners: CompetitionWinner[];
+  events: CompetitionEvent[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const categoryLabels: Record<AgeCategory, string> = {
@@ -64,4 +132,36 @@ export const statusLabels: Record<CompetitionStatus, string> = {
   open: "Open",
   closed: "Closed",
   archived: "Archived",
+};
+
+export const manualTypeLabels: Record<ManualType, string> = {
+  registration_rules: "Eligibility & Registration Rules",
+  guiding_principles: "Guiding Principles",
+  complete_manual: "Complete Competition Manual",
+  judging_rubric: "Judging Rubric",
+};
+
+export const resourceTypeLabels: Record<ResourceType, string> = {
+  practice_question: "Practice Question",
+  sample_task: "Sample Task",
+  video: "Video",
+  quiz: "Quiz",
+  article: "Article",
+};
+
+export const awardLabels: Record<AwardType, string> = {
+  gold: "Gold",
+  silver: "Silver",
+  bronze: "Bronze",
+  finalist: "Finalist",
+  merit: "Merit",
+  custom: "Custom",
+};
+
+export const eventTypeLabels: Record<EventType, string> = {
+  registration_close: "Registration closes",
+  round: "Round",
+  result_date: "Result date",
+  final_event: "Final event",
+  other: "Other",
 };

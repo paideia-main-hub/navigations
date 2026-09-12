@@ -8,6 +8,9 @@ export interface StudentProfile {
   guardianRelationship: string | null;
   guardianEmail: string | null;
   guardianMobile: string | null;
+  /** Populated only by admin-overview reads (adminListAllStudents). */
+  schoolId?: string | null;
+  schoolName?: string | null;
 }
 
 export interface AddStudentInput {

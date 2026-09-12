@@ -1,3 +1,5 @@
+import { createClient } from "@/data/supabase/server";
+import { listCompetitions } from "@/domain/competitions/service";
 import { CompetitionsDirectory } from "./CompetitionsDirectory";
 
 export const metadata = {
@@ -10,6 +12,8 @@ export default async function CompetitionsPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
+  const supabase = await createClient();
+  const competitions = await listCompetitions(supabase);
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-12">
@@ -19,7 +23,7 @@ export default async function CompetitionsPage({
         participation type or status, or search by name.
       </p>
       <div className="mt-8">
-        <CompetitionsDirectory initialQuery={q ?? ""} />
+        <CompetitionsDirectory initialQuery={q ?? ""} competitions={competitions} />
       </div>
     </div>
   );

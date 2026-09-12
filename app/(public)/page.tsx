@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { createClient } from "@/data/supabase/server";
 import { listOpenAndUpcoming, listPublishedWinners } from "@/domain/competitions/service";
 import { CompetitionCard } from "@/ui/components/CompetitionCard";
 import { Badge } from "@/ui/components/Badge";
@@ -28,9 +29,10 @@ const quickLinks = [
   { href: "/students", label: "Student Registration" },
 ];
 
-export default function HomePage() {
-  const featured = listOpenAndUpcoming();
-  const winners = listPublishedWinners();
+export default async function HomePage() {
+  const supabase = await createClient();
+  const featured = await listOpenAndUpcoming(supabase);
+  const winners = await listPublishedWinners(supabase);
 
   return (
     <div className="mx-auto max-w-7xl px-6">
@@ -117,13 +119,23 @@ export default function HomePage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {winners.slice(0, 4).map((w, i) => (
-              <div key={i} className="rounded-xl border border-border bg-surface p-4">
-                <span className="text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
-                  {w.award}
-                </span>
-                <p className="mt-1 font-semibold text-foreground">{w.studentName}</p>
-                <p className="text-sm text-muted">{w.schoolName}</p>
-                <p className="mt-2 text-xs text-muted">{w.competitionTitle}</p>
+              <div key={i} className="overflow-hidden rounded-xl border border-border bg-surface">
+                {w.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- admin-controlled Supabase Storage URL, not a Next Image host we need to configure
+                  <img src={w.photoUrl} alt={w.studentName} className="h-32 w-full object-cover" />
+                ) : (
+                  <div className="flex h-32 w-full items-center justify-center bg-surface-muted text-xs text-muted">
+                    No photo
+                  </div>
+                )}
+                <div className="p-4">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+                    {w.customAwardLabel ?? w.award}
+                  </span>
+                  <p className="mt-1 font-semibold text-foreground">{w.studentName}</p>
+                  <p className="text-sm text-muted">{w.schoolName}</p>
+                  <p className="mt-2 text-xs text-muted">{w.competitionTitle}</p>
+                </div>
               </div>
             ))}
           </div>

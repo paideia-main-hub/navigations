@@ -32,6 +32,21 @@ export async function listTeamsBySchool(supabase: SupabaseClient, schoolId: stri
   return (data as unknown as TeamRow[]).map(toTeam);
 }
 
+/** Admin overview: every team across every school, unscoped, joined with the
+ * owning school's name (null = an independent/schoolless team). */
+export async function adminListAllTeams(admin: SupabaseClient): Promise<Team[]> {
+  const { data, error } = await admin
+    .from("teams")
+    .select("id, team_name, team_members(student_id, students(full_name, grade)), schools(official_name)")
+    .order("team_name");
+
+  if (error || !data) return [];
+  return (data as unknown as (TeamRow & { schools: { official_name: string } | null })[]).map((row) => ({
+    ...toTeam(row),
+    schoolName: row.schools?.official_name ?? null,
+  }));
+}
+
 /** Creates a team (with a client-generated id, since RLS's SELECT-on-RETURNING
  * check for independent/student-created teams can't pass until team_members
  * exist yet — see 0004_school_dashboard_real_data.sql) and links its members. */

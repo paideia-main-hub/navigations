@@ -86,6 +86,31 @@ export async function signUpStudent(_prevState: ActionState, formData: FormData)
   redirect("/dashboard");
 }
 
+export async function signUpJudge(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+
+  const fullName = String(formData.get("full_name"));
+  const email = String(formData.get("email"));
+  const password = String(formData.get("password"));
+
+  const result = await createConfirmedUserAndSignIn(supabase, email, password, {
+    full_name: fullName,
+    role: "judge",
+  });
+  if ("error" in result) return { error: result.error };
+
+  const { error: judgeError } = await supabase.from("judges").insert({
+    profile_id: result.userId,
+    bio: String(formData.get("bio")) || null,
+  });
+
+  if (judgeError) {
+    return { error: `Account created, but saving your judge profile failed: ${judgeError.message}` };
+  }
+
+  redirect("/dashboard");
+}
+
 export async function signUpSchool(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const supabase = await createClient();
 

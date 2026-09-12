@@ -1,534 +1,665 @@
-// Data layer: the only place that knows where competition data actually
-// comes from. Right now that's an in-memory sample set; once the Supabase
-// project is live, swap the bodies of these functions for queries against
-// the `competitions` table family (see supabase/migrations/0001_init_schema.sql)
-// and nothing outside this file needs to change — the domain layer only
-// calls these functions, never Supabase directly.
+// Data layer: the only place that knows where competition data comes from —
+// real Supabase queries against the `competitions` table family (see
+// supabase/migrations/0001_init_schema.sql, 0009, 0010). The domain layer
+// only calls these functions, never Supabase directly.
 
-import type { Competition } from "@/domain/competitions/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type {
+  AgeCategory,
+  AwardType,
+  Competition,
+  CompetitionEvent,
+  CompetitionFaq,
+  CompetitionStage,
+  CompetitionStatus,
+  CompetitionWinner,
+  EligibilityRule,
+  EventType,
+  Manual,
+  ManualType,
+  Resource,
+  ResourceType,
+  RubricCriterion,
+  StageRubric,
+} from "@/domain/competitions/types";
 
-const sampleCompetitions: Competition[] = [
-  {
-    slug: "young-innovators-challenge",
-    title: "Young Innovators Challenge",
-    shortDescription: "A hands-on invention and problem-solving competition for aspiring engineers.",
-    overview:
-      "The Young Innovators Challenge asks students to identify a real-world problem in their community and design a working prototype solution, developing creativity, engineering thinking, and presentation skills.",
-    domain: "STEM & Innovation",
-    status: "open",
-    participationType: "both",
-    registrationDeadline: "2026-10-15",
-    eventDate: "2026-11-20",
-    eligibility: [
-      { category: "middle", minGrade: "6", maxGrade: "8", teamMinSize: 1, teamMaxSize: 3 },
-      { category: "secondary", minGrade: "9", maxGrade: "12", teamMinSize: 1, teamMaxSize: 4 },
-    ],
-    stages: [
-      {
-        stageNumber: 1,
-        title: "Concept Submission",
-        format: "Online submission",
-        duration: "2 weeks",
-        taskDescription: "Submit a one-page concept note describing the problem and proposed solution.",
-        progressionRule: "Top 100 concepts advance to prototyping.",
-      },
-      {
-        stageNumber: 2,
-        title: "Prototype Build",
-        format: "Take-home build + video documentation",
-        duration: "4 weeks",
-        taskDescription: "Build a working or scale prototype and document the process on video.",
-        progressionRule: "Top 30 teams advance to the final showcase.",
-      },
-      {
-        stageNumber: 3,
-        title: "Final Showcase",
-        format: "In-person exhibition and judging",
-        duration: "1 day",
-        taskDescription: "Present the prototype to a judging panel and answer questions.",
-        progressionRule: "Judges rank finalists using the published rubric.",
-      },
-    ],
-    rubric: [
-      { name: "Originality", weight: 30 },
-      { name: "Technical execution", weight: 30 },
-      { name: "Real-world impact", weight: 25 },
-      { name: "Presentation", weight: 15 },
-    ],
-    faqs: [
-      {
-        question: "Can a team have members from different schools?",
-        answer: "No — teams must be composed of students from the same registered school.",
-      },
-      { question: "Is there a registration fee?", answer: "No, this competition is free to enter." },
-    ],
-    winners: [
-      { studentName: "Amara K.", schoolName: "Greenfield International School", award: "gold" },
-      { studentName: "Team Circuit Breakers", schoolName: "Northgate High School", award: "silver" },
-    ],
-  },
-  {
-    slug: "digital-literacy-cup",
-    title: "Digital Literacy Cup",
-    shortDescription: "Tests practical digital skills — from safe internet use to basic coding logic.",
-    overview:
-      "The Digital Literacy Cup evaluates students' everyday digital competence: online safety, information literacy, and foundational computational thinking, through timed practical rounds.",
-    domain: "Digital Literacy",
-    status: "upcoming",
-    participationType: "individual",
-    registrationDeadline: "2026-11-01",
-    eventDate: "2026-12-05",
-    eligibility: [{ category: "primary", minGrade: "3", maxGrade: "5" }],
-    stages: [
-      {
-        stageNumber: 1,
-        title: "Online Qualifier",
-        format: "Timed online quiz",
-        duration: "45 minutes",
-        taskDescription: "Answer scenario-based questions on online safety and digital tools.",
-        progressionRule: "Top 20% of scorers per region advance.",
-      },
-      {
-        stageNumber: 2,
-        title: "Regional Final",
-        format: "In-person practical test",
-        duration: "1 hour",
-        taskDescription: "Complete hands-on tasks on school computers under supervision.",
-        progressionRule: "Highest scorer per region is declared regional winner.",
-      },
-    ],
-    rubric: [
-      { name: "Accuracy", weight: 50 },
-      { name: "Speed", weight: 20 },
-      { name: "Safe-practice judgment", weight: 30 },
-    ],
-    faqs: [{ question: "Do students need their own device?", answer: "No, both rounds run on school-provided computers." }],
-    winners: [],
-  },
-  {
-    slug: "public-speaking-championship",
-    title: "Public Speaking Championship",
-    shortDescription: "A stage-wise oratory competition building confidence and communication skills.",
-    overview:
-      "Students prepare and deliver speeches on assigned and open topics across elimination rounds, judged on content, delivery, and audience engagement.",
-    domain: "Communication",
-    status: "closed",
-    participationType: "individual",
-    registrationDeadline: "2026-08-01",
-    eventDate: "2026-09-10",
-    eligibility: [
-      { category: "middle", minGrade: "6", maxGrade: "8" },
-      { category: "secondary", minGrade: "9", maxGrade: "12" },
-    ],
-    stages: [
-      {
-        stageNumber: 1,
-        title: "School Round",
-        format: "In-school elimination",
-        duration: "1 day",
-        taskDescription: "3-minute speech on an assigned topic.",
-        progressionRule: "Top 2 speakers per school advance.",
-      },
-      {
-        stageNumber: 2,
-        title: "Grand Final",
-        format: "In-person",
-        duration: "1 day",
-        taskDescription: "5-minute prepared speech plus a 2-minute impromptu round.",
-        progressionRule: "Judges rank all finalists.",
-      },
-    ],
-    rubric: [
-      { name: "Content & structure", weight: 35 },
-      { name: "Delivery & voice", weight: 35 },
-      { name: "Audience engagement", weight: 30 },
-    ],
-    faqs: [],
-    winners: [
-      { studentName: "Zoya R.", schoolName: "Lakeview Grammar School", award: "gold" },
-      { studentName: "Hassan M.", schoolName: "Crescent Model School", award: "silver" },
-      { studentName: "Priya S.", schoolName: "Riverside Academy", award: "bronze" },
-    ],
-  },
-  {
-    slug: "robotics-arena",
-    title: "Robotics Arena",
-    shortDescription: "Teams design and program a robot to complete an obstacle course challenge.",
-    overview:
-      "Robotics Arena challenges secondary teams to build and program an autonomous robot capable of navigating a themed obstacle course within a strict time limit.",
-    domain: "STEM & Innovation",
-    status: "open",
-    participationType: "team",
-    registrationDeadline: "2026-10-20",
-    eventDate: "2026-12-01",
-    eligibility: [{ category: "secondary", minGrade: "9", maxGrade: "12", teamMinSize: 2, teamMaxSize: 5 }],
-    stages: [
-      {
-        stageNumber: 1,
-        title: "Design Review",
-        format: "Online submission",
-        duration: "1 week",
-        taskDescription: "Submit robot design schematics and a build plan.",
-        progressionRule: "All compliant designs advance.",
-      },
-      {
-        stageNumber: 2,
-        title: "Arena Trials",
-        format: "In-person timed runs",
-        duration: "1 day",
-        taskDescription: "Three timed runs through the obstacle course; best time counts.",
-        progressionRule: "Top 16 teams advance to finals.",
-      },
-      {
-        stageNumber: 3,
-        title: "Finals",
-        format: "In-person head-to-head",
-        duration: "1 day",
-        taskDescription: "Bracket-style elimination runs.",
-        progressionRule: "Single-elimination bracket determines the winner.",
-      },
-    ],
-    rubric: [
-      { name: "Course completion", weight: 40 },
-      { name: "Time", weight: 30 },
-      { name: "Build quality", weight: 30 },
-    ],
-    faqs: [{ question: "Can we use a kit robot?", answer: "Yes, as long as the programming is done by the team." }],
-    winners: [],
-  },
-  {
-    slug: "creative-writing-awards",
-    title: "Creative Writing Awards",
-    shortDescription: "Short story and poetry writing competition for young writers.",
-    overview:
-      "The Creative Writing Awards invites students to submit an original short story or poem exploring this year's theme, judged on creativity, craft and voice.",
-    domain: "Language & Literature",
-    status: "open",
-    participationType: "individual",
-    registrationDeadline: "2026-09-30",
-    eventDate: "2026-11-05",
-    eligibility: [
-      { category: "primary", minGrade: "4", maxGrade: "5" },
-      { category: "middle", minGrade: "6", maxGrade: "8" },
-    ],
-    stages: [
-      {
-        stageNumber: 1,
-        title: "Submission",
-        format: "Online submission",
-        duration: "3 weeks",
-        taskDescription: "Submit one original piece (max 1000 words or 40 lines).",
-        progressionRule: "All entries are read by at least two judges.",
-      },
-      {
-        stageNumber: 2,
-        title: "Shortlist & Awards",
-        format: "Judged offline",
-        duration: "2 weeks",
-        taskDescription: "Judges select a shortlist and rank finalists.",
-        progressionRule: "Top 10 per category are recognized.",
-      },
-    ],
-    rubric: [
-      { name: "Originality", weight: 40 },
-      { name: "Craft & language use", weight: 35 },
-      { name: "Theme relevance", weight: 25 },
-    ],
-    faqs: [],
-    winners: [],
-  },
-  {
-    slug: "math-olympiad",
-    title: "Future Competence Math Olympiad",
-    shortDescription: "A timed problem-solving competition spanning arithmetic to early algebra and logic.",
-    overview:
-      "The Math Olympiad tests problem-solving speed and depth across number theory, geometry, and logic puzzles appropriate to each age category.",
-    domain: "Mathematics",
-    status: "upcoming",
-    participationType: "individual",
-    registrationDeadline: "2026-11-10",
-    eventDate: "2026-12-14",
-    eligibility: [
-      { category: "primary", minGrade: "3", maxGrade: "5" },
-      { category: "middle", minGrade: "6", maxGrade: "8" },
-      { category: "secondary", minGrade: "9", maxGrade: "12" },
-    ],
-    stages: [
-      {
-        stageNumber: 1,
-        title: "Qualifying Round",
-        format: "Timed online test",
-        duration: "1 hour",
-        taskDescription: "30 multiple-choice and short-answer problems.",
-        progressionRule: "Top 15% per category advance.",
-      },
-      {
-        stageNumber: 2,
-        title: "Final Round",
-        format: "In-person written exam",
-        duration: "2 hours",
-        taskDescription: "Extended-response problems requiring full working.",
-        progressionRule: "Judges rank by total score; ties broken by speed.",
-      },
-    ],
-    rubric: [
-      { name: "Correctness", weight: 70 },
-      { name: "Working shown", weight: 20 },
-      { name: "Time", weight: 10 },
-    ],
-    faqs: [{ question: "Is a calculator allowed?", answer: "Only for the Secondary category, final round." }],
-    winners: [],
-  },
-  {
-    slug: "environmental-science-fair",
-    title: "Environmental Science Fair",
-    shortDescription: "Investigate a local environmental issue and present findings with a proposed solution.",
-    overview:
-      "Teams conduct a small-scale environmental investigation — water quality, waste, biodiversity, or energy use — and present their findings and a proposed intervention.",
-    domain: "Environmental Science",
-    status: "open",
-    participationType: "team",
-    registrationDeadline: "2026-10-25",
-    eventDate: "2026-12-10",
-    eligibility: [
-      { category: "middle", minGrade: "6", maxGrade: "8", teamMinSize: 2, teamMaxSize: 4 },
-      { category: "secondary", minGrade: "9", maxGrade: "12", teamMinSize: 2, teamMaxSize: 4 },
-    ],
-    stages: [
-      {
-        stageNumber: 1,
-        title: "Proposal",
-        format: "Online submission",
-        duration: "2 weeks",
-        taskDescription: "Submit a one-page research proposal identifying the issue and method.",
-        progressionRule: "All approved proposals proceed to research.",
-      },
-      {
-        stageNumber: 2,
-        title: "Poster Presentation",
-        format: "In-person exhibition",
-        duration: "1 day",
-        taskDescription: "Present findings via a poster and short talk to judges.",
-        progressionRule: "Judges score using the published rubric.",
-      },
-    ],
-    rubric: [
-      { name: "Scientific rigor", weight: 35 },
-      { name: "Proposed solution", weight: 30 },
-      { name: "Presentation & poster", weight: 35 },
-    ],
-    faqs: [],
-    winners: [],
-  },
-  {
-    slug: "code-craft-challenge",
-    title: "Code Craft Challenge",
-    shortDescription: "A competitive programming contest for secondary students.",
-    overview:
-      "Code Craft Challenge tests algorithmic problem-solving and clean coding practice through a series of timed programming problems in the language of the student's choice.",
-    domain: "Digital Literacy",
-    status: "open",
-    participationType: "individual",
-    registrationDeadline: "2026-10-05",
-    eventDate: "2026-11-15",
-    eligibility: [{ category: "secondary", minGrade: "9", maxGrade: "12" }],
-    stages: [
-      {
-        stageNumber: 1,
-        title: "Online Qualifier",
-        format: "Timed online judge",
-        duration: "2 hours",
-        taskDescription: "Solve 5 algorithmic problems of increasing difficulty.",
-        progressionRule: "Top 50 advance to the final round.",
-      },
-      {
-        stageNumber: 2,
-        title: "Final Round",
-        format: "Proctored in-person contest",
-        duration: "3 hours",
-        taskDescription: "Solve 8 problems under contest conditions.",
-        progressionRule: "Ranked by problems solved, then time.",
-      },
-    ],
-    rubric: [
-      { name: "Correctness", weight: 80 },
-      { name: "Efficiency", weight: 20 },
-    ],
-    faqs: [],
-    winners: [],
-  },
-  {
-    slug: "young-artists-exhibition",
-    title: "Young Artists Exhibition",
-    shortDescription: "A visual art competition celebrating original drawing, painting and mixed media.",
-    overview:
-      "Students submit an original artwork responding to this year's theme, exhibited publicly and judged on technique, creativity and theme interpretation.",
-    domain: "Arts & Design",
-    status: "upcoming",
-    participationType: "individual",
-    registrationDeadline: "2026-11-20",
-    eventDate: "2027-01-10",
-    eligibility: [{ category: "primary", minGrade: "1", maxGrade: "5" }],
-    stages: [
-      {
-        stageNumber: 1,
-        title: "Submission",
-        format: "Physical or photographed submission",
-        duration: "3 weeks",
-        taskDescription: "Submit one original artwork in any medium.",
-        progressionRule: "All entries are exhibited; judges select award winners.",
-      },
-    ],
-    rubric: [
-      { name: "Technique", weight: 40 },
-      { name: "Creativity", weight: 35 },
-      { name: "Theme interpretation", weight: 25 },
-    ],
-    faqs: [],
-    winners: [],
-  },
-  {
-    slug: "debate-championship",
-    title: "Debate Championship",
-    shortDescription: "A structured competitive debate tournament on current affairs topics.",
-    overview:
-      "Teams argue both sides of assigned motions across elimination rounds in a British Parliamentary-style format, judged on argumentation, rebuttal and delivery.",
-    domain: "Communication",
-    status: "closed",
-    participationType: "team",
-    registrationDeadline: "2026-07-15",
-    eventDate: "2026-08-20",
-    eligibility: [{ category: "secondary", minGrade: "9", maxGrade: "12", teamMinSize: 2, teamMaxSize: 2 }],
-    stages: [
-      {
-        stageNumber: 1,
-        title: "Preliminary Rounds",
-        format: "In-person",
-        duration: "1 day",
-        taskDescription: "Four preliminary debates on assigned motions.",
-        progressionRule: "Top 8 teams by win-loss record advance.",
-      },
-      {
-        stageNumber: 2,
-        title: "Elimination Rounds",
-        format: "In-person",
-        duration: "1 day",
-        taskDescription: "Quarterfinal, semifinal and grand final debates.",
-        progressionRule: "Single elimination; judges' majority decision advances a team.",
-      },
-    ],
-    rubric: [
-      { name: "Argumentation", weight: 40 },
-      { name: "Rebuttal", weight: 30 },
-      { name: "Style & delivery", weight: 30 },
-    ],
-    faqs: [],
-    winners: [{ studentName: "Team Orators United", schoolName: "Westfield Academy", award: "gold" }],
-  },
-  {
-    slug: "financial-literacy-quiz",
-    title: "Financial Literacy Quiz",
-    shortDescription: "A quiz-format competition testing practical money-management knowledge.",
-    overview:
-      "Students answer scenario-based questions on budgeting, saving, and basic economics, building practical financial literacy skills for real life.",
-    domain: "Life Skills",
-    status: "draft",
-    participationType: "individual",
-    registrationDeadline: "2027-01-15",
-    eventDate: "2027-02-10",
-    eligibility: [{ category: "middle", minGrade: "6", maxGrade: "8" }],
-    stages: [
-      {
-        stageNumber: 1,
-        title: "Class Round",
-        format: "In-class quiz",
-        duration: "30 minutes",
-        taskDescription: "Multiple-choice quiz administered in class.",
-        progressionRule: "Top scorer per class advances.",
-      },
-    ],
-    rubric: [{ name: "Accuracy", weight: 100 }],
-    faqs: [],
-    winners: [],
-  },
-  {
-    slug: "entrepreneurship-pitch",
-    title: "Entrepreneurship Pitch Challenge",
-    shortDescription: "Teams pitch an original business idea to a panel of judges.",
-    overview:
-      "Students form teams to develop a business concept, build a simple plan, and pitch it to a judging panel in a Shark-Tank-style format.",
-    domain: "Business & Entrepreneurship",
-    status: "open",
-    participationType: "team",
-    registrationDeadline: "2026-10-30",
-    eventDate: "2026-12-08",
-    eligibility: [{ category: "secondary", minGrade: "9", maxGrade: "12", teamMinSize: 2, teamMaxSize: 4 }],
-    stages: [
-      {
-        stageNumber: 1,
-        title: "Concept Pitch Deck",
-        format: "Online submission",
-        duration: "2 weeks",
-        taskDescription: "Submit a short slide deck outlining the business concept.",
-        progressionRule: "Top 20 teams advance to live pitching.",
-      },
-      {
-        stageNumber: 2,
-        title: "Live Pitch",
-        format: "In-person",
-        duration: "1 day",
-        taskDescription: "5-minute pitch plus 5 minutes of judge questions.",
-        progressionRule: "Judges score and rank all live pitches.",
-      },
-    ],
-    rubric: [
-      { name: "Idea viability", weight: 30 },
-      { name: "Business model", weight: 30 },
-      { name: "Pitch delivery", weight: 40 },
-    ],
-    faqs: [],
-    winners: [],
-  },
-  {
-    slug: "general-knowledge-bowl",
-    title: "General Knowledge Bowl",
-    shortDescription: "A fast-paced team quiz competition covering a broad range of topics.",
-    overview:
-      "Small teams compete in a buzzer-style quiz format covering history, science, geography and current affairs, building quick recall and teamwork.",
-    domain: "General Knowledge",
-    status: "archived",
-    participationType: "team",
-    registrationDeadline: "2025-11-01",
-    eventDate: "2025-12-05",
-    eligibility: [{ category: "primary", minGrade: "4", maxGrade: "5", teamMinSize: 3, teamMaxSize: 3 }],
-    stages: [
-      {
-        stageNumber: 1,
-        title: "Heats",
-        format: "In-person buzzer rounds",
-        duration: "1 day",
-        taskDescription: "Round-robin buzzer quiz heats.",
-        progressionRule: "Top 8 teams by points advance to finals.",
-      },
-      {
-        stageNumber: 2,
-        title: "Final",
-        format: "In-person buzzer round",
-        duration: "1 day",
-        taskDescription: "Single elimination buzzer final.",
-        progressionRule: "Highest score wins.",
-      },
-    ],
-    rubric: [{ name: "Correct answers", weight: 100 }],
-    faqs: [],
-    winners: [{ studentName: "Team Quiz Wizards", schoolName: "Maple Leaf Primary", award: "gold" }],
-  },
-];
+const FULL_SELECT = `
+  *,
+  competition_eligibility_rules (*),
+  competition_stages (*),
+  rubrics (*),
+  manuals (*),
+  resources (*),
+  competition_faqs (*),
+  competition_winners (*),
+  events (*)
+`;
 
-export function getAllCompetitions(): Competition[] {
-  return sampleCompetitions;
+type Row = {
+  id: string;
+  slug: string;
+  title: string;
+  short_description: string | null;
+  overview: string | null;
+  domain_competency_area: string | null;
+  status: CompetitionStatus;
+  supports_individual: boolean;
+  supports_team: boolean;
+  fee_required: boolean;
+  fee_amount: number | null;
+  season: string | null;
+  created_at: string;
+  updated_at: string;
+  competition_eligibility_rules: {
+    id: string;
+    category: AgeCategory;
+    min_grade: string | null;
+    max_grade: string | null;
+    min_age: number | null;
+    max_age: number | null;
+    team_min_size: number | null;
+    team_max_size: number | null;
+    notes: string | null;
+  }[];
+  competition_stages: {
+    id: string;
+    stage_number: number;
+    title: string;
+    format: string | null;
+    duration: string | null;
+    task_description: string | null;
+    progression_rule: string | null;
+    order_index: number;
+  }[];
+  rubrics: {
+    id: string;
+    stage_id: string | null;
+    criteria: RubricCriterion[];
+    tie_break_rule: string | null;
+    is_public: boolean;
+  }[];
+  manuals: {
+    id: string;
+    type: ManualType;
+    title: string;
+    file_url: string;
+    version_label: string | null;
+    version_date: string | null;
+  }[];
+  resources: {
+    id: string;
+    stage_id: string | null;
+    type: ResourceType;
+    title: string;
+    content: string | null;
+    video_url: string | null;
+    order_index: number;
+    download_allowed: boolean;
+  }[];
+  competition_faqs: { id: string; question: string; answer: string; order_index: number }[];
+  competition_winners: {
+    id: string;
+    student_name: string;
+    school_name: string;
+    award: AwardType;
+    custom_award_label: string | null;
+    position_label: string | null;
+    photo_url: string | null;
+    published: boolean;
+    order_index: number;
+  }[];
+  events: { id: string; type: EventType; title: string; event_date: string; description: string | null }[];
+};
+
+function toCompetition(row: Row): Competition {
+  const eligibility: EligibilityRule[] = (row.competition_eligibility_rules ?? []).map((r) => ({
+    id: r.id,
+    category: r.category,
+    minGrade: r.min_grade ?? "",
+    maxGrade: r.max_grade ?? "",
+    minAge: r.min_age,
+    maxAge: r.max_age,
+    teamMinSize: r.team_min_size,
+    teamMaxSize: r.team_max_size,
+    notes: r.notes,
+  }));
+
+  const stages: CompetitionStage[] = (row.competition_stages ?? [])
+    .map((s) => ({
+      id: s.id,
+      stageNumber: s.stage_number,
+      title: s.title,
+      format: s.format ?? "",
+      duration: s.duration ?? "",
+      taskDescription: s.task_description ?? "",
+      progressionRule: s.progression_rule ?? "",
+      orderIndex: s.order_index,
+    }))
+    .sort((a, b) => a.orderIndex - b.orderIndex || a.stageNumber - b.stageNumber);
+
+  const rubrics: StageRubric[] = (row.rubrics ?? []).map((r) => ({
+    id: r.id,
+    stageId: r.stage_id,
+    criteria: r.criteria ?? [],
+    tieBreakRule: r.tie_break_rule,
+    isPublic: r.is_public,
+  }));
+
+  const manuals: Manual[] = (row.manuals ?? []).map((m) => ({
+    id: m.id,
+    type: m.type,
+    title: m.title,
+    fileUrl: m.file_url,
+    versionLabel: m.version_label,
+    versionDate: m.version_date,
+  }));
+
+  const resources: Resource[] = (row.resources ?? [])
+    .map((r) => ({
+      id: r.id,
+      stageId: r.stage_id,
+      type: r.type,
+      title: r.title,
+      content: r.content,
+      videoUrl: r.video_url,
+      orderIndex: r.order_index,
+      downloadAllowed: r.download_allowed,
+    }))
+    .sort((a, b) => a.orderIndex - b.orderIndex);
+
+  const faqs: CompetitionFaq[] = (row.competition_faqs ?? [])
+    .map((f) => ({ id: f.id, question: f.question, answer: f.answer, orderIndex: f.order_index }))
+    .sort((a, b) => a.orderIndex - b.orderIndex);
+
+  const winners: CompetitionWinner[] = (row.competition_winners ?? [])
+    .map((w) => ({
+      id: w.id,
+      studentName: w.student_name,
+      schoolName: w.school_name,
+      award: w.award,
+      customAwardLabel: w.custom_award_label,
+      positionLabel: w.position_label,
+      photoUrl: w.photo_url,
+      published: w.published,
+      orderIndex: w.order_index,
+    }))
+    .sort((a, b) => a.orderIndex - b.orderIndex);
+
+  const events: CompetitionEvent[] = (row.events ?? [])
+    .map((e) => ({ id: e.id, type: e.type, title: e.title, eventDate: e.event_date, description: e.description }))
+    .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
+
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    shortDescription: row.short_description ?? "",
+    overview: row.overview ?? "",
+    domain: row.domain_competency_area ?? "",
+    status: row.status,
+    supportsIndividual: row.supports_individual,
+    supportsTeam: row.supports_team,
+    feeRequired: row.fee_required,
+    feeAmount: row.fee_amount,
+    season: row.season,
+    eligibility,
+    stages,
+    rubrics,
+    manuals,
+    resources,
+    faqs,
+    winners: winners.filter((w) => w.published),
+    events,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 }
 
-export function getCompetitionBySlug(slug: string): Competition | undefined {
-  return sampleCompetitions.find((c) => c.slug === slug);
+// Same mapper, but keeps unpublished winners — for the admin editor, which
+// needs to see and manage every winner row, not just the public-visible ones.
+function toCompetitionAdmin(row: Row): Competition {
+  const c = toCompetition(row);
+  const winners: CompetitionWinner[] = (row.competition_winners ?? [])
+    .map((w) => ({
+      id: w.id,
+      studentName: w.student_name,
+      schoolName: w.school_name,
+      award: w.award,
+      customAwardLabel: w.custom_award_label,
+      positionLabel: w.position_label,
+      photoUrl: w.photo_url,
+      published: w.published,
+      orderIndex: w.order_index,
+    }))
+    .sort((a, b) => a.orderIndex - b.orderIndex);
+  return { ...c, winners };
+}
+
+// ---------------------------------------------------------------------------
+// Public reads (RLS-respecting client — every table selected here has a
+// public-read policy, so the anon/cookie-bound client works directly)
+// ---------------------------------------------------------------------------
+
+export async function getAllCompetitions(supabase: SupabaseClient): Promise<Competition[]> {
+  const { data, error } = await supabase.from("competitions").select(FULL_SELECT).order("created_at");
+  if (error || !data) return [];
+  return (data as unknown as Row[]).map(toCompetition);
+}
+
+export async function getCompetitionBySlug(supabase: SupabaseClient, slug: string): Promise<Competition | null> {
+  const { data, error } = await supabase.from("competitions").select(FULL_SELECT).eq("slug", slug).maybeSingle();
+  if (error || !data) return null;
+  return toCompetition(data as unknown as Row);
+}
+
+// ---------------------------------------------------------------------------
+// Admin reads/writes (service-role client — bypasses RLS; see
+// data/supabase/admin.ts and domain/admin-auth/guard.ts for the real gate)
+// ---------------------------------------------------------------------------
+
+export async function adminListCompetitions(admin: SupabaseClient): Promise<Competition[]> {
+  const { data, error } = await admin.from("competitions").select(FULL_SELECT).order("updated_at", { ascending: false });
+  if (error || !data) return [];
+  return (data as unknown as Row[]).map(toCompetitionAdmin);
+}
+
+export async function adminGetCompetitionById(admin: SupabaseClient, id: string): Promise<Competition | null> {
+  const { data, error } = await admin.from("competitions").select(FULL_SELECT).eq("id", id).maybeSingle();
+  if (error || !data) return null;
+  return toCompetitionAdmin(data as unknown as Row);
+}
+
+export interface CompetitionCoreInput {
+  slug: string;
+  title: string;
+  shortDescription: string;
+  overview: string;
+  domain: string;
+  status: CompetitionStatus;
+  supportsIndividual: boolean;
+  supportsTeam: boolean;
+  feeRequired: boolean;
+  feeAmount: number | null;
+  season: string | null;
+}
+
+function coreToRow(input: CompetitionCoreInput) {
+  return {
+    slug: input.slug,
+    title: input.title,
+    short_description: input.shortDescription,
+    overview: input.overview,
+    domain_competency_area: input.domain,
+    status: input.status,
+    supports_individual: input.supportsIndividual,
+    supports_team: input.supportsTeam,
+    fee_required: input.feeRequired,
+    fee_amount: input.feeAmount,
+    season: input.season,
+  };
+}
+
+export async function insertCompetition(
+  admin: SupabaseClient,
+  input: CompetitionCoreInput,
+): Promise<{ id: string | null; error: string | null }> {
+  const { data, error } = await admin.from("competitions").insert(coreToRow(input)).select("id").single();
+  if (error || !data) return { id: null, error: error?.message ?? "Failed to create competition." };
+  return { id: data.id as string, error: null };
+}
+
+export async function updateCompetitionCore(
+  admin: SupabaseClient,
+  id: string,
+  input: CompetitionCoreInput,
+): Promise<{ error: string | null }> {
+  const { error } = await admin
+    .from("competitions")
+    .update({ ...coreToRow(input), updated_at: new Date().toISOString() })
+    .eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+export async function updateCompetitionStatus(
+  admin: SupabaseClient,
+  id: string,
+  status: CompetitionStatus,
+): Promise<{ error: string | null }> {
+  const { error } = await admin
+    .from("competitions")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+// --- Eligibility rules: nothing else references these rows, so a full
+// delete-then-insert per save is safe and simplest. ---
+
+export interface EligibilityRuleInput {
+  category: AgeCategory;
+  minGrade: string;
+  maxGrade: string;
+  minAge: number | null;
+  maxAge: number | null;
+  teamMinSize: number | null;
+  teamMaxSize: number | null;
+  notes: string | null;
+}
+
+export async function replaceEligibilityRules(
+  admin: SupabaseClient,
+  competitionId: string,
+  rules: EligibilityRuleInput[],
+): Promise<{ error: string | null }> {
+  const { error: deleteError } = await admin.from("competition_eligibility_rules").delete().eq("competition_id", competitionId);
+  if (deleteError) return { error: deleteError.message };
+  if (rules.length === 0) return { error: null };
+
+  const { error } = await admin.from("competition_eligibility_rules").insert(
+    rules.map((r) => ({
+      competition_id: competitionId,
+      category: r.category,
+      min_grade: r.minGrade,
+      max_grade: r.maxGrade,
+      min_age: r.minAge,
+      max_age: r.maxAge,
+      team_min_size: r.teamMinSize,
+      team_max_size: r.teamMaxSize,
+      notes: r.notes,
+    })),
+  );
+  return { error: error?.message ?? null };
+}
+
+// --- Stages: resources.stage_id and rubrics.stage_id reference these with
+// `on delete set null` — a naive delete-all/insert-all would silently null
+// out those links on every save. Real per-row upsert instead: update rows
+// that carry an existing id, insert rows that don't, delete only rows whose
+// id was actually removed from the submitted list. ---
+
+export interface StageInput {
+  id?: string;
+  stageNumber: number;
+  title: string;
+  format: string;
+  duration: string;
+  taskDescription: string;
+  progressionRule: string;
+  orderIndex: number;
+}
+
+export async function replaceStages(
+  admin: SupabaseClient,
+  competitionId: string,
+  stages: StageInput[],
+): Promise<{ error: string | null }> {
+  const { data: existing, error: fetchError } = await admin
+    .from("competition_stages")
+    .select("id")
+    .eq("competition_id", competitionId);
+  if (fetchError) return { error: fetchError.message };
+
+  const existingIds = new Set((existing ?? []).map((r) => r.id as string));
+  const submittedIds = new Set(stages.filter((s) => s.id).map((s) => s.id as string));
+  const idsToDelete = [...existingIds].filter((id) => !submittedIds.has(id));
+
+  if (idsToDelete.length > 0) {
+    const { error } = await admin.from("competition_stages").delete().in("id", idsToDelete);
+    if (error) return { error: error.message };
+  }
+
+  for (const stage of stages) {
+    const row = {
+      competition_id: competitionId,
+      stage_number: stage.stageNumber,
+      title: stage.title,
+      format: stage.format,
+      duration: stage.duration,
+      task_description: stage.taskDescription,
+      progression_rule: stage.progressionRule,
+      order_index: stage.orderIndex,
+    };
+    if (stage.id && existingIds.has(stage.id)) {
+      const { error } = await admin.from("competition_stages").update(row).eq("id", stage.id);
+      if (error) return { error: error.message };
+    } else {
+      const { error } = await admin.from("competition_stages").insert(row);
+      if (error) return { error: error.message };
+    }
+  }
+
+  return { error: null };
+}
+
+// --- Rubrics: edited one at a time, per stage (or competition-wide when
+// stageId is null). ---
+
+export interface StageRubricInput {
+  stageId: string | null;
+  criteria: RubricCriterion[];
+  tieBreakRule: string | null;
+  isPublic: boolean;
+}
+
+export async function upsertRubric(
+  admin: SupabaseClient,
+  competitionId: string,
+  id: string | null,
+  input: StageRubricInput,
+): Promise<{ error: string | null }> {
+  const row = {
+    competition_id: competitionId,
+    stage_id: input.stageId,
+    criteria: input.criteria,
+    tie_break_rule: input.tieBreakRule,
+    is_public: input.isPublic,
+  };
+  if (id) {
+    const { error } = await admin.from("rubrics").update(row).eq("id", id);
+    return { error: error?.message ?? null };
+  }
+  const { error } = await admin.from("rubrics").insert(row);
+  return { error: error?.message ?? null };
+}
+
+export async function deleteRubric(admin: SupabaseClient, id: string): Promise<{ error: string | null }> {
+  const { error } = await admin.from("rubrics").delete().eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+// --- Manuals: added one at a time (upload a file -> create a row). ---
+
+export interface ManualInput {
+  type: ManualType;
+  title: string;
+  fileUrl: string;
+  versionLabel: string | null;
+  versionDate: string | null;
+}
+
+export async function insertManual(
+  admin: SupabaseClient,
+  competitionId: string,
+  input: ManualInput,
+): Promise<{ error: string | null }> {
+  const { error } = await admin.from("manuals").insert({
+    competition_id: competitionId,
+    type: input.type,
+    title: input.title,
+    file_url: input.fileUrl,
+    version_label: input.versionLabel,
+    version_date: input.versionDate,
+  });
+  return { error: error?.message ?? null };
+}
+
+export async function deleteManual(admin: SupabaseClient, id: string): Promise<{ error: string | null }> {
+  const { error } = await admin.from("manuals").delete().eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+// --- Resources ---
+
+export interface ResourceInput {
+  stageId: string | null;
+  type: ResourceType;
+  title: string;
+  content: string | null;
+  videoUrl: string | null;
+  orderIndex: number;
+  downloadAllowed: boolean;
+}
+
+export async function insertResource(
+  admin: SupabaseClient,
+  competitionId: string,
+  input: ResourceInput,
+): Promise<{ error: string | null }> {
+  const { error } = await admin.from("resources").insert({
+    competition_id: competitionId,
+    stage_id: input.stageId,
+    type: input.type,
+    title: input.title,
+    content: input.content,
+    video_url: input.videoUrl,
+    order_index: input.orderIndex,
+    download_allowed: input.downloadAllowed,
+  });
+  return { error: error?.message ?? null };
+}
+
+export async function updateResource(
+  admin: SupabaseClient,
+  id: string,
+  input: ResourceInput,
+): Promise<{ error: string | null }> {
+  const { error } = await admin
+    .from("resources")
+    .update({
+      stage_id: input.stageId,
+      type: input.type,
+      title: input.title,
+      content: input.content,
+      video_url: input.videoUrl,
+      order_index: input.orderIndex,
+      download_allowed: input.downloadAllowed,
+    })
+    .eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+export async function deleteResource(admin: SupabaseClient, id: string): Promise<{ error: string | null }> {
+  const { error } = await admin.from("resources").delete().eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+// --- FAQs: nothing references these rows, safe to replace wholesale. ---
+
+export interface FaqInput {
+  question: string;
+  answer: string;
+  orderIndex: number;
+}
+
+export async function replaceFaqs(
+  admin: SupabaseClient,
+  competitionId: string,
+  faqs: FaqInput[],
+): Promise<{ error: string | null }> {
+  const { error: deleteError } = await admin.from("competition_faqs").delete().eq("competition_id", competitionId);
+  if (deleteError) return { error: deleteError.message };
+  if (faqs.length === 0) return { error: null };
+
+  const { error } = await admin.from("competition_faqs").insert(
+    faqs.map((f) => ({ competition_id: competitionId, question: f.question, answer: f.answer, order_index: f.orderIndex })),
+  );
+  return { error: error?.message ?? null };
+}
+
+// --- Winners: added/edited one at a time. ---
+
+export interface WinnerInput {
+  studentName: string;
+  schoolName: string;
+  award: AwardType;
+  customAwardLabel: string | null;
+  positionLabel: string | null;
+  photoUrl: string | null;
+  published: boolean;
+  orderIndex: number;
+}
+
+export async function insertWinner(
+  admin: SupabaseClient,
+  competitionId: string,
+  input: WinnerInput,
+): Promise<{ error: string | null }> {
+  const { error } = await admin.from("competition_winners").insert({
+    competition_id: competitionId,
+    student_name: input.studentName,
+    school_name: input.schoolName,
+    award: input.award,
+    custom_award_label: input.customAwardLabel,
+    position_label: input.positionLabel,
+    photo_url: input.photoUrl,
+    published: input.published,
+    order_index: input.orderIndex,
+  });
+  return { error: error?.message ?? null };
+}
+
+export async function updateWinner(
+  admin: SupabaseClient,
+  id: string,
+  input: WinnerInput,
+): Promise<{ error: string | null }> {
+  const { error } = await admin
+    .from("competition_winners")
+    .update({
+      student_name: input.studentName,
+      school_name: input.schoolName,
+      award: input.award,
+      custom_award_label: input.customAwardLabel,
+      position_label: input.positionLabel,
+      photo_url: input.photoUrl,
+      published: input.published,
+      order_index: input.orderIndex,
+    })
+    .eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+export async function deleteWinner(admin: SupabaseClient, id: string): Promise<{ error: string | null }> {
+  const { error } = await admin.from("competition_winners").delete().eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+// --- Events: nothing references these rows, safe to replace wholesale. ---
+
+export interface EventInput {
+  type: EventType;
+  title: string;
+  eventDate: string;
+  description: string | null;
+}
+
+export async function replaceEvents(
+  admin: SupabaseClient,
+  competitionId: string,
+  events: EventInput[],
+): Promise<{ error: string | null }> {
+  const { error: deleteError } = await admin.from("events").delete().eq("competition_id", competitionId);
+  if (deleteError) return { error: deleteError.message };
+  if (events.length === 0) return { error: null };
+
+  const { error } = await admin.from("events").insert(
+    events.map((e) => ({
+      competition_id: competitionId,
+      type: e.type,
+      title: e.title,
+      event_date: e.eventDate,
+      description: e.description,
+    })),
+  );
+  return { error: error?.message ?? null };
 }

@@ -1,9 +1,11 @@
+import { createClient } from "@/data/supabase/server";
 import { upcomingDates } from "@/domain/competitions/service";
 
 export const metadata = { title: "Competition Calendar | Future Competence Series" };
 
-export default function CalendarPage() {
-  const dates = upcomingDates();
+export default async function CalendarPage() {
+  const supabase = await createClient();
+  const dates = await upcomingDates(supabase);
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-12">
@@ -23,6 +25,7 @@ export default function CalendarPage() {
             </p>
           </li>
         ))}
+        {dates.length === 0 && <li className="py-8 text-center text-muted">No dates scheduled yet.</li>}
       </ul>
     </div>
   );

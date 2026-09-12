@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
+  adminListAllStudents,
   listStudentsBySchool,
   insertStudent,
   insertAdHocStudent,
@@ -10,6 +11,10 @@ import type { AddStudentInput, StudentProfile } from "./types";
 
 export async function listSchoolRoster(supabase: SupabaseClient, schoolId: string): Promise<StudentProfile[]> {
   return listStudentsBySchool(supabase, schoolId);
+}
+
+export async function listAllStudents(admin: SupabaseClient): Promise<StudentProfile[]> {
+  return adminListAllStudents(admin);
 }
 
 export async function getOwnStudentProfile(supabase: SupabaseClient, profileId: string): Promise<StudentProfile | null> {

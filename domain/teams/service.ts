@@ -1,9 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { listTeamsBySchool, createTeam as createTeamRow } from "@/data/repositories/teams.repository";
+import { adminListAllTeams, listTeamsBySchool, createTeam as createTeamRow } from "@/data/repositories/teams.repository";
 import type { Team } from "./types";
 
 export async function listSchoolTeams(supabase: SupabaseClient, schoolId: string): Promise<Team[]> {
   return listTeamsBySchool(supabase, schoolId);
+}
+
+export async function listAllTeams(admin: SupabaseClient): Promise<Team[]> {
+  return adminListAllTeams(admin);
 }
 
 export async function createTeam(
