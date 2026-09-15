@@ -36,8 +36,12 @@ export default async function EditCompetitionPage({ params }: { params: Promise<
       label: "Results",
       content: (
         <p className="max-w-2xl text-sm text-muted">
-          Results are driven by real registrations and judge scoring, which aren&apos;t built yet — this
-          tab stays read-only until the Judging/Results module ships.
+          Results are generated from real registrations and judge scoring, then reviewed and published from the
+          dedicated{" "}
+          <a href={`/admin/results?competition=${competition.id}`} className="font-semibold text-accent">
+            Results
+          </a>{" "}
+          section — publishing there also fills in this competition&apos;s Winners Gallery tab automatically.
         </p>
       ),
     },

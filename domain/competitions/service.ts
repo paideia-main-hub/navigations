@@ -4,6 +4,8 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as repo from "@/data/repositories/competitions.repository";
+import { listPublishedComputedWinners } from "@/domain/results/service";
+import { awardRank } from "@/domain/results/types";
 import type {
   AgeCategory,
   Competition,
@@ -32,11 +34,23 @@ export interface PublishedWinner {
   photoUrl: string | null;
   competitionTitle: string;
   competitionSlug: string;
+  /** Only populated for winners computed from real registrations + judge
+   * scoring — manually-entered (competition_winners) rows leave these unset. */
+  season?: string | null;
+  category?: string | null;
+  entryType?: "individual" | "team";
+  teamMembers?: string[];
 }
 
+/** Merges the two sources of published winners: manually-entered ones
+ * (competition_winners — a fallback for competitions with no registration
+ * data behind them) and computed ones (real registrations ranked by judge
+ * scoring — see domain/results). Sorted gold -> silver -> bronze -> finalist
+ * -> merit -> custom, computed winners first within each award tier. */
 export async function listPublishedWinners(supabase: SupabaseClient): Promise<PublishedWinner[]> {
-  const all = await repo.getAllCompetitions(supabase);
-  return all.flatMap((c) =>
+  const [all, computed] = await Promise.all([repo.getAllCompetitions(supabase), listPublishedComputedWinners(supabase)]);
+
+  const manual: PublishedWinner[] = all.flatMap((c) =>
     c.winners.map((w) => ({
       studentName: w.studentName,
       schoolName: w.schoolName,
@@ -47,6 +61,70 @@ export async function listPublishedWinners(supabase: SupabaseClient): Promise<Pu
       competitionSlug: c.slug,
     })),
   );
+
+  const fromComputed: PublishedWinner[] = computed.map((w) => ({
+    studentName: w.entrantName,
+    schoolName: w.schoolName ?? "—",
+    award: w.award,
+    customAwardLabel: w.customAwardLabel,
+    photoUrl: w.photoUrl,
+    competitionTitle: w.competitionTitle,
+    competitionSlug: w.competitionSlug,
+    season: w.season,
+    category: w.category,
+    entryType: w.entryType,
+    teamMembers: w.teamMembers,
+  }));
+
+  return [...fromComputed, ...manual].sort((a, b) => {
+    const rankA = awardRank[a.award as keyof typeof awardRank] ?? 99;
+    const rankB = awardRank[b.award as keyof typeof awardRank] ?? 99;
+    return rankA - rankB;
+  });
+}
+
+export interface CompetitionWinnerGroup {
+  competitionTitle: string;
+  competitionSlug: string;
+  /** Top 3 for that competition (gold/silver/bronze first, filling in with
+   * whatever's next — finalist/merit/custom — only if fewer than 3 medals
+   * were awarded). */
+  podium: PublishedWinner[];
+}
+
+/** Splits a flat, cross-competition winners list (as returned by
+ * listPublishedWinners) into one group per competition, each holding just
+ * its own top 3 — the shape a "1st/2nd/3rd per competition" podium slider
+ * needs, instead of one global top-3 that mixes unrelated competitions
+ * together. Groups are ordered by their best award (a competition with a
+ * published Gold leads), then alphabetically by title. */
+export function groupWinnersByCompetition(winners: PublishedWinner[]): CompetitionWinnerGroup[] {
+  const bySlug = new Map<string, PublishedWinner[]>();
+  for (const w of winners) {
+    const list = bySlug.get(w.competitionSlug) ?? [];
+    list.push(w);
+    bySlug.set(w.competitionSlug, list);
+  }
+
+  const groups: CompetitionWinnerGroup[] = Array.from(bySlug.entries()).map(([slug, list]) => {
+    const sorted = [...list].sort((a, b) => {
+      const rankA = awardRank[a.award as keyof typeof awardRank] ?? 99;
+      const rankB = awardRank[b.award as keyof typeof awardRank] ?? 99;
+      return rankA - rankB;
+    });
+    return {
+      competitionTitle: sorted[0].competitionTitle,
+      competitionSlug: slug,
+      podium: sorted.slice(0, 3),
+    };
+  });
+
+  return groups.sort((a, b) => {
+    const bestA = awardRank[a.podium[0]?.award as keyof typeof awardRank] ?? 99;
+    const bestB = awardRank[b.podium[0]?.award as keyof typeof awardRank] ?? 99;
+    if (bestA !== bestB) return bestA - bestB;
+    return a.competitionTitle.localeCompare(b.competitionTitle);
+  });
 }
 
 export interface UpcomingDate {

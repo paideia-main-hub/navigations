@@ -1,172 +1,302 @@
 import Link from "next/link";
 import { createClient } from "@/data/supabase/server";
-import { listOpenAndUpcoming, listPublishedWinners } from "@/domain/competitions/service";
+import { listOpenAndUpcoming, listPublishedWinners, groupWinnersByCompetition, upcomingDates } from "@/domain/competitions/service";
+import { listAllAnnouncements } from "@/domain/announcements/service";
+import { categoryLabels } from "@/domain/competitions/types";
+import { announcementCategoryLabels } from "@/domain/announcements/types";
 import { CompetitionCard } from "@/ui/components/CompetitionCard";
-import { Badge } from "@/ui/components/Badge";
-
-const steps = ["Sign Up", "Choose Competition", "Register", "Prepare", "Participate", "Results"];
+import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
+import { SectionHeading } from "@/ui/components/marketing/SectionHeading";
+import { StatBar } from "@/ui/components/marketing/StatBar";
+import { ArenaFinder } from "@/ui/components/marketing/ArenaFinder";
+import { RoadmapSteps } from "@/ui/components/marketing/RoadmapSteps";
+import { FixturesList } from "@/ui/components/marketing/FixturesList";
+import { ChampionsPodium } from "@/ui/components/marketing/ChampionsPodium";
 
 const whyParticipate = [
   {
-    title: "Real competencies",
+    title: "What You'll Develop",
     body: "Every competition is designed around a skill students actually use — not just a trophy.",
   },
   {
-    title: "Recognition",
+    title: "Certificates & Recognition",
     body: "Certificates, awards and public winner listings for students and their schools.",
   },
   {
-    title: "Portfolio building",
+    title: "Competency Portfolio",
     body: "A record of participation and achievement across Primary, Middle and Secondary years.",
   },
 ];
 
-const quickLinks = [
-  { href: "/manuals", label: "Manuals" },
-  { href: "/resources", label: "Practice Resources" },
-  { href: "/results", label: "Results" },
-  { href: "/schools", label: "School Registration" },
-  { href: "/students", label: "Student Registration" },
+const schoolPoints = [
+  "School Leaderboard & Recognition",
+  "Downloadable School Participation Guide",
+  "Register Multiple Students & Teams",
+];
+
+const portals = [
+  { href: "/manuals", label: "Manuals & Guidelines" },
+  { href: "/resources", label: "Practice / Resource Centre" },
+  { href: "/results", label: "Results & Winners" },
+  { href: "/schools", label: "For Schools" },
+  { href: "/students", label: "For Students" },
 ];
 
 export default async function HomePage() {
   const supabase = await createClient();
-  const featured = await listOpenAndUpcoming(supabase);
-  const winners = await listPublishedWinners(supabase);
+  const [featured, winners, dates, announcements] = await Promise.all([
+    listOpenAndUpcoming(supabase),
+    listPublishedWinners(supabase),
+    upcomingDates(supabase),
+    listAllAnnouncements(supabase),
+  ]);
+
+  const pinnedAnnouncement = announcements.find((a) => a.isImportant) ?? announcements[0];
+  const winnerGroups = groupWinnersByCompetition(winners);
 
   return (
-    <div className="mx-auto max-w-7xl px-6">
-      {/* Hero */}
-      <section className="flex flex-col items-start gap-6 py-16 sm:py-24">
-        <Badge tone="accent">Registration is open for the 2026 season</Badge>
-        <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-          Competitions that build real-world competence, not just certificates.
-        </h1>
-        <p className="max-w-2xl text-lg text-muted">
-          The Future Competence Series brings together competitions across Primary, Middle and
-          Secondary levels — with online practice resources, transparent judging, and published
-          results.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/register"
-            className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90"
-          >
-            Register Now
-          </Link>
-          <Link
-            href="/competitions"
-            className="rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground hover:border-accent"
-          >
-            Explore Competitions
-          </Link>
-        </div>
+    <div>
+      {/* 1 & 2. Announcement strip + Hero share one full-bleed background
+          photo — a clearly visible slider-style banner image, not a
+          blurred texture, with just enough of a dark scrim over it to
+          keep the white text readable. */}
+      <section className="relative overflow-hidden bg-slate-950">
+        {/* eslint-disable-next-line @next/next/no-img-element -- static asset in public/, not a remote host Next Image needs configuring for */}
+        <img
+          src="/depositphotos_4028675-stock-illustration-cheering-crowd.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-950/55 to-slate-950/90" />
 
-        <form action="/competitions" className="mt-4 flex w-full max-w-xl gap-2">
-          <input
-            type="search"
-            name="q"
-            placeholder="Search by competition name, category or keyword…"
-            className="w-full rounded-full border border-border bg-surface px-5 py-3 text-sm text-foreground outline-none focus:border-accent"
-          />
-          <button
-            type="submit"
-            className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background"
-          >
-            Search
-          </button>
-        </form>
-      </section>
-
-      {/* Featured competitions */}
-      <section className="py-12">
-        <div className="mb-6 flex items-end justify-between">
-          <h2 className="text-2xl font-bold text-foreground">Open &amp; upcoming competitions</h2>
-          <Link href="/competitions" className="text-sm font-semibold text-accent">
-            View all →
-          </Link>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((c) => (
-            <CompetitionCard key={c.slug} competition={c} />
-          ))}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="py-12">
-        <h2 className="mb-6 text-2xl font-bold text-foreground">How it works</h2>
-        <ol className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          {steps.map((step, i) => (
-            <li key={step} className="rounded-xl border border-border bg-surface p-4 text-center">
-              <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
-                {i + 1}
-              </div>
-              <p className="text-sm font-medium text-foreground">{step}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* Winners showcase */}
-      {winners.length > 0 && (
-        <section className="py-12">
-          <div className="mb-6 flex items-end justify-between">
-            <h2 className="text-2xl font-bold text-foreground">Recent winners</h2>
-            <Link href="/results" className="text-sm font-semibold text-accent">
-              View all results →
+        {pinnedAnnouncement && (
+          <div className="relative border-b border-white/10 bg-black/20 px-6 py-2 text-center text-sm font-medium text-slate-200 backdrop-blur-sm">
+            🏆 {pinnedAnnouncement.title}{" "}
+            <Link href="/announcements" className="ml-1 font-semibold text-blue-400 underline underline-offset-2 hover:text-blue-300">
+              View announcement details
             </Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {winners.slice(0, 4).map((w, i) => (
-              <div key={i} className="overflow-hidden rounded-xl border border-border bg-surface">
-                {w.photoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- admin-controlled Supabase Storage URL, not a Next Image host we need to configure
-                  <img src={w.photoUrl} alt={w.studentName} className="h-32 w-full object-cover" />
-                ) : (
-                  <div className="flex h-32 w-full items-center justify-center bg-surface-muted text-xs text-muted">
-                    No photo
-                  </div>
-                )}
-                <div className="p-4">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
-                    {w.customAwardLabel ?? w.award}
-                  </span>
-                  <p className="mt-1 font-semibold text-foreground">{w.studentName}</p>
-                  <p className="text-sm text-muted">{w.schoolName}</p>
-                  <p className="mt-2 text-xs text-muted">{w.competitionTitle}</p>
-                </div>
-              </div>
+        )}
+
+        <div className="relative mx-auto max-w-4xl px-6 py-20 text-center sm:py-28">
+          <ArenaBadge tone="dark">🏆 Championship Tour 2026 · National Fields</ArenaBadge>
+          <h1 className="mx-auto mt-5 max-w-3xl text-5xl font-extrabold tracking-tight text-white sm:text-6xl">
+            WHERE STUDENT{" "}
+            <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">TALENT</span>{" "}
+            TAKES THE STAGE.
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-lg text-slate-300">
+            The premier competition platform across 27 competitive disciplines. Robotics, Mechatronics,
+            Public Oratory, Applied STEM Innovations, and Creative Arts across Primary, Middle, and
+            Secondary tiers.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link href="/register" className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-500">
+              Register Now
+            </Link>
+            <Link
+              href="/competitions"
+              className="rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/5"
+            >
+              Explore All 27 Competitions
+            </Link>
+          </div>
+          <div className="mt-8 flex flex-wrap justify-center gap-2">
+            {Object.entries(categoryLabels).map(([value, label]) => (
+              <ArenaBadge key={value} tone="dark">
+                {label}
+              </ArenaBadge>
             ))}
           </div>
-        </section>
-      )}
+        </div>
 
-      {/* Why participate */}
-      <section className="py-12">
-        <h2 className="mb-6 text-2xl font-bold text-foreground">Why participate</h2>
-        <div className="grid gap-6 sm:grid-cols-3">
-          {whyParticipate.map((item) => (
-            <div key={item.title}>
-              <h3 className="font-semibold text-foreground">{item.title}</h3>
-              <p className="mt-1 text-sm text-muted">{item.body}</p>
-            </div>
-          ))}
+        {/* 3. Stat bar */}
+        <div className="relative mx-auto max-w-7xl px-6 pb-16">
+          <StatBar />
         </div>
       </section>
 
-      {/* Quick links */}
-      <section className="py-12">
-        <div className="flex flex-wrap gap-3">
-          {quickLinks.map((link) => (
+      {/* 4. Arena Finder */}
+      <div className="relative z-10 px-6">
+        <ArenaFinder />
+      </div>
+
+      <div className="bg-slate-50 dark:bg-slate-950">
+        <div className="mx-auto max-w-7xl px-6 pt-20 pb-12">
+          {/* 5. Featured Divisions */}
+          <SectionHeading eyebrow="Competition Directory" title="Featured Competitions" action={{ href: "/competitions", label: "View all competitions" }} />
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.slice(0, 6).map((c) => (
+              <CompetitionCard key={c.slug} competition={c} />
+            ))}
+            {featured.length === 0 && (
+              <p className="col-span-full py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+                No competitions are open or upcoming right now.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* 6. Roadmap */}
+        <div className="mx-auto max-w-7xl px-6 py-16">
+          <div className="mb-10 text-center">
+            <p className="text-xs font-semibold tracking-wider text-blue-600 uppercase dark:text-blue-400">
+              Getting Started
+            </p>
+            <h2 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl dark:text-slate-50">
+              How It Works
+            </h2>
+          </div>
+          <RoadmapSteps />
+        </div>
+
+        {/* 7. Fixtures */}
+        <div className="mx-auto max-w-7xl px-6 py-12">
+          <SectionHeading eyebrow="Competition Calendar" title="Upcoming Events" />
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <FixturesList dates={dates} />
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase dark:text-blue-400">
+                Stay on Schedule
+              </p>
+              <p className="mt-2 font-semibold text-slate-900 dark:text-slate-100">Calendar Sync Available</p>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Track every registration deadline, round and closing date without checking back here.
+              </p>
+              <Link
+                href="/calendar"
+                className="mt-4 inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500"
+              >
+                View Competition Calendar
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* 8. Announcements */}
+        <div className="mx-auto max-w-7xl px-6 py-12">
+          <SectionHeading eyebrow="Announcements" title="Latest Announcements" action={{ href: "/announcements", label: "View all" }} />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {announcements.slice(0, 6).map((a) => (
+              <div key={a.id} className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+                <ArenaBadge tone="blue">{announcementCategoryLabels[a.category]}</ArenaBadge>
+                <p className="mt-3 font-semibold text-slate-900 dark:text-slate-100">{a.title}</p>
+                <p className="mt-1 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{a.body}</p>
+              </div>
+            ))}
+            {announcements.length === 0 && (
+              <p className="col-span-full py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                No announcements published yet.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* 9. Champions podium — same light/dark-aware section shell as
+            everything around it (a permanent full-bleed dark band here read
+            as inconsistent with the rest of the page), distinguished by a
+            soft color-tinted glow instead of an always-dark background. */}
+        <div className="relative overflow-hidden py-16">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute top-1/2 left-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-400/10 blur-[110px] dark:bg-amber-500/10" />
+          </div>
+          <div className="relative mx-auto max-w-7xl px-6">
+            <div className="mb-10 text-center">
+              <p className="text-xs font-semibold tracking-wider text-blue-600 uppercase dark:text-blue-400">Results &amp; Winners</p>
+              <h2 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl dark:text-slate-50">
+                Winners{" "}
+                <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent dark:from-amber-300 dark:to-yellow-200">
+                  Showcase
+                </span>
+              </h2>
+            </div>
+            <ChampionsPodium groups={winnerGroups} />
+          </div>
+        </div>
+
+        {/* 10. For Students / For Schools */}
+        <div className="mx-auto grid max-w-7xl gap-6 px-6 py-12 sm:grid-cols-2">
+          <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 transition-transform hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+            <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-blue-500/10 blur-2xl" />
+            <span className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-2xl">🎓</span>
+            <p className="relative mt-4 text-xs font-semibold tracking-wide text-blue-600 uppercase dark:text-blue-400">For Students</p>
+            <h3 className="relative mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">For Students &amp; Young Innovators</h3>
+            <ul className="relative mt-5 space-y-3 text-sm text-slate-600 dark:text-slate-400">
+              {whyParticipate.map((item) => (
+                <li key={item.title} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
+                    ✓
+                  </span>
+                  <span>
+                    <span className="font-semibold text-slate-900 dark:text-slate-200">{item.title}:</span> {item.body}
+                  </span>
+                </li>
+              ))}
+            </ul>
             <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground hover:border-accent hover:text-accent"
+              href="/register/student"
+              className="relative mt-6 inline-block rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500"
             >
-              {link.label}
+              Register as a Student
             </Link>
-          ))}
+          </div>
+          <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 transition-transform hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+            <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-violet-500/10 blur-2xl" />
+            <span className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-violet-600 text-2xl">🏫</span>
+            <p className="relative mt-4 text-xs font-semibold tracking-wide text-violet-600 uppercase dark:text-violet-400">For Schools</p>
+            <h3 className="relative mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">For Schools &amp; Coordinators</h3>
+            <ul className="relative mt-5 space-y-3 text-sm text-slate-600 dark:text-slate-400">
+              {schoolPoints.map((p) => (
+                <li key={p} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-bold text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
+                    ✓
+                  </span>
+                  <span>{p}</span>
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/register/school"
+              className="relative mt-6 inline-block rounded-lg bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-500"
+            >
+              Register Your School
+            </Link>
+          </div>
+        </div>
+
+        {/* 11. Portals grid */}
+        <div className="mx-auto max-w-7xl px-6 py-12">
+          <SectionHeading eyebrow="Explore the Platform" title="Quick Links" />
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {portals.map((p) => (
+              <Link
+                key={p.href}
+                href={p.href}
+                className="rounded-xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:text-blue-400"
+              >
+                {p.label} →
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 12. Bottom CTA */}
+      <section className="bg-slate-950 px-6 py-20 text-center">
+        <h2 className="text-2xl font-bold text-white sm:text-3xl">READY TO REGISTER?</h2>
+        <p className="mx-auto mt-3 max-w-xl text-slate-400">
+          Join over 14,200 students across the country already registered for this season&apos;s competitions.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link href="/register" className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-500">
+            Register Now
+          </Link>
+          <Link href="/competitions" className="rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/5">
+            Browse Competitions
+          </Link>
         </div>
       </section>
     </div>

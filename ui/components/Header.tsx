@@ -36,7 +36,7 @@ export function Header() {
           </Link>
           <Link
             href="/register"
-            className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90"
+            className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500"
           >
             Register Now
           </Link>

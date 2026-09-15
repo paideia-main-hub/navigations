@@ -4,6 +4,7 @@ import { listAllSchools } from "@/domain/schools/service";
 import { listAllStudents } from "@/domain/students/service";
 import { listAllRegistrations } from "@/domain/registrations/service";
 import { StatCard } from "@/ui/components/dashboard/StatCard";
+import { QuickLink } from "@/ui/components/dashboard/QuickLink";
 
 export default async function AdminDashboardPage() {
   const admin = createAdminClient();
@@ -26,6 +27,18 @@ export default async function AdminDashboardPage() {
         <StatCard label="Students" value={students.length} />
         <StatCard label="Registrations" value={registrations.length} />
       </div>
+
+      <section className="mt-8">
+        <h2 className="mb-3 text-lg font-semibold text-foreground">Quick Links</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <QuickLink href="/admin/competitions" icon="🏆" title="Competitions" body="Create, edit and publish competition content." />
+          <QuickLink href="/admin/results" icon="🏅" title="Results" body="Generate standings and publish winners." />
+          <QuickLink href="/admin/registrations" icon="📋" title="Registrations" body="View and export every registration." />
+          <QuickLink href="/admin/judge-applications" icon="📝" title="Judge Applications" body="Review and approve judge applicants." />
+          <QuickLink href="/admin/announcements" icon="📣" title="Announcements" body="Publish site-wide or competition notices." />
+          <QuickLink href="/admin/schools" icon="🏫" title="Schools" body="View every registered school." />
+        </div>
+      </section>
     </div>
   );
 }

@@ -47,6 +47,24 @@ body {
   color: var(--foreground);
 }
 
+/* Replay-on-key-change entrance used by the homepage Champions Podium
+   slider (ui/components/marketing/ChampionsPodium.tsx) when switching
+   between competitions. */
+@keyframes podium-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@theme inline {
+  --animate-podium-in: podium-in 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 ::selection {
   background: var(--accent-soft);
   color: var(--foreground);

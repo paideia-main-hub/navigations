@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageBanner } from "@/ui/components/marketing/PageBanner";
 
 export const metadata = { title: "For Students | Future Competence Series" };
 
@@ -20,22 +21,25 @@ const points = [
 
 export default function ForStudentsPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-bold text-foreground">For Students</h1>
-      <p className="mt-2 text-muted">
-        What you need to know before signing up and competing in the Future Competence Series.
-      </p>
-      <ul className="mt-8 grid gap-3 sm:grid-cols-2">
-        {points.map((p) => (
-          <li key={p} className="rounded-lg border border-border bg-surface px-4 py-3 text-sm text-foreground">
-            {p}
-          </li>
-        ))}
-      </ul>
-      <div className="mt-8">
-        <Link href="/register/student" className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90">
-          Create your student account
-        </Link>
+    <div className="bg-slate-50 dark:bg-slate-950">
+      <PageBanner
+        eyebrow="Competitor Tier"
+        title="For Students"
+        subtitle="What you need to know before signing up and competing in the Future Competence Series."
+      />
+      <div className="mx-auto max-w-3xl px-6 py-12">
+        <ul className="grid gap-3 sm:grid-cols-2">
+          {points.map((p) => (
+            <li key={p} className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
+              {p}
+            </li>
+          ))}
+        </ul>
+        <div className="mt-8">
+          <Link href="/register/student" className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">
+            Create your student account
+          </Link>
+        </div>
       </div>
     </div>
   );
