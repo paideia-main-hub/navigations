@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { adminLogout } from "@/domain/admin-auth/actions";
+import { logout } from "@/domain/auth/actions";
 import { ThemeToggle } from "@/ui/components/ThemeToggle";
 
 interface NavItem {
@@ -22,6 +22,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/teams", label: "Teams", icon: "👥" },
   { href: "/admin/registrations", label: "Registrations", icon: "📋" },
   { href: "/admin/results", label: "Results", icon: "🏅" },
+  { href: "/admin/admins", label: "Admins", icon: "🛡️" },
+  { href: "/admin/account", label: "Account", icon: "🔐" },
 ];
 
 function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
@@ -47,7 +49,7 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
   );
 }
 
-export function AdminShell({ username, children }: { username: string; children: React.ReactNode }) {
+export function AdminShell({ fullName, children }: { fullName: string; children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -63,12 +65,12 @@ export function AdminShell({ username, children }: { username: string; children:
       <div className="border-t border-border p-3">
         <div className="flex items-center justify-between rounded-lg px-3 py-2">
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-foreground">{username}</p>
+            <p className="truncate text-sm font-medium text-foreground">{fullName}</p>
             <p className="text-xs text-muted">Administrator</p>
           </div>
           <ThemeToggle />
         </div>
-        <form action={adminLogout}>
+        <form action={logout}>
           <button className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted hover:bg-surface-muted hover:text-foreground">
             <span className="text-base">🚪</span>
             Log out

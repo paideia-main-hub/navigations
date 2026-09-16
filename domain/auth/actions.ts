@@ -1,10 +1,21 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/data/supabase/server";
 import { createAdminClient } from "@/data/supabase/admin";
 
 export type ActionState = { error: string | null };
+
+/** Absolute origin of the current request — needed because Supabase's email
+ * links (reset-password, invite, etc.) require a full redirect URL, and this
+ * app has no NEXT_PUBLIC_SITE_URL env var to hardcode one. */
+async function currentOrigin(): Promise<string> {
+  const h = await headers();
+  const host = h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? (process.env.NODE_ENV === "production" ? "https" : "http");
+  return `${proto}://${host}`;
+}
 
 export async function login(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const supabase = await createClient();
@@ -16,13 +27,63 @@ export async function login(_prevState: ActionState, formData: FormData): Promis
 
   if (error) return { error: error.message };
 
-  redirect("/dashboard");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("role").eq("id", user.id).single()
+    : { data: null };
+
+  redirect(profile?.role === "admin" ? "/admin" : "/dashboard");
 }
 
 export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/login");
+}
+
+/** Step 1 of the forgot-password flow: email a recovery link. Supabase never
+ * reveals whether the address is registered, so the caller should always show
+ * the same generic confirmation regardless of the result. */
+export async function requestPasswordReset(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const email = String(formData.get("email") ?? "");
+  if (!email) return { error: "Enter your email address." };
+
+  const supabase = await createClient();
+  const origin = await currentOrigin();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/confirm?next=/reset-password`,
+  });
+
+  // Surface only unexpected/service errors — "user not found" is not an error
+  // Supabase actually returns here, but stay defensive in case a project's
+  // rate limits or misconfiguration ever does throw one.
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+/** Step 2, and also plain "change my password" for an already-logged-in user
+ * — both cases just need an active session, which either a normal login or a
+ * verified recovery link (see app/auth/confirm/route.ts) already establishes. */
+export async function updatePassword(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirm_password") ?? "");
+
+  if (password.length < 8) return { error: "Password must be at least 8 characters." };
+  if (password !== confirmPassword) return { error: "Passwords do not match." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Your session has expired — request a new reset link." };
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: error.message };
+
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  redirect(profile?.role === "admin" ? "/admin" : "/dashboard");
 }
 
 /** Creates the auth user via the Admin API (pre-confirmed) instead of the

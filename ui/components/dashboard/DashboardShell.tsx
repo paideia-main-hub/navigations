@@ -19,6 +19,7 @@ const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { href: "/dashboard/competitions", label: "My Competitions", icon: "🏆" },
     { href: "/dashboard/history", label: "History & Results", icon: "📜" },
     { href: "/dashboard/register", label: "Register", icon: "➕" },
+    { href: "/dashboard/account", label: "Account", icon: "🔐" },
   ],
   school_coordinator: [
     { href: "/dashboard", label: "Overview", icon: "🏠" },
@@ -27,11 +28,13 @@ const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { href: "/dashboard/teams", label: "Teams", icon: "👥" },
     { href: "/dashboard/history", label: "History & Results", icon: "📜" },
     { href: "/dashboard/register", label: "Register", icon: "➕" },
+    { href: "/dashboard/account", label: "Account", icon: "🔐" },
   ],
   judge: [
     { href: "/dashboard", label: "Overview", icon: "🏠" },
     { href: "/dashboard/scoring", label: "Scoring", icon: "✅" },
     { href: "/dashboard/applications", label: "Applications", icon: "📝" },
+    { href: "/dashboard/account", label: "Account", icon: "🔐" },
   ],
   admin: [{ href: "/admin", label: "Admin Console", icon: "🛠️" }],
 };
