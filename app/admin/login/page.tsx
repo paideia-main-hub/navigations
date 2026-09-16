@@ -1,0 +1,20 @@
+import { AdminLoginForm } from "@/ui/components/admin/AdminLoginForm";
+
+export const metadata = { title: "Admin Login | Future Competence Series" };
+
+export default function AdminLoginPage() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6">
+      <div className="w-full max-w-sm rounded-2xl border border-slate-800 bg-surface p-8 shadow-xl">
+        <span className="inline-block rounded-md bg-accent px-2 py-1 text-sm font-semibold text-accent-foreground">
+          FCS
+        </span>
+        <h1 className="mt-4 text-xl font-bold text-foreground">Admin Console</h1>
+        <p className="mt-1 text-sm text-muted">Restricted access — administrators only.</p>
+        <div className="mt-6">
+          <AdminLoginForm />
+        </div>
+      </div>
+    </div>
+  );
+}

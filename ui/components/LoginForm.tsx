@@ -15,9 +15,7 @@ export function LoginForm() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-foreground">Log in</h1>
-      <p className="mt-1 text-sm text-muted">
-        Students, school coordinators, judges and admins all sign in here.
-      </p>
+      <p className="mt-1 text-sm text-muted">Students, school coordinators and judges sign in here.</p>
 
       <form action={formAction} className="mt-6 space-y-4">
         <div>

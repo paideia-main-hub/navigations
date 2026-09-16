@@ -27,6 +27,9 @@ export async function login(_prevState: ActionState, formData: FormData): Promis
 
   if (error) return { error: error.message };
 
+  // Admin has its own dedicated login at /admin/login (see
+  // domain/admin-auth/actions.ts) — reject an admin credential here rather
+  // than silently letting it through, so that's the only door in for admins.
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -34,7 +37,12 @@ export async function login(_prevState: ActionState, formData: FormData): Promis
     ? await supabase.from("profiles").select("role").eq("id", user.id).single()
     : { data: null };
 
-  redirect(profile?.role === "admin" ? "/admin" : "/dashboard");
+  if (profile?.role === "admin") {
+    await supabase.auth.signOut();
+    return { error: "Admin accounts sign in at /admin/login, not here." };
+  }
+
+  redirect("/dashboard");
 }
 
 export async function logout() {

@@ -20,6 +20,6 @@ export async function getAdminSession(): Promise<CurrentUser | null> {
  * which page rendered the form that triggered it. */
 export async function requireAdminSession(): Promise<CurrentUser> {
   const session = await getAdminSession();
-  if (!session) redirect("/login");
+  if (!session) redirect("/admin/login");
   return session;
 }
