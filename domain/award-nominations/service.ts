@@ -1,6 +1,23 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as repo from "@/data/repositories/award-nominations.repository";
+import type { UserRole } from "@/domain/auth/session";
+import type { AwardCategory } from "@/domain/awards/types";
 import type { AwardNomination, AwardNominationStatus } from "./types";
+
+/** Who can actually submit a nomination for a category — the single source
+ * of truth the dashboard's category picker, the per-category submission
+ * page, and (implicitly, via RLS) the server both rely on.
+ * Competition Distinctions and School Awards are computed, never submitted,
+ * regardless of role. Schools can submit to every other category; a
+ * student/independent nominator only where the category explicitly allows
+ * an independent submission (Idea of the Year, Story of the Year, Young
+ * Changemaker). */
+export function canRoleNominate(category: AwardCategory, role: UserRole): boolean {
+  if (category.layer === "competition_distinction" || category.layer === "school_award") return false;
+  if (role === "school_coordinator") return true;
+  if (role === "student" || role === "nominator") return category.allowsIndependent;
+  return false;
+}
 
 /** Same generation approach as generateRegistrationNumber in
  * domain/registrations/service.ts, with an FRL prefix (Future Ready League)

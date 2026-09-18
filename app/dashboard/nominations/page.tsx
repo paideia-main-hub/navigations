@@ -23,7 +23,7 @@ export default async function MyNominationsPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-foreground">My Nominations</h1>
-        <Link href="/awards" className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90">
+        <Link href="/dashboard/nominate" className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90">
           Start a nomination
         </Link>
       </div>

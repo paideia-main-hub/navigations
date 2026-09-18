@@ -39,13 +39,11 @@ export default async function AwardsLandingPage() {
           <Link href="/awards/results" className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:border-blue-500 dark:border-slate-700 dark:text-slate-100">
             View Award Criteria &amp; Results
           </Link>
-          <Link href="/dashboard/nominations" className="rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">
-            Start a Nomination
-          </Link>
-          <Link href="/dashboard/nominations" className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:border-blue-500 dark:border-slate-700 dark:text-slate-100">
-            Track My Submission
-          </Link>
         </div>
+        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+          This page explains every award on the platform. To submit or track a nomination, log in and go to{" "}
+          <span className="font-semibold">My Nominations</span> in your dashboard.
+        </p>
 
         <div className="mt-12 space-y-10">
           {LAYER_ORDER.map((layer) => {
