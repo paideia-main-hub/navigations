@@ -9,10 +9,11 @@ export default async function AdminSchoolAwardsPage() {
   const [allCategories, schools] = await Promise.all([adminListCategories(admin), listAllSchools(admin)]);
   const categories = allCategories.filter((c) => c.layer === "school_award");
 
+  const resultsByCategoryList = await Promise.all(categories.map((c) => listResults(admin, c.id)));
   const resultsByCategory: Record<string, Awaited<ReturnType<typeof listResults>>> = {};
-  for (const c of categories) {
-    resultsByCategory[c.id] = await listResults(admin, c.id);
-  }
+  categories.forEach((c, i) => {
+    resultsByCategory[c.id] = resultsByCategoryList[i];
+  });
 
   return (
     <div>

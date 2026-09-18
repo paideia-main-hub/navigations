@@ -27,39 +27,39 @@ export async function listAwardJudgeAssignments(supabase: SupabaseClient, profil
     .eq("judge_id", judge.id);
   if (!assignments || assignments.length === 0) return [];
 
-  const results: AwardJudgeAssignment[] = [];
+  const perAssignment = await Promise.all(
+    (assignments as unknown as AssignmentRow[]).map(async (assignment): Promise<AwardJudgeAssignment[]> => {
+      const category = assignment.award_categories;
+      if (!category) return [];
 
-  for (const assignment of assignments as unknown as AssignmentRow[]) {
-    const category = assignment.award_categories;
-    if (!category) continue;
+      const [{ data: nominations }, { data: scores }] = await Promise.all([
+        supabase.from("award_nominations").select("id, nominee_name").eq("category_id", assignment.category_id),
+        supabase.from("award_scores").select("nomination_id, criteria_scores, total_score, comments, locked").eq("award_judge_assignment_id", assignment.id),
+      ]);
 
-    const [{ data: nominations }, { data: scores }] = await Promise.all([
-      supabase.from("award_nominations").select("id, nominee_name").eq("category_id", assignment.category_id),
-      supabase.from("award_scores").select("nomination_id, criteria_scores, total_score, comments, locked").eq("award_judge_assignment_id", assignment.id),
-    ]);
+      const scoreByNomination = new Map(((scores ?? []) as unknown as ScoreRow[]).map((s) => [s.nomination_id, s]));
 
-    const scoreByNomination = new Map(((scores ?? []) as unknown as ScoreRow[]).map((s) => [s.nomination_id, s]));
-
-    for (const nomination of (nominations ?? []) as unknown as NominationRow[]) {
-      const existing = scoreByNomination.get(nomination.id);
-      results.push({
-        id: nomination.id,
-        nominationId: nomination.id,
-        awardJudgeAssignmentId: assignment.id,
-        categorySlug: category.slug,
-        categoryTitle: category.title,
-        nomineeName: nomination.nominee_name,
-        criteria: category.rubric_criteria ?? [],
-        criteriaScores: existing?.criteria_scores ?? {},
-        comments: existing?.comments ?? null,
-        status: existing?.total_score != null ? "scored" : "pending",
-        totalScore: existing?.total_score ?? undefined,
-        locked: existing?.locked ?? false,
+      return ((nominations ?? []) as unknown as NominationRow[]).map((nomination) => {
+        const existing = scoreByNomination.get(nomination.id);
+        return {
+          id: nomination.id,
+          nominationId: nomination.id,
+          awardJudgeAssignmentId: assignment.id,
+          categorySlug: category.slug,
+          categoryTitle: category.title,
+          nomineeName: nomination.nominee_name,
+          criteria: category.rubric_criteria ?? [],
+          criteriaScores: existing?.criteria_scores ?? {},
+          comments: existing?.comments ?? null,
+          status: existing?.total_score != null ? "scored" : ("pending" as const),
+          totalScore: existing?.total_score ?? undefined,
+          locked: existing?.locked ?? false,
+        };
       });
-    }
-  }
+    }),
+  );
 
-  return results;
+  return perAssignment.flat();
 }
 
 export interface UpsertAwardScoreInput {

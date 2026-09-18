@@ -227,55 +227,71 @@ export async function setWinnerPhoto(admin: SupabaseClient, resultId: string, ph
  * auto-filled from the student's profile photo when the admin hasn't set one
  * (team entries have no single profile photo, so stay blank until the admin
  * uploads one via setWinnerPhoto). */
+type PublishOutcome = { resultId: string; published: true } | { resultId: string; published: false; reason: string };
+
+/** Everything publishResults does for one result — consent gate, flip
+ * is_published, then fill in a winner photo. Each step for a given result
+ * genuinely depends on the previous one, but different results are entirely
+ * independent, so publishResults runs this once per result via Promise.all
+ * instead of one result at a time. */
+async function publishOneResult(
+  admin: SupabaseClient,
+  result: { id: string; registration_id: string },
+  approvedBy: string | null,
+): Promise<PublishOutcome> {
+  const { data: consent } = await admin
+    .from("consent_records")
+    .select("type, accepted")
+    .eq("registration_id", result.registration_id)
+    .in("type", ["result_publication", "photo_publication"]);
+
+  const hasResultConsent = (consent ?? []).some((c) => c.type === "result_publication" && c.accepted);
+  const hasPhotoConsent = (consent ?? []).some((c) => c.type === "photo_publication" && c.accepted);
+
+  if (!hasResultConsent) {
+    return { resultId: result.id, published: false, reason: "No result-publication consent on file." };
+  }
+
+  const { error: publishError } = await admin
+    .from("results")
+    .update({ is_published: true, approved_by: approvedBy, approved_at: new Date().toISOString() })
+    .eq("id", result.id);
+
+  if (publishError) {
+    return { resultId: result.id, published: false, reason: publishError.message };
+  }
+
+  const { data: existingMedia } = await admin.from("winner_media").select("photo_url").eq("result_id", result.id).maybeSingle();
+  let photoUrl = existingMedia?.photo_url ?? null;
+  if (!photoUrl) {
+    const { data: registration } = await admin.from("registrations").select("student_id").eq("id", result.registration_id).maybeSingle();
+    if (registration?.student_id) {
+      const { data: student } = await admin.from("students").select("photo_url").eq("id", registration.student_id).maybeSingle();
+      photoUrl = student?.photo_url ?? null;
+    }
+  }
+
+  await admin.from("winner_media").upsert({ result_id: result.id, photo_url: photoUrl, consent_confirmed: hasPhotoConsent }, { onConflict: "result_id" });
+  return { resultId: result.id, published: true };
+}
+
 export async function publishResults(
   admin: SupabaseClient,
   resultIds: string[],
   approvedBy: string | null,
 ): Promise<{ published: string[]; skipped: { resultId: string; reason: string }[] }> {
-  const published: string[] = [];
-  const skipped: { resultId: string; reason: string }[] = [];
-  if (resultIds.length === 0) return { published, skipped };
+  if (resultIds.length === 0) return { published: [], skipped: [] };
 
   const { data: results } = await admin.from("results").select("id, registration_id").in("id", resultIds);
 
-  for (const result of (results ?? []) as { id: string; registration_id: string }[]) {
-    const { data: consent } = await admin
-      .from("consent_records")
-      .select("type, accepted")
-      .eq("registration_id", result.registration_id)
-      .in("type", ["result_publication", "photo_publication"]);
+  const outcomes = await Promise.all(
+    ((results ?? []) as { id: string; registration_id: string }[]).map((result) => publishOneResult(admin, result, approvedBy)),
+  );
 
-    const hasResultConsent = (consent ?? []).some((c) => c.type === "result_publication" && c.accepted);
-    const hasPhotoConsent = (consent ?? []).some((c) => c.type === "photo_publication" && c.accepted);
-
-    if (!hasResultConsent) {
-      skipped.push({ resultId: result.id, reason: "No result-publication consent on file." });
-      continue;
-    }
-
-    const { error: publishError } = await admin
-      .from("results")
-      .update({ is_published: true, approved_by: approvedBy, approved_at: new Date().toISOString() })
-      .eq("id", result.id);
-
-    if (publishError) {
-      skipped.push({ resultId: result.id, reason: publishError.message });
-      continue;
-    }
-
-    const { data: existingMedia } = await admin.from("winner_media").select("photo_url").eq("result_id", result.id).maybeSingle();
-    let photoUrl = existingMedia?.photo_url ?? null;
-    if (!photoUrl) {
-      const { data: registration } = await admin.from("registrations").select("student_id").eq("id", result.registration_id).maybeSingle();
-      if (registration?.student_id) {
-        const { data: student } = await admin.from("students").select("photo_url").eq("id", registration.student_id).maybeSingle();
-        photoUrl = student?.photo_url ?? null;
-      }
-    }
-
-    await admin.from("winner_media").upsert({ result_id: result.id, photo_url: photoUrl, consent_confirmed: hasPhotoConsent }, { onConflict: "result_id" });
-    published.push(result.id);
-  }
+  const published = outcomes.filter((o): o is Extract<PublishOutcome, { published: true }> => o.published).map((o) => o.resultId);
+  const skipped = outcomes
+    .filter((o): o is Extract<PublishOutcome, { published: false }> => !o.published)
+    .map((o) => ({ resultId: o.resultId, reason: o.reason }));
 
   return { published, skipped };
 }

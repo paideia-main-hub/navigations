@@ -34,52 +34,52 @@ export async function listJudgeAssignments(supabase: SupabaseClient, profileId: 
     .eq("judge_id", judge.id);
   if (!assignments || assignments.length === 0) return [];
 
-  const results: JudgeAssignment[] = [];
+  const perAssignment = await Promise.all(
+    (assignments as unknown as AssignmentRow[]).map(async (assignment): Promise<JudgeAssignment[]> => {
+      const competition = assignment.competitions;
+      if (!competition) return [];
 
-  for (const assignment of assignments as unknown as AssignmentRow[]) {
-    const competition = assignment.competitions;
-    if (!competition) continue;
+      const rubric = competition.rubrics.find((r) => r.stage_id === null) ?? competition.rubrics[0];
+      const criteria = rubric?.criteria ?? [];
 
-    const rubric = competition.rubrics.find((r) => r.stage_id === null) ?? competition.rubrics[0];
-    const criteria = rubric?.criteria ?? [];
+      const [{ data: registrations }, { data: scores }] = await Promise.all([
+        supabase
+          .from("registrations")
+          .select("id, entry_type, students(full_name), teams(team_name)")
+          .eq("competition_slug", competition.slug),
+        supabase
+          .from("scores")
+          .select("registration_id, criteria_scores, total_score, comments, locked")
+          .eq("judge_assignment_id", assignment.id),
+      ]);
 
-    const [{ data: registrations }, { data: scores }] = await Promise.all([
-      supabase
-        .from("registrations")
-        .select("id, entry_type, students(full_name), teams(team_name)")
-        .eq("competition_slug", competition.slug),
-      supabase
-        .from("scores")
-        .select("registration_id, criteria_scores, total_score, comments, locked")
-        .eq("judge_assignment_id", assignment.id),
-    ]);
+      const scoreByRegistration = new Map(((scores ?? []) as unknown as ScoreRow[]).map((s) => [s.registration_id, s]));
 
-    const scoreByRegistration = new Map(((scores ?? []) as unknown as ScoreRow[]).map((s) => [s.registration_id, s]));
-
-    for (const registration of (registrations ?? []) as unknown as RegistrationRow[]) {
-      const existing = scoreByRegistration.get(registration.id);
-      results.push({
-        id: registration.id,
-        registrationId: registration.id,
-        judgeAssignmentId: assignment.id,
-        competitionSlug: competition.slug,
-        competitionTitle: competition.title,
-        stageTitle: "Competition-wide",
-        entrantName:
-          registration.entry_type === "individual"
-            ? (registration.students?.full_name ?? "—")
-            : (registration.teams?.team_name ?? "—"),
-        criteria,
-        criteriaScores: existing?.criteria_scores ?? {},
-        comments: existing?.comments ?? null,
-        status: existing?.total_score != null ? "scored" : "pending",
-        totalScore: existing?.total_score ?? undefined,
-        locked: existing?.locked ?? false,
+      return ((registrations ?? []) as unknown as RegistrationRow[]).map((registration) => {
+        const existing = scoreByRegistration.get(registration.id);
+        return {
+          id: registration.id,
+          registrationId: registration.id,
+          judgeAssignmentId: assignment.id,
+          competitionSlug: competition.slug,
+          competitionTitle: competition.title,
+          stageTitle: "Competition-wide",
+          entrantName:
+            registration.entry_type === "individual"
+              ? (registration.students?.full_name ?? "—")
+              : (registration.teams?.team_name ?? "—"),
+          criteria,
+          criteriaScores: existing?.criteria_scores ?? {},
+          comments: existing?.comments ?? null,
+          status: existing?.total_score != null ? "scored" : ("pending" as const),
+          totalScore: existing?.total_score ?? undefined,
+          locked: existing?.locked ?? false,
+        };
       });
-    }
-  }
+    }),
+  );
 
-  return results;
+  return perAssignment.flat();
 }
 
 export interface UpsertScoreInput {
