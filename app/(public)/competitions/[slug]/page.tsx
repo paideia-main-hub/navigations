@@ -39,6 +39,7 @@ export default async function CompetitionPage({
     {
       id: "overview",
       label: "Overview",
+      icon: "📋",
       content: (
         <div className="max-w-2xl space-y-4">
           <p className="text-slate-900 dark:text-slate-100">{competition.overview || "Overview coming soon."}</p>
@@ -51,6 +52,7 @@ export default async function CompetitionPage({
     {
       id: "eligibility",
       label: "Eligibility & Registration Rules",
+      icon: "✅",
       content: (
         <div className="max-w-2xl space-y-4">
           <ul className="space-y-2">
@@ -85,6 +87,7 @@ export default async function CompetitionPage({
     {
       id: "stages",
       label: "Competition Stages",
+      icon: "🏁",
       content: (
         <div className="max-w-2xl space-y-4">
           {competition.stages.map((stage) => (
@@ -104,6 +107,7 @@ export default async function CompetitionPage({
     {
       id: "challenges",
       label: "Stage-wise Challenges",
+      icon: "🧩",
       content: (
         <div className="max-w-2xl space-y-4">
           {competition.stages.map((stage) => (
@@ -121,6 +125,7 @@ export default async function CompetitionPage({
     {
       id: "guiding-principles",
       label: "Guiding Principles",
+      icon: "📖",
       content: (
         <div className={`max-w-2xl space-y-3 text-sm ${muted}`}>
           <p>Preparation expectations, conduct, submission rules and allowed materials for this competition.</p>
@@ -137,6 +142,7 @@ export default async function CompetitionPage({
     {
       id: "judging",
       label: "Judging & Rubrics",
+      icon: "⚖️",
       content: (
         <div className="max-w-2xl space-y-4">
           {competition.rubrics
@@ -169,6 +175,7 @@ export default async function CompetitionPage({
     {
       id: "manual",
       label: "Manual",
+      icon: "📘",
       content: completeManual ? (
         <a href={completeManual.fileUrl} target="_blank" rel="noreferrer" className={link}>
           Download the complete competition manual ({completeManual.title})
@@ -180,6 +187,7 @@ export default async function CompetitionPage({
     {
       id: "practice",
       label: "Practice & Resource Pack",
+      icon: "🎯",
       content: (
         <div className="max-w-2xl space-y-3">
           {competition.resources.map((r) => (
@@ -205,6 +213,7 @@ export default async function CompetitionPage({
     {
       id: "dates",
       label: "Important Dates",
+      icon: "📅",
       content: (
         <ul className="max-w-2xl space-y-2 text-sm">
           {competition.events.map((e) => (
@@ -223,6 +232,7 @@ export default async function CompetitionPage({
     {
       id: "announcements",
       label: "Announcements",
+      icon: "📣",
       content:
         competitionAnnouncements.length > 0 ? (
           <div className="max-w-2xl space-y-3">
@@ -241,6 +251,7 @@ export default async function CompetitionPage({
     {
       id: "results",
       label: "Results",
+      icon: "🏅",
       content:
         computedWinners.length > 0 ? (
           <ul className="max-w-2xl space-y-2 text-sm">
@@ -269,6 +280,7 @@ export default async function CompetitionPage({
     {
       id: "winners",
       label: "Winners Gallery",
+      icon: "🏆",
       content:
         computedWinners.length > 0 || competition.winners.length > 0 ? (
           <div className="grid max-w-2xl gap-3 sm:grid-cols-2">
@@ -315,6 +327,7 @@ export default async function CompetitionPage({
     {
       id: "faq",
       label: "FAQ",
+      icon: "❓",
       content:
         competition.faqs.length > 0 ? (
           <div className="max-w-2xl space-y-3">
@@ -334,6 +347,7 @@ export default async function CompetitionPage({
     {
       id: "register",
       label: "Register",
+      icon: "➕",
       content: (
         <div className="max-w-2xl space-y-4">
           <p className={`text-sm ${muted}`}>Already have an account? Register straight from your dashboard.</p>
@@ -367,7 +381,10 @@ export default async function CompetitionPage({
     <div className="bg-slate-50 dark:bg-slate-950">
       <div className="bg-slate-950 px-6 py-14">
         <div className="mx-auto max-w-7xl">
-          <div className="flex flex-wrap items-center gap-3">
+          <Link href="/competitions" className="text-sm font-medium text-slate-400 hover:text-white">
+            ← All competitions
+          </Link>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
             <ArenaBadge tone="dark">{competition.domain || "Uncategorized"}</ArenaBadge>
             <ArenaBadge tone={competition.status === "open" ? "success" : "dark"}>{statusLabels[competition.status]}</ArenaBadge>
           </div>
@@ -376,7 +393,7 @@ export default async function CompetitionPage({
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-6 py-10">
         <ArenaTabs tabs={tabs} />
       </div>
     </div>

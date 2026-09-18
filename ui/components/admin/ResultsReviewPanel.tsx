@@ -13,6 +13,7 @@ import {
 import { awardLabels, type AwardType } from "@/domain/competitions/types";
 import type { DraftResultRow } from "@/domain/results/types";
 import { Badge } from "@/ui/components/Badge";
+import { DataTable } from "@/ui/components/DataTable";
 
 const initialState: ActionState = { error: null };
 
@@ -202,90 +203,111 @@ export function ResultsReviewPanel({ competitionId, competitionSlug, rows }: { c
         </div>
       )}
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
-        <table className="w-full min-w-[900px] text-left text-sm">
-          <thead>
-            <tr className="border-b border-border text-muted">
-              <th className="px-3 py-3 font-medium"></th>
-              <th className="px-3 py-3 font-medium">Entrant</th>
-              <th className="px-3 py-3 font-medium">Category</th>
-              <th className="px-3 py-3 font-medium">School</th>
-              <th className="px-3 py-3 font-medium">Score</th>
-              <th className="px-3 py-3 font-medium">Judges scored</th>
-              <th className="px-3 py-3 font-medium">Award</th>
-              <th className="px-3 py-3 font-medium">Consent</th>
-              <th className="px-3 py-3 font-medium">Photo</th>
-              <th className="px-3 py-3 font-medium">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.registrationId} className="border-b border-border last:border-0 align-top">
-                <td className="px-3 py-3">
-                  {row.resultId && !row.isPublished && (
-                    <input type="checkbox" checked={selected.has(row.resultId)} onChange={() => toggle(row.resultId!)} disabled={!row.hasResultConsent} />
-                  )}
-                </td>
-                <td className="px-3 py-3">
-                  <p className="font-medium text-foreground">{row.entrantName}</p>
-                  <p className="text-xs text-muted">{row.entryType === "team" ? "Team" : "Individual"}</p>
-                </td>
-                <td className="px-3 py-3 text-muted capitalize">{row.category}</td>
-                <td className="px-3 py-3 text-muted">{row.schoolName ?? "—"}</td>
-                <td className="px-3 py-3 font-semibold text-foreground">{row.averageScore ?? "—"}</td>
-                <td className="px-3 py-3 text-muted">{row.judgeCount}</td>
-                <td className="px-3 py-3">
-                  {row.award ? (
-                    <div className="space-y-1">
-                      <Badge tone={awardTone[row.award] ?? "neutral"}>{awardLabels[row.award]}</Badge>
-                      <AwardOverrideForm row={row} />
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted">Not generated</p>
-                  )}
-                </td>
-                <td className="px-3 py-3">
-                  <div className="space-y-1 text-xs">
-                    <p className={row.hasResultConsent ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}>
-                      {row.hasResultConsent ? "Result ✓" : "Result ✗"}
-                    </p>
-                    <p className={row.hasPhotoConsent ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}>
-                      {row.hasPhotoConsent ? "Photo ✓" : "Photo ✗"}
-                    </p>
-                  </div>
-                </td>
-                <td className="px-3 py-3">
-                  {row.photoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- admin-controlled Supabase Storage / student profile URL
-                    <img src={row.photoUrl} alt={row.entrantName} className="h-10 w-10 rounded-full object-cover" />
-                  ) : (
-                    <div className="h-10 w-10 rounded-full bg-surface-muted" />
-                  )}
-                  {row.resultId && <div className="mt-1"><PhotoUploadForm resultId={row.resultId} /></div>}
-                </td>
-                <td className="px-3 py-3">
-                  {row.isPublished ? (
-                    <div className="space-y-1">
-                      <Badge tone="success">Published</Badge>
-                      {row.resultId && <UnpublishButton resultId={row.resultId} competitionSlug={competitionSlug} />}
-                    </div>
-                  ) : row.resultId ? (
-                    <Badge tone="neutral">Draft</Badge>
-                  ) : (
-                    <Badge tone="neutral">Ungenerated</Badge>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={10} className="px-4 py-8 text-center text-muted">
-                  No registrations yet for this competition.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="mt-6">
+        <DataTable
+          rows={rows}
+          searchPlaceholder="Search by entrant or school…"
+          searchFields={(row) => [row.entrantName, row.schoolName]}
+          filters={[
+            {
+              label: "Award",
+              options: Object.entries(awardLabels).map(([value, label]) => ({ value, label })),
+              predicate: (row, value) => row.award === value,
+            },
+            {
+              label: "Status",
+              options: [
+                { value: "published", label: "Published" },
+                { value: "draft", label: "Draft" },
+                { value: "ungenerated", label: "Ungenerated" },
+              ],
+              predicate: (row, value) =>
+                value === "published" ? row.isPublished : value === "draft" ? Boolean(row.resultId) && !row.isPublished : !row.resultId,
+            },
+          ]}
+          emptyMessage="No registrations yet for this competition."
+        >
+          {(pageRows) => (
+            <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+              <table className="w-full min-w-[900px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border text-muted">
+                    <th className="px-3 py-3 font-medium"></th>
+                    <th className="px-3 py-3 font-medium">Entrant</th>
+                    <th className="px-3 py-3 font-medium">Category</th>
+                    <th className="px-3 py-3 font-medium">School</th>
+                    <th className="px-3 py-3 font-medium">Score</th>
+                    <th className="px-3 py-3 font-medium">Judges scored</th>
+                    <th className="px-3 py-3 font-medium">Award</th>
+                    <th className="px-3 py-3 font-medium">Consent</th>
+                    <th className="px-3 py-3 font-medium">Photo</th>
+                    <th className="px-3 py-3 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageRows.map((row) => (
+                    <tr key={row.registrationId} className="border-b border-border last:border-0 align-top">
+                      <td className="px-3 py-3">
+                        {row.resultId && !row.isPublished && (
+                          <input type="checkbox" checked={selected.has(row.resultId)} onChange={() => toggle(row.resultId!)} disabled={!row.hasResultConsent} />
+                        )}
+                      </td>
+                      <td className="px-3 py-3">
+                        <p className="font-medium text-foreground">{row.entrantName}</p>
+                        <p className="text-xs text-muted">{row.entryType === "team" ? "Team" : "Individual"}</p>
+                      </td>
+                      <td className="px-3 py-3 text-muted capitalize">{row.category}</td>
+                      <td className="px-3 py-3 text-muted">{row.schoolName ?? "—"}</td>
+                      <td className="px-3 py-3 font-semibold text-foreground">{row.averageScore ?? "—"}</td>
+                      <td className="px-3 py-3 text-muted">{row.judgeCount}</td>
+                      <td className="px-3 py-3">
+                        {row.award ? (
+                          <div className="space-y-1">
+                            <Badge tone={awardTone[row.award] ?? "neutral"}>{awardLabels[row.award]}</Badge>
+                            <AwardOverrideForm row={row} />
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted">Not generated</p>
+                        )}
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="space-y-1 text-xs">
+                          <p className={row.hasResultConsent ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}>
+                            {row.hasResultConsent ? "Result ✓" : "Result ✗"}
+                          </p>
+                          <p className={row.hasPhotoConsent ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}>
+                            {row.hasPhotoConsent ? "Photo ✓" : "Photo ✗"}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3">
+                        {row.photoUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element -- admin-controlled Supabase Storage / student profile URL
+                          <img src={row.photoUrl} alt={row.entrantName} className="h-10 w-10 rounded-full object-cover" />
+                        ) : (
+                          <div className="h-10 w-10 rounded-full bg-surface-muted" />
+                        )}
+                        {row.resultId && <div className="mt-1"><PhotoUploadForm resultId={row.resultId} /></div>}
+                      </td>
+                      <td className="px-3 py-3">
+                        {row.isPublished ? (
+                          <div className="space-y-1">
+                            <Badge tone="success">Published</Badge>
+                            {row.resultId && <UnpublishButton resultId={row.resultId} competitionSlug={competitionSlug} />}
+                          </div>
+                        ) : row.resultId ? (
+                          <Badge tone="neutral">Draft</Badge>
+                        ) : (
+                          <Badge tone="neutral">Ungenerated</Badge>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </DataTable>
       </div>
 
       {unscored.length > 0 && (

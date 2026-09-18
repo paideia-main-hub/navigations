@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/data/supabase/admin";
 import { listAdmins } from "@/domain/admins/service";
 import { CreateAdminForm } from "@/ui/components/admin/CreateAdminForm";
+import { DataTable } from "@/ui/components/DataTable";
 
 export default async function AdminAdminsPage() {
   const admin = createAdminClient();
@@ -14,32 +15,36 @@ export default async function AdminAdminsPage() {
         added here by an existing admin.
       </p>
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
-        <table className="w-full min-w-[480px] text-left text-sm">
-          <thead>
-            <tr className="border-b border-border text-muted">
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Email</th>
-              <th className="px-4 py-3 font-medium">Added</th>
-            </tr>
-          </thead>
-          <tbody>
-            {admins.map((a) => (
-              <tr key={a.id} className="border-b border-border last:border-0">
-                <td className="px-4 py-3 font-medium text-foreground">{a.fullName}</td>
-                <td className="px-4 py-3 text-muted">{a.email}</td>
-                <td className="px-4 py-3 text-muted">{new Date(a.createdAt).toLocaleDateString()}</td>
-              </tr>
-            ))}
-            {admins.length === 0 && (
-              <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-muted">
-                  No admins found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="mt-6">
+        <DataTable
+          rows={admins}
+          searchPlaceholder="Search by name or email…"
+          searchFields={(a) => [a.fullName, a.email]}
+          emptyMessage="No admins found."
+        >
+          {(pageRows) => (
+            <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+              <table className="w-full min-w-[480px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border text-muted">
+                    <th className="px-4 py-3 font-medium">Name</th>
+                    <th className="px-4 py-3 font-medium">Email</th>
+                    <th className="px-4 py-3 font-medium">Added</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageRows.map((a) => (
+                    <tr key={a.id} className="border-b border-border last:border-0">
+                      <td className="px-4 py-3 font-medium text-foreground">{a.fullName}</td>
+                      <td className="px-4 py-3 text-muted">{a.email}</td>
+                      <td className="px-4 py-3 text-muted">{new Date(a.createdAt).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </DataTable>
       </div>
 
       <div className="mt-6">
