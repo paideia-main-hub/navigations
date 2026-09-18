@@ -180,6 +180,27 @@ export async function signUpJudge(_prevState: ActionState, formData: FormData): 
   redirect("/dashboard");
 }
 
+/** Independent nominators — the only submitters for Idea of the Year, Story
+ * of the Year and Young Changemaker who don't need a school account (see
+ * domain/awards). Deliberately minimal: no grade/DOB/guardian fields, since
+ * an independent nomination can come from any walk of life, not just a
+ * student. */
+export async function signUpNominator(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+
+  const fullName = String(formData.get("full_name"));
+  const email = String(formData.get("email"));
+  const password = String(formData.get("password"));
+
+  const result = await createConfirmedUserAndSignIn(supabase, email, password, {
+    full_name: fullName,
+    role: "nominator",
+  });
+  if ("error" in result) return { error: result.error };
+
+  redirect("/dashboard");
+}
+
 export async function signUpSchool(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const supabase = await createClient();
 

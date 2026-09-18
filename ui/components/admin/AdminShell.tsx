@@ -22,6 +22,9 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/teams", label: "Teams", icon: "👥" },
   { href: "/admin/registrations", label: "Registrations", icon: "📋" },
   { href: "/admin/results", label: "Results", icon: "🏅" },
+  { href: "/admin/awards", label: "Awards", icon: "🎖️" },
+  { href: "/admin/nominations", label: "Nominations", icon: "📨" },
+  { href: "/admin/school-awards", label: "School Awards", icon: "🏫" },
   { href: "/admin/admins", label: "Admins", icon: "🛡️" },
   { href: "/admin/account", label: "Account", icon: "🔐" },
 ];

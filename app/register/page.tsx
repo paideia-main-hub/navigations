@@ -35,6 +35,14 @@ const paths = [
     body: "Apply to judge a competition. An administrator reviews every application and schedules a short interview before granting access.",
     cta: "Apply to judge",
   },
+  {
+    href: "/register/nominator",
+    icon: "🎖️",
+    tone: "rose" as const,
+    title: "Independent Nominator",
+    body: "Submit an Idea of the Year, Story of the Year or Young Changemaker nomination without a school account.",
+    cta: "Register as a nominator",
+  },
 ];
 
 const toneClasses: Record<string, string> = {
@@ -42,6 +50,7 @@ const toneClasses: Record<string, string> = {
   accent: "from-accent/20 to-accent/0 group-hover:border-accent",
   violet: "from-violet-500/15 to-violet-500/0 group-hover:border-violet-400",
   amber: "from-amber-500/15 to-amber-500/0 group-hover:border-amber-400",
+  rose: "from-rose-500/15 to-rose-500/0 group-hover:border-rose-400",
 };
 
 export default function RegisterChoicePage() {

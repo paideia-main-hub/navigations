@@ -3,7 +3,7 @@
 
 import { createClient } from "@/data/supabase/server";
 
-export type UserRole = "student" | "school_coordinator" | "judge" | "admin";
+export type UserRole = "student" | "school_coordinator" | "judge" | "admin" | "nominator";
 
 export interface CurrentUser {
   id: string;

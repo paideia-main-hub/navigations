@@ -63,16 +63,13 @@ export async function uploadWinnerPhotoAction(_prevState: ActionState, formData:
 }
 
 export async function publishResultsAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireAdminSession();
+  const session = await requireAdminSession();
   const admin = createAdminClient();
   const resultIds = formData.getAll("result_id").map(String);
   const competitionSlug = String(formData.get("competition_slug") ?? "") || undefined;
   if (resultIds.length === 0) return { error: "Select at least one row to publish." };
 
-  // approved_by is a FK to profiles(id) — the hardcoded admin login has no
-  // Supabase Auth identity/profile row, so there's nothing valid to store
-  // here (left null, same treatment as judge_applications.reviewed_by).
-  const { published, skipped } = await service.publishSelected(admin, resultIds, null);
+  const { published, skipped } = await service.publishSelected(admin, resultIds, session.id);
 
   revalidatePublicResults(competitionSlug);
   return {
