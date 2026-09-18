@@ -5,6 +5,7 @@ const navLinks = [
   { href: "/competitions", label: "Competitions" },
   { href: "/calendar", label: "Calendar" },
   { href: "/results", label: "Results" },
+  { href: "/awards", label: "Awards" },
   { href: "/schools", label: "For Schools" },
   { href: "/students", label: "For Students" },
 ];
