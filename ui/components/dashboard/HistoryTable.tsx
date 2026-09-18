@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import type { Registration } from "@/domain/registrations/types";
 import { registrationStatusLabels } from "@/domain/registrations/types";
