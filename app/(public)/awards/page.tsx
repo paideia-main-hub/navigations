@@ -1,19 +1,23 @@
 import Link from "next/link";
 import { createClient } from "@/data/supabase/server";
 import { listOpenCategories } from "@/domain/awards/service";
-import { layerLabels } from "@/domain/awards/types";
+import { layerLabels, type AwardLayer } from "@/domain/awards/types";
+import { AWARD_DETAILS } from "@/ui/components/awards/awardDetails";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
 
 export const metadata = { title: "Awards | Future Competence Series" };
 
-const LAYER_SUMMARY: { layer: keyof typeof layerLabels; blurb: string }[] = [
-  { layer: "competition_distinction", blurb: "Outstanding Performer, Distinguished Finalist and Emerging Talent — awarded automatically from each competition's own top 3." },
-  { layer: "school_award", blurb: "Champion School, School Excellence, Whole School Participation, Diversified School and Collaboration & Integrity. Schools never nominate themselves." },
-  { layer: "spotlight", blurb: "Idea of the Year, Story of the Year and Young Changemaker — school-nominated or fully independent. You don't have to win a League competition to submit." },
-  { layer: "teacher_parent", blurb: "Supportive Teacher and Supportive Parent — every complete, valid school nomination receives recognition. No competitive scoring." },
-  { layer: "sports", blurb: "Excellence Athlete and Blazer Athlete recognise sustained, verified sporting achievement over the last two years." },
-];
+const LAYER_ORDER: AwardLayer[] = ["competition_distinction", "school_award", "spotlight", "teacher_parent", "sports", "principal"];
+
+const LAYER_INTRO: Record<AwardLayer, string> = {
+  competition_distinction: "Awarded automatically from each competition's own results — nobody submits anything for these.",
+  school_award: "Computed from League-wide participation and results, or (Collaboration & Integrity) scored directly by the organizer. Schools never nominate themselves.",
+  spotlight: "School-nominated or fully independent — you don't have to win a League competition to submit.",
+  teacher_parent: "Nomination-based acknowledgements with no competitive scoring. Every complete, valid school nomination receives the award.",
+  sports: "School-nominated, evidence-based recognition of sustained achievement over the last two years.",
+  principal: "Up to 50 principals recognised for enabling participation and supporting League coordination.",
+};
 
 export default async function AwardsLandingPage() {
   const supabase = await createClient();
@@ -43,37 +47,60 @@ export default async function AwardsLandingPage() {
           </Link>
         </div>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2">
-          {LAYER_SUMMARY.map((l) => (
-            <div key={l.layer} className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <ArenaBadge tone="blue">{layerLabels[l.layer]}</ArenaBadge>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{l.blurb}</p>
+        <div className="mt-12 space-y-10">
+          {LAYER_ORDER.map((layer) => {
+            const awards = AWARD_DETAILS.filter((a) => a.layer === layer);
+            return (
+              <section key={layer}>
+                <div className="flex flex-wrap items-baseline gap-3">
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{layerLabels[layer]}</h2>
+                </div>
+                <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">{LAYER_INTRO[layer]}</p>
+
+                <div className="mt-4 space-y-3">
+                  {awards.map((a) => (
+                    <details key={a.slug} className="group rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+                      <summary className="cursor-pointer">
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">{a.title}</span>
+                      </summary>
+                      <p className="mt-1 text-xs font-semibold tracking-wide text-blue-600 uppercase dark:text-blue-400">Awarded to: {a.awardedTo}</p>
+                      <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">{a.description}</p>
+                      {a.criteria && (
+                        <div className="mt-3 space-y-1.5">
+                          {a.criteria.map((c) => (
+                            <div key={c.label} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800">
+                              <span className="text-slate-900 dark:text-slate-100">{c.label}</span>
+                              <span className="font-semibold text-slate-900 dark:text-slate-100">{c.weight}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </details>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+
+        {categories.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Open for nominations now</h2>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {categories.map((c) => (
+                <Link
+                  key={c.slug}
+                  href={`/awards/${c.slug}`}
+                  className="rounded-xl border border-slate-200 bg-white p-5 hover:border-blue-400 dark:border-slate-800 dark:bg-slate-900"
+                >
+                  <ArenaBadge tone="neutral">{layerLabels[c.layer]}</ArenaBadge>
+                  <p className="mt-2 font-semibold text-slate-900 dark:text-slate-100">{c.title}</p>
+                  <p className="mt-1 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{c.description}</p>
+                </Link>
+              ))}
             </div>
-          ))}
-        </div>
-
-        <div className="mt-12">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Open categories</h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((c) => (
-              <Link
-                key={c.slug}
-                href={`/awards/${c.slug}`}
-                className="rounded-xl border border-slate-200 bg-white p-5 hover:border-blue-400 dark:border-slate-800 dark:bg-slate-900"
-              >
-                <ArenaBadge tone="neutral">{layerLabels[c.layer]}</ArenaBadge>
-                <p className="mt-2 font-semibold text-slate-900 dark:text-slate-100">{c.title}</p>
-                <p className="mt-1 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{c.description}</p>
-              </Link>
-            ))}
-            {categories.length === 0 && <p className="col-span-full py-8 text-center text-sm text-slate-500 dark:text-slate-400">No award categories are open yet.</p>}
           </div>
-        </div>
-
-        <p className="mt-12 text-xs text-slate-500 dark:text-slate-400">
-          We also recognise up to 50 participating school principals through the Best Principal of Future Ready
-          League Award.
-        </p>
+        )}
       </div>
     </div>
   );
