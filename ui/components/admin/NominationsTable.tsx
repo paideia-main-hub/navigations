@@ -46,6 +46,7 @@ export function NominationsTable({ nominations, categories }: { nominations: Awa
                 <th className="px-4 py-3 font-medium">Category</th>
                 <th className="px-4 py-3 font-medium">Nominee</th>
                 <th className="px-4 py-3 font-medium">School</th>
+                <th className="px-4 py-3 font-medium">Score</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium"></th>
               </tr>
@@ -57,6 +58,10 @@ export function NominationsTable({ nominations, categories }: { nominations: Awa
                   <td className="px-4 py-3 text-muted">{n.categoryTitle}</td>
                   <td className="px-4 py-3 text-muted">{n.nomineeName}</td>
                   <td className="px-4 py-3 text-muted">{n.schoolName ?? "Independent"}</td>
+                  <td className="px-4 py-3 text-muted">
+                    {n.adminTotalScore != null ? `${n.adminTotalScore}%` : "—"}
+                    {n.isWinner && " 🏆"}
+                  </td>
                   <td className="px-4 py-3">
                     <Badge tone={statusTone[n.status] ?? "neutral"}>{nominationStatusLabels[n.status]}</Badge>
                   </td>

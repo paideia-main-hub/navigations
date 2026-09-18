@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as repo from "@/data/repositories/award-nominations.repository";
+import { adminGetCategoryById } from "@/domain/awards/service";
 import type { UserRole } from "@/domain/auth/session";
 import type { AwardCategory } from "@/domain/awards/types";
 import type { AwardNomination, AwardNominationStatus } from "./types";
@@ -62,4 +63,28 @@ export async function requestClarification(admin: SupabaseClient, nominationId: 
 
 export async function respondToClarification(supabase: SupabaseClient, clarificationId: string, responseText: string): Promise<{ error: string | null }> {
   return repo.respondToClarification(supabase, clarificationId, responseText);
+}
+
+/** Saves an admin's direct score against a nomination's fixed rubric, then
+ * immediately re-ranks its whole category so winners reflect the new score
+ * — the "winners calculated automatically after the grades are submitted"
+ * behavior, no separate "generate standings" step required. */
+export async function submitAdminScoreAndRecompute(
+  admin: SupabaseClient,
+  nominationId: string,
+  categoryId: string,
+  criteriaScores: Record<string, number>,
+  totalScore: number,
+): Promise<{ error: string | null }> {
+  const { error: scoreError } = await repo.submitAdminScore(admin, nominationId, criteriaScores, totalScore);
+  if (scoreError) return { error: scoreError };
+
+  const category = await adminGetCategoryById(admin, categoryId);
+  if (!category) return { error: null }; // scored fine; nothing to rank against if the category vanished
+
+  return repo.recomputeCategoryWinners(admin, categoryId, category.passThreshold, category.tieBreakOrder, category.maxWinners);
+}
+
+export async function setWinnerPhoto(admin: SupabaseClient, nominationId: string, photoUrl: string): Promise<{ error: string | null }> {
+  return repo.setWinnerPhoto(admin, nominationId, photoUrl);
 }

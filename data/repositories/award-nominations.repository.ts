@@ -13,7 +13,7 @@ import type {
 const SELECT = `
   id, nomination_number, category_id, nominator_profile_id, school_id, nominee_name,
   nominee_relationship, route, form_data, verifier_name, verifier_contact, status,
-  submitted_at, created_at,
+  submitted_at, created_at, admin_criteria_scores, admin_total_score, is_winner, winner_photo_url,
   award_categories(slug, title),
   schools(official_name),
   award_evidence_files(id, file_type, file_url, size_bytes, page_count),
@@ -35,6 +35,10 @@ type Row = {
   status: AwardNominationStatus;
   submitted_at: string | null;
   created_at: string;
+  admin_criteria_scores: Record<string, number>;
+  admin_total_score: number | null;
+  is_winner: boolean;
+  winner_photo_url: string | null;
   award_categories: { slug: string; title: string } | null;
   schools: { official_name: string } | null;
   award_evidence_files: { id: string; file_type: AwardEvidenceFile["fileType"]; file_url: string; size_bytes: number | null; page_count: number | null }[];
@@ -70,6 +74,10 @@ function toNomination(row: Row): AwardNomination {
     status: row.status,
     submittedAt: row.submitted_at,
     createdAt: row.created_at,
+    adminCriteriaScores: row.admin_criteria_scores ?? {},
+    adminTotalScore: row.admin_total_score,
+    isWinner: row.is_winner,
+    winnerPhotoUrl: row.winner_photo_url,
     evidenceFiles: (row.award_evidence_files ?? []).map((f) => ({
       id: f.id,
       fileType: f.file_type,
@@ -258,5 +266,78 @@ export async function respondToClarification(supabase: SupabaseClient, clarifica
     .from("award_clarifications")
     .update({ response_text: responseText, responded_at: new Date().toISOString() })
     .eq("id", clarificationId);
+  return { error: error?.message ?? null };
+}
+
+/** Saves an admin's direct score against a nomination's fixed rubric. Only
+ * advances status to "judged" from a still-in-progress state — an
+ * already-approved/published/rejected nomination keeps its status if it's
+ * re-scored (re-scoring is meant for correcting a mistake, not silently
+ * un-publishing something). */
+export async function submitAdminScore(
+  admin: SupabaseClient,
+  nominationId: string,
+  criteriaScores: Record<string, number>,
+  totalScore: number,
+): Promise<{ error: string | null }> {
+  const { data: existing } = await admin.from("award_nominations").select("status").eq("id", nominationId).maybeSingle();
+  const preserveStatus = existing && ["approved", "published", "rejected"].includes(existing.status);
+
+  const { error } = await admin
+    .from("award_nominations")
+    .update({
+      admin_criteria_scores: criteriaScores,
+      admin_total_score: totalScore,
+      ...(preserveStatus ? {} : { status: "judged" }),
+    })
+    .eq("id", nominationId);
+  return { error: error?.message ?? null };
+}
+
+type RankableRow = { id: string; admin_total_score: number | null; admin_criteria_scores: Record<string, number> };
+
+/** Re-ranks every scored nomination in one category against its
+ * pass_threshold/tie_break_order/max_winners, and writes the resulting
+ * is_winner flag on every row (winners and non-winners alike, so a
+ * previous winner correctly loses the flag if a later score displaces it).
+ * Called automatically right after an admin score is submitted. */
+export async function recomputeCategoryWinners(
+  admin: SupabaseClient,
+  categoryId: string,
+  passThreshold: number,
+  tieBreakOrder: string[],
+  maxWinners: number | null,
+): Promise<{ error: string | null }> {
+  const { data, error } = await admin
+    .from("award_nominations")
+    .select("id, admin_total_score, admin_criteria_scores")
+    .eq("category_id", categoryId)
+    .not("admin_total_score", "is", null);
+  if (error) return { error: error.message };
+
+  const rows = (data ?? []) as RankableRow[];
+
+  const eligible = rows.filter((r) => (r.admin_total_score ?? 0) >= passThreshold);
+  eligible.sort((a, b) => {
+    if ((b.admin_total_score ?? 0) !== (a.admin_total_score ?? 0)) return (b.admin_total_score ?? 0) - (a.admin_total_score ?? 0);
+    for (const key of tieBreakOrder) {
+      const av = a.admin_criteria_scores?.[key] ?? 0;
+      const bv = b.admin_criteria_scores?.[key] ?? 0;
+      if (bv !== av) return bv - av;
+    }
+    return 0;
+  });
+
+  const winnerIds = new Set(eligible.slice(0, maxWinners ?? eligible.length).map((r) => r.id));
+
+  const results = await Promise.all(
+    rows.map((r) => admin.from("award_nominations").update({ is_winner: winnerIds.has(r.id) }).eq("id", r.id)),
+  );
+  const failed = results.find((r) => r.error);
+  return { error: failed?.error?.message ?? null };
+}
+
+export async function setWinnerPhoto(admin: SupabaseClient, nominationId: string, photoUrl: string): Promise<{ error: string | null }> {
+  const { error } = await admin.from("award_nominations").update({ winner_photo_url: photoUrl }).eq("id", nominationId);
   return { error: error?.message ?? null };
 }

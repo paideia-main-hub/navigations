@@ -5,9 +5,9 @@ import { createClient } from "@/data/supabase/server";
 import { createAdminClient } from "@/data/supabase/admin";
 import { getCurrentUser } from "@/domain/auth/session";
 import { requireAdminSession } from "@/domain/admin-auth/guard";
-import { uploadEvidenceFile } from "@/domain/storage/actions";
+import { uploadEvidenceFile, uploadFile } from "@/domain/storage/actions";
 import * as repo from "@/data/repositories/award-nominations.repository";
-import { generateNominationNumber } from "./service";
+import { generateNominationNumber, submitAdminScoreAndRecompute, setWinnerPhoto } from "./service";
 import type { AwardEventRecord, AwardRoute } from "./types";
 
 export type ActionState = { error: string | null; success?: boolean; nominationNumber?: string };
@@ -174,5 +174,51 @@ export async function respondToClarificationAction(_prevState: ActionState, form
 
   await repo.updateNominationStatus(supabase, String(formData.get("nomination_id")), "submitted");
   revalidatePath("/dashboard");
+  return { error: null, success: true };
+}
+
+/** Admin's direct score against a nomination's fixed rubric — same
+ * criterion_key[]/criterion_weight[]/criterion_value[] shape as the judge
+ * scoring action, so the same weighted-sum math applies. Recomputes the
+ * whole category's winners immediately afterward. */
+export async function submitAdminScoreAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdminSession();
+  const admin = createAdminClient();
+
+  const keys = formData.getAll("criterion_key").map(String);
+  const weights = formData.getAll("criterion_weight").map(Number);
+  const values = formData.getAll("criterion_value").map(Number);
+
+  const criteriaScores: Record<string, number> = {};
+  let total = 0;
+  keys.forEach((key, i) => {
+    criteriaScores[key] = values[i] ?? 0;
+    total += ((values[i] ?? 0) * (weights[i] ?? 0)) / 100;
+  });
+
+  const nominationId = String(formData.get("nomination_id"));
+  const categoryId = String(formData.get("category_id"));
+
+  const { error } = await submitAdminScoreAndRecompute(admin, nominationId, categoryId, criteriaScores, Math.round(total));
+  if (error) return { error };
+
+  revalidateAdminReview();
+  return { error: null, success: true };
+}
+
+export async function uploadNominationWinnerPhotoAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdminSession();
+  const nominationId = String(formData.get("nomination_id"));
+  const file = formData.get("file") as File | null;
+  if (!file || file.size === 0) return { error: "Choose a photo to upload." };
+
+  const { url, error: uploadError } = await uploadFile("winner-photos", file, nominationId);
+  if (uploadError || !url) return { error: uploadError ?? "Upload failed." };
+
+  const admin = createAdminClient();
+  const { error } = await setWinnerPhoto(admin, nominationId, url);
+  if (error) return { error };
+
+  revalidateAdminReview();
   return { error: null, success: true };
 }

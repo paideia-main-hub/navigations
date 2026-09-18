@@ -62,6 +62,17 @@ export interface AwardNomination {
   createdAt: string;
   evidenceFiles: AwardEvidenceFile[];
   eventRecords: AwardEventRecord[];
+  /** Direct admin scoring — the "hardcoded" per-category rubric scored by an
+   * admin rather than a two-judge assignment. Drives automatic winner
+   * ranking (see domain/award-nominations/service.ts#recomputeCategoryWinners). */
+  adminCriteriaScores: Record<string, number>;
+  adminTotalScore: number | null;
+  /** Set by recomputeCategoryWinners — true only while this nomination is
+   * the current top-ranked, threshold-meeting entry (within max_winners) in
+   * its category. Recomputed every time any nomination in the category is
+   * (re)scored, so it always reflects the latest standings. */
+  isWinner: boolean;
+  winnerPhotoUrl: string | null;
 }
 
 export interface SubmitNominationInput {

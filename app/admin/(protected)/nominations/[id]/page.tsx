@@ -7,6 +7,8 @@ import { listScoresForNomination } from "@/domain/award-judging/service";
 import { getEvidenceSignedUrl } from "@/domain/storage/actions";
 import { Badge } from "@/ui/components/Badge";
 import { NominationReviewPanel } from "@/ui/components/admin/NominationReviewPanel";
+import { AdminScoreForm } from "@/ui/components/admin/AdminScoreForm";
+import { NominationWinnerPhotoForm } from "@/ui/components/admin/NominationWinnerPhotoForm";
 
 export default async function AdminNominationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -38,7 +40,10 @@ export default async function AdminNominationDetailPage({ params }: { params: Pr
             {nomination.categoryTitle} · {nomination.nomineeName}
           </p>
         </div>
-        <Badge>{nominationStatusLabels[nomination.status]}</Badge>
+        <div className="flex items-center gap-2">
+          {nomination.isWinner && <Badge tone="success">🏆 Current Winner</Badge>}
+          <Badge>{nominationStatusLabels[nomination.status]}</Badge>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -145,10 +150,23 @@ export default async function AdminNominationDetailPage({ params }: { params: Pr
         </div>
 
         <div className="space-y-6">
+          {nomination.isWinner && (
+            <NominationWinnerPhotoForm nominationId={nomination.id} currentPhotoUrl={nomination.winnerPhotoUrl} />
+          )}
+
           {category && category.rubricCriteria.length > 0 && (
+            <AdminScoreForm
+              nominationId={nomination.id}
+              categoryId={nomination.categoryId}
+              criteria={category.rubricCriteria}
+              passThreshold={category.passThreshold}
+              existingScores={nomination.adminCriteriaScores}
+            />
+          )}
+
+          {scores.length > 0 && (
             <div className="rounded-xl border border-border bg-surface p-4">
-              <h2 className="font-semibold text-foreground">Judging</h2>
-              <p className="mt-1 text-xs text-muted">Pass threshold: {category.passThreshold}%</p>
+              <h2 className="font-semibold text-foreground">Judge scores (if assigned)</h2>
               <div className="mt-3 space-y-2 text-sm">
                 {scores.map((s, i) => (
                   <div key={i} className="rounded-lg border border-border p-2">
@@ -158,11 +176,10 @@ export default async function AdminNominationDetailPage({ params }: { params: Pr
                     {s.comments && <p className="text-xs text-muted">{s.comments}</p>}
                   </div>
                 ))}
-                {scores.length === 0 && <p className="text-muted">No judge has scored this yet.</p>}
               </div>
-              {average != null && (
+              {average != null && category && (
                 <p className={`mt-2 text-sm font-semibold ${average >= category.passThreshold ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
-                  Average: {average}% {average >= category.passThreshold ? "— meets threshold" : "— below threshold"}
+                  Judge average: {average}%
                 </p>
               )}
             </div>
