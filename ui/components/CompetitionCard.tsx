@@ -9,9 +9,27 @@ function entryTypeLabel(competition: Competition): string {
   return "Individual";
 }
 
+// Competitions often open to more than one category (e.g. a Junior and a
+// Senior rule), so the strapline spans every eligibility rule rather than
+// reading only the first one.
+function eligibilityLabel(competition: Competition): string {
+  const rules = competition.eligibility;
+  if (rules.length === 0) return "Uncategorized";
+
+  const categories = [...new Set(rules.map((r) => categoryLabels[r.category]))].join(" & ");
+  const grades = rules.flatMap((r) => [r.minGrade, r.maxGrade]).filter((g): g is string => Boolean(g));
+  if (grades.length === 0) return categories;
+
+  const numeric = grades.map(Number).filter((n) => Number.isFinite(n));
+  if (numeric.length === 0) return `${categories} — Grades ${grades[0]}`;
+
+  const low = Math.min(...numeric);
+  const high = Math.max(...numeric);
+  return low === high ? `${categories} — Grade ${low}` : `${categories} — Grades ${low}–${high}`;
+}
+
 export function CompetitionCard({ competition }: { competition: Competition }) {
   const deadline = registrationDeadlineOf(competition);
-  const primaryCategory = competition.eligibility[0]?.category;
 
   return (
     <Link
@@ -19,9 +37,7 @@ export function CompetitionCard({ competition }: { competition: Competition }) {
       className="group flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-6 transition-colors hover:border-blue-400 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-500"
     >
       <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-        {primaryCategory ? categoryLabels[primaryCategory] : "Uncategorized"} — Ages {competition.eligibility[0]?.minGrade ?? "—"}
-        {"–"}
-        {competition.eligibility[0]?.maxGrade ?? "—"}
+        {eligibilityLabel(competition)}
       </p>
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 dark:text-slate-50 dark:group-hover:text-blue-400">
