@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { registrationDeadlineOf } from "@/domain/competitions/service";
-import { categoryLabels, statusLabels, type Competition } from "@/domain/competitions/types";
+import { categoryLabels, statusLabels, type CompetitionSummary } from "@/domain/competitions/types";
 import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
 
-function entryTypeLabel(competition: Competition): string {
+function entryTypeLabel(competition: CompetitionSummary): string {
   if (competition.supportsIndividual && competition.supportsTeam) return "Individual & Team";
   if (competition.supportsTeam) return "Team";
   return "Individual";
@@ -12,7 +12,7 @@ function entryTypeLabel(competition: Competition): string {
 // Competitions often open to more than one category (e.g. a Junior and a
 // Senior rule), so the strapline spans every eligibility rule rather than
 // reading only the first one.
-function eligibilityLabel(competition: Competition): string {
+function eligibilityLabel(competition: CompetitionSummary): string {
   const rules = competition.eligibility;
   if (rules.length === 0) return "Uncategorized";
 
@@ -28,7 +28,7 @@ function eligibilityLabel(competition: Competition): string {
   return low === high ? `${categories} — Grade ${low}` : `${categories} — Grades ${low}–${high}`;
 }
 
-export function CompetitionCard({ competition }: { competition: Competition }) {
+export function CompetitionCard({ competition }: { competition: CompetitionSummary }) {
   const deadline = registrationDeadlineOf(competition);
 
   return (

@@ -3,12 +3,14 @@
 // supabase/migrations/0001_init_schema.sql, 0009, 0010). The domain layer
 // only calls these functions, never Supabase directly.
 
+import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   AgeCategory,
   AwardType,
   Competition,
   CompetitionEvent,
+  CompetitionSummary,
   CompetitionFaq,
   CompetitionStage,
   CompetitionStatus,
@@ -238,19 +240,156 @@ function toCompetitionAdmin(row: Row): Competition {
 // ---------------------------------------------------------------------------
 // Public reads (RLS-respecting client — every table selected here has a
 // public-read policy, so the anon/cookie-bound client works directly)
+//
+// These are wrapped in React cache() so that a page rendering several
+// features off the same data — the home page reads featured competitions,
+// winners and upcoming dates — issues one query per shape per request instead
+// of one per call site. The cache key is the supabase client instance, and a
+// page creates exactly one, so the memo is scoped to that render and never
+// leaks between requests or between users.
+//
+// Prefer the narrowest function that covers the caller. FULL_SELECT joins
+// eight child tables; running it to read a title is what made the directory
+// and home pages slow.
 // ---------------------------------------------------------------------------
 
-export async function getAllCompetitions(supabase: SupabaseClient): Promise<Competition[]> {
+/** Core columns only — no child tables, and no `overview`, which runs to
+ * several thousand characters per competition. */
+const SUMMARY_COLUMNS = `
+  id, slug, title, short_description, domain_competency_area, status,
+  supports_individual, supports_team, fee_required, fee_amount, season,
+  created_at, updated_at
+`;
+
+const SUMMARY_SELECT = `
+  ${SUMMARY_COLUMNS},
+  competition_eligibility_rules (*),
+  events (*)
+`;
+
+function toSummary(row: Row): CompetitionSummary {
+  const eligibility: EligibilityRule[] = (row.competition_eligibility_rules ?? []).map((e) => ({
+    id: e.id,
+    category: e.category,
+    minGrade: e.min_grade ?? "",
+    maxGrade: e.max_grade ?? "",
+    minAge: e.min_age,
+    maxAge: e.max_age,
+    teamMinSize: e.team_min_size,
+    teamMaxSize: e.team_max_size,
+    notes: e.notes,
+  }));
+
+  const events: CompetitionEvent[] = (row.events ?? [])
+    .map((e) => ({ id: e.id, type: e.type, title: e.title, eventDate: e.event_date, description: e.description }))
+    .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
+
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    shortDescription: row.short_description ?? "",
+    domain: row.domain_competency_area ?? "",
+    status: row.status,
+    supportsIndividual: row.supports_individual,
+    supportsTeam: row.supports_team,
+    feeRequired: row.fee_required,
+    feeAmount: row.fee_amount,
+    season: row.season,
+    eligibility,
+    events,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+/** Every competition with the card/filter/deadline fields only. The default
+ * choice for listings, directories and dashboard slug lookups. */
+export const getCompetitionSummaries = cache(async (supabase: SupabaseClient): Promise<CompetitionSummary[]> => {
+  const { data, error } = await supabase.from("competitions").select(SUMMARY_SELECT).order("created_at");
+  if (error || !data) return [];
+  return (data as unknown as Row[]).map(toSummary);
+});
+
+/** Just enough to render a name and link to the competition — for index pages
+ * that only list titles. */
+export const getCompetitionIndex = cache(
+  async (supabase: SupabaseClient): Promise<{ slug: string; title: string; domain: string }[]> => {
+    const { data, error } = await supabase
+      .from("competitions")
+      .select("slug, title, domain_competency_area")
+      .order("created_at");
+    if (error || !data) return [];
+    return (data as { slug: string; title: string; domain_competency_area: string | null }[]).map((r) => ({
+      slug: r.slug,
+      title: r.title,
+      domain: r.domain_competency_area ?? "",
+    }));
+  },
+);
+
+/** Published manual winners, with the competition they belong to. */
+export const getCompetitionWinnerRows = cache(
+  async (supabase: SupabaseClient): Promise<{ slug: string; title: string; winners: CompetitionWinner[] }[]> => {
+    const { data, error } = await supabase
+      .from("competitions")
+      .select("slug, title, competition_winners (*)")
+      .order("created_at");
+    if (error || !data) return [];
+    return (data as unknown as Row[]).map((row) => ({
+      slug: row.slug,
+      title: row.title,
+      winners: (row.competition_winners ?? [])
+        .filter((w) => w.published)
+        .map((w) => ({
+          id: w.id,
+          studentName: w.student_name,
+          schoolName: w.school_name,
+          award: w.award,
+          customAwardLabel: w.custom_award_label,
+          positionLabel: w.position_label,
+          photoUrl: w.photo_url,
+          published: w.published,
+          orderIndex: w.order_index,
+        }))
+        .sort((a, b) => a.orderIndex - b.orderIndex),
+    }));
+  },
+);
+
+/** Every competition's calendar events, with the competition title. */
+export const getCompetitionEventRows = cache(
+  async (supabase: SupabaseClient): Promise<{ title: string; events: CompetitionEvent[] }[]> => {
+    const { data, error } = await supabase.from("competitions").select("title, events (*)").order("created_at");
+    if (error || !data) return [];
+    return (data as unknown as Row[]).map((row) => ({
+      title: row.title,
+      events: (row.events ?? []).map((e) => ({
+        id: e.id,
+        type: e.type,
+        title: e.title,
+        eventDate: e.event_date,
+        description: e.description,
+      })),
+    }));
+  },
+);
+
+/** Every competition with every child table. Only for callers that genuinely
+ * need the whole object graph — prefer a narrower read above. */
+export const getAllCompetitions = cache(async (supabase: SupabaseClient): Promise<Competition[]> => {
   const { data, error } = await supabase.from("competitions").select(FULL_SELECT).order("created_at");
   if (error || !data) return [];
   return (data as unknown as Row[]).map(toCompetition);
-}
+});
 
-export async function getCompetitionBySlug(supabase: SupabaseClient, slug: string): Promise<Competition | null> {
-  const { data, error } = await supabase.from("competitions").select(FULL_SELECT).eq("slug", slug).maybeSingle();
-  if (error || !data) return null;
-  return toCompetition(data as unknown as Row);
-}
+export const getCompetitionBySlug = cache(
+  async (supabase: SupabaseClient, slug: string): Promise<Competition | null> => {
+    const { data, error } = await supabase.from("competitions").select(FULL_SELECT).eq("slug", slug).maybeSingle();
+    if (error || !data) return null;
+    return toCompetition(data as unknown as Row);
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Admin reads/writes (service-role client — bypasses RLS; see

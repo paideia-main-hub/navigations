@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { filterCompetitionsClientSide } from "@/domain/competitions/service";
-import { categoryLabels, statusLabels, type AgeCategory, type Competition, type CompetitionStatus } from "@/domain/competitions/types";
+import { categoryLabels, statusLabels, type AgeCategory, type CompetitionStatus, type CompetitionSummary } from "@/domain/competitions/types";
 import { CompetitionCard } from "@/ui/components/CompetitionCard";
 
 type SortOption = "deadline" | "event-date" | "alphabetical";
@@ -16,7 +16,7 @@ export function CompetitionsDirectory({
   initialQuery: string;
   initialCategory?: AgeCategory | "all";
   initialStatus?: CompetitionStatus | "all";
-  competitions: Competition[];
+  competitions: CompetitionSummary[];
 }) {
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState<AgeCategory | "all">(initialCategory);

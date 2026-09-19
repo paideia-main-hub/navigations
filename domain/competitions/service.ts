@@ -11,9 +11,23 @@ import type {
   Competition,
   CompetitionEvent,
   CompetitionStatus,
+  CompetitionSummary,
 } from "./types";
 
-export async function listCompetitions(supabase: SupabaseClient): Promise<Competition[]> {
+/** Card/filter/deadline fields for every competition — what listings and
+ * dashboard lookups want. For the full object graph use getCompetitionBySlug
+ * (one competition) or listCompetitionsFull (all of them). */
+export async function listCompetitions(supabase: SupabaseClient): Promise<CompetitionSummary[]> {
+  return repo.getCompetitionSummaries(supabase);
+}
+
+/** Titles and slugs only, for index pages that just link onward. */
+export async function listCompetitionIndex(supabase: SupabaseClient) {
+  return repo.getCompetitionIndex(supabase);
+}
+
+/** Every competition with every child table loaded. Rarely what you want. */
+export async function listCompetitionsFull(supabase: SupabaseClient): Promise<Competition[]> {
   return repo.getAllCompetitions(supabase);
 }
 
@@ -21,8 +35,8 @@ export async function getCompetitionBySlug(supabase: SupabaseClient, slug: strin
   return repo.getCompetitionBySlug(supabase, slug);
 }
 
-export async function listOpenAndUpcoming(supabase: SupabaseClient): Promise<Competition[]> {
-  const all = await repo.getAllCompetitions(supabase);
+export async function listOpenAndUpcoming(supabase: SupabaseClient): Promise<CompetitionSummary[]> {
+  const all = await repo.getCompetitionSummaries(supabase);
   return all.filter((c) => c.status === "open" || c.status === "upcoming");
 }
 
@@ -48,7 +62,10 @@ export interface PublishedWinner {
  * scoring — see domain/results). Sorted gold -> silver -> bronze -> finalist
  * -> merit -> custom, computed winners first within each award tier. */
 export async function listPublishedWinners(supabase: SupabaseClient): Promise<PublishedWinner[]> {
-  const [all, computed] = await Promise.all([repo.getAllCompetitions(supabase), listPublishedComputedWinners(supabase)]);
+  const [all, computed] = await Promise.all([
+    repo.getCompetitionWinnerRows(supabase),
+    listPublishedComputedWinners(supabase),
+  ]);
 
   const manual: PublishedWinner[] = all.flatMap((c) =>
     c.winners.map((w) => ({
@@ -134,19 +151,19 @@ export interface UpcomingDate {
 }
 
 export async function upcomingDates(supabase: SupabaseClient): Promise<UpcomingDate[]> {
-  const all = await repo.getAllCompetitions(supabase);
+  const all = await repo.getCompetitionEventRows(supabase);
   return all
     .flatMap((c) => c.events.map((e) => ({ competition: c.title, label: e.title, date: e.eventDate })))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
 /** Looks up a competition's registration-close event. A draft competition may have none yet. */
-export function registrationDeadlineOf(competition: Competition): string | undefined {
+export function registrationDeadlineOf(competition: CompetitionSummary): string | undefined {
   return findEvent(competition.events, "registration_close");
 }
 
 /** Looks up a competition's final-event date. A draft competition may have none yet. */
-export function finalEventDateOf(competition: Competition): string | undefined {
+export function finalEventDateOf(competition: CompetitionSummary): string | undefined {
   return findEvent(competition.events, "final_event");
 }
 
@@ -164,7 +181,10 @@ export interface CompetitionFilters {
 /** Business rule (FR-03): search, filter and sort the competition directory.
  * Pure and framework-agnostic (no Supabase import) so it's safe to call from
  * a "use client" component operating on an already-fetched list. */
-export function filterCompetitionsClientSide(competitions: Competition[], filters: CompetitionFilters): Competition[] {
+export function filterCompetitionsClientSide<T extends CompetitionSummary>(
+  competitions: T[],
+  filters: CompetitionFilters,
+): T[] {
   const { query = "", category = "all", status = "all", sort = "deadline" } = filters;
 
   let list = competitions.filter((c) => {
@@ -191,8 +211,11 @@ export function filterCompetitionsClientSide(competitions: Competition[], filter
 }
 
 /** Server-side equivalent of filterCompetitionsClientSide — fetches once, then filters. */
-export async function filterCompetitions(supabase: SupabaseClient, filters: CompetitionFilters): Promise<Competition[]> {
-  const all = await repo.getAllCompetitions(supabase);
+export async function filterCompetitions(
+  supabase: SupabaseClient,
+  filters: CompetitionFilters,
+): Promise<CompetitionSummary[]> {
+  const all = await repo.getCompetitionSummaries(supabase);
   return filterCompetitionsClientSide(all, filters);
 }
 

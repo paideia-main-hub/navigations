@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Registration, DisplayStatus } from "@/domain/registrations/types";
 import { displayStatusLabels } from "@/domain/registrations/types";
 import { registrationDeadlineOf, finalEventDateOf } from "@/domain/competitions/service";
-import type { Competition } from "@/domain/competitions/types";
+import type { CompetitionSummary } from "@/domain/competitions/types";
 import type { ResultInfo } from "@/domain/results/types";
 import { Badge } from "@/ui/components/Badge";
 
@@ -26,7 +26,7 @@ export function RegistrationCard({
   status,
 }: {
   registration: Registration;
-  competition: Competition | undefined;
+  competition: CompetitionSummary | undefined;
   result: ResultInfo | undefined;
   status: DisplayStatus;
 }) {

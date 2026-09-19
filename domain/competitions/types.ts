@@ -95,12 +95,16 @@ export interface CompetitionEvent {
   description: string | null;
 }
 
-export interface Competition {
+/** What a listing needs: the card fields, the eligibility rules it filters and
+ * labels by, and the events it reads deadlines from. Deliberately excludes the
+ * heavy child tables (stages, rubrics, resources, FAQs) and the long `overview`
+ * — a directory of 19 competitions that carries those ships roughly half a
+ * megabyte of text nobody renders. Fetch with getCompetitionSummaries(). */
+export interface CompetitionSummary {
   id: string;
   slug: string;
   title: string;
   shortDescription: string;
-  overview: string;
   domain: string;
   status: CompetitionStatus;
   supportsIndividual: boolean;
@@ -109,15 +113,22 @@ export interface Competition {
   feeAmount: number | null;
   season: string | null;
   eligibility: EligibilityRule[];
+  events: CompetitionEvent[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** One competition with every child table loaded — what a detail page needs.
+ * Extends the summary, so anything typed against CompetitionSummary accepts a
+ * full Competition too. */
+export interface Competition extends CompetitionSummary {
+  overview: string;
   stages: CompetitionStage[];
   rubrics: StageRubric[];
   manuals: Manual[];
   resources: Resource[];
   faqs: CompetitionFaq[];
   winners: CompetitionWinner[];
-  events: CompetitionEvent[];
-  createdAt: string;
-  updatedAt: string;
 }
 
 export const categoryLabels: Record<AgeCategory, string> = {

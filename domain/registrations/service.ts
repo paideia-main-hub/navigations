@@ -4,7 +4,7 @@ import {
   listRegistrationsBySchool,
   listRegistrationsByRegistrant,
 } from "@/data/repositories/registrations.repository";
-import type { Competition } from "@/domain/competitions/types";
+import type { CompetitionSummary } from "@/domain/competitions/types";
 import { registrationDeadlineOf, finalEventDateOf } from "@/domain/competitions/service";
 import type { DisplayStatus, Registration } from "./types";
 
@@ -32,7 +32,7 @@ export function generateRegistrationNumber(): string {
 /** Business rule: combine the registration's own status with the
  * competition's timing to produce the "My Competitions" status the spec
  * calls for (Registered / Upcoming / In Progress / Qualified / Completed). */
-export function deriveDisplayStatus(registration: Registration, competition: Competition | undefined): DisplayStatus {
+export function deriveDisplayStatus(registration: Registration, competition: CompetitionSummary | undefined): DisplayStatus {
   if (registration.status === "rejected") return "rejected";
   if (registration.status === "completed") return "completed";
   if (registration.status === "qualified" || registration.status === "finalist") return "qualified";
@@ -75,7 +75,7 @@ export function isConcludedDisplayStatus(status: DisplayStatus): boolean {
  * were ever entered. */
 export function isRegistrationConcluded(
   registration: Registration,
-  competition: Competition | undefined,
+  competition: CompetitionSummary | undefined,
   hasPublishedResult: boolean,
 ): boolean {
   return hasPublishedResult || isConcludedDisplayStatus(deriveDisplayStatus(registration, competition));

@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { createClient } from "@/data/supabase/server";
-import { listCompetitions } from "@/domain/competitions/service";
+import { listCompetitionIndex } from "@/domain/competitions/service";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 
 export const metadata = { title: "Manuals & Guidelines | Future Competence Series" };
 
 export default async function ManualsPage() {
   const supabase = await createClient();
-  const competitions = await listCompetitions(supabase);
+  const competitions = await listCompetitionIndex(supabase);
 
   return (
     <div className="bg-slate-50 dark:bg-slate-950">

@@ -17,11 +17,16 @@ export default async function CompetitionPage({
 }) {
   const { slug } = await params;
   const supabase = await createClient();
-  const competition = await getCompetitionBySlug(supabase, slug);
+
+  // All three reads are independent, so they go out together rather than
+  // paying three round trips of latency in series.
+  const [competition, competitionAnnouncements, allComputedWinners] = await Promise.all([
+    getCompetitionBySlug(supabase, slug),
+    announcementsForCompetition(supabase, slug),
+    listPublishedComputedWinners(supabase),
+  ]);
   if (!competition) notFound();
 
-  const competitionAnnouncements = await announcementsForCompetition(supabase, slug);
-  const allComputedWinners = await listPublishedComputedWinners(supabase);
   const computedWinners = allComputedWinners
     .filter((w) => w.competitionSlug === slug)
     .sort((a, b) => awardRank[a.award] - awardRank[b.award]);
