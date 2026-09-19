@@ -2,12 +2,11 @@ import Link from "next/link";
 import { createClient } from "@/data/supabase/server";
 import { listOpenAndUpcoming, listPublishedWinners, groupWinnersByCompetition, upcomingDates } from "@/domain/competitions/service";
 import { listAllAnnouncements } from "@/domain/announcements/service";
-import { categoryLabels } from "@/domain/competitions/types";
 import { announcementCategoryLabels } from "@/domain/announcements/types";
 import { CompetitionCard } from "@/ui/components/CompetitionCard";
 import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
 import { SectionHeading } from "@/ui/components/marketing/SectionHeading";
-import { StatBar } from "@/ui/components/marketing/StatBar";
+import { LeagueSpotlight } from "@/ui/components/marketing/LeagueSpotlight";
 import { ArenaFinder } from "@/ui/components/marketing/ArenaFinder";
 import { RoadmapSteps } from "@/ui/components/marketing/RoadmapSteps";
 import { FixturesList } from "@/ui/components/marketing/FixturesList";
@@ -56,66 +55,19 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* 1 & 2. Announcement strip + Hero share one full-bleed background
-          photo — a clearly visible slider-style banner image, not a
-          blurred texture, with just enough of a dark scrim over it to
-          keep the white text readable. */}
-      <section className="relative overflow-hidden bg-brand-deep">
-        {/* eslint-disable-next-line @next/next/no-img-element -- static asset in public/, not a remote host Next Image needs configuring for */}
-        <img
-          src="/depositphotos_4028675-stock-illustration-cheering-crowd.jpg"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-brand-deep/75 via-brand-deep/55 to-brand-deep/90" />
-
-        {pinnedAnnouncement && (
-          <div className="relative border-b border-white/10 bg-black/20 px-6 py-2 text-center text-sm font-medium text-brand-deep-foreground backdrop-blur-sm">
-            🏆 {pinnedAnnouncement.title}{" "}
-            <Link href="/announcements" className="ml-1 font-semibold text-accent underline underline-offset-2 hover:text-accent-strong">
-              View announcement details
-            </Link>
-          </div>
-        )}
-
-        <div className="relative mx-auto max-w-4xl px-6 py-20 text-center sm:py-28">
-          <ArenaBadge tone="dark">🏆 Championship Tour 2026 · National Fields</ArenaBadge>
-          <h1 className="mx-auto mt-5 max-w-3xl text-5xl font-extrabold tracking-tight text-white sm:text-6xl">
-            WHERE STUDENT{" "}
-            <span className="bg-gradient-to-r from-accent to-amber-300 bg-clip-text text-transparent">TALENT</span>{" "}
-            TAKES THE STAGE.
-          </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg text-brand-deep-muted">
-            The premier competition platform across 27 competitive disciplines. Robotics, Mechatronics,
-            Public Oratory, Applied STEM Innovations, and Creative Arts across Primary, Middle, and
-            Secondary tiers.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/register" className="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent/90">
-              Register Now
-            </Link>
-            <Link
-              href="/competitions"
-              className="rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-surface/5"
-            >
-              Explore All 27 Competitions
-            </Link>
-          </div>
-          <div className="mt-8 flex flex-wrap justify-center gap-2">
-            {Object.entries(categoryLabels).map(([value, label]) => (
-              <ArenaBadge key={value} tone="dark">
-                {label}
-              </ArenaBadge>
-            ))}
-          </div>
+      {/* 1. Announcement strip — kept above the spotlight so a pinned
+          announcement still surfaces on the landing page. */}
+      {pinnedAnnouncement && (
+        <div className="border-b border-border bg-surface-muted px-6 py-2 text-center text-sm font-medium text-foreground">
+          🏆 {pinnedAnnouncement.title}{" "}
+          <Link href="/announcements" className="ml-1 font-semibold text-accent-strong underline underline-offset-2 hover:no-underline">
+            View announcement details
+          </Link>
         </div>
+      )}
 
-        {/* 3. Stat bar */}
-        <div className="relative mx-auto max-w-7xl px-6 pb-16">
-          <StatBar />
-        </div>
-      </section>
+      {/* 2. Featuring Now — static League billboard beside a rotating panel. */}
+      <LeagueSpotlight />
 
       {/* 4. Arena Finder */}
       <div className="relative z-10 px-6">
