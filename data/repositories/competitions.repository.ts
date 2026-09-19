@@ -10,6 +10,7 @@ import type {
   AwardType,
   Competition,
   CompetitionEvent,
+  CompetitionPathway,
   CompetitionSummary,
   CompetitionFaq,
   CompetitionStage,
@@ -45,6 +46,8 @@ type Row = {
   overview: string | null;
   domain_competency_area: string | null;
   status: CompetitionStatus;
+  pathway?: CompetitionPathway | null;
+  image_url?: string | null;
   supports_individual: boolean;
   supports_team: boolean;
   fee_required: boolean;
@@ -199,6 +202,8 @@ function toCompetition(row: Row): Competition {
     overview: row.overview ?? "",
     domain: row.domain_competency_area ?? "",
     status: row.status,
+    pathway: row.pathway ?? null,
+    imageUrl: row.image_url ?? null,
     supportsIndividual: row.supports_individual,
     supportsTeam: row.supports_team,
     feeRequired: row.fee_required,
@@ -262,10 +267,22 @@ const SUMMARY_COLUMNS = `
 `;
 
 const SUMMARY_SELECT = `
+  ${SUMMARY_COLUMNS}, pathway, image_url,
+  competition_eligibility_rules (*),
+  events (*)
+`;
+
+/** Same query without the two columns migration 0018 adds, so a database that
+ * hasn't had it applied still serves every listing on the site. Remove this,
+ * and the retry below, once 0018 is applied everywhere. */
+const SUMMARY_SELECT_PRE_0018 = `
   ${SUMMARY_COLUMNS},
   competition_eligibility_rules (*),
   events (*)
 `;
+
+/** PostgreSQL's "column does not exist". */
+const UNDEFINED_COLUMN = "42703";
 
 function toSummary(row: Row): CompetitionSummary {
   const eligibility: EligibilityRule[] = (row.competition_eligibility_rules ?? []).map((e) => ({
@@ -291,6 +308,8 @@ function toSummary(row: Row): CompetitionSummary {
     shortDescription: row.short_description ?? "",
     domain: row.domain_competency_area ?? "",
     status: row.status,
+    pathway: row.pathway ?? null,
+    imageUrl: row.image_url ?? null,
     supportsIndividual: row.supports_individual,
     supportsTeam: row.supports_team,
     feeRequired: row.fee_required,
@@ -306,9 +325,14 @@ function toSummary(row: Row): CompetitionSummary {
 /** Every competition with the card/filter/deadline fields only. The default
  * choice for listings, directories and dashboard slug lookups. */
 export const getCompetitionSummaries = cache(async (supabase: SupabaseClient): Promise<CompetitionSummary[]> => {
-  const { data, error } = await supabase.from("competitions").select(SUMMARY_SELECT).order("created_at");
-  if (error || !data) return [];
-  return (data as unknown as Row[]).map(toSummary);
+  const first = await supabase.from("competitions").select(SUMMARY_SELECT).order("created_at");
+  if (!first.error && first.data) return (first.data as unknown as Row[]).map(toSummary);
+
+  if (first.error?.code !== UNDEFINED_COLUMN) return [];
+
+  const legacy = await supabase.from("competitions").select(SUMMARY_SELECT_PRE_0018).order("created_at");
+  if (legacy.error || !legacy.data) return [];
+  return (legacy.data as unknown as Row[]).map(toSummary);
 });
 
 /** Just enough to render a name and link to the competition — for index pages
@@ -414,6 +438,8 @@ export interface CompetitionCoreInput {
   shortDescription: string;
   overview: string;
   domain: string;
+  pathway: CompetitionPathway | null;
+  imageUrl: string | null;
   status: CompetitionStatus;
   supportsIndividual: boolean;
   supportsTeam: boolean;
@@ -429,6 +455,8 @@ function coreToRow(input: CompetitionCoreInput) {
     short_description: input.shortDescription,
     overview: input.overview,
     domain_competency_area: input.domain,
+    pathway: input.pathway,
+    image_url: input.imageUrl,
     status: input.status,
     supports_individual: input.supportsIndividual,
     supports_team: input.supportsTeam,

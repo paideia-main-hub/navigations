@@ -3,7 +3,8 @@ import { createClient } from "@/data/supabase/server";
 import { listOpenAndUpcoming, listPublishedWinners, groupWinnersByCompetition, upcomingDates } from "@/domain/competitions/service";
 import { listAllAnnouncements } from "@/domain/announcements/service";
 import { announcementCategoryLabels } from "@/domain/announcements/types";
-import { CompetitionCard } from "@/ui/components/CompetitionCard";
+import { listSubmittableCategories } from "@/domain/awards/service";
+import { ExploreRoutes } from "@/ui/components/marketing/ExploreRoutes";
 import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
 import { SectionHeading } from "@/ui/components/marketing/SectionHeading";
 import { LeagueSpotlight } from "@/ui/components/marketing/LeagueSpotlight";
@@ -43,11 +44,12 @@ const portals = [
 
 export default async function HomePage() {
   const supabase = await createClient();
-  const [featured, winners, dates, announcements] = await Promise.all([
+  const [featured, winners, dates, announcements, submittableAwards] = await Promise.all([
     listOpenAndUpcoming(supabase),
     listPublishedWinners(supabase),
     upcomingDates(supabase),
     listAllAnnouncements(supabase),
+    listSubmittableCategories(supabase),
   ]);
 
   const pinnedAnnouncement = announcements.find((a) => a.isImportant) ?? announcements[0];
@@ -74,18 +76,14 @@ export default async function HomePage() {
 
       <div className="bg-background">
         <div className="mx-auto max-w-7xl px-6 pt-20 pb-12">
-          {/* 5. Featured Divisions */}
-          <SectionHeading eyebrow="Competition Directory" title="Featured Competitions" action={{ href: "/competitions", label: "View all competitions" }} />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.slice(0, 6).map((c) => (
-              <CompetitionCard key={c.slug} competition={c} />
-            ))}
-            {featured.length === 0 && (
-              <p className="col-span-full py-12 text-center text-sm text-muted">
-                No competitions are open or upcoming right now.
-              </p>
-            )}
-          </div>
+          {/* 4. Explore — Route 1 lists competitions with grade and category
+              filters, Route 2 lists the awards a student can submit to. */}
+          <SectionHeading
+            eyebrow="Competition Directory"
+            title="Explore Competitions"
+            action={{ href: "/competitions", label: "View all competitions" }}
+          />
+          <ExploreRoutes competitions={featured} awardCategories={submittableAwards} />
         </div>
 
         {/* 6. Roadmap */}

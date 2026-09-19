@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/data/supabase/admin";
+import type { CompetitionPathway } from "@/domain/competitions/types";
 import { requireAdminSession } from "@/domain/admin-auth/guard";
 import { uploadFile } from "@/domain/storage/actions";
 import * as service from "./service";
@@ -69,6 +70,9 @@ export async function createCompetitionAction(_prevState: ActionState, formData:
     title: String(formData.get("title") ?? "").trim(),
     shortDescription: String(formData.get("short_description") ?? ""),
     overview: "",
+    // Both are set later from the competition editor.
+    pathway: null,
+    imageUrl: null,
     domain: "",
     status: "draft",
     supportsIndividual: true,
@@ -100,6 +104,8 @@ export async function updateCompetitionCoreAction(_prevState: ActionState, formD
     shortDescription: String(formData.get("short_description") ?? ""),
     overview: String(formData.get("overview") ?? ""),
     domain: String(formData.get("domain") ?? ""),
+    pathway: (String(formData.get("pathway") ?? "") || null) as CompetitionPathway | null,
+    imageUrl: String(formData.get("image_url") ?? "").trim() || null,
     status: existing.status,
     supportsIndividual: formData.get("supports_individual") === "on",
     supportsTeam: formData.get("supports_team") === "on",

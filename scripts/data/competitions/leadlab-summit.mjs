@@ -10,6 +10,8 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
+  pathway: "live_response",
+  image: "/competitions/leadlab-summit.jpg",
   manualVersion: "v1.1",
   manualFile: "leadlab Summit Manual.docx",
 

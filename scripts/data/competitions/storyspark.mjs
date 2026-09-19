@@ -10,6 +10,8 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
+  pathway: "live_response",
+  image: "/competitions/storyspark.jpg",
   manualFile: "Story_Spark_Manual.docx",
 
   overview: `Story Spark is a live Future Ready League storytelling competition for Grades 3–5. Each candidate receives an unseen age-appropriate story stimulus — an image, object, opening line, character, setting or combination — and a short preparation period, then creates and orally delivers an original story to judges.

@@ -9,6 +9,8 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
+  pathway: "applied_skills",
+  image: "/competitions/young-scientist-observation.jpg",
   manualFile: "Young_Scientist_Observation_Manual.docx",
 
   overview: `Young Scientist Observation is a live challenge for Grades 3–5. Students rotate through five carefully designed stations where a scientific or mathematical phenomenon, object, process, pattern or data display is taking place. At each station, students independently record what they notice on an official response sheet.

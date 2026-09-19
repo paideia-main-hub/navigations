@@ -10,6 +10,8 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
+  pathway: "applied_skills",
+  image: "/competitions/codecircuit.jpg",
   manualVersion: "v2.0",
   manualFile: "CodeCircuit_Web_Based_Progressive_Coding_Challenge_Manual_v2_0.docx",
 

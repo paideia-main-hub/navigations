@@ -100,6 +100,28 @@ export interface CompetitionEvent {
  * heavy child tables (stages, rubrics, resources, FAQs) and the long `overview`
  * — a directory of 19 competitions that carries those ships roughly half a
  * megabyte of text nobody renders. Fetch with getCompetitionSummaries(). */
+/** The four participation routes from "Ways to Participate". Null until an
+ * admin assigns one. */
+export type CompetitionPathway =
+  | "applied_skills"
+  | "independent_submission"
+  | "project_showcase"
+  | "live_response";
+
+export const pathwayLabels: Record<CompetitionPathway, string> = {
+  applied_skills: "Applied Skills Challenges",
+  independent_submission: "Independent Submission Challenges",
+  project_showcase: "Project Showcase Challenges",
+  live_response: "Live Response Challenges",
+};
+
+export const pathwayOrder: CompetitionPathway[] = [
+  "applied_skills",
+  "independent_submission",
+  "project_showcase",
+  "live_response",
+];
+
 export interface CompetitionSummary {
   id: string;
   slug: string;
@@ -107,6 +129,8 @@ export interface CompetitionSummary {
   shortDescription: string;
   domain: string;
   status: CompetitionStatus;
+  pathway: CompetitionPathway | null;
+  imageUrl: string | null;
   supportsIndividual: boolean;
   supportsTeam: boolean;
   feeRequired: boolean;

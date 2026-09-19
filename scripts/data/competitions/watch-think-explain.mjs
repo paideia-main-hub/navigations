@@ -9,6 +9,8 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
+  pathway: "live_response",
+  image: "/competitions/watch-think-explain.jpg",
   manualFile: "Watch_Think_Explain_Manual.docx",
 
   overview: `Watch – Think – Explain is a live challenge in which students in Grades 3–5 watch a short, unseen video showing a scientific, mathematical or real-world phenomenon. After viewing, students independently explain what happened, what changed, what evidence they noticed and what might explain the event.

@@ -9,6 +9,8 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
+  pathway: "live_response",
+  image: "/competitions/argumentor.jpg",
   manualFile: "Argumentor_Complete_Operations_Manual_v2_1.docx",
   manualVersion: "v2.1",
 

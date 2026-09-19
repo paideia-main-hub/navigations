@@ -10,6 +10,8 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
+  pathway: "independent_submission",
+  image: "/competitions/pixelproof.jpg",
   manualFile: "PixelProof_Environmental_Photography_Voting_Competition_Manual_v1_1_Easy_Guide.docx",
   manualVersion: "v1.1",
 

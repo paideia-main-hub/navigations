@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { updateCompetitionCoreAction, type ActionState } from "@/domain/competitions/actions";
-import type { Competition } from "@/domain/competitions/types";
+import { pathwayLabels, pathwayOrder, type Competition } from "@/domain/competitions/types";
 import { FormField } from "@/ui/components/FormField";
 
 const initialState: ActionState = { error: null };
@@ -31,6 +31,31 @@ export function CompetitionOverviewForm({ competition }: { competition: Competit
         />
       </div>
       <FormField label="Domain / competency area" name="domain" defaultValue={competition.domain} />
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="text-sm font-medium text-foreground">Participation category</label>
+          <select
+            name="pathway"
+            defaultValue={competition.pathway ?? ""}
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
+          >
+            <option value="">Not assigned</option>
+            {pathwayOrder.map((p) => (
+              <option key={p} value={p}>
+                {pathwayLabels[p]}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-muted">Which Route 1 card this appears under on the home page.</p>
+        </div>
+        <div>
+          <FormField label="Image URL" name="image_url" defaultValue={competition.imageUrl ?? ""} />
+          <p className="mt-1 text-xs text-muted">
+            Card artwork. Leave blank to use the placeholder at /competitions/{competition.slug}.jpg.
+          </p>
+        </div>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex items-center gap-2 text-sm text-foreground">

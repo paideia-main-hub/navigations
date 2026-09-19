@@ -28,14 +28,33 @@ function eligibilityLabel(competition: CompetitionSummary): string {
   return low === high ? `${categories} — Grade ${low}` : `${categories} — Grades ${low}–${high}`;
 }
 
+/** An admin-set image wins. Otherwise fall back to the placeholder shipped at
+ * public/competitions/<slug>.jpg, which is what every competition shows until
+ * real artwork is uploaded. */
+function artworkFor(competition: CompetitionSummary): string {
+  return competition.imageUrl || `/competitions/${competition.slug}.jpg`;
+}
+
 export function CompetitionCard({ competition }: { competition: CompetitionSummary }) {
   const deadline = registrationDeadlineOf(competition);
 
   return (
     <Link
       href={`/competitions/${competition.slug}`}
-      className="group flex flex-col gap-3 rounded-2xl border border-border bg-surface p-6 transition-colors hover:border-accent"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-surface transition-colors hover:border-accent"
     >
+      <div className="relative aspect-[16/9] overflow-hidden bg-surface-muted">
+        {/* eslint-disable-next-line @next/next/no-img-element -- static asset in public/ or an already-public storage URL */}
+        <img
+          src={artworkFor(competition)}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+        />
+      </div>
+
+      <div className="flex flex-1 flex-col gap-3 p-6">
       <p className="text-xs font-semibold tracking-wide text-muted uppercase">
         {eligibilityLabel(competition)}
       </p>
@@ -55,6 +74,7 @@ export function CompetitionCard({ competition }: { competition: CompetitionSumma
       <p className="text-xs font-medium text-muted">
         {deadline ? `Registration closes ${new Date(deadline).toLocaleDateString()}` : "Registration dates not yet scheduled"}
       </p>
+      </div>
     </Link>
   );
 }

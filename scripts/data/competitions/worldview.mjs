@@ -10,6 +10,8 @@ export default {
   supportsIndividual: false,
   supportsTeam: true,
   status: "open",
+  pathway: "project_showcase",
+  image: "/competitions/worldview.jpg",
   manualVersion: "v2.0",
   manualFile: "WorldView_Global_Change_Pakistan_Impact_Challenge_Manual_v2_0.docx",
 

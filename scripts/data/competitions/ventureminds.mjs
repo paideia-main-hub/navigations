@@ -10,6 +10,8 @@ export default {
   supportsIndividual: false,
   supportsTeam: true,
   status: "open",
+  pathway: "project_showcase",
+  image: "/competitions/ventureminds.jpg",
   manualVersion: "v1.0",
   manualFile: "VentureMinds Manual.docx",
 

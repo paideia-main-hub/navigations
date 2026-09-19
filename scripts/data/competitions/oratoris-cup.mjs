@@ -10,6 +10,8 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
+  pathway: "live_response",
+  image: "/competitions/oratoris-cup.jpg",
   manualVersion: "v1.0",
   manualFile: "Oratoris_Orator_Cup_School_Pitch_Implementation_Manual_v1_0.docx",
 

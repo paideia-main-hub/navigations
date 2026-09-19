@@ -78,7 +78,18 @@ async function uploadManual(sb, slug, fileName) {
   return sb.storage.from("manuals").getPublicUrl(path).data.publicUrl;
 }
 
-async function seedCompetition(sb, c) {
+// pathway and image_url arrive in migration 0018. Seeding shouldn't fail on a
+// database that hasn't had it applied yet, so probe once and drop those two
+// fields if they aren't there.
+async function hasPathwayColumns(sb) {
+  const { error } = await sb.from("competitions").select("pathway, image_url").limit(1);
+  if (!error) return true;
+  console.log("! competitions.pathway / image_url not found — seeding without them.");
+  console.log("  Apply supabase/migrations/0018_competition_pathway_and_image.sql, then re-run.\n");
+  return false;
+}
+
+async function seedCompetition(sb, c, withPathway) {
   const row = {
     slug: c.slug,
     title: c.title,
@@ -92,6 +103,7 @@ async function seedCompetition(sb, c) {
     fee_required: false,
     season: c.season ?? "2026",
     updated_at: new Date().toISOString(),
+    ...(withPathway ? { pathway: c.pathway ?? null, image_url: c.image ?? null } : {}),
   };
 
   const { data: saved, error } = await sb.from("competitions").upsert(row, { onConflict: "slug" }).select("id").single();
@@ -251,8 +263,10 @@ async function main() {
 
   if (only.length === 0) await removeDemoCompetitions(sb);
 
+  const withPathway = await hasPathwayColumns(sb);
+
   console.log(`\nSeeding ${targets.length} competition(s) from the official manuals:`);
-  for (const c of targets) await seedCompetition(sb, c);
+  for (const c of targets) await seedCompetition(sb, c, withPathway);
 
   console.log(`\nDone. Review and edit any of them from Admin Console > Competitions.`);
 }

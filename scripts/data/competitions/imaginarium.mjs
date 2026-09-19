@@ -10,6 +10,8 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
+  pathway: "applied_skills",
+  image: "/competitions/imaginarium.jpg",
   manualVersion: "v1.0",
   manualFile: "Imaginarium_Complete_Operations_Manual_v1_0.docx",
 

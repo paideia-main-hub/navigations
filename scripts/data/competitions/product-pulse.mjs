@@ -10,6 +10,8 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
+  pathway: "independent_submission",
+  image: "/competitions/product-pulse.jpg",
   manualFile: "Product_Pulse_Digital_Poster_Product_Launch_Competition_Manual_v1_0.docx",
   manualVersion: "v1.0",
 
