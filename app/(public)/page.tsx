@@ -7,7 +7,7 @@ import { CompetitionCard } from "@/ui/components/CompetitionCard";
 import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
 import { SectionHeading } from "@/ui/components/marketing/SectionHeading";
 import { LeagueSpotlight } from "@/ui/components/marketing/LeagueSpotlight";
-import { ArenaFinder } from "@/ui/components/marketing/ArenaFinder";
+import { WaysToParticipate } from "@/ui/components/marketing/WaysToParticipate";
 import { RoadmapSteps } from "@/ui/components/marketing/RoadmapSteps";
 import { FixturesList } from "@/ui/components/marketing/FixturesList";
 import { ChampionsPodium } from "@/ui/components/marketing/ChampionsPodium";
@@ -69,10 +69,8 @@ export default async function HomePage() {
       {/* 2. Featuring Now — static League billboard beside a rotating panel. */}
       <LeagueSpotlight />
 
-      {/* 4. Arena Finder */}
-      <div className="relative z-10 px-6">
-        <ArenaFinder />
-      </div>
+      {/* 3. Ways to participate */}
+      <WaysToParticipate />
 
       <div className="bg-background">
         <div className="mx-auto max-w-7xl px-6 pt-20 pb-12">

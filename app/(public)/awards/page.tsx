@@ -49,7 +49,9 @@ export default async function AwardsLandingPage() {
           {LAYER_ORDER.map((layer) => {
             const awards = AWARD_DETAILS.filter((a) => a.layer === layer);
             return (
-              <section key={layer}>
+              // id lets the home page's "Ways to Participate" cards deep-link
+              // straight to the layer they describe.
+              <section key={layer} id={layer} className="scroll-mt-24">
                 <div className="flex flex-wrap items-baseline gap-3">
                   <h2 className="text-xl font-bold text-foreground">{layerLabels[layer]}</h2>
                 </div>
