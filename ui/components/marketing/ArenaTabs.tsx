@@ -36,9 +36,7 @@ export function ArenaTabs({ tabs }: { tabs: ArenaTab[] }) {
   return (
     <div className="lg:flex lg:items-start lg:gap-10">
       <nav
-        className="scrollbar-none -mx-6 mb-6 flex gap-1 overflow-x-auto border-b border-slate-200 px-6 pb-px
-          lg:sticky lg:top-24 lg:mx-0 lg:mb-0 lg:w-72 lg:shrink-0 lg:flex-col lg:gap-0.5 lg:overflow-visible
-          lg:border-b-0 lg:border-r lg:px-0 lg:pr-6 lg:pb-0 dark:border-slate-800"
+        className="scrollbar-none -mx-6 mb-6 flex gap-1 overflow-x-auto border-b border-border px-6 pb-px lg:sticky lg:top-24 lg:mx-0 lg:mb-0 lg:w-72 lg:shrink-0 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:border-b-0 lg:border-r lg:px-0 lg:pr-6 lg:pb-0"
       >
         {tabs.map((tab) => {
           const isActive = tab.id === activeTab?.id;
@@ -49,8 +47,8 @@ export function ArenaTabs({ tabs }: { tabs: ArenaTab[] }) {
               className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-3 text-left text-sm font-semibold transition-colors
                 lg:w-full lg:rounded-lg lg:border-b-0 lg:px-4 lg:py-2.5 ${
                 isActive
-                  ? "border-blue-600 text-blue-600 lg:bg-blue-50 lg:text-blue-700 dark:text-blue-400 dark:lg:bg-blue-500/10 dark:lg:text-blue-300"
-                  : "border-transparent text-slate-500 hover:text-slate-900 lg:hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:lg:hover:bg-slate-800"
+                  ? "border-accent text-accent-strong lg:bg-accent-soft lg:text-accent-strong dark:lg:bg-accent-soft"
+                  : "border-transparent text-muted hover:text-foreground lg:hover:bg-surface-muted"
               }`}
             >
               {tab.icon && <span className="text-base">{tab.icon}</span>}

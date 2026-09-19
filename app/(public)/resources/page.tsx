@@ -10,7 +10,7 @@ export default async function ResourcesPage() {
   const competitions = await listCompetitionIndex(supabase);
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950">
+    <div className="bg-background">
       <PageBanner
         eyebrow="Practice & Resource Centre"
         title="Practice / Resource Centre"
@@ -19,12 +19,12 @@ export default async function ResourcesPage() {
       <div className="mx-auto max-w-4xl px-6 py-12">
         <ul className="grid gap-4 sm:grid-cols-2">
           {competitions.map((c) => (
-            <li key={c.slug} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-              <p className="font-medium text-slate-900 dark:text-slate-100">{c.title}</p>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{c.domain}</p>
+            <li key={c.slug} className="rounded-xl border border-border bg-surface p-4">
+              <p className="font-medium text-foreground">{c.title}</p>
+              <p className="mt-1 text-sm text-muted">{c.domain}</p>
               <Link
                 href={`/competitions/${c.slug}#practice`}
-                className="mt-2 inline-block text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400"
+                className="mt-2 inline-block text-sm font-semibold text-accent-strong hover:underline"
               >
                 Open practice pack →
               </Link>

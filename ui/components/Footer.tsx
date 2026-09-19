@@ -31,22 +31,22 @@ const columns = [
 
 export function Footer() {
   return (
-    <footer className="bg-slate-950 text-slate-400">
+    <footer className="bg-brand-deep text-brand-deep-muted">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 py-16 sm:grid-cols-4">
         <div className="col-span-2 sm:col-span-1">
-          <span className="rounded-md bg-blue-600 px-2 py-1 text-sm font-bold text-white">FCS</span>
-          <p className="mt-3 max-w-xs text-sm text-slate-500">
+          <span className="rounded-md bg-accent px-2 py-1 text-sm font-bold text-accent-foreground">FCS</span>
+          <p className="mt-3 max-w-xs text-sm text-brand-deep-muted">
             Future Competence Series — competitions that build real-world skills for Primary,
             Middle and Secondary students.
           </p>
         </div>
         {columns.map((col) => (
           <div key={col.title}>
-            <h3 className="text-xs font-semibold tracking-wider text-slate-300 uppercase">{col.title}</h3>
+            <h3 className="text-xs font-semibold tracking-wider text-brand-deep-foreground uppercase">{col.title}</h3>
             <ul className="mt-4 space-y-2 text-sm">
               {col.links.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="hover:text-blue-400">
+                  <Link href={link.href} className="hover:text-accent">
                     {link.label}
                   </Link>
                 </li>
@@ -55,7 +55,7 @@ export function Footer() {
           </div>
         ))}
       </div>
-      <div className="border-t border-white/10 px-6 py-6 text-xs text-slate-500">
+      <div className="border-t border-white/10 px-6 py-6 text-xs text-muted">
         <p>
           © {new Date().getFullYear()} Future Competence Series. Privacy, terms and safeguarding
           notices apply to all student data and photo publication.

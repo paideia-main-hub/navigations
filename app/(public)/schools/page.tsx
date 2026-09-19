@@ -20,7 +20,7 @@ const points = [
 
 export default function ForSchoolsPage() {
   return (
-    <div className="bg-slate-50 dark:bg-slate-950">
+    <div className="bg-background">
       <PageBanner
         eyebrow="Institutional Access"
         title="For Schools"
@@ -29,16 +29,16 @@ export default function ForSchoolsPage() {
       <div className="mx-auto max-w-3xl px-6 py-12">
         <ul className="grid gap-3 sm:grid-cols-2">
           {points.map((p) => (
-            <li key={p} className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
+            <li key={p} className="rounded-lg border border-border bg-surface px-4 py-3 text-sm text-foreground">
               {p}
             </li>
           ))}
         </ul>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="/register/school" className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">
+          <Link href="/register/school" className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90">
             Register your school
           </Link>
-          <a href="#" className="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100">
+          <a href="#" className="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold text-foreground">
             Download school participation guide
           </a>
         </div>

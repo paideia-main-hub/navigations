@@ -4,8 +4,8 @@ export const metadata = { title: "Admin Login | Future Competence Series" };
 
 export default function AdminLoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6">
-      <div className="w-full max-w-sm rounded-2xl border border-slate-800 bg-surface p-8 shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-brand-deep px-6">
+      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-surface p-8 shadow-xl">
         <span className="inline-block rounded-md bg-accent px-2 py-1 text-sm font-semibold text-accent-foreground">
           FCS
         </span>

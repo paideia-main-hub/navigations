@@ -26,14 +26,14 @@ const faqs = [
 
 export default function FAQsPage() {
   return (
-    <div className="bg-slate-50 dark:bg-slate-950">
+    <div className="bg-background">
       <PageBanner eyebrow="Support Center" title="FAQs" />
       <div className="mx-auto max-w-3xl px-6 py-12">
         <div className="space-y-4">
           {faqs.map((f) => (
-            <details key={f.question} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-              <summary className="cursor-pointer font-medium text-slate-900 dark:text-slate-100">{f.question}</summary>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{f.answer}</p>
+            <details key={f.question} className="rounded-xl border border-border bg-surface p-4">
+              <summary className="cursor-pointer font-medium text-foreground">{f.question}</summary>
+              <p className="mt-2 text-sm text-muted">{f.answer}</p>
             </details>
           ))}
         </div>

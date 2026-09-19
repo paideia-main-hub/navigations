@@ -24,7 +24,7 @@ export default async function CompetitionsPage({
   const initialStatus = STATUSES.includes(status as CompetitionStatus) ? (status as CompetitionStatus) : "all";
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950">
+    <div className="bg-background">
       <PageBanner
         eyebrow="Competition Directory"
         title="Competitions"

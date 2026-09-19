@@ -4,10 +4,10 @@ export const metadata = { title: "About | Future Competence Series" };
 
 export default function AboutPage() {
   return (
-    <div className="bg-slate-50 dark:bg-slate-950">
+    <div className="bg-background">
       <PageBanner eyebrow="Competency Vision" title="About / Competency Vision" />
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <p className="text-slate-600 dark:text-slate-400">
+        <p className="text-muted">
           The Future Competence Series is both a public information website and an operational
           competition platform, supporting around 27 competitions for Primary, Middle and Secondary
           students. It exists to give students a structured way to develop and demonstrate real

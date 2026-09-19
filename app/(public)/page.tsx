@@ -60,7 +60,7 @@ export default async function HomePage() {
           photo — a clearly visible slider-style banner image, not a
           blurred texture, with just enough of a dark scrim over it to
           keep the white text readable. */}
-      <section className="relative overflow-hidden bg-slate-950">
+      <section className="relative overflow-hidden bg-brand-deep">
         {/* eslint-disable-next-line @next/next/no-img-element -- static asset in public/, not a remote host Next Image needs configuring for */}
         <img
           src="/depositphotos_4028675-stock-illustration-cheering-crowd.jpg"
@@ -68,12 +68,12 @@ export default async function HomePage() {
           aria-hidden="true"
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-950/55 to-slate-950/90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-brand-deep/75 via-brand-deep/55 to-brand-deep/90" />
 
         {pinnedAnnouncement && (
-          <div className="relative border-b border-white/10 bg-black/20 px-6 py-2 text-center text-sm font-medium text-slate-200 backdrop-blur-sm">
+          <div className="relative border-b border-white/10 bg-black/20 px-6 py-2 text-center text-sm font-medium text-brand-deep-foreground backdrop-blur-sm">
             🏆 {pinnedAnnouncement.title}{" "}
-            <Link href="/announcements" className="ml-1 font-semibold text-blue-400 underline underline-offset-2 hover:text-blue-300">
+            <Link href="/announcements" className="ml-1 font-semibold text-accent underline underline-offset-2 hover:text-accent-strong">
               View announcement details
             </Link>
           </div>
@@ -83,21 +83,21 @@ export default async function HomePage() {
           <ArenaBadge tone="dark">🏆 Championship Tour 2026 · National Fields</ArenaBadge>
           <h1 className="mx-auto mt-5 max-w-3xl text-5xl font-extrabold tracking-tight text-white sm:text-6xl">
             WHERE STUDENT{" "}
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">TALENT</span>{" "}
+            <span className="bg-gradient-to-r from-accent to-amber-300 bg-clip-text text-transparent">TALENT</span>{" "}
             TAKES THE STAGE.
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg text-slate-300">
+          <p className="mx-auto mt-5 max-w-xl text-lg text-brand-deep-muted">
             The premier competition platform across 27 competitive disciplines. Robotics, Mechatronics,
             Public Oratory, Applied STEM Innovations, and Creative Arts across Primary, Middle, and
             Secondary tiers.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/register" className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-500">
+            <Link href="/register" className="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent/90">
               Register Now
             </Link>
             <Link
               href="/competitions"
-              className="rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/5"
+              className="rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-surface/5"
             >
               Explore All 27 Competitions
             </Link>
@@ -122,7 +122,7 @@ export default async function HomePage() {
         <ArenaFinder />
       </div>
 
-      <div className="bg-slate-50 dark:bg-slate-950">
+      <div className="bg-background">
         <div className="mx-auto max-w-7xl px-6 pt-20 pb-12">
           {/* 5. Featured Divisions */}
           <SectionHeading eyebrow="Competition Directory" title="Featured Competitions" action={{ href: "/competitions", label: "View all competitions" }} />
@@ -131,7 +131,7 @@ export default async function HomePage() {
               <CompetitionCard key={c.slug} competition={c} />
             ))}
             {featured.length === 0 && (
-              <p className="col-span-full py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+              <p className="col-span-full py-12 text-center text-sm text-muted">
                 No competitions are open or upcoming right now.
               </p>
             )}
@@ -141,10 +141,10 @@ export default async function HomePage() {
         {/* 6. Roadmap */}
         <div className="mx-auto max-w-7xl px-6 py-16">
           <div className="mb-10 text-center">
-            <p className="text-xs font-semibold tracking-wider text-blue-600 uppercase dark:text-blue-400">
+            <p className="text-xs font-semibold tracking-wider text-accent-strong uppercase">
               Getting Started
             </p>
-            <h2 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl dark:text-slate-50">
+            <h2 className="mt-1 text-2xl font-bold text-foreground sm:text-3xl">
               How It Works
             </h2>
           </div>
@@ -158,17 +158,17 @@ export default async function HomePage() {
             <div className="lg:col-span-2">
               <FixturesList dates={dates} />
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-              <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase dark:text-blue-400">
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <p className="text-xs font-semibold tracking-wide text-accent-strong uppercase">
                 Stay on Schedule
               </p>
-              <p className="mt-2 font-semibold text-slate-900 dark:text-slate-100">Calendar Sync Available</p>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-2 font-semibold text-foreground">Calendar Sync Available</p>
+              <p className="mt-1 text-sm text-muted">
                 Track every registration deadline, round and closing date without checking back here.
               </p>
               <Link
                 href="/calendar"
-                className="mt-4 inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500"
+                className="mt-4 inline-block rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
               >
                 View Competition Calendar
               </Link>
@@ -181,14 +181,14 @@ export default async function HomePage() {
           <SectionHeading eyebrow="Announcements" title="Latest Announcements" action={{ href: "/announcements", label: "View all" }} />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {announcements.slice(0, 6).map((a) => (
-              <div key={a.id} className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+              <div key={a.id} className="rounded-2xl border border-border bg-surface p-5">
                 <ArenaBadge tone="blue">{announcementCategoryLabels[a.category]}</ArenaBadge>
-                <p className="mt-3 font-semibold text-slate-900 dark:text-slate-100">{a.title}</p>
-                <p className="mt-1 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{a.body}</p>
+                <p className="mt-3 font-semibold text-foreground">{a.title}</p>
+                <p className="mt-1 line-clamp-2 text-sm text-muted">{a.body}</p>
               </div>
             ))}
             {announcements.length === 0 && (
-              <p className="col-span-full py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+              <p className="col-span-full py-8 text-center text-sm text-muted">
                 No announcements published yet.
               </p>
             )}
@@ -205,8 +205,8 @@ export default async function HomePage() {
           </div>
           <div className="relative mx-auto max-w-7xl px-6">
             <div className="mb-10 text-center">
-              <p className="text-xs font-semibold tracking-wider text-blue-600 uppercase dark:text-blue-400">Results &amp; Winners</p>
-              <h2 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl dark:text-slate-50">
+              <p className="text-xs font-semibold tracking-wider text-accent-strong uppercase">Results &amp; Winners</p>
+              <h2 className="mt-1 text-2xl font-bold text-foreground sm:text-3xl">
                 Winners{" "}
                 <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent dark:from-amber-300 dark:to-yellow-200">
                   Showcase
@@ -219,36 +219,36 @@ export default async function HomePage() {
 
         {/* 10. For Students / For Schools */}
         <div className="mx-auto grid max-w-7xl gap-6 px-6 py-12 sm:grid-cols-2">
-          <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 transition-transform hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
-            <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-blue-500/10 blur-2xl" />
-            <span className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-2xl">🎓</span>
-            <p className="relative mt-4 text-xs font-semibold tracking-wide text-blue-600 uppercase dark:text-blue-400">For Students</p>
-            <h3 className="relative mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">For Students &amp; Young Innovators</h3>
-            <ul className="relative mt-5 space-y-3 text-sm text-slate-600 dark:text-slate-400">
+          <div className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-8 transition-transform hover:-translate-y-1 hover:shadow-xl">
+            <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-accent-soft blur-2xl" />
+            <span className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-2xl">🎓</span>
+            <p className="relative mt-4 text-xs font-semibold tracking-wide text-accent-strong uppercase">For Students</p>
+            <h3 className="relative mt-1 text-xl font-bold text-foreground">For Students &amp; Young Innovators</h3>
+            <ul className="relative mt-5 space-y-3 text-sm text-muted">
               {whyParticipate.map((item) => (
                 <li key={item.title} className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent-strong">
                     ✓
                   </span>
                   <span>
-                    <span className="font-semibold text-slate-900 dark:text-slate-200">{item.title}:</span> {item.body}
+                    <span className="font-semibold text-foreground">{item.title}:</span> {item.body}
                   </span>
                 </li>
               ))}
             </ul>
             <Link
               href="/register/student"
-              className="relative mt-6 inline-block rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500"
+              className="relative mt-6 inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
             >
               Register as a Student
             </Link>
           </div>
-          <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 transition-transform hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+          <div className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-8 transition-transform hover:-translate-y-1 hover:shadow-xl">
             <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-violet-500/10 blur-2xl" />
             <span className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-violet-600 text-2xl">🏫</span>
             <p className="relative mt-4 text-xs font-semibold tracking-wide text-violet-600 uppercase dark:text-violet-400">For Schools</p>
-            <h3 className="relative mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">For Schools &amp; Coordinators</h3>
-            <ul className="relative mt-5 space-y-3 text-sm text-slate-600 dark:text-slate-400">
+            <h3 className="relative mt-1 text-xl font-bold text-foreground">For Schools &amp; Coordinators</h3>
+            <ul className="relative mt-5 space-y-3 text-sm text-muted">
               {schoolPoints.map((p) => (
                 <li key={p} className="flex items-start gap-3">
                   <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-bold text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
@@ -275,7 +275,7 @@ export default async function HomePage() {
               <Link
                 key={p.href}
                 href={p.href}
-                className="rounded-xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:text-blue-400"
+                className="rounded-xl border border-border bg-surface p-4 text-sm font-semibold text-foreground hover:border-accent hover:text-accent-strong"
               >
                 {p.label} →
               </Link>
@@ -285,16 +285,16 @@ export default async function HomePage() {
       </div>
 
       {/* 12. Bottom CTA */}
-      <section className="bg-slate-950 px-6 py-20 text-center">
+      <section className="bg-brand-deep px-6 py-20 text-center">
         <h2 className="text-2xl font-bold text-white sm:text-3xl">READY TO REGISTER?</h2>
-        <p className="mx-auto mt-3 max-w-xl text-slate-400">
+        <p className="mx-auto mt-3 max-w-xl text-brand-deep-muted">
           Join over 14,200 students across the country already registered for this season&apos;s competitions.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link href="/register" className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-500">
+          <Link href="/register" className="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent/90">
             Register Now
           </Link>
-          <Link href="/competitions" className="rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/5">
+          <Link href="/competitions" className="rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-surface/5">
             Browse Competitions
           </Link>
         </div>

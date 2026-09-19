@@ -46,7 +46,7 @@ const paths = [
 ];
 
 const toneClasses: Record<string, string> = {
-  neutral: "from-slate-500/15 to-slate-500/0 group-hover:border-slate-400",
+  neutral: "from-muted/15 to-muted/0 group-hover:border-accent",
   accent: "from-accent/20 to-accent/0 group-hover:border-accent",
   violet: "from-violet-500/15 to-violet-500/0 group-hover:border-violet-400",
   amber: "from-amber-500/15 to-amber-500/0 group-hover:border-amber-400",

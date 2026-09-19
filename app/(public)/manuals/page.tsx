@@ -10,21 +10,21 @@ export default async function ManualsPage() {
   const competitions = await listCompetitionIndex(supabase);
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950">
+    <div className="bg-background">
       <PageBanner
         eyebrow="Manuals & Rulebook"
         title="Manuals & Guidelines"
         subtitle="Official registration rules, guiding principles and complete manuals for every competition. Open a competition's page for its downloadable manual and judging rubric."
       />
       <div className="mx-auto max-w-4xl px-6 py-12">
-        <div className="divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+        <div className="divide-y divide-border rounded-2xl border border-border bg-surface">
           {competitions.map((c) => (
             <div key={c.slug} className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium text-slate-900 dark:text-slate-100">{c.title}</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{c.domain}</p>
+                <p className="font-medium text-foreground">{c.title}</p>
+                <p className="text-sm text-muted">{c.domain}</p>
               </div>
-              <Link href={`/competitions/${c.slug}#manual`} className="text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400">
+              <Link href={`/competitions/${c.slug}#manual`} className="text-sm font-semibold text-accent-strong hover:underline">
                 View manual →
               </Link>
             </div>

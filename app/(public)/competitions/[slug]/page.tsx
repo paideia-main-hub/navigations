@@ -36,9 +36,9 @@ export default async function CompetitionPage({
   const completeManual = competition.manuals.find((m) => m.type === "complete_manual");
   const registrationDeadline = registrationDeadlineOf(competition);
 
-  const card = "rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900";
-  const muted = "text-slate-500 dark:text-slate-400";
-  const link = "text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400";
+  const card = "rounded-xl border border-border bg-surface p-4";
+  const muted = "text-muted";
+  const link = "text-sm font-semibold text-accent-strong hover:underline";
 
   const tabs = [
     {
@@ -47,9 +47,9 @@ export default async function CompetitionPage({
       icon: "📋",
       content: (
         <div className="max-w-2xl space-y-4">
-          <p className="whitespace-pre-line text-slate-900 dark:text-slate-100">{competition.overview || "Overview coming soon."}</p>
+          <p className="whitespace-pre-line text-foreground">{competition.overview || "Overview coming soon."}</p>
           <p className={`text-sm ${muted}`}>
-            Domain: <span className="font-medium text-slate-900 dark:text-slate-100">{competition.domain || "—"}</span>
+            Domain: <span className="font-medium text-foreground">{competition.domain || "—"}</span>
           </p>
         </div>
       ),
@@ -63,7 +63,7 @@ export default async function CompetitionPage({
           <ul className="space-y-2">
             {competition.eligibility.map((rule) => (
               <li key={rule.id} className={card}>
-                <p className="font-semibold text-slate-900 dark:text-slate-100">
+                <p className="font-semibold text-foreground">
                   {categoryLabels[rule.category]} — grades {rule.minGrade}–{rule.maxGrade}
                 </p>
                 {rule.teamMinSize && (
@@ -97,8 +97,8 @@ export default async function CompetitionPage({
         <div className="max-w-2xl space-y-4">
           {competition.stages.map((stage) => (
             <div key={stage.id} className={card}>
-              <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase dark:text-blue-400">Stage {stage.stageNumber}</p>
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100">{stage.title}</h3>
+              <p className="text-xs font-semibold tracking-wide text-accent-strong uppercase">Stage {stage.stageNumber}</p>
+              <h3 className="font-semibold text-foreground">{stage.title}</h3>
               <p className={`text-sm ${muted}`}>
                 {stage.format} · {stage.duration}
               </p>
@@ -117,7 +117,7 @@ export default async function CompetitionPage({
         <div className="max-w-2xl space-y-4">
           {competition.stages.map((stage) => (
             <div key={stage.id} className={card}>
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100">
+              <h3 className="font-semibold text-foreground">
                 Stage {stage.stageNumber}: {stage.title}
               </h3>
               <p className={`mt-1 whitespace-pre-line text-sm ${muted}`}>{stage.taskDescription}</p>
@@ -156,14 +156,14 @@ export default async function CompetitionPage({
               const stage = competition.stages.find((s) => s.id === r.stageId);
               return (
                 <div key={r.id} className={card}>
-                  <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase dark:text-blue-400">
+                  <p className="text-xs font-semibold tracking-wide text-accent-strong uppercase">
                     {stage ? `Stage ${stage.stageNumber}: ${stage.title}` : "Competition-wide"}
                   </p>
                   <div className="mt-2 space-y-2">
                     {r.criteria.map((c, i) => (
-                      <div key={i} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 dark:border-slate-700 dark:bg-slate-800">
-                        <span className="text-sm text-slate-900 dark:text-slate-100">{c.name}</span>
-                        <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{c.weight}%</span>
+                      <div key={i} className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-2">
+                        <span className="text-sm text-foreground">{c.name}</span>
+                        <span className="text-sm font-semibold text-foreground">{c.weight}%</span>
                       </div>
                     ))}
                   </div>
@@ -197,7 +197,7 @@ export default async function CompetitionPage({
         <div className="max-w-2xl space-y-3">
           {competition.resources.map((r) => (
             <div key={r.id} className={card}>
-              <p className="font-semibold text-slate-900 dark:text-slate-100">{r.title}</p>
+              <p className="font-semibold text-foreground">{r.title}</p>
               {r.content && <p className={`mt-1 whitespace-pre-line text-sm ${muted}`}>{r.content}</p>}
               {r.videoUrl && (
                 <a href={r.videoUrl} target="_blank" rel="noreferrer" className={`mt-2 inline-block ${link}`}>
@@ -222,12 +222,12 @@ export default async function CompetitionPage({
       content: (
         <ul className="max-w-2xl space-y-2 text-sm">
           {competition.events.map((e) => (
-            <li key={e.id} className="flex justify-between border-b border-slate-200 py-2 dark:border-slate-800">
+            <li key={e.id} className="flex justify-between border-b border-border py-2">
               <span className={muted}>
                 {eventTypeLabels[e.type]}
                 {e.title && e.title !== eventTypeLabels[e.type] ? ` — ${e.title}` : ""}
               </span>
-              <span className="font-medium text-slate-900 dark:text-slate-100">{new Date(e.eventDate).toLocaleDateString()}</span>
+              <span className="font-medium text-foreground">{new Date(e.eventDate).toLocaleDateString()}</span>
             </li>
           ))}
           {competition.events.length === 0 && <li className={`py-2 ${muted}`}>Dates not yet scheduled.</li>}
@@ -244,7 +244,7 @@ export default async function CompetitionPage({
             {competitionAnnouncements.map((a) => (
               <div key={a.id} className={card}>
                 <ArenaBadge tone="blue">{announcementCategoryLabels[a.category]}</ArenaBadge>
-                <p className="mt-1 font-semibold text-slate-900 dark:text-slate-100">{a.title}</p>
+                <p className="mt-1 font-semibold text-foreground">{a.title}</p>
                 <p className={`mt-1 text-sm ${muted}`}>{a.body}</p>
               </div>
             ))}
@@ -261,9 +261,9 @@ export default async function CompetitionPage({
         computedWinners.length > 0 ? (
           <ul className="max-w-2xl space-y-2 text-sm">
             {computedWinners.map((w, i) => (
-              <li key={i} className="flex items-center justify-between border-b border-slate-200 py-2 dark:border-slate-800">
+              <li key={i} className="flex items-center justify-between border-b border-border py-2">
                 <div>
-                  <p className="font-medium text-slate-900 dark:text-slate-100">
+                  <p className="font-medium text-foreground">
                     {w.entrantName}
                     {w.entryType === "team" && w.teamMembers && w.teamMembers.length > 0 && (
                       <span className={`ml-1 font-normal ${muted}`}>({w.teamMembers.join(", ")})</span>
@@ -290,35 +290,35 @@ export default async function CompetitionPage({
         computedWinners.length > 0 || competition.winners.length > 0 ? (
           <div className="grid max-w-2xl gap-3 sm:grid-cols-2">
             {computedWinners.map((w, i) => (
-              <div key={`computed-${i}`} className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+              <div key={`computed-${i}`} className="overflow-hidden rounded-xl border border-border bg-surface">
                 {w.photoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element -- admin-controlled Supabase Storage URL, not a Next Image host we need to configure
                   <img src={w.photoUrl} alt={w.entrantName} className="h-40 w-full object-cover" />
                 ) : (
-                  <div className="flex h-40 w-full items-center justify-center bg-slate-100 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                  <div className="flex h-40 w-full items-center justify-center bg-surface-muted text-sm text-muted">
                     No photo
                   </div>
                 )}
                 <div className="p-4">
                   <ArenaBadge tone="warning">{w.award === "custom" && w.customAwardLabel ? w.customAwardLabel : awardLabels[w.award]}</ArenaBadge>
-                  <p className="mt-1 font-semibold text-slate-900 dark:text-slate-100">{w.entrantName}</p>
+                  <p className="mt-1 font-semibold text-foreground">{w.entrantName}</p>
                   <p className={`text-sm ${muted}`}>{w.schoolName ?? "—"}</p>
                 </div>
               </div>
             ))}
             {competition.winners.map((w) => (
-              <div key={w.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+              <div key={w.id} className="overflow-hidden rounded-xl border border-border bg-surface">
                 {w.photoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element -- admin-controlled Supabase Storage URL, not a Next Image host we need to configure
                   <img src={w.photoUrl} alt={w.studentName} className="h-40 w-full object-cover" />
                 ) : (
-                  <div className="flex h-40 w-full items-center justify-center bg-slate-100 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                  <div className="flex h-40 w-full items-center justify-center bg-surface-muted text-sm text-muted">
                     No photo
                   </div>
                 )}
                 <div className="p-4">
                   <ArenaBadge tone="warning">{w.award === "custom" && w.customAwardLabel ? w.customAwardLabel : awardLabels[w.award]}</ArenaBadge>
-                  <p className="mt-1 font-semibold text-slate-900 dark:text-slate-100">{w.studentName}</p>
+                  <p className="mt-1 font-semibold text-foreground">{w.studentName}</p>
                   <p className={`text-sm ${muted}`}>{w.schoolName}</p>
                   {w.positionLabel && <p className={`text-xs ${muted}`}>{w.positionLabel}</p>}
                 </div>
@@ -338,7 +338,7 @@ export default async function CompetitionPage({
           <div className="max-w-2xl space-y-3">
             {competition.faqs.map((f) => (
               <details key={f.id} className={card}>
-                <summary className="cursor-pointer font-medium text-slate-900 dark:text-slate-100">{f.question}</summary>
+                <summary className="cursor-pointer font-medium text-foreground">{f.question}</summary>
                 <p className={`mt-2 text-sm ${muted}`}>{f.answer}</p>
               </details>
             ))}
@@ -358,7 +358,7 @@ export default async function CompetitionPage({
           <p className={`text-sm ${muted}`}>Already have an account? Register straight from your dashboard.</p>
           <Link
             href={`/dashboard/register/${competition.slug}`}
-            className="inline-block rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500"
+            className="inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
           >
             Register for {competition.title}
           </Link>
@@ -366,13 +366,13 @@ export default async function CompetitionPage({
           <div className="flex flex-wrap gap-3">
             <Link
               href={`/register/student?competition=${competition.slug}`}
-              className="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:border-blue-500 dark:border-slate-700 dark:text-slate-100"
+              className="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:border-accent"
             >
               Create Student Account
             </Link>
             <Link
               href={`/register/school?competition=${competition.slug}`}
-              className="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:border-blue-500 dark:border-slate-700 dark:text-slate-100"
+              className="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:border-accent"
             >
               Create School Account
             </Link>
@@ -383,10 +383,10 @@ export default async function CompetitionPage({
   ];
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950">
-      <div className="bg-slate-950 px-6 py-14">
+    <div className="bg-background">
+      <div className="bg-brand-deep px-6 py-14">
         <div className="mx-auto max-w-7xl">
-          <Link href="/competitions" className="text-sm font-medium text-slate-400 hover:text-white">
+          <Link href="/competitions" className="text-sm font-medium text-brand-deep-muted hover:text-brand-deep-foreground">
             ← All competitions
           </Link>
           <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -394,7 +394,7 @@ export default async function CompetitionPage({
             <ArenaBadge tone={competition.status === "open" ? "success" : "dark"}>{statusLabels[competition.status]}</ArenaBadge>
           </div>
           <h1 className="mt-3 text-3xl font-extrabold text-white sm:text-4xl">{competition.title}</h1>
-          <p className="mt-2 max-w-2xl text-slate-400">{competition.shortDescription}</p>
+          <p className="mt-2 max-w-2xl text-brand-deep-muted">{competition.shortDescription}</p>
         </div>
       </div>
 

@@ -28,10 +28,10 @@ const TIERS = {
   silver: {
     place: "2ND",
     label: "Silver",
-    ring: "ring-slate-300",
+    ring: "ring-border",
     glow: "shadow-[0_0_30px_-10px_rgba(203,213,225,0.4)]",
-    chip: "bg-slate-200 text-slate-800",
-    stepClass: "bg-gradient-to-b from-slate-300 via-slate-400 to-slate-500",
+    chip: "bg-surface-muted text-foreground",
+    stepClass: "bg-gradient-to-b from-brand-deep-muted via-brand-deep-muted to-brand-deep",
     stepHeight: 84,
     avatarSize: 76,
     order: 0,
@@ -52,14 +52,14 @@ const TIERS = {
 type Tier = keyof typeof TIERS;
 
 function Avatar({ name, photoUrl, size, ring }: { name: string; photoUrl: string | null; size: number; ring: string }) {
-  const common = `rounded-full object-cover ring-4 ${ring} ring-offset-4 ring-offset-white dark:ring-offset-slate-900`;
+  const common = `rounded-full object-cover ring-4 ${ring} ring-offset-4 ring-offset-surface`;
   if (photoUrl) {
     // eslint-disable-next-line @next/next/no-img-element -- admin-controlled Supabase Storage URL
     return <img src={photoUrl} alt={name} className={common} style={{ width: size, height: size }} />;
   }
   return (
     <div
-      className={`flex items-center justify-center bg-gradient-to-br from-slate-600 to-slate-700 font-bold text-slate-100 dark:from-slate-700 dark:to-slate-800 ${common}`}
+      className={`flex items-center justify-center bg-gradient-to-br from-brand-deep to-brand-deep font-bold text-brand-deep-foreground ${common}`}
       style={{ width: size, height: size, fontSize: size / 2.6 }}
     >
       {initials(name)}
@@ -73,7 +73,7 @@ function NavButton({ direction, onClick, disabled }: { direction: "prev" | "next
       onClick={onClick}
       disabled={disabled}
       aria-label={direction === "prev" ? "Previous competition" : "Next competition"}
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-lg text-slate-600 transition hover:border-amber-400 hover:text-amber-600 disabled:pointer-events-none disabled:opacity-30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-amber-400/50 dark:hover:text-amber-300"
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-lg text-muted transition hover:border-amber-400 hover:text-amber-600 disabled:pointer-events-none disabled:opacity-30 dark:hover:border-amber-400/50 dark:hover:text-amber-300"
     >
       {direction === "prev" ? "‹" : "›"}
     </button>
@@ -87,7 +87,7 @@ function PodiumCard({ winner, tier }: { winner: PublishedWinner; tier: Tier }) {
   return (
     <div className="flex flex-col items-center" style={{ order: t.order }}>
       <div
-        className={`relative flex flex-col items-center rounded-3xl border border-slate-200 bg-white transition-transform duration-300 hover:-translate-y-1 dark:border-slate-800 dark:bg-slate-900 ${t.glow} ${
+        className={`relative flex flex-col items-center rounded-3xl border border-border bg-surface transition-transform duration-300 hover:-translate-y-1   ${t.glow} ${
           grand ? "w-60 px-6 pt-8 pb-6 sm:w-72" : "w-36 px-3 pt-7 pb-4 sm:w-44"
         }`}
       >
@@ -98,12 +98,12 @@ function PodiumCard({ winner, tier }: { winner: PublishedWinner; tier: Tier }) {
           {t.label}
         </span>
         <Avatar name={winner.studentName} photoUrl={winner.photoUrl} size={t.avatarSize} ring={t.ring} />
-        <p className={`mt-4 truncate text-center font-bold text-slate-900 dark:text-slate-100 ${grand ? "text-xl" : "text-sm"}`}>
+        <p className={`mt-4 truncate text-center font-bold text-foreground  ${grand ? "text-xl" : "text-sm"}`}>
           {winner.studentName}
         </p>
-        <p className={`truncate text-center text-slate-500 dark:text-slate-400 ${grand ? "text-sm" : "text-xs"}`}>{winner.schoolName}</p>
+        <p className={`truncate text-center text-muted  ${grand ? "text-sm" : "text-xs"}`}>{winner.schoolName}</p>
         {winner.entryType === "team" && winner.teamMembers && winner.teamMembers.length > 0 && (
-          <p className="mt-1 line-clamp-2 max-w-full text-center text-[11px] text-slate-400 dark:text-slate-500">{winner.teamMembers.join(" · ")}</p>
+          <p className="mt-1 line-clamp-2 max-w-full text-center text-[11px] text-muted">{winner.teamMembers.join(" · ")}</p>
         )}
       </div>
       <div
@@ -120,7 +120,7 @@ export function ChampionsPodium({ groups }: { groups: CompetitionWinnerGroup[] }
   const [index, setIndex] = useState(0);
 
   if (groups.length === 0) {
-    return <p className="text-center text-sm text-slate-500 dark:text-slate-400">Winners will appear here once results are published.</p>;
+    return <p className="text-center text-sm text-muted">Winners will appear here once results are published.</p>;
   }
 
   const current = groups[Math.min(index, groups.length - 1)];
@@ -137,7 +137,7 @@ export function ChampionsPodium({ groups }: { groups: CompetitionWinnerGroup[] }
           </p>
           <Link
             href={`/competitions/${current.competitionSlug}`}
-            className="text-lg font-bold text-slate-900 transition hover:text-amber-600 dark:text-slate-100 dark:hover:text-amber-300"
+            className="text-lg font-bold text-foreground transition hover:text-amber-600 dark:hover:text-amber-300"
           >
             {current.competitionTitle}
           </Link>
@@ -159,7 +159,7 @@ export function ChampionsPodium({ groups }: { groups: CompetitionWinnerGroup[] }
               onClick={() => setIndex(i)}
               aria-label={`Show ${g.competitionTitle}`}
               className={`h-1.5 rounded-full transition-all ${
-                i === index ? "w-7 bg-amber-500 dark:bg-amber-400" : "w-1.5 bg-slate-300 hover:bg-slate-400 dark:bg-white/20 dark:hover:bg-white/35"
+                i === index ? "w-7 bg-accent" : "w-1.5 bg-border hover:bg-muted"
               }`}
             />
           ))}

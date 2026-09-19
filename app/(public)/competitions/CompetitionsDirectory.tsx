@@ -30,18 +30,18 @@ export function CompetitionsDirectory({
 
   return (
     <div>
-      <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-slate-800 dark:bg-slate-900">
+      <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center">
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by competition name…"
-          className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          className="flex-1 rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground outline-none focus:border-accent"
         />
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value as AgeCategory | "all")}
-          className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          className="rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground"
         >
           <option value="all">All categories</option>
           {Object.entries(categoryLabels).map(([value, label]) => (
@@ -53,7 +53,7 @@ export function CompetitionsDirectory({
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as CompetitionStatus | "all")}
-          className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          className="rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground"
         >
           <option value="all">Any status</option>
           {Object.entries(statusLabels).map(([value, label]) => (
@@ -65,7 +65,7 @@ export function CompetitionsDirectory({
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}
-          className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          className="rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground"
         >
           <option value="deadline">Registration closing soon</option>
           <option value="event-date">Event date</option>
@@ -73,7 +73,7 @@ export function CompetitionsDirectory({
         </select>
       </div>
 
-      <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+      <p className="mb-4 text-sm text-muted">
         {results.length} competition{results.length === 1 ? "" : "s"} found
       </p>
 
@@ -82,7 +82,7 @@ export function CompetitionsDirectory({
           <CompetitionCard key={c.slug} competition={c} />
         ))}
         {results.length === 0 && (
-          <p className="col-span-full py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+          <p className="col-span-full py-12 text-center text-sm text-muted">
             No competitions match your filters.
           </p>
         )}

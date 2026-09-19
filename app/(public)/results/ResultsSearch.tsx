@@ -40,12 +40,12 @@ export function ResultsSearch({ winners }: { winners: PublishedWinner[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by student, school or competition…"
-          className="flex-1 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="flex-1 rounded-lg border border-border bg-surface px-4 py-2 text-sm text-foreground outline-none focus:border-accent"
         />
         <select
           value={competition}
           onChange={(e) => setCompetition(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="rounded-lg border border-border bg-surface px-4 py-2 text-sm text-foreground"
         >
           <option value="all">All competitions</option>
           {competitionOptions.map((c) => (
@@ -57,7 +57,7 @@ export function ResultsSearch({ winners }: { winners: PublishedWinner[] }) {
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value as AgeCategory | "all")}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="rounded-lg border border-border bg-surface px-4 py-2 text-sm text-foreground"
         >
           <option value="all">All categories</option>
           {Object.entries(categoryLabels).map(([value, label]) => (
@@ -70,7 +70,7 @@ export function ResultsSearch({ winners }: { winners: PublishedWinner[] }) {
           <select
             value={season}
             onChange={(e) => setSeason(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            className="rounded-lg border border-border bg-surface px-4 py-2 text-sm text-foreground"
           >
             <option value="all">All seasons</option>
             {seasonOptions.map((s) => (
@@ -83,25 +83,25 @@ export function ResultsSearch({ winners }: { winners: PublishedWinner[] }) {
       </div>
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {results.map((w, i) => (
-          <div key={i} className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          <div key={i} className="overflow-hidden rounded-xl border border-border bg-surface">
             {w.photoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element -- admin-controlled Supabase Storage URL
               <img src={w.photoUrl} alt={w.studentName} className="h-40 w-full object-cover" />
             ) : (
-              <div className="flex h-40 w-full items-center justify-center bg-slate-100 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              <div className="flex h-40 w-full items-center justify-center bg-surface-muted text-sm text-muted">
                 No photo
               </div>
             )}
             <div className="p-4">
               <ArenaBadge tone="warning">{w.customAwardLabel ?? w.award}</ArenaBadge>
-              <p className="mt-1 font-semibold text-slate-900 dark:text-slate-100">{w.studentName}</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">{w.schoolName}</p>
-              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{w.competitionTitle}</p>
+              <p className="mt-1 font-semibold text-foreground">{w.studentName}</p>
+              <p className="text-sm text-muted">{w.schoolName}</p>
+              <p className="mt-2 text-xs text-muted">{w.competitionTitle}</p>
             </div>
           </div>
         ))}
         {results.length === 0 && (
-          <p className="col-span-full py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+          <p className="col-span-full py-12 text-center text-sm text-muted">
             No published results match your search yet.
           </p>
         )}

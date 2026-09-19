@@ -64,14 +64,14 @@ function ScheduleTimeline({ activities }: { activities: ScheduledActivity[] }) {
       {groupByDate(activities).map((group) => (
         <div key={group.date} className="grid gap-3 sm:grid-cols-[130px_1fr] sm:gap-6">
           <div className="sm:pt-4 sm:text-right">
-            <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{group.date}</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{group.day}</p>
+            <p className="text-lg font-bold text-foreground">{group.date}</p>
+            <p className="text-sm text-muted">{group.day}</p>
           </div>
-          <div className="space-y-3 sm:border-l sm:border-slate-200 sm:pl-6 dark:sm:border-slate-800">
+          <div className="space-y-3 sm:border-l sm:border-border sm:pl-6">
             {group.items.map((item) => (
-              <div key={item.name} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-                <p className="font-semibold text-slate-900 dark:text-slate-100">{item.name}</p>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{item.nature}</p>
+              <div key={item.name} className="rounded-xl border border-border bg-surface p-4">
+                <p className="font-semibold text-foreground">{item.name}</p>
+                <p className="mt-1 text-sm text-muted">{item.nature}</p>
                 <div className="mt-3">
                   <FormatBadges formats={item.formats} />
                 </div>
@@ -87,8 +87,8 @@ function ScheduleTimeline({ activities }: { activities: ScheduledActivity[] }) {
 function SectionHeading({ title, intro }: { title: string; intro?: string }) {
   return (
     <div className="mb-5">
-      <h2 className="text-xl font-bold text-slate-900 sm:text-2xl dark:text-slate-100">{title}</h2>
-      {intro && <p className="mt-2 max-w-3xl text-sm text-slate-600 dark:text-slate-400">{intro}</p>}
+      <h2 className="text-xl font-bold text-foreground sm:text-2xl">{title}</h2>
+      {intro && <p className="mt-2 max-w-3xl text-sm text-muted">{intro}</p>}
     </div>
   );
 }
@@ -98,7 +98,7 @@ export default async function CalendarPage() {
   const dates = await upcomingDates(supabase);
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950">
+    <div className="bg-background">
       <PageBanner eyebrow="Competition Calendar 2026" title="Future Ready League Calendar" subtitle={CALENDAR_INTRO} />
 
       <div className="mx-auto max-w-5xl px-6 py-12">
@@ -107,7 +107,7 @@ export default async function CalendarPage() {
           {CALENDAR_STRAPLINE.map((item) => (
             <span
               key={item}
-              className="rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300"
+              className="rounded-full border border-accent bg-accent-soft px-4 py-2 text-sm font-semibold text-accent-strong"
             >
               {item}
             </span>
@@ -119,10 +119,10 @@ export default async function CalendarPage() {
           <SectionHeading title="Key dates" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {KEY_DATES.map((d) => (
-              <div key={d.milestone} className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-                <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase dark:text-blue-400">{d.milestone}</p>
-                <p className="mt-2 font-bold text-slate-900 dark:text-slate-100">{d.date}</p>
-                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{d.note}</p>
+              <div key={d.milestone} className="rounded-xl border border-border bg-surface p-5">
+                <p className="text-xs font-semibold tracking-wide text-accent-strong uppercase">{d.milestone}</p>
+                <p className="mt-2 font-bold text-foreground">{d.date}</p>
+                <p className="mt-2 text-sm text-muted">{d.note}</p>
               </div>
             ))}
           </div>
@@ -133,9 +133,9 @@ export default async function CalendarPage() {
           <SectionHeading title="Activity formats" />
           <div className="grid gap-3 sm:grid-cols-2">
             {FORMAT_LEGEND.map((f) => (
-              <div key={f.format} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div key={f.format} className="rounded-xl border border-border bg-surface p-4">
                 <ArenaBadge tone={formatTone[f.format]}>{f.format}</ArenaBadge>
-                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{f.description}</p>
+                <p className="mt-2 text-sm text-muted">{f.description}</p>
               </div>
             ))}
           </div>
@@ -148,10 +148,10 @@ export default async function CalendarPage() {
             intro="Each activity takes place on the date shown. Where two activities share a date, separate sessions or spaces are assigned. Registration for every activity closes on 10 October."
           />
           <ScheduleTimeline activities={WEEK_ONE} />
-          <div className="mt-5 rounded-xl border border-slate-200 bg-slate-100 p-4 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+          <div className="mt-5 rounded-xl border border-border bg-surface-muted p-4 text-sm text-muted">
             {WEEKEND_GAP_NOTE}
           </div>
-          <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">{ON_THE_DAY_NOTE}</p>
+          <p className="mt-3 text-xs text-muted">{ON_THE_DAY_NOTE}</p>
         </section>
 
         {/* Week two */}
@@ -165,22 +165,22 @@ export default async function CalendarPage() {
           <SectionHeading title="Final event programme" />
           <div className="grid gap-4 sm:grid-cols-2">
             {FINAL_EVENT_PROGRAMME.map((p) => (
-              <div key={p.date} className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-                <p className="font-bold text-slate-900 dark:text-slate-100">{p.date}</p>
-                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{p.detail}</p>
+              <div key={p.date} className="rounded-xl border border-border bg-surface p-5">
+                <p className="font-bold text-foreground">{p.date}</p>
+                <p className="mt-2 text-sm text-muted">{p.detail}</p>
               </div>
             ))}
           </div>
-          <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">{FINAL_EVENT_NOTE}</p>
+          <p className="mt-3 text-xs text-muted">{FINAL_EVENT_NOTE}</p>
         </section>
 
         {/* Submission and showcase calendar */}
         <section className="mt-12">
           <SectionHeading title="Submission and showcase calendar" intro={SUBMISSION_CALENDAR_INTRO} />
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          <div className="overflow-x-auto rounded-xl border border-border bg-surface">
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                <tr className="border-b border-border text-muted">
                   <th className="px-4 py-3 font-medium">Competition</th>
                   <th className="px-4 py-3 font-medium">Required submission</th>
                   <th className="px-4 py-3 font-medium">Format</th>
@@ -189,13 +189,13 @@ export default async function CalendarPage() {
               </thead>
               <tbody>
                 {SUBMISSION_CALENDAR.map((s) => (
-                  <tr key={s.competition} className="border-b border-slate-200 last:border-0 dark:border-slate-800">
-                    <td className="px-4 py-3 font-medium text-slate-900 align-top dark:text-slate-100">{s.competition}</td>
-                    <td className="px-4 py-3 text-slate-600 align-top dark:text-slate-400">{s.requirement}</td>
+                  <tr key={s.competition} className="border-b border-border last:border-0">
+                    <td className="px-4 py-3 font-medium text-foreground align-top">{s.competition}</td>
+                    <td className="px-4 py-3 text-muted align-top">{s.requirement}</td>
                     <td className="px-4 py-3 align-top">
                       <FormatBadges formats={s.formats} />
                     </td>
-                    <td className="px-4 py-3 text-slate-600 align-top dark:text-slate-400">{s.presentation}</td>
+                    <td className="px-4 py-3 text-muted align-top">{s.presentation}</td>
                   </tr>
                 ))}
               </tbody>
@@ -206,10 +206,10 @@ export default async function CalendarPage() {
         {/* Award submissions */}
         <section className="mt-12">
           <SectionHeading title="Award submission categories" intro={AWARD_SUBMISSION_INTRO} />
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          <div className="overflow-x-auto rounded-xl border border-border bg-surface">
             <table className="w-full min-w-[680px] text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                <tr className="border-b border-border text-muted">
                   <th className="px-4 py-3 font-medium">Award</th>
                   <th className="px-4 py-3 font-medium">Nature of submission</th>
                   <th className="px-4 py-3 font-medium">Who may submit</th>
@@ -217,20 +217,20 @@ export default async function CalendarPage() {
               </thead>
               <tbody>
                 {AWARD_SUBMISSIONS.map((a) => (
-                  <tr key={a.award} className="border-b border-slate-200 last:border-0 dark:border-slate-800">
-                    <td className="px-4 py-3 font-medium text-slate-900 align-top dark:text-slate-100">{a.award}</td>
-                    <td className="px-4 py-3 text-slate-600 align-top dark:text-slate-400">{a.nature}</td>
-                    <td className="px-4 py-3 text-slate-600 align-top dark:text-slate-400">{a.whoMaySubmit}</td>
+                  <tr key={a.award} className="border-b border-border last:border-0">
+                    <td className="px-4 py-3 font-medium text-foreground align-top">{a.award}</td>
+                    <td className="px-4 py-3 text-muted align-top">{a.nature}</td>
+                    <td className="px-4 py-3 text-muted align-top">{a.whoMaySubmit}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">{ADDITIONAL_NOMINATIONS_NOTE}</p>
+          <p className="mt-3 text-xs text-muted">{ADDITIONAL_NOMINATIONS_NOTE}</p>
         </section>
 
         {/* Scheduling note */}
-        <p className="mt-12 rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+        <p className="mt-12 rounded-xl border border-border bg-surface p-4 text-xs text-muted">
           {SCHEDULING_NOTE}
         </p>
 
@@ -238,14 +238,14 @@ export default async function CalendarPage() {
         {dates.length > 0 && (
           <section className="mt-12">
             <SectionHeading title="Competition-specific dates" intro="Round, deadline and result dates published per competition." />
-            <div className="divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+            <div className="divide-y divide-border rounded-2xl border border-border bg-surface">
               {dates.map((d, i) => (
                 <div key={i} className="flex items-center justify-between gap-4 p-4">
                   <div>
                     <ArenaBadge tone="blue">{d.label}</ArenaBadge>
-                    <p className="mt-1 font-semibold text-slate-900 dark:text-slate-100">{d.competition}</p>
+                    <p className="mt-1 font-semibold text-foreground">{d.competition}</p>
                   </div>
-                  <p className="shrink-0 text-sm font-semibold text-blue-600 dark:text-blue-400">
+                  <p className="shrink-0 text-sm font-semibold text-accent-strong">
                     {new Date(d.date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
                   </p>
                 </div>

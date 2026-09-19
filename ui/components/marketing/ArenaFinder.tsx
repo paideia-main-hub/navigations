@@ -4,27 +4,27 @@ export function ArenaFinder() {
   return (
     <form
       action="/competitions"
-      className="mx-auto -mt-10 flex max-w-5xl flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl sm:flex-row sm:items-center dark:border-slate-800 dark:bg-slate-900"
+      className="mx-auto -mt-10 flex max-w-5xl flex-col gap-3 rounded-2xl border border-border bg-surface p-4 shadow-xl sm:flex-row sm:items-center"
     >
       <div className="flex-1">
-        <label className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+        <label className="text-xs font-semibold tracking-wide text-muted uppercase">
           Competition name
         </label>
         <input
           type="search"
           name="q"
           placeholder="Robotics, Public Oratory, Applied STEM…"
-          className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
         />
       </div>
       <div>
-        <label className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+        <label className="text-xs font-semibold tracking-wide text-muted uppercase">
           Age group
         </label>
         <select
           name="category"
           defaultValue="all"
-          className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 sm:w-44"
+          className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground sm:w-44"
         >
           <option value="all">All Categories</option>
           {Object.entries(categoryLabels).map(([value, label]) => (
@@ -35,11 +35,11 @@ export function ArenaFinder() {
         </select>
       </div>
       <div>
-        <label className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">Status</label>
+        <label className="text-xs font-semibold tracking-wide text-muted uppercase">Status</label>
         <select
           name="status"
           defaultValue="all"
-          className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 sm:w-40"
+          className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground sm:w-40"
         >
           <option value="all">All Statuses</option>
           <option value="open">Open</option>
@@ -48,7 +48,7 @@ export function ArenaFinder() {
       </div>
       <button
         type="submit"
-        className="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-500"
+        className="rounded-lg bg-accent px-6 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
       >
         Search Competitions
       </button>

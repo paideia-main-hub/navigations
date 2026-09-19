@@ -12,11 +12,11 @@ export function SectionHeading({
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p className="text-xs font-semibold tracking-wider text-blue-600 uppercase dark:text-blue-400">{eyebrow}</p>
-        <h2 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl dark:text-slate-50">{title}</h2>
+        <p className="text-xs font-semibold tracking-wider text-accent-strong uppercase">{eyebrow}</p>
+        <h2 className="mt-1 text-2xl font-bold text-foreground sm:text-3xl">{title}</h2>
       </div>
       {action && (
-        <Link href={action.href} className="text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400">
+        <Link href={action.href} className="text-sm font-semibold text-accent-strong hover:underline">
           {action.label} →
         </Link>
       )}

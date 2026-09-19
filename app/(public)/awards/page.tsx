@@ -24,7 +24,7 @@ export default async function AwardsLandingPage() {
   const categories = await listOpenCategories(supabase);
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950">
+    <div className="bg-background">
       <PageBanner
         eyebrow="Awards and Recognition"
         title="Future Ready League Awards"
@@ -33,14 +33,14 @@ export default async function AwardsLandingPage() {
 
       <div className="mx-auto max-w-5xl px-6 py-12">
         <div className="flex flex-wrap gap-3">
-          <Link href="/competitions" className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:border-blue-500 dark:border-slate-700 dark:text-slate-100">
+          <Link href="/competitions" className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:border-accent">
             Explore Competitions
           </Link>
-          <Link href="/awards/results" className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:border-blue-500 dark:border-slate-700 dark:text-slate-100">
+          <Link href="/awards/results" className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:border-accent">
             View Award Criteria &amp; Results
           </Link>
         </div>
-        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-3 text-sm text-muted">
           This page explains every award on the platform. To submit or track a nomination, log in and go to{" "}
           <span className="font-semibold">My Nominations</span> in your dashboard.
         </p>
@@ -51,24 +51,24 @@ export default async function AwardsLandingPage() {
             return (
               <section key={layer}>
                 <div className="flex flex-wrap items-baseline gap-3">
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{layerLabels[layer]}</h2>
+                  <h2 className="text-xl font-bold text-foreground">{layerLabels[layer]}</h2>
                 </div>
-                <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">{LAYER_INTRO[layer]}</p>
+                <p className="mt-1 max-w-2xl text-sm text-muted">{LAYER_INTRO[layer]}</p>
 
                 <div className="mt-4 space-y-3">
                   {awards.map((a) => (
-                    <details key={a.slug} className="group rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+                    <details key={a.slug} className="group rounded-xl border border-border bg-surface p-5">
                       <summary className="cursor-pointer">
-                        <span className="font-semibold text-slate-900 dark:text-slate-100">{a.title}</span>
+                        <span className="font-semibold text-foreground">{a.title}</span>
                       </summary>
-                      <p className="mt-1 text-xs font-semibold tracking-wide text-blue-600 uppercase dark:text-blue-400">Awarded to: {a.awardedTo}</p>
-                      <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">{a.description}</p>
+                      <p className="mt-1 text-xs font-semibold tracking-wide text-accent-strong uppercase">Awarded to: {a.awardedTo}</p>
+                      <p className="mt-3 text-sm text-muted">{a.description}</p>
                       {a.criteria && (
                         <div className="mt-3 space-y-1.5">
                           {a.criteria.map((c) => (
-                            <div key={c.label} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800">
-                              <span className="text-slate-900 dark:text-slate-100">{c.label}</span>
-                              <span className="font-semibold text-slate-900 dark:text-slate-100">{c.weight}</span>
+                            <div key={c.label} className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-1.5 text-sm">
+                              <span className="text-foreground">{c.label}</span>
+                              <span className="font-semibold text-foreground">{c.weight}</span>
                             </div>
                           ))}
                         </div>
@@ -83,17 +83,17 @@ export default async function AwardsLandingPage() {
 
         {categories.length > 0 && (
           <div className="mt-12">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Open for nominations now</h2>
+            <h2 className="text-xl font-bold text-foreground">Open for nominations now</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((c) => (
                 <Link
                   key={c.slug}
                   href={`/awards/${c.slug}`}
-                  className="rounded-xl border border-slate-200 bg-white p-5 hover:border-blue-400 dark:border-slate-800 dark:bg-slate-900"
+                  className="rounded-xl border border-border bg-surface p-5 hover:border-accent"
                 >
                   <ArenaBadge tone="neutral">{layerLabels[c.layer]}</ArenaBadge>
-                  <p className="mt-2 font-semibold text-slate-900 dark:text-slate-100">{c.title}</p>
-                  <p className="mt-1 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{c.description}</p>
+                  <p className="mt-2 font-semibold text-foreground">{c.title}</p>
+                  <p className="mt-1 line-clamp-2 text-sm text-muted">{c.description}</p>
                 </Link>
               ))}
             </div>

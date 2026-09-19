@@ -10,7 +10,7 @@ export default async function ResultsPage() {
   const winners = await listPublishedWinners(supabase);
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950">
+    <div className="bg-background">
       <PageBanner
         eyebrow="Results & Winners"
         title="Results & Winners"

@@ -4,28 +4,57 @@
    toggle, controlled by ui/components/ThemeToggle.tsx + ui/theme/theme-init. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Brand palette
+   ─────────────────────────────────────────────────────────────────────────
+   Platinum         #F8FBFF
+   Atomic Tangerine #FF691F
+   Space Indigo     #1F2041
+
+   Atomic Tangerine is too light to carry small text on a pale background —
+   #FF691F on Platinum is 2.88:1, under the 4.5:1 WCAG AA floor, and white on
+   Atomic Tangerine is the same 2.88:1. Space Indigo on Atomic Tangerine is
+   5.43:1, so the brand orange works as a *fill* with indigo sitting on top,
+   not as a text colour over pale surfaces.
+
+   That's why there are two oranges. Use --accent for fills, large type and
+   decoration; use --accent-strong for links and small text, where the darker
+   #C4400A reaches 5.14:1 on Platinum. --accent-foreground is what goes on top
+   of an --accent fill. */
+
 :root {
-  --background: #ffffff;
+  --background: #f8fbff; /* Platinum */
   --surface: #ffffff;
-  --surface-muted: #f6f7f8;
-  --foreground: #16181c;
-  --muted: #5b6470;
-  --border: rgba(16, 24, 32, 0.1);
-  --accent: #0f8a7e;
-  --accent-foreground: #ffffff;
-  --accent-soft: #e6f5f3;
+  --surface-muted: #eef2f9;
+  --foreground: #1f2041; /* Space Indigo */
+  --muted: #5c6180; /* 5.82:1 on Platinum */
+  --border: rgba(31, 32, 65, 0.12);
+  --accent: #ff691f; /* Atomic Tangerine — fills only */
+  --accent-foreground: #1f2041; /* 5.43:1 on Atomic Tangerine */
+  --accent-strong: #c4400a; /* 5.14:1 on Platinum — links, small text */
+  --accent-soft: #fff1e8;
 }
 
 .dark {
-  --background: #0b0d10;
-  --surface: #14171b;
-  --surface-muted: #1a1e23;
-  --foreground: #f1f3f4;
-  --muted: #9aa4b0;
-  --border: rgba(255, 255, 255, 0.1);
-  --accent: #2dd4c4;
-  --accent-foreground: #06231f;
-  --accent-soft: #0f2b28;
+  --background: #15162e;
+  --surface: #1f2041; /* Space Indigo */
+  --surface-muted: #282a54;
+  --foreground: #f8fbff; /* Platinum */
+  --muted: #a8adcc; /* 7.09:1 on Space Indigo */
+  --border: rgba(248, 251, 255, 0.14);
+  --accent: #ff7a36; /* lifted so it holds up against indigo */
+  --accent-foreground: #1f2041;
+  --accent-strong: #ff9256; /* small text on dark surfaces */
+  --accent-soft: #3a2519;
+}
+
+/* Surfaces that stay dark in both themes — the hero band, page banners, the
+   footer, the admin sign-in. They don't flip with the theme, so they carry
+   their own foreground rather than borrowing the themeable one. */
+:root,
+.dark {
+  --brand-deep: #1f2041; /* Space Indigo */
+  --brand-deep-foreground: #f8fbff; /* Platinum — 14.3:1 on Space Indigo */
+  --brand-deep-muted: #a8adcc; /* 7.09:1 on Space Indigo */
 }
 
 @theme inline {
@@ -37,7 +66,11 @@
   --color-border: var(--border);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-strong: var(--accent-strong);
   --color-accent-soft: var(--accent-soft);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-deep-foreground: var(--brand-deep-foreground);
+  --color-brand-deep-muted: var(--brand-deep-muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

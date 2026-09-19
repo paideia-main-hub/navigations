@@ -29,42 +29,42 @@ export default async function AwardResultsPage() {
   const schoolResultsByCategory = await Promise.all(schoolAwardCategories.map((c) => listResults(supabase, c.id)));
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950">
+    <div className="bg-background">
       <PageBanner eyebrow="Awards" title="Award Results" subtitle="Published after admin approval and verification, across every recognition layer." />
 
       <div className="mx-auto max-w-5xl space-y-12 px-6 py-12">
         <section>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Competition Distinctions</h2>
+          <h2 className="text-xl font-bold text-foreground">Competition Distinctions</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {distinctionWinners.map((w, i) => (
-              <div key={i} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div key={i} className="rounded-xl border border-border bg-surface p-4">
                 <ArenaBadge tone="blue">{COMPETITION_DISTINCTION_LABEL[w.award] ?? awardLabels[w.award as keyof typeof awardLabels]}</ArenaBadge>
-                <p className="mt-2 font-semibold text-slate-900 dark:text-slate-100">{w.entrantName}</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{w.schoolName} · {w.competitionTitle}</p>
+                <p className="mt-2 font-semibold text-foreground">{w.entrantName}</p>
+                <p className="text-sm text-muted">{w.schoolName} · {w.competitionTitle}</p>
               </div>
             ))}
-            {distinctionWinners.length === 0 && <p className="col-span-full text-sm text-slate-500 dark:text-slate-400">No distinctions published yet.</p>}
+            {distinctionWinners.length === 0 && <p className="col-span-full text-sm text-muted">No distinctions published yet.</p>}
           </div>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">School Awards</h2>
+          <h2 className="text-xl font-bold text-foreground">School Awards</h2>
           <div className="mt-4 space-y-6">
             {schoolAwardCategories.map((c, i) => {
               const rows = (schoolResultsByCategory[i] ?? []).filter((r) => r.isPublished);
               return (
                 <div key={c.id}>
-                  <h3 className="font-semibold text-slate-900 dark:text-slate-100">{c.title}</h3>
+                  <h3 className="font-semibold text-foreground">{c.title}</h3>
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
                     {rows.map((r) => (
-                      <div key={r.schoolId} className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900">
-                        <span className="font-medium text-slate-900 dark:text-slate-100">
+                      <div key={r.schoolId} className="flex items-center justify-between rounded-lg border border-border bg-surface px-4 py-2 text-sm">
+                        <span className="font-medium text-foreground">
                           {r.schoolName} {r.isWinner && "🏆"}
                         </span>
-                        <span className="text-slate-500 dark:text-slate-400">{r.computedValue}</span>
+                        <span className="text-muted">{r.computedValue}</span>
                       </div>
                     ))}
-                    {rows.length === 0 && <p className="text-sm text-slate-500 dark:text-slate-400">Not yet published.</p>}
+                    {rows.length === 0 && <p className="text-sm text-muted">Not yet published.</p>}
                   </div>
                 </div>
               );
@@ -73,26 +73,26 @@ export default async function AwardResultsPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Spotlight, Teacher/Parent, Sports &amp; Principal</h2>
+          <h2 className="text-xl font-bold text-foreground">Spotlight, Teacher/Parent, Sports &amp; Principal</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {nominations.map((n) => (
-              <div key={n.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+              <div key={n.id} className="overflow-hidden rounded-xl border border-border bg-surface">
                 {n.winnerPhotoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element -- admin-controlled Supabase Storage URL
                   <img src={n.winnerPhotoUrl} alt={n.nomineeName} className="h-40 w-full object-cover" />
                 ) : (
-                  <div className="flex h-40 w-full items-center justify-center bg-slate-100 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                  <div className="flex h-40 w-full items-center justify-center bg-surface-muted text-sm text-muted">
                     No photo
                   </div>
                 )}
                 <div className="p-4">
                   <ArenaBadge tone="blue">{n.categoryTitle}</ArenaBadge>
-                  <p className="mt-2 font-semibold text-slate-900 dark:text-slate-100">{n.nomineeName}</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">{n.schoolName ?? "Independent"}</p>
+                  <p className="mt-2 font-semibold text-foreground">{n.nomineeName}</p>
+                  <p className="text-sm text-muted">{n.schoolName ?? "Independent"}</p>
                 </div>
               </div>
             ))}
-            {nominations.length === 0 && <p className="col-span-full text-sm text-slate-500 dark:text-slate-400">No nominations published yet.</p>}
+            {nominations.length === 0 && <p className="col-span-full text-sm text-muted">No nominations published yet.</p>}
           </div>
         </section>
       </div>
