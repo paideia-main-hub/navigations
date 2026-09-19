@@ -42,7 +42,7 @@ export default async function CompetitionPage({
       icon: "📋",
       content: (
         <div className="max-w-2xl space-y-4">
-          <p className="text-slate-900 dark:text-slate-100">{competition.overview || "Overview coming soon."}</p>
+          <p className="whitespace-pre-line text-slate-900 dark:text-slate-100">{competition.overview || "Overview coming soon."}</p>
           <p className={`text-sm ${muted}`}>
             Domain: <span className="font-medium text-slate-900 dark:text-slate-100">{competition.domain || "—"}</span>
           </p>
@@ -115,7 +115,7 @@ export default async function CompetitionPage({
               <h3 className="font-semibold text-slate-900 dark:text-slate-100">
                 Stage {stage.stageNumber}: {stage.title}
               </h3>
-              <p className={`mt-1 text-sm ${muted}`}>{stage.taskDescription}</p>
+              <p className={`mt-1 whitespace-pre-line text-sm ${muted}`}>{stage.taskDescription}</p>
             </div>
           ))}
           {competition.stages.length === 0 && <p className={`text-sm ${muted}`}>Challenges coming soon.</p>}
@@ -193,7 +193,7 @@ export default async function CompetitionPage({
           {competition.resources.map((r) => (
             <div key={r.id} className={card}>
               <p className="font-semibold text-slate-900 dark:text-slate-100">{r.title}</p>
-              {r.content && <p className={`mt-1 text-sm ${muted}`}>{r.content}</p>}
+              {r.content && <p className={`mt-1 whitespace-pre-line text-sm ${muted}`}>{r.content}</p>}
               {r.videoUrl && (
                 <a href={r.videoUrl} target="_blank" rel="noreferrer" className={`mt-2 inline-block ${link}`}>
                   {r.downloadAllowed ? "Download" : "View"} →
