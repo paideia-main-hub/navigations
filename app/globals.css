@@ -55,6 +55,10 @@
   --brand-deep: #1f2041; /* Space Indigo */
   --brand-deep-foreground: #f8fbff; /* Platinum — 14.3:1 on Space Indigo */
   --brand-deep-muted: #a8adcc; /* 7.09:1 on Space Indigo */
+  /* For marks sitting on a Platinum card inside a dark band. --accent-strong
+     can't be used there: it lightens in dark mode, which is right against a
+     dark surface but drops to ~2.4:1 on these permanently pale cards. */
+  --brand-deep-accent: #c4400a; /* 5.14:1 on Platinum */
 }
 
 @theme inline {
@@ -71,6 +75,7 @@
   --color-brand-deep: var(--brand-deep);
   --color-brand-deep-foreground: var(--brand-deep-foreground);
   --color-brand-deep-muted: var(--brand-deep-muted);
+  --color-brand-deep-accent: var(--brand-deep-accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
