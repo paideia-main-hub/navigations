@@ -32,6 +32,10 @@
   --accent-foreground: #1f2041; /* 5.43:1 on Atomic Tangerine */
   --accent-strong: #c4400a; /* 5.14:1 on Platinum — links, small text */
   --accent-soft: #fff1e8;
+  /* Full-width section bands. Cards (--surface) sit a step lighter than
+     both, so a card always floats above its band in either theme. */
+  --surface-alt: #eef2f9; /* Space Indigo tint */
+  --surface-warm: #fff3ea; /* Atomic Tangerine tint */
 }
 
 .dark {
@@ -45,6 +49,8 @@
   --accent-foreground: #1f2041;
   --accent-strong: #ff9256; /* small text on dark surfaces */
   --accent-soft: #3a2519;
+  --surface-alt: #191a34;
+  --surface-warm: #1e1830;
 }
 
 /* Surfaces that stay dark in both themes — the hero band, page banners, the
@@ -65,6 +71,8 @@
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
+  --color-surface-alt: var(--surface-alt);
+  --color-surface-warm: var(--surface-warm);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);

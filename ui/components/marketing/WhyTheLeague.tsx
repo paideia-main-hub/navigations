@@ -18,7 +18,7 @@ const REASONS = [
 
 export function WhyTheLeague() {
   return (
-    <section className="px-6 py-14">
+    <section className="bg-background px-6 py-16">
       <div className="mx-auto max-w-7xl">
         <h2 className="flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
           <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />

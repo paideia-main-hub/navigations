@@ -381,13 +381,14 @@ export const getCompetitionWinnerRows = cache(
   },
 );
 
-/** Every competition's calendar events, with the competition title. */
+/** Every competition's calendar events, with the competition title and slug. */
 export const getCompetitionEventRows = cache(
-  async (supabase: SupabaseClient): Promise<{ title: string; events: CompetitionEvent[] }[]> => {
-    const { data, error } = await supabase.from("competitions").select("title, events (*)").order("created_at");
+  async (supabase: SupabaseClient): Promise<{ title: string; slug: string; events: CompetitionEvent[] }[]> => {
+    const { data, error } = await supabase.from("competitions").select("title, slug, events (*)").order("created_at");
     if (error || !data) return [];
     return (data as unknown as Row[]).map((row) => ({
       title: row.title,
+      slug: row.slug,
       events: (row.events ?? []).map((e) => ({
         id: e.id,
         type: e.type,

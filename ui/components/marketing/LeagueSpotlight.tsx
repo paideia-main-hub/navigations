@@ -50,7 +50,7 @@ export function LeagueSpotlight() {
   const slide = SLIDES[index];
 
   return (
-    <section className="bg-background px-6 py-14">
+    <section className="bg-background px-6 py-16">
       <div className="mx-auto max-w-7xl">
         <p className="flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
           <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />

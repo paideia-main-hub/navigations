@@ -12,6 +12,7 @@ import type {
   CompetitionEvent,
   CompetitionStatus,
   CompetitionSummary,
+  EventType,
 } from "./types";
 
 /** Card/filter/deadline fields for every competition — what listings and
@@ -146,14 +147,25 @@ export function groupWinnersByCompetition(winners: PublishedWinner[]): Competiti
 
 export interface UpcomingDate {
   competition: string;
+  /** Links the date back to its competition page. */
+  slug: string;
   label: string;
+  type: EventType;
   date: string;
 }
 
 export async function upcomingDates(supabase: SupabaseClient): Promise<UpcomingDate[]> {
   const all = await repo.getCompetitionEventRows(supabase);
   return all
-    .flatMap((c) => c.events.map((e) => ({ competition: c.title, label: e.title, date: e.eventDate })))
+    .flatMap((c) =>
+      c.events.map((e) => ({
+        competition: c.title,
+        slug: c.slug,
+        label: e.title,
+        type: e.type,
+        date: e.eventDate,
+      })),
+    )
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 

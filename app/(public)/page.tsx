@@ -12,7 +12,7 @@ import { WaysToParticipate } from "@/ui/components/marketing/WaysToParticipate";
 import { ImportantDates } from "@/ui/components/marketing/ImportantDates";
 import { RecognitionStrip } from "@/ui/components/marketing/RecognitionStrip";
 import { WhyTheLeague } from "@/ui/components/marketing/WhyTheLeague";
-import { FixturesList } from "@/ui/components/marketing/FixturesList";
+import { UpcomingEventsBoard } from "@/ui/components/marketing/UpcomingEventsBoard";
 import { ChampionsPodium } from "@/ui/components/marketing/ChampionsPodium";
 
 const whyParticipate = [
@@ -76,8 +76,8 @@ export default async function HomePage() {
       {/* 3. Ways to participate */}
       <WaysToParticipate />
 
-      <div className="bg-background">
-        <div className="mx-auto max-w-7xl px-6 pt-20 pb-12">
+      <div className="bg-surface-warm">
+        <div className="mx-auto max-w-7xl px-6 py-16">
           {/* 4. Explore — Route 1 lists competitions with grade and category
               filters, Route 2 lists the awards a student can submit to. */}
           <SectionHeading
@@ -92,41 +92,20 @@ export default async function HomePage() {
       {/* 5. Important dates — the published 2026 programme. */}
       <ImportantDates />
 
-      <div className="bg-background">
+      {/* 6. What every participant takes away */}
+      <RecognitionStrip />
 
-        {/* 6. What every participant takes away */}
-        <RecognitionStrip />
+      {/* 7. Upcoming events — grouped by date, because the whole League shares
+          a handful of deadlines and a row per competition was twenty
+          identical rows. */}
+      <UpcomingEventsBoard dates={dates} />
 
-        {/* 7. Fixtures */}
-        <div className="mx-auto max-w-7xl px-6 py-12">
-          <SectionHeading eyebrow="Competition Calendar" title="Upcoming Events" />
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <FixturesList dates={dates} />
-            </div>
-            <div className="rounded-2xl border border-border bg-surface p-6">
-              <p className="text-xs font-semibold tracking-wide text-accent-strong uppercase">
-                Stay on Schedule
-              </p>
-              <p className="mt-2 font-semibold text-foreground">Calendar Sync Available</p>
-              <p className="mt-1 text-sm text-muted">
-                Track every registration deadline, round and closing date without checking back here.
-              </p>
-              <Link
-                href="/calendar"
-                className="mt-4 inline-block rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
-              >
-                View Competition Calendar
-              </Link>
-            </div>
-          </div>
-        </div>
+      {/* 8. Why the League */}
+      <WhyTheLeague />
 
-        {/* 8. Why the League */}
-        <WhyTheLeague />
-
-        {/* 9. Announcements */}
-        <div className="mx-auto max-w-7xl px-6 py-12">
+      {/* 9. Announcements */}
+      <div className="bg-surface-warm">
+        <div className="mx-auto max-w-7xl px-6 py-16">
           <SectionHeading eyebrow="Announcements" title="Latest Announcements" action={{ href: "/announcements", label: "View all" }} />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {announcements.slice(0, 6).map((a) => (
@@ -143,31 +122,33 @@ export default async function HomePage() {
             )}
           </div>
         </div>
+      </div>
 
-        {/* 10. Champions podium — same light/dark-aware section shell as
-            everything around it (a permanent full-bleed dark band here read
-            as inconsistent with the rest of the page), distinguished by a
-            soft color-tinted glow instead of an always-dark background. */}
-        <div className="relative overflow-hidden py-16">
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute top-1/2 left-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-400/10 blur-[110px] dark:bg-amber-500/10" />
-          </div>
-          <div className="relative mx-auto max-w-7xl px-6">
-            <div className="mb-10 text-center">
-              <p className="text-xs font-semibold tracking-wider text-accent-strong uppercase">Results &amp; Winners</p>
-              <h2 className="mt-1 text-2xl font-bold text-foreground sm:text-3xl">
-                Winners{" "}
-                <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent dark:from-amber-300 dark:to-yellow-200">
-                  Showcase
-                </span>
-              </h2>
-            </div>
-            <ChampionsPodium groups={winnerGroups} />
-          </div>
+      {/* 10. Champions podium — same light/dark-aware section shell as
+          everything around it (a permanent full-bleed dark band here read
+          as inconsistent with the rest of the page), distinguished by a
+          soft color-tinted glow instead of an always-dark background. */}
+      <div className="relative overflow-hidden bg-background py-16">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute top-1/2 left-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-400/10 blur-[110px] dark:bg-amber-500/10" />
         </div>
+        <div className="relative mx-auto max-w-7xl px-6">
+          <div className="mb-10 text-center">
+            <p className="text-xs font-semibold tracking-wider text-accent-strong uppercase">Results &amp; Winners</p>
+            <h2 className="mt-1 text-2xl font-bold text-foreground sm:text-3xl">
+              Winners{" "}
+              <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent dark:from-amber-300 dark:to-yellow-200">
+                Showcase
+              </span>
+            </h2>
+          </div>
+          <ChampionsPodium groups={winnerGroups} />
+        </div>
+      </div>
 
-        {/* 11. For Students / For Schools */}
-        <div className="mx-auto grid max-w-7xl gap-6 px-6 py-12 sm:grid-cols-2">
+      {/* 11. For Students / For Schools */}
+      <div className="bg-surface-alt">
+        <div className="mx-auto grid max-w-7xl gap-6 px-6 py-16 sm:grid-cols-2">
           <div className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-8 transition-transform hover:-translate-y-1 hover:shadow-xl">
             <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-accent-soft blur-2xl" />
             <span className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-2xl">🎓</span>
@@ -215,9 +196,11 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
+      </div>
 
-        {/* 12. Portals grid */}
-        <div className="mx-auto max-w-7xl px-6 py-12">
+      {/* 12. Portals grid */}
+      <div className="bg-background">
+        <div className="mx-auto max-w-7xl px-6 py-16">
           <SectionHeading eyebrow="Explore the Platform" title="Quick Links" />
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {portals.map((p) => (
