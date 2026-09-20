@@ -8,6 +8,7 @@ const navLinks = [
   { href: "/awards", label: "Awards" },
   { href: "/schools", label: "For Schools" },
   { href: "/students", label: "For Students" },
+  { href: "/about-us", label: "About Us" },
 ];
 
 export function Header() {
@@ -16,10 +17,12 @@ export function Header() {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
         <Link href="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight text-foreground">
           <span className="rounded-md bg-accent px-2 py-1 text-sm text-accent-foreground">FCS</span>
-          <span className="hidden sm:inline">Future Competence Series</span>
+          {/* Seven nav links fill the lg track exactly, so the wordmark waits
+              for xl; the badge carries the brand until then. */}
+          <span className="hidden xl:inline">Future Competence Series</span>
         </Link>
 
-        <nav className="hidden flex-1 items-center justify-center gap-6 text-sm font-medium text-muted lg:flex">
+        <nav className="hidden flex-1 items-center justify-center gap-4 text-sm font-medium text-muted lg:flex xl:gap-6">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href} className="whitespace-nowrap hover:text-accent">
               {link.label}
