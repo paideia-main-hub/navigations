@@ -1,10 +1,14 @@
-/** Opening section of the About page: a copy column beside a photo mosaic.
+/** Opening section of the About page: a copy column beside a photo collage.
  *
- * The mosaic is a 12x12 grid that tiles completely — five panels, no holes —
- * where every panel carries one large corner radius and one small one, and no
- * two large radii fall on the same corner. A circular portrait sits over the
- * junction where three panels meet, ringed in the band colour so it reads as
- * punched out of the mosaic rather than dropped on top.
+ * The collage is scattered rather than gridded — every print is absolutely
+ * placed, rotated and overlapping — but it is mirror-symmetric about the
+ * vertical centre line: each outer print has a partner at the same distance
+ * from centre carrying the opposite rotation. The irregularity is in the
+ * sizes, the aspect ratios, the stacking order and small vertical offsets, so
+ * the composition reads as balanced without reading as tidy.
+ *
+ * Positions are percentages of the container, so the whole thing scales with
+ * its box and needs no breakpoint of its own.
  *
  * Photos are Unsplash placeholders; swap the `src` values for real ones. */
 
@@ -26,27 +30,35 @@ const PHOTOS = {
     alt: "A young student working on a tablet",
   },
   team: {
-    src: "https://images.unsplash.com/photo-1758270705518-b61b40527e76?auto=format&fit=crop&w=400&q=70",
+    src: "https://images.unsplash.com/photo-1758270705518-b61b40527e76?auto=format&fit=crop&w=600&q=70",
     alt: "A group of students collaborating",
+  },
+  solder: {
+    src: "https://images.unsplash.com/photo-1537151242758-331155dcf21b?auto=format&fit=crop&w=600&q=70",
+    alt: "A student soldering a circuit for a model",
+  },
+  classroom: {
+    src: "https://images.unsplash.com/photo-1585980243496-fe29a36bd382?auto=format&fit=crop&w=600&q=70",
+    alt: "Younger students working at a classroom table",
   },
 } as const;
 
 const WORDS = ["Explore", "Learn", "Create", "Grow"];
-const OUTCOMES = ["Curiosity", "Skills", "Opportunities", "Brighter tomorrows"];
 
-function Tile({ photo, className }: { photo: { src: string; alt: string }; className: string }) {
-  return (
-    <div className={`group relative overflow-hidden bg-surface-muted ${className}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element -- remote placeholder host, not in next.config's image remotePatterns */}
-      <img
-        src={photo.src}
-        alt={photo.alt}
-        loading="lazy"
-        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-      />
-    </div>
-  );
-}
+/** left/width and top are percentages of the collage box. A centre print plus
+ * three mirrored pairs: partners sit the same distance from the middle and
+ * take opposite rotations, so the scatter balances. Sizes, aspect ratios,
+ * stacking order and the small vertical offsets between partners are what
+ * keep it from looking arranged. */
+const PRINTS = [
+  { photo: PHOTOS.solder, left: 0, top: 32, width: 24, ratio: "1 / 1", rotate: 5, z: 10, round: "rounded-2xl" },
+  { photo: PHOTOS.classroom, left: 76, top: 34, width: 24, ratio: "4 / 3", rotate: -5, z: 10, round: "rounded-2xl" },
+  { photo: PHOTOS.tablet, left: 6, top: 3, width: 32, ratio: "4 / 3", rotate: -8, z: 20, round: "rounded-2xl" },
+  { photo: PHOTOS.robot, left: 62, top: 0, width: 32, ratio: "1 / 1", rotate: 8, z: 20, round: "rounded-2xl" },
+  { photo: PHOTOS.project, left: 9, top: 55, width: 30, ratio: "4 / 5", rotate: 7, z: 30, round: "rounded-2xl" },
+  { photo: PHOTOS.team, left: 61, top: 58, width: 30, ratio: "1 / 1", rotate: -7, z: 30, round: "rounded-full" },
+  { photo: PHOTOS.study, left: 27, top: 27, width: 46, ratio: "5 / 4", rotate: 2, z: 40, round: "rounded-3xl" },
+] as const;
 
 export function AboutHero() {
   return (
@@ -80,66 +92,30 @@ export function AboutHero() {
           </ul>
         </div>
 
-        {/* Mosaic */}
-        <div className="relative">
-          {/* Two rings centred on the portrait below. They sit behind the
-              mosaic, so they are visible only in the seams between panels and
-              where they run past the outer edge — the panels themselves stay
-              uncluttered. */}
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-            {/* Waypoints sit at 45 degrees on the ring: on a circle inscribed
-                in a square that is (50 +- 35.36)% of the square's own box, so
-                they stay on the line whatever the mosaic's aspect ratio. */}
-            <div className="absolute top-[41.6%] left-[58.3%] aspect-square w-[112%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-accent/40">
-              <span className="absolute top-[14.64%] left-[85.36%] h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent" />
-              <span className="absolute top-[85.36%] left-[14.64%] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/60" />
+        {/* Collage */}
+        <div className="relative aspect-[7/6] w-full">
+          {PRINTS.map((print) => (
+            <div
+              key={print.photo.src}
+              className={`group absolute overflow-hidden border-[6px] border-background shadow-[0_22px_50px_-28px_rgba(31,32,65,0.65)] transition-transform duration-300 hover:z-50 hover:rotate-0 ${print.round}`}
+              style={{
+                left: `${print.left}%`,
+                top: `${print.top}%`,
+                width: `${print.width}%`,
+                aspectRatio: print.ratio,
+                rotate: `${print.rotate}deg`,
+                zIndex: print.z,
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- remote placeholder host, not in next.config's image remotePatterns */}
+              <img
+                src={print.photo.src}
+                alt={print.photo.alt}
+                loading="lazy"
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
             </div>
-            <div className="absolute top-[41.6%] left-[58.3%] aspect-square w-[74%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-foreground/15" />
-          </div>
-
-          <div className="relative grid aspect-[5/6] grid-cols-12 grid-rows-12 gap-2 sm:aspect-[6/5] sm:gap-3">
-            <Tile
-              photo={PHOTOS.study}
-              className="col-span-7 row-span-7 rounded-tl-[2.5rem] rounded-br-[1.25rem] sm:rounded-tl-[4.5rem] sm:rounded-br-[2rem]"
-            />
-            <Tile
-              photo={PHOTOS.robot}
-              className="col-span-5 col-start-8 row-span-5 rounded-tr-[2.5rem] rounded-bl-[1.25rem] sm:rounded-tr-[4.5rem] sm:rounded-bl-[2rem]"
-            />
-            <Tile
-              photo={PHOTOS.project}
-              className="col-span-5 col-start-8 row-span-7 row-start-6 rounded-tl-[1.25rem] rounded-br-[2.5rem] sm:rounded-tl-[2rem] sm:rounded-br-[4.5rem]"
-            />
-            <Tile
-              photo={PHOTOS.tablet}
-              className="col-span-3 row-span-5 row-start-8 rounded-tr-[1.25rem] rounded-bl-[2.5rem] sm:rounded-tr-[2rem] sm:rounded-bl-[4.5rem]"
-            />
-
-            {/* The one panel that is type rather than photograph, so the
-                mosaic carries the promise as well as the pictures. */}
-            <div className="col-span-4 col-start-4 row-span-5 row-start-8 flex flex-col justify-center gap-1.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] bg-brand-deep px-2.5 py-4 sm:rounded-tl-[2rem] sm:rounded-br-[2rem] sm:px-5">
-              <span aria-hidden="true" className="mb-1 h-0.5 w-6 rounded-full bg-accent" />
-              {OUTCOMES.map((outcome) => (
-                <span
-                  key={outcome}
-                  className="text-[9px] leading-tight font-bold tracking-[0.06em] text-brand-deep-foreground uppercase sm:text-[10px] sm:tracking-[0.2em]"
-                >
-                  {outcome}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Punched out of the seam where three panels meet. */}
-          <div className="pointer-events-none absolute top-[41.6%] left-[58.3%] -translate-x-1/2 -translate-y-1/2">
-            {/* eslint-disable-next-line @next/next/no-img-element -- remote placeholder host, not in next.config's image remotePatterns */}
-            <img
-              src={PHOTOS.team.src}
-              alt={PHOTOS.team.alt}
-              loading="lazy"
-              className="h-20 w-20 rounded-full border-[6px] border-background object-cover shadow-[0_18px_40px_-20px_rgba(31,32,65,0.55)] sm:h-28 sm:w-28 sm:border-8 lg:h-32 lg:w-32"
-            />
-          </div>
+          ))}
         </div>
       </div>
     </section>
