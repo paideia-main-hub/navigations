@@ -16,27 +16,6 @@ import { UpcomingEventsBoard } from "@/ui/components/marketing/UpcomingEventsBoa
 import { ChampionsPodium } from "@/ui/components/marketing/ChampionsPodium";
 import { BandDivider } from "@/ui/components/marketing/BandDivider";
 
-const whyParticipate = [
-  {
-    title: "What You'll Develop",
-    body: "Every competition is designed around a skill students actually use — not just a trophy.",
-  },
-  {
-    title: "Certificates & Recognition",
-    body: "Certificates, awards and public winner listings for students and their schools.",
-  },
-  {
-    title: "Competency Portfolio",
-    body: "A record of participation and achievement across Primary, Middle and Secondary years.",
-  },
-];
-
-const schoolPoints = [
-  "School Leaderboard & Recognition",
-  "Downloadable School Participation Guide",
-  "Register Multiple Students & Teams",
-];
-
 const portals = [
   { href: "/manuals", label: "Manuals & Guidelines" },
   { href: "/resources", label: "Practice / Resource Centre" },
@@ -148,60 +127,8 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* 11. For Students / For Schools */}
+      {/* 11. Portals grid */}
       <div className="bg-surface-alt">
-        <div className="mx-auto grid max-w-7xl gap-6 px-6 py-16 sm:grid-cols-2">
-          <div className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-8 transition-transform hover:-translate-y-1 hover:shadow-xl">
-            <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-accent-soft blur-2xl" />
-            <span className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-2xl">🎓</span>
-            <p className="relative mt-4 text-xs font-semibold tracking-wide text-accent-strong uppercase">For Students</p>
-            <h3 className="relative mt-1 text-xl font-bold text-foreground">For Students &amp; Young Innovators</h3>
-            <ul className="relative mt-5 space-y-3 text-sm text-muted">
-              {whyParticipate.map((item) => (
-                <li key={item.title} className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent-strong">
-                    ✓
-                  </span>
-                  <span>
-                    <span className="font-semibold text-foreground">{item.title}:</span> {item.body}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/register/student"
-              className="relative mt-6 inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
-            >
-              Register as a Student
-            </Link>
-          </div>
-          <div className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-8 transition-transform hover:-translate-y-1 hover:shadow-xl">
-            <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-violet-500/10 blur-2xl" />
-            <span className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-violet-600 text-2xl">🏫</span>
-            <p className="relative mt-4 text-xs font-semibold tracking-wide text-violet-600 uppercase dark:text-violet-400">For Schools</p>
-            <h3 className="relative mt-1 text-xl font-bold text-foreground">For Schools &amp; Coordinators</h3>
-            <ul className="relative mt-5 space-y-3 text-sm text-muted">
-              {schoolPoints.map((p) => (
-                <li key={p} className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-bold text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
-                    ✓
-                  </span>
-                  <span>{p}</span>
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/register/school"
-              className="relative mt-6 inline-block rounded-lg bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-500"
-            >
-              Register Your School
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* 12. Portals grid */}
-      <div className="bg-background">
         <div className="mx-auto max-w-7xl px-6 py-16">
           <SectionHeading eyebrow="Explore the Platform" title="Quick Links" />
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -218,9 +145,9 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* 13. Bottom CTA */}
+      {/* 12. Bottom CTA */}
       <section className="relative overflow-hidden bg-brand-deep px-6 pt-28 pb-20 text-center lg:pt-32">
-        <BandDivider shape="curve" side="top" color="text-background" flip />
+        <BandDivider shape="curve" side="top" color="text-surface-alt" flip />
         {/* Positioned, so the seam above cannot paint over the copy. */}
         <div className="relative">
           <h2 className="text-2xl font-bold text-white sm:text-3xl">READY TO REGISTER?</h2>
