@@ -18,8 +18,14 @@ const REASONS = [
 
 export function WhyTheLeague() {
   return (
-    <section className="bg-background px-6 py-16">
-      <div className="mx-auto max-w-7xl">
+    <section className="relative overflow-hidden bg-background px-6 py-16">
+      {/* This band sits between two shaped seams with nothing but three small
+          cards in it, so a wide, very low-opacity wash gives it some depth. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-20 left-1/2 h-72 w-[46rem] -translate-x-1/2 rounded-full bg-accent/[0.07] blur-[120px]" />
+      </div>
+
+      <div className="relative mx-auto max-w-7xl">
         <h2 className="flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
           <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
           Why Future Ready League?

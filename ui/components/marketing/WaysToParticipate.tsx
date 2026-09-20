@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
+import { BandDivider } from "./BandDivider";
 
 // Inline so the section carries no icon-library dependency. 24x24, drawn in
 // currentColor so each card controls its own tint.
@@ -70,7 +71,12 @@ const ROUTES = [
 
 export function WaysToParticipate() {
   return (
-    <section className="relative overflow-hidden bg-brand-deep px-6 py-16">
+    <section className="relative overflow-hidden bg-brand-deep px-6 pt-24 pb-28 lg:pt-28 lg:pb-32">
+      {/* Shaped seams: Platinum spills down from the spotlight above, and the
+          warm Explore band rises into the bottom edge. */}
+      <BandDivider shape="curve" side="top" color="text-background" />
+      <BandDivider shape="wave" side="bottom" color="text-surface-warm" flip />
+
       {/* Depth behind the cards, so the band reads as lit rather than flat. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute -top-24 -left-20 h-80 w-80 rounded-full bg-accent/10 blur-[120px]" />

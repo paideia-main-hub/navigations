@@ -14,6 +14,7 @@ import { RecognitionStrip } from "@/ui/components/marketing/RecognitionStrip";
 import { WhyTheLeague } from "@/ui/components/marketing/WhyTheLeague";
 import { UpcomingEventsBoard } from "@/ui/components/marketing/UpcomingEventsBoard";
 import { ChampionsPodium } from "@/ui/components/marketing/ChampionsPodium";
+import { BandDivider } from "@/ui/components/marketing/BandDivider";
 
 const whyParticipate = [
   {
@@ -104,8 +105,9 @@ export default async function HomePage() {
       <WhyTheLeague />
 
       {/* 9. Announcements */}
-      <div className="bg-surface-warm">
-        <div className="mx-auto max-w-7xl px-6 py-16">
+      <div className="relative overflow-hidden bg-surface-warm">
+        <BandDivider shape="arc" side="top" color="text-background" />
+        <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-16 lg:pt-28">
           <SectionHeading eyebrow="Announcements" title="Latest Announcements" action={{ href: "/announcements", label: "View all" }} />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {announcements.slice(0, 6).map((a) => (
@@ -217,18 +219,22 @@ export default async function HomePage() {
       </div>
 
       {/* 13. Bottom CTA */}
-      <section className="bg-brand-deep px-6 py-20 text-center">
-        <h2 className="text-2xl font-bold text-white sm:text-3xl">READY TO REGISTER?</h2>
-        <p className="mx-auto mt-3 max-w-xl text-brand-deep-muted">
-          Join over 14,200 students across the country already registered for this season&apos;s competitions.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link href="/register" className="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent/90">
-            Register Now
-          </Link>
-          <Link href="/competitions" className="rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-surface/5">
-            Browse Competitions
-          </Link>
+      <section className="relative overflow-hidden bg-brand-deep px-6 pt-28 pb-20 text-center lg:pt-32">
+        <BandDivider shape="curve" side="top" color="text-background" flip />
+        {/* Positioned, so the seam above cannot paint over the copy. */}
+        <div className="relative">
+          <h2 className="text-2xl font-bold text-white sm:text-3xl">READY TO REGISTER?</h2>
+          <p className="mx-auto mt-3 max-w-xl text-brand-deep-muted">
+            Join over 14,200 students across the country already registered for this season&apos;s competitions.
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link href="/register" className="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent/90">
+              Register Now
+            </Link>
+            <Link href="/competitions" className="rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-surface/5">
+              Browse Competitions
+            </Link>
+          </div>
         </div>
       </section>
     </div>

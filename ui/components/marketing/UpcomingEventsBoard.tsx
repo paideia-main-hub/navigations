@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { UpcomingDate } from "@/domain/competitions/service";
 import { eventTypeLabels, type EventType } from "@/domain/competitions/types";
 import { SectionHeading } from "./SectionHeading";
+import { BandDivider } from "./BandDivider";
 
 const DAY = 86_400_000;
 /** Enough of the season to read as a schedule without turning into the
@@ -127,8 +128,13 @@ export function UpcomingEventsBoard({ dates }: { dates: UpcomingDate[] }) {
   const competitions = new Set(dates.map((d) => d.slug)).size;
 
   return (
-    <section className="bg-surface-alt px-6 py-16">
-      <div className="mx-auto max-w-7xl">
+    <section className="relative overflow-hidden bg-surface-alt px-6 pt-24 pb-28 lg:pt-28 lg:pb-32">
+      {/* Platinum on both sides of this band, shaped differently top and
+          bottom so the two seams do not mirror each other. */}
+      <BandDivider shape="wave" side="top" color="text-background" />
+      <BandDivider shape="curve" side="bottom" color="text-background" flip />
+
+      <div className="relative mx-auto max-w-7xl">
         <SectionHeading
           eyebrow="Competition Calendar"
           title="Upcoming Events"

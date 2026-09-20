@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore, type ReactNode } from "react";
+import { BandDivider } from "./BandDivider";
 
 /** The published 2026 programme, from ui/components/calendar/calendar2026.ts.
  * Four milestones rather than three: the calendar puts a submission deadline
@@ -113,7 +114,11 @@ export function ImportantDates() {
   const highlightIndex = statuses.findIndex((s) => s === "now" || s === "next");
 
   return (
-    <section className="relative overflow-hidden bg-brand-deep px-6 py-16">
+    <section className="relative overflow-hidden bg-brand-deep px-6 pt-24 pb-28 lg:pt-28 lg:pb-32">
+      {/* Warm Explore above slants into this band; Platinum below scoops up. */}
+      <BandDivider shape="tilt" side="top" color="text-surface-warm" />
+      <BandDivider shape="arc" side="bottom" color="text-background" />
+
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute -top-28 left-1/4 h-80 w-80 rounded-full bg-accent/10 blur-[130px]" />
         <div className="absolute right-0 -bottom-32 h-96 w-96 rounded-full bg-accent/[0.06] blur-[130px]" />
