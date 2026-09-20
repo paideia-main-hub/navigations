@@ -9,7 +9,7 @@ import {
   type CompetitionSummary,
 } from "@/domain/competitions/types";
 import { layerLabels, type AwardCategory } from "@/domain/awards/types";
-import { CompetitionCard } from "@/ui/components/CompetitionCard";
+import { CompetitionSlider } from "@/ui/components/marketing/CompetitionSlider";
 
 type Route = 1 | 2;
 
@@ -127,13 +127,8 @@ export function ExploreRoutes({
 
       {route === 1 ? (
         <>
-          <p className="mt-5 text-sm text-muted">
-            {visible.length} competition{visible.length === 1 ? "" : "s"}
-          </p>
-          <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {visible.map((c) => (
-              <CompetitionCard key={c.slug} competition={c} />
-            ))}
+          <div className="mt-5">
+            <CompetitionSlider competitions={visible} />
           </div>
           {visible.length === 0 && (
             <p className="py-12 text-center text-sm text-muted">
