@@ -22,6 +22,7 @@ const columns = [
   {
     title: "More Future Competence",
     links: [
+      { href: "/about-us", label: "About Us" },
       { href: "/about", label: "Competency Vision" },
       { href: "/faqs", label: "FAQs" },
       { href: "/contact", label: "Contact" },
