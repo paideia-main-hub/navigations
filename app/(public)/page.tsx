@@ -9,6 +9,7 @@ import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
 import { SectionHeading } from "@/ui/components/marketing/SectionHeading";
 import { LeagueSpotlight } from "@/ui/components/marketing/LeagueSpotlight";
 import { WaysToParticipate } from "@/ui/components/marketing/WaysToParticipate";
+import { ImportantDates } from "@/ui/components/marketing/ImportantDates";
 import { RoadmapSteps } from "@/ui/components/marketing/RoadmapSteps";
 import { FixturesList } from "@/ui/components/marketing/FixturesList";
 import { ChampionsPodium } from "@/ui/components/marketing/ChampionsPodium";
@@ -85,6 +86,12 @@ export default async function HomePage() {
           />
           <ExploreRoutes competitions={featured} awardCategories={submittableAwards} />
         </div>
+      </div>
+
+      {/* 5. Important dates — the published 2026 programme. */}
+      <ImportantDates />
+
+      <div className="bg-background">
 
         {/* 6. Roadmap */}
         <div className="mx-auto max-w-7xl px-6 py-16">
