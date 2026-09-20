@@ -10,7 +10,7 @@ import { SectionHeading } from "@/ui/components/marketing/SectionHeading";
 import { LeagueSpotlight } from "@/ui/components/marketing/LeagueSpotlight";
 import { WaysToParticipate } from "@/ui/components/marketing/WaysToParticipate";
 import { ImportantDates } from "@/ui/components/marketing/ImportantDates";
-import { RoadmapSteps } from "@/ui/components/marketing/RoadmapSteps";
+import { RecognitionStrip } from "@/ui/components/marketing/RecognitionStrip";
 import { FixturesList } from "@/ui/components/marketing/FixturesList";
 import { ChampionsPodium } from "@/ui/components/marketing/ChampionsPodium";
 
@@ -93,18 +93,8 @@ export default async function HomePage() {
 
       <div className="bg-background">
 
-        {/* 6. Roadmap */}
-        <div className="mx-auto max-w-7xl px-6 py-16">
-          <div className="mb-10 text-center">
-            <p className="text-xs font-semibold tracking-wider text-accent-strong uppercase">
-              Getting Started
-            </p>
-            <h2 className="mt-1 text-2xl font-bold text-foreground sm:text-3xl">
-              How It Works
-            </h2>
-          </div>
-          <RoadmapSteps />
-        </div>
+        {/* 6. What every participant takes away */}
+        <RecognitionStrip />
 
         {/* 7. Fixtures */}
         <div className="mx-auto max-w-7xl px-6 py-12">
