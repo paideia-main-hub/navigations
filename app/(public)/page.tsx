@@ -11,6 +11,7 @@ import { LeagueSpotlight } from "@/ui/components/marketing/LeagueSpotlight";
 import { WaysToParticipate } from "@/ui/components/marketing/WaysToParticipate";
 import { ImportantDates } from "@/ui/components/marketing/ImportantDates";
 import { RecognitionStrip } from "@/ui/components/marketing/RecognitionStrip";
+import { WhyTheLeague } from "@/ui/components/marketing/WhyTheLeague";
 import { FixturesList } from "@/ui/components/marketing/FixturesList";
 import { ChampionsPodium } from "@/ui/components/marketing/ChampionsPodium";
 
@@ -121,7 +122,10 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* 8. Announcements */}
+        {/* 8. Why the League */}
+        <WhyTheLeague />
+
+        {/* 9. Announcements */}
         <div className="mx-auto max-w-7xl px-6 py-12">
           <SectionHeading eyebrow="Announcements" title="Latest Announcements" action={{ href: "/announcements", label: "View all" }} />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -140,7 +144,7 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* 9. Champions podium — same light/dark-aware section shell as
+        {/* 10. Champions podium — same light/dark-aware section shell as
             everything around it (a permanent full-bleed dark band here read
             as inconsistent with the rest of the page), distinguished by a
             soft color-tinted glow instead of an always-dark background. */}
@@ -162,7 +166,7 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* 10. For Students / For Schools */}
+        {/* 11. For Students / For Schools */}
         <div className="mx-auto grid max-w-7xl gap-6 px-6 py-12 sm:grid-cols-2">
           <div className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-8 transition-transform hover:-translate-y-1 hover:shadow-xl">
             <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-accent-soft blur-2xl" />
@@ -212,7 +216,7 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* 11. Portals grid */}
+        {/* 12. Portals grid */}
         <div className="mx-auto max-w-7xl px-6 py-12">
           <SectionHeading eyebrow="Explore the Platform" title="Quick Links" />
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -229,7 +233,7 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* 12. Bottom CTA */}
+      {/* 13. Bottom CTA */}
       <section className="bg-brand-deep px-6 py-20 text-center">
         <h2 className="text-2xl font-bold text-white sm:text-3xl">READY TO REGISTER?</h2>
         <p className="mx-auto mt-3 max-w-xl text-brand-deep-muted">
