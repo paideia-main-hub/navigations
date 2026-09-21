@@ -135,7 +135,7 @@ League principle: Story Spark rewards imagination, structure, communication and 
     },
   ],
 
-  events: leagueDates("2026-10-28", "Competition day — live storytelling", {
-    activityNote: "Week one of the League activity period.",
+  events: leagueDates("2026-12-06", "Competition day — live storytelling", {
+    activityNote: "Finale weekend, day two.",
   }),
 };

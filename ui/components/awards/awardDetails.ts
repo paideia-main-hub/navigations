@@ -21,9 +21,9 @@ export const AWARD_DETAILS: AwardDetail[] = [
     slug: "outstanding-performer",
     title: "Outstanding Performer, Distinguished Finalist & Emerging Talent",
     layer: "competition_distinction",
-    awardedTo: "The 1st, 2nd and 3rd ranked entry in each of the 27 competitions",
+    awardedTo: "The 1st, 2nd and 3rd ranked entry in each of the 23 Route 1 competitions",
     description:
-      "Each of the 27 competitions recognises three leading entries. Outstanding Performer is awarded to the first-ranked entry, Distinguished Finalist to the second, and Emerging Talent to the third. Rankings follow the competition's published assessment rules. A pair or team receives one entry distinction, with certificates for its verified members. An entry can receive only one distinction in the same competition award pool.",
+      "Each of the 23 Route 1 competitions recognises three leading entries. Outstanding Performer is awarded to the first-ranked entry, Distinguished Finalist to the second, and Emerging Talent to the third. Rankings follow the competition's published assessment rules. A pair or team receives one entry distinction, with certificates for its verified members. An entry can receive only one distinction in the same competition award pool.",
   },
   {
     slug: "champion-school",
@@ -54,7 +54,7 @@ export const AWARD_DETAILS: AwardDetail[] = [
     layer: "school_award",
     awardedTo: "The school participating successfully across the widest range of competitions",
     description:
-      "Each different competition counts once when the school completes at least one eligible entry. Multiple entries in the same competition do not increase the count. Coverage is the number of competitions completed divided by 27, multiplied by 100.",
+      "Each different competition counts once when the school completes at least one eligible entry. Multiple entries in the same competition do not increase the count. Coverage is the number of competitions completed divided by 23, multiplied by 100.",
   },
   {
     slug: "collaboration-and-integrity",

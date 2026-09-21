@@ -10,7 +10,7 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
-  pathway: "independent_submission",
+  pathway: "project_showcase",
   image: "/competitions/pixelproof.jpg",
   manualFile: "PixelProof_Environmental_Photography_Voting_Competition_Manual_v1_1_Easy_Guide.docx",
   manualVersion: "v1.1",
@@ -188,7 +188,8 @@ Remember the campaign itself is assessed indirectly through Digital Responsibili
     },
   ],
 
-  events: leagueDates("2026-10-30", "Submission deadline and start of the voting window", {
-    activityNote: "Submission-based competition; the voting campaign runs for seven days after publication.",
+  events: leagueDates("2026-12-05", "Displayed at the finale", {
+    workDeadline: true,
+    activityNote: "Submit your original photograph and caption in advance; the curated display runs across both finale days, 5–6 December.",
   }),
 };

@@ -9,7 +9,7 @@ export default function AboutPage() {
       <div className="mx-auto max-w-3xl px-6 py-12">
         <p className="text-muted">
           The Future Competence Series is both a public information website and an operational
-          competition platform, supporting around 27 competitions for Primary, Middle and Secondary
+          competition platform, supporting 23 competitions across four pathways for Primary, Middle and Secondary
           students. It exists to give students a structured way to develop and demonstrate real
           competencies — not just to collect certificates — through registration, preparation,
           practice resources, transparent judging and published results.

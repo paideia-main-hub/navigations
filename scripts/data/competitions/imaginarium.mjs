@@ -232,7 +232,7 @@ Ownership rules: all idea maps, thumbnails, experiments, development pages and t
     },
   ],
 
-  events: leagueDates("2026-10-29", "Competition day — live sketch session and rationale presentation", {
-    activityNote: "Week one of the League activity period. Approximately 150–180 minutes of controlled creative work.",
+  events: leagueDates("2026-12-01", "Competition day — live sketch session and rationale presentation", {
+    activityNote: "Applied Skills Challenges, week two. Approximately 150–180 minutes of controlled creative work.",
   }),
 };

@@ -1,11 +1,19 @@
-// Shared 2026 League dates, from the published calendar
-// (documentation/FRL_Website_Competition_Calendar_2026.docx). Every
+// Shared 2026 League dates, from the published REVISED calendar
+// (documentation/FRL_Website_Calendar_REVISED_Nov_Dec_2026.docx, cross-
+// checked against FRL_Catalogue_REVISED_Nov_Dec_2026.docx). Every
 // competition uses the same registration window, work deadline and finale;
 // only its own activity date differs.
+//
+// Registration for both routes: 8 October – 10 November 2026.
+// Competition work / Route 2 nomination deadline: 22 November 2026.
+// League opens: Monday 23 November 2026.
+// Applied Skills Challenges run 23 November – 4 December (weekdays only).
+// Final celebrations, live arenas and showcases: 5–6 December 2026.
+// Closing awards ceremony: Sunday 6 December 2026 (proposed session).
 
-export const REGISTRATION_CLOSE = "2026-10-10";
-export const WORK_DEADLINE = "2026-10-23";
-export const FINAL_EVENT = "2026-11-07";
+export const REGISTRATION_CLOSE = "2026-11-10";
+export const WORK_DEADLINE = "2026-11-22";
+export const FINAL_EVENT = "2026-12-06";
 
 /** Builds the Important Dates rows for a competition.
  * @param activityDate ISO date of the competition's own scheduled day, or
@@ -38,7 +46,7 @@ export function leagueDates(activityDate, activityTitle = "Competition day", opt
     type: "final_event",
     title: "League award ceremony",
     eventDate: FINAL_EVENT,
-    description: "Closing ceremony on final event day two.",
+    description: "Closing ceremony (proposed session) on the second finale day.",
   });
 
   return dates;

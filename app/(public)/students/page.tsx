@@ -108,9 +108,9 @@ const items: FaqCardItem[] = [
     question: "Important deadlines and result dates",
     answer: (
       <>
-        For the 2026 season: registration runs <strong>1–10 October</strong>, advance submissions are due{" "}
-        <strong>23 October</strong>, the activity period is <strong>26 October – 5 November</strong>, and finals
-        &amp; recognition happen <strong>6–7 November</strong>. Your specific competition&apos;s round and result
+        For the 2026 season: registration runs <strong>8 October – 10 November</strong>, advance submissions are due{" "}
+        <strong>22 November</strong>, the activity period is <strong>23 November – 4 December</strong>, and finals
+        &amp; recognition happen <strong>5–6 December</strong>. Your specific competition&apos;s round and result
         dates are on its Important Dates tab, and the full season schedule is on the Competition Calendar page.
       </>
     ),

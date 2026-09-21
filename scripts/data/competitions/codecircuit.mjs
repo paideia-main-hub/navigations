@@ -209,7 +209,7 @@ Be ready to: explain what one selected condition or loop does • explain why a 
     },
   ],
 
-  events: leagueDates("2026-11-05", "Competition day — live website session and final code submission", {
-    activityNote: "Delivered in supervised computer labs; Junior 90 minutes, Senior 120 minutes.",
+  events: leagueDates("2026-11-26", "Competition day — live website session and final code submission", {
+    activityNote: "Applied Skills Challenges, week one. Delivered in supervised computer labs; Junior 90 minutes, Senior 120 minutes.",
   }),
 };

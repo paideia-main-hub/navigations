@@ -76,9 +76,9 @@ const items: FaqCardItem[] = [
     question: "Registration deadlines and competition calendar",
     answer: (
       <>
-        For the 2026 season: registration is open <strong>1–10 October</strong>, submissions for advance work close{" "}
-        <strong>23 October</strong>, the activity period runs <strong>26 October – 5 November</strong>, and finals
-        &amp; recognition take place <strong>6–7 November</strong>. Individual competitions can carry their own
+        For the 2026 season: registration is open <strong>8 October – 10 November</strong>, submissions for advance
+        work close <strong>22 November</strong>, the activity period runs <strong>23 November – 4 December</strong>,
+        and finals &amp; recognition take place <strong>5–6 December</strong>. Individual competitions can carry their own
         round and result dates on top of this — the full published schedule is on the Competition Calendar page, and
         each competition repeats its own dates on its Important Dates tab.
       </>

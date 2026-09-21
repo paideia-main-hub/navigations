@@ -24,6 +24,11 @@ import { createClient } from "@supabase/supabase-js";
 import { COMPETITIONS } from "./data/competitions/index.mjs";
 
 const DEMO_SLUGS = ["young-innovators-challenge", "mindworks-decathlon", "quiz-masters-demo", "robotics-rumble-demo", "hello"];
+// Route 1 dropped these two in the Nov/Dec 2026 revised catalogue — no
+// replacement slug, just gone. Purged the same way the original demo rows
+// are, so a fresh seed run leaves the database matching the 23 competitions
+// in scripts/data/competitions/ exactly.
+const RETIRED_SLUGS = ["product-pulse", "watch-think-explain"];
 const MANUALS_DIR = new URL("../MANUALS/MANUALS/", import.meta.url);
 
 function loadEnvLocal() {
@@ -45,9 +50,10 @@ function loadEnvLocal() {
 }
 
 async function removeDemoCompetitions(sb) {
-  const { data: existing } = await sb.from("competitions").select("id, slug, title").in("slug", DEMO_SLUGS);
+  const purgeSlugs = [...DEMO_SLUGS, ...RETIRED_SLUGS];
+  const { data: existing } = await sb.from("competitions").select("id, slug, title").in("slug", purgeSlugs);
   if (!existing || existing.length === 0) {
-    console.log("No demo competitions left to remove.");
+    console.log("No demo or retired competitions left to remove.");
     return;
   }
   // registrations reference competitions by slug snapshot as well as by FK,
@@ -60,7 +66,7 @@ async function removeDemoCompetitions(sb) {
     console.log(`Removed ${regs.length} demo registration(s).`);
   }
   await sb.from("competitions").delete().in("id", existing.map((c) => c.id));
-  console.log(`Removed ${existing.length} demo competition(s): ${existing.map((c) => c.title).join(", ")}`);
+  console.log(`Removed ${existing.length} demo/retired competition(s): ${existing.map((c) => c.title).join(", ")}`);
 }
 
 async function uploadManual(sb, slug, fileName) {

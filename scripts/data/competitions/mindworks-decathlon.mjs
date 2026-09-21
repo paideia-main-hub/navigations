@@ -319,7 +319,7 @@ Paper responses are candidate-coded and digital responses are auto-associated wi
     },
   ],
 
-  events: leagueDates("2026-11-06", "Competition day — the ten-station circuit and panel defense", {
-    activityNote: "Full-day station rotation; arrive 30–45 minutes before the published start time.",
+  events: leagueDates("2026-11-23", "Competition day — the ten-station circuit and panel defense", {
+    activityNote: "Applied Skills Challenges, week one, opening day. Full-day station rotation; arrive 30–45 minutes before the published start time.",
   }),
 };

@@ -160,7 +160,8 @@ NOTICE → UNDERSTAND → CONNECT → EXPRESS → INFLUENCE. Sometimes changing 
     },
   ],
 
-  events: leagueDates("2026-11-01", "Entry submission deadline", {
-    activityNote: "Submission-based competition run through the League portal; a PKR 500 entry fee applies.",
+  events: leagueDates(null, undefined, {
+    workDeadline: true,
+    activityNote: "Submission-based competition run through the League portal; a PKR 500 entry fee applies. Selected entries screen during the 5–6 December finale.",
   }),
 };

@@ -161,7 +161,8 @@ Suggested reflection for your portfolio: how did your video represent cultural d
     },
   ],
 
-  events: leagueDates("2026-11-02", "Video submission deadline", {
-    activityNote: "Submission-based competition run through the League portal.",
+  events: leagueDates(null, undefined, {
+    workDeadline: true,
+    activityNote: "Submission-based competition run through the League portal. Selected entries screen during the 5–6 December finale.",
   }),
 };

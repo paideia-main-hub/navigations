@@ -144,8 +144,8 @@ export default async function CalendarPage() {
         {/* Week one */}
         <section className="mt-12">
           <SectionHeading
-            title="Week one — 26 to 30 October"
-            intro="Each activity takes place on the date shown. Where two activities share a date, separate sessions or spaces are assigned. Registration for every activity closes on 10 October."
+            title="Week one — 23 to 27 November"
+            intro="Each activity takes place on the date shown. Where two activities share a date, separate sessions or spaces are assigned. Registration for both routes closes on 10 November."
           />
           <ScheduleTimeline activities={WEEK_ONE} />
           <div className="mt-5 rounded-xl border border-border bg-surface-muted p-4 text-sm text-muted">
@@ -156,7 +156,7 @@ export default async function CalendarPage() {
 
         {/* Week two */}
         <section className="mt-12">
-          <SectionHeading title="Week two and the final event — 2 to 7 November" />
+          <SectionHeading title="Week two — 30 November to 4 December" />
           <ScheduleTimeline activities={WEEK_TWO} />
         </section>
 

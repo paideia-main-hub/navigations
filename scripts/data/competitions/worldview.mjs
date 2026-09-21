@@ -10,7 +10,7 @@ export default {
   supportsIndividual: false,
   supportsTeam: true,
   status: "open",
-  pathway: "project_showcase",
+  pathway: "applied_skills",
   image: "/competitions/worldview.jpg",
   manualVersion: "v2.0",
   manualFile: "WorldView_Global_Change_Pakistan_Impact_Challenge_Manual_v2_0.docx",
@@ -240,7 +240,7 @@ Required outputs before event day: the approved topic and research question, a o
     },
   ],
 
-  events: leagueDates("2026-11-04", "Final presentation day — 10-minute presentation and panel Q&A", {
-    activityNote: "Preceded by a 7–10 day team research window with outputs uploaded before the deadline.",
+  events: leagueDates("2026-11-30", "Final presentation day — 10-minute presentation and panel Q&A", {
+    activityNote: "Applied Skills Challenges, week two. Preceded by a 7–10 day team research window with outputs uploaded before the deadline.",
   }),
 };

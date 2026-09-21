@@ -1,19 +1,25 @@
 // The published Future Ready League 2026 calendar, transcribed from
-// documentation/FRL_Website_Competition_Calendar_2026.docx (which is written
-// as website copy). Static on purpose: this is one fixed published
-// programme, not per-competition dates an admin edits — those still come
-// from the CMS and render separately at the bottom of the calendar page.
+// documentation/FRL_Website_Calendar_REVISED_Nov_Dec_2026.docx (REVISED
+// EDITION, November and December 2026), cross-checked against
+// documentation/FRL_Catalogue_REVISED_Nov_Dec_2026.docx for the 23
+// individual competition dates. Static on purpose: this is one fixed
+// published programme, not per-competition dates an admin edits — those
+// still come from the CMS and render separately at the bottom of the
+// calendar page.
 //
-// The source document's final pages are explicitly marked "keep these setup
-// notes internal" (venue/session assumptions, deadline-time proposals,
-// appeal-window policy questions), so nothing from them appears here.
+// Registration for both routes: 8 October – 10 November 2026. Competition
+// work / Route 2 nomination deadline: 22 November 2026. League opens
+// Monday 23 November 2026. Applied Skills Challenges run weekdays only,
+// 23 November – 4 December. Final celebrations, live arenas and showcases:
+// Saturday 5 – Sunday 6 December 2026. Closing awards ceremony: Sunday 6
+// December (proposed session).
 
 export type ActivityFormat = "One-day activity" | "Live performance" | "Project showcase" | "Submission" | "Screening" | "Award ceremony";
 
 export const CALENDAR_INTRO =
-  "Join the Future Ready League for reasoning challenges, live performances, creative activities and project showcases. Register from 1 to 10 October 2026. Submit required advance work and award nominations by 23 October. Weekday activities begin on 26 October, followed by the final showcase and awards programme on 6 and 7 November.";
+  "Join the Future Ready League for reasoning challenges, live performances, creative activities and project showcases. Register for Route 1 competitions and Route 2 special recognition awards from 8 October to 10 November 2026. Submit required advance work and Route 2 nominations by 22 November. Weekday Applied Skills Challenges begin on 23 November, followed by the final showcase, live arenas and awards programme on 5 and 6 December.";
 
-export const CALENDAR_STRAPLINE = ["Registration 1 to 10 October", "Submissions close 23 October", "League begins 26 October"];
+export const CALENDAR_STRAPLINE = ["Registration 8 October – 10 November", "Submissions close 22 November", "League begins 23 November"];
 
 export interface KeyDate {
   milestone: string;
@@ -22,23 +28,23 @@ export interface KeyDate {
 }
 
 export const KEY_DATES: KeyDate[] = [
-  { milestone: "Registration opens", date: "Thursday 1 October 2026", note: "School and individual registration opens." },
-  { milestone: "Registration closes", date: "Saturday 10 October 2026", note: "Last date to register for competitions and award submissions." },
+  { milestone: "Registration opens", date: "Thursday 8 October 2026", note: "School and individual registration opens for both routes." },
+  { milestone: "Registration closes", date: "Tuesday 10 November 2026", note: "Last date to register for Route 1 competitions and Route 2 awards." },
   {
-    milestone: "Work submission deadline",
-    date: "Friday 23 October 2026",
-    note: "Upload all required advance work, project records and award nomination evidence.",
+    milestone: "Work & nomination deadline",
+    date: "Sunday 22 November 2026",
+    note: "Upload all required advance work, project records and Route 2 nomination evidence.",
   },
-  { milestone: "League activity period", date: "26 October to 5 November 2026", note: "One-day activities and live performances run on weekdays." },
-  { milestone: "Final event day one", date: "Friday 6 November 2026", note: "Project showcases, screenings and Think Masters final presentations." },
-  { milestone: "Final event day two", date: "Saturday 7 November 2026", note: "Continued displays and screenings, followed by the award ceremony." },
+  { milestone: "League opens", date: "Monday 23 November 2026", note: "Applied Skills Challenges begin — weekdays only, through 4 December." },
+  { milestone: "Final celebrations day one", date: "Saturday 5 December 2026", note: "Live arenas, project showcases and selected screenings." },
+  { milestone: "Final celebrations day two", date: "Sunday 6 December 2026", note: "Continued displays and screenings, followed by the closing award ceremony (proposed session)." },
 ];
 
 export const FORMAT_LEGEND: { format: ActivityFormat; description: string }[] = [
   { format: "One-day activity", description: "Complete a timed task, practical challenge or creative activity on the scheduled date." },
   { format: "Live performance", description: "Speak, debate, pitch, tell a story or present to a judging panel in person." },
   { format: "Project showcase", description: "Display a completed project, model, poster or photograph and explain it where required." },
-  { format: "Submission", description: "Upload the required work or nomination evidence through the website by 23 October." },
+  { format: "Submission", description: "Upload the required work or nomination evidence through the website by 22 November." },
 ];
 
 export interface ScheduledActivity {
@@ -50,73 +56,41 @@ export interface ScheduledActivity {
 }
 
 export const WEEK_ONE: ScheduledActivity[] = [
-  { date: "26 Oct", day: "Monday", name: "MindWorks Decathlon Senior", nature: "Timed reasoning, evidence analysis and problem-solving stations.", formats: ["One-day activity"] },
-  { date: "26 Oct", day: "Monday", name: "Picture Detective", nature: "Observe a visual scene, identify clues and explain conclusions.", formats: ["One-day activity"] },
-  { date: "27 Oct", day: "Tuesday", name: "Oratoris Cup Senior", nature: "Prepared scenario speech followed by adaptive speaking.", formats: ["One-day activity", "Live performance"] },
-  { date: "27 Oct", day: "Tuesday", name: "Young Orator Junior", nature: "Short speech on an age-appropriate topic.", formats: ["One-day activity", "Live performance"] },
-  { date: "28 Oct", day: "Wednesday", name: "Argumentor", nature: "Team debate with evidence, rebuttal and cross-questioning.", formats: ["One-day activity", "Live performance"] },
-  { date: "28 Oct", day: "Wednesday", name: "StorySpark", nature: "Create and tell an original story using picture prompts.", formats: ["One-day activity", "Live performance"] },
-  { date: "29 Oct", day: "Thursday", name: "CodeCircuit", nature: "Solve coding tasks through algorithms, programming, testing and debugging.", formats: ["One-day activity"] },
-  { date: "29 Oct", day: "Thursday", name: "Young Scientist Observation", nature: "Observe a safe demonstration, record changes and explain findings.", formats: ["One-day activity"] },
-  { date: "30 Oct", day: "Friday", name: "WordWave Narrative Challenge", nature: "Timed original narrative writing from an organizer-issued prompt.", formats: ["One-day activity"] },
-  { date: "30 Oct", day: "Friday", name: "EthosQuest", nature: "Values-based decision-making, written reflection and short oral defence.", formats: ["One-day activity", "Live performance"] },
+  { date: "23 Nov", day: "Monday", name: "MindWorks Decathlon", nature: "Ten timed reasoning and evidence stations, followed by reflection and defence.", formats: ["One-day activity"] },
+  { date: "24 Nov", day: "Tuesday", name: "Oratoris Cup", nature: "Scenario speech after 20 minutes of preparation, followed by adaptive speaking.", formats: ["One-day activity", "Live performance"] },
+  { date: "25 Nov", day: "Wednesday", name: "Argumentor", nature: "Motion-based team debate with evidence, cross-questioning, rebuttal and final reply.", formats: ["One-day activity", "Live performance"] },
+  { date: "26 Nov", day: "Thursday", name: "CodeCircuit", nature: "Progressive coding tasks from decomposition and algorithm design to testing and debugging.", formats: ["One-day activity"] },
+  { date: "27 Nov", day: "Friday", name: "LeadLab Summit", nature: "Student Senate simulation with a policy brief, amendments, speeches and voting.", formats: ["One-day activity", "Live performance"] },
 ];
 
 export const WEEK_TWO: ScheduledActivity[] = [
-  {
-    date: "2 Nov",
-    day: "Monday",
-    name: "LeadLab Summit",
-    nature: "Student leadership and legislative simulation with speeches, debate and decisions.",
-    formats: ["One-day activity", "Live performance"],
-  },
-  { date: "3 Nov", day: "Tuesday", name: "Imaginarium", nature: "Live sketch development, final artwork and a short explanation.", formats: ["One-day activity"] },
-  { date: "4 Nov", day: "Wednesday", name: "WorldView", nature: "Global issue briefing, live presentation and panel questions.", formats: ["One-day activity", "Live performance"] },
-  { date: "4 Nov", day: "Wednesday", name: "VentureMinds", nature: "Microbusiness pitch and panel defence. Business model due 23 October.", formats: ["Submission", "Live performance"] },
-  {
-    date: "5 Nov",
-    day: "Thursday",
-    name: "EcoSphere School Improvement Action Plan",
-    nature: "Create an action plan from an issued school-improvement problem and present it.",
-    formats: ["One-day activity", "Live performance"],
-  },
-  {
-    date: "6 Nov",
-    day: "Friday",
-    name: "Think Masters Championship",
-    nature: "Final presentation and defence of a researched school-life solution. Summary and presentation due 23 October.",
-    formats: ["Submission", "Live performance"],
-  },
-  { date: "6 Nov", day: "Friday", name: "Final event day one", nature: "Project demonstrations, poster and photo displays, film and video screenings.", formats: ["Project showcase"] },
-  {
-    date: "7 Nov",
-    day: "Saturday",
-    name: "Final event day two",
-    nature: "Continued project displays and screenings, followed by the League award ceremony.",
-    formats: ["Project showcase", "Award ceremony"],
-  },
+  { date: "30 Nov", day: "Monday", name: "WorldView", nature: "One-page global briefing, live presentation and panel questions.", formats: ["One-day activity", "Live performance"] },
+  { date: "1 Dec", day: "Tuesday", name: "Imaginarium", nature: "Controlled live sketching from theme interpretation to final artwork and rationale.", formats: ["One-day activity"] },
+  { date: "2 Dec", day: "Wednesday", name: "VentureMinds", nature: "Microbusiness pitch and panel defence. Business model due 22 November.", formats: ["Submission", "Live performance"] },
+  { date: "3 Dec", day: "Thursday", name: "EcoSphere", nature: "School improvement action plan from an issued issue and evidence pack, then presented live.", formats: ["One-day activity", "Live performance"] },
+  { date: "4 Dec", day: "Friday", name: "Young Orator", nature: "Brief preparation, a short speech on a familiar topic and a simple judge response.", formats: ["One-day activity", "Live performance"] },
 ];
 
-export const WEEKEND_GAP_NOTE = "31 October and 1 November: no regular League activities scheduled.";
+export const WEEKEND_GAP_NOTE = "28 and 29 November: no regular League activities scheduled. Final weekend celebrations on 5–6 December are the planned exception.";
 
 export const ON_THE_DAY_NOTE =
-  "For on-the-day competitions, the assessed work is produced during the scheduled event. The 23 October deadline applies to advance materials only where the competition rules require them; it does not require contestants to submit unseen live tasks early.";
+  "For on-the-day competitions, the assessed work is produced during the scheduled event. The 22 November deadline applies to advance materials only where the competition rules require them; it does not require contestants to submit unseen live tasks early.";
 
 export const FINAL_EVENT_PROGRAMME: { date: string; detail: string }[] = [
   {
-    date: "6 November",
+    date: "5 December",
     detail:
-      "Showcase displays open; SciVanta teams demonstrate their models; scheduled panels complete project assessment; Think Masters teams deliver their final presentations; selected films and video messages are screened.",
+      "WordWave, EthosQuest, Picture Detective and MindGames Championships run live. Project displays open for DigitalHorizon, SciVanta and PixelProof. Selected CultureScript and Message for Humanity entries screen.",
   },
   {
-    date: "7 November",
+    date: "6 December",
     detail:
-      "Displays and selected screenings continue. The closing award ceremony recognises competition distinctions, school awards, Spotlight recipients, supportive teachers and parents, student athletes and up to 50 selected principals.",
+      "Think Masters Championship final defence, StorySpark and Young Scientist Observation run live. Project displays and selected screenings continue. The closing award ceremony (proposed session) recognises competition distinctions, school awards, Spotlight recipients, supportive teachers and parents, student athletes and up to 50 selected principals.",
   },
 ];
 
 export const FINAL_EVENT_NOTE =
-  "Finalists will receive their reporting times and venue details before the event. Demonstration slots and ceremony timings will be published separately. Work displayed at the finale must match the entry submitted by 23 October, subject to the competition's stated rules.";
+  "Parallel rooms and staggered category sessions are required across both finale days. Finalists will receive their reporting times and venue details before the event; exact times, capacity and attendance instructions will appear on registration confirmations. Work displayed at the finale must match the entry submitted by 22 November, subject to the competition's stated rules.";
 
 export interface SubmissionEntry {
   competition: string;
@@ -126,52 +100,57 @@ export interface SubmissionEntry {
 }
 
 export const SUBMISSION_CALENDAR_INTRO =
-  "Register from 1 to 10 October. Upload the required work by Friday 23 October 2026. Physical projects are brought to the final event according to the organizer's setup instructions; the online deadline covers their project records and supporting files.";
+  "Register from 8 October to 10 November. Upload the required work by Sunday 22 November 2026. Physical and project-based entries are brought to the final event according to the organiser's setup instructions; the online deadline covers their project records and supporting files.";
 
 export const SUBMISSION_CALENDAR: SubmissionEntry[] = [
   {
     competition: "InquiryQuest",
     requirement:
-      "Scientific inquiry report with question, method, evidence, analysis and conclusion. Proposed prompt release 14 October, giving a 10-calendar-day window through 23 October.",
+      "Scientific inquiry report with question, method, evidence, analysis and conclusion. Proposed 13–22 November task window, opening when the official problem brief is released.",
     formats: ["Submission"],
     presentation: "Online assessment; no mandatory live slot",
   },
   {
+    competition: "CultureScript",
+    requirement: "Original five-minute cultural film. Selected entries screen during the finale.",
+    formats: ["Submission", "Screening"],
+    presentation: "Selected films screened 5–6 December",
+  },
+  {
+    competition: "Message for Humanity",
+    requirement: "Original positive message for humanity, no more than two minutes. Separate Junior, Senior and Teacher categories. Selected entries screen during the finale.",
+    formats: ["Submission", "Screening"],
+    presentation: "Selected videos screened 5–6 December",
+  },
+  {
+    competition: "DigitalHorizon",
+    requirement: "Environmental awareness poster with source list and design rationale. Upload the final poster file.",
+    formats: ["Submission", "Project showcase"],
+    presentation: "Displayed 5–6 December",
+  },
+  {
+    competition: "SciVanta",
+    requirement: "Safe robotics model addressing environmental pollution. Upload the project record; demonstrate the model at the finale.",
+    formats: ["Submission", "Project showcase"],
+    presentation: "Displayed and demonstrated 5–6 December",
+  },
+  {
+    competition: "PixelProof",
+    requirement: "One original photograph and caption for a curated display.",
+    formats: ["Submission", "Project showcase"],
+    presentation: "Displayed 5–6 December",
+  },
+  {
     competition: "Think Masters Championship",
-    requirement: "Researched school-life problem, evidence, proposed solution, two-page summary and final presentation file.",
+    requirement: "Researched school-life problem, evidence and a two-page summary.",
     formats: ["Submission", "Live performance"],
-    presentation: "6 November final defence",
-  },
-  { competition: "VentureMinds", requirement: "Original microbusiness model and pitch materials.", formats: ["Submission", "Live performance"], presentation: "4 November pitch" },
-  {
-    competition: "DigitalHorizon Environmental Poster",
-    requirement: "Environmental awareness poster with credible supporting information. Upload final poster file.",
-    formats: ["Submission", "Project showcase"],
-    presentation: "6 and 7 November",
+    presentation: "6 December live final defence",
   },
   {
-    competition: "SciVanta Robotics for Environmental Pollution",
-    requirement: "Robotics model addressing an environmental problem. Upload project record and demonstration evidence.",
-    formats: ["Submission", "Project showcase"],
-    presentation: "6 November judged demo; displays both days",
-  },
-  {
-    competition: "CultureScript Five Minute Cultural Film",
-    requirement: "Original cultural short film of up to five minutes. Upload the final film or permitted viewing link.",
-    formats: ["Submission", "Screening"],
-    presentation: "Selected films screened 6 and 7 November",
-  },
-  {
-    competition: "PixelProof Catchy Photograph",
-    requirement: "Original photograph with a clear caption or message. Upload final image and caption.",
-    formats: ["Submission", "Project showcase"],
-    presentation: "6 and 7 November",
-  },
-  {
-    competition: "Message for Humanity Two Minute Video Message",
-    requirement: "Original video of up to two minutes. Separate Junior, Senior and Teacher categories.",
-    formats: ["Submission", "Screening"],
-    presentation: "Selected videos screened 6 and 7 November",
+    competition: "VentureMinds",
+    requirement: "Original microbusiness model and pitch materials.",
+    formats: ["Submission", "Live performance"],
+    presentation: "2 December live pitch",
   },
 ];
 
@@ -182,38 +161,48 @@ export interface AwardSubmissionEntry {
 }
 
 export const AWARD_SUBMISSION_INTRO =
-  "Register the nomination from 1 to 10 October 2026 and submit the complete evidence package by 23 October. Eligible nominations are assessed before the final award ceremony on 7 November.";
+  "Register the Route 2 nomination from 8 October to 10 November 2026 and submit the complete nomination by 22 November. Spotlight contains three assessed categories and Sports contains two; Teacher and Parent recognition is nomination-only. Proposed review window: 23 November – 4 December, with recognition during the 5–6 December celebrations.";
 
 export const AWARD_SUBMISSIONS: AwardSubmissionEntry[] = [
   {
     award: "Idea of the Year",
-    nature: "An implemented idea with evidence of success during the previous two years, or a credible future proposal with a practical plan and supporting evidence.",
-    whoMaySubmit: "School-nominated or independent individual",
+    nature: "An implemented idea with evidence of results from the preceding two years, or a proposal for the upcoming edition with a feasible plan and supporting evidence.",
+    whoMaySubmit: "Independent applicant or school nomination",
   },
   {
     award: "Story of the Year",
-    nature: "A true success story from home, education, work, personal life or the community, supported by relevant evidence.",
-    whoMaySubmit: "School-nominated or independent individual",
+    nature: "A true success story from home, school, work or community, with context, challenge, actions, outcome and supporting evidence.",
+    whoMaySubmit: "Independent applicant or school nomination",
   },
   {
-    award: "Young Changemaker Award",
-    nature: "Evidence showing how the nominee influenced others to make a positive change, with personal contribution and outcomes explained.",
-    whoMaySubmit: "School-nominated or independent individual, within the published age rules",
+    award: "Young Changemaker",
+    nature: "A positive change led by the applicant, the people involved, personal contribution and verified outcomes, with evidence and a reference.",
+    whoMaySubmit: "Independent applicant or school nomination",
+  },
+  {
+    award: "Supportive Teacher Award",
+    nature: "Nominee name, designation, school and a brief account of contribution and cooperation in the League.",
+    whoMaySubmit: "School nomination only",
+  },
+  {
+    award: "Supportive Parent Award",
+    nature: "Nominee name, school association and a brief account of contribution and cooperation in the League.",
+    whoMaySubmit: "School nomination only",
   },
   {
     award: "Excellence Athlete Award",
-    nature: "Verified two-year record of consistent performance and development in one primary sport.",
-    whoMaySubmit: "School nomination",
+    nature: "Dated record of consistent performance in one sport over the preceding two years, with verified results and a school or coach endorsement.",
+    whoMaySubmit: "School nomination only",
   },
   {
     award: "Blazer Athlete Award",
-    nature: "Verified sporting achievement across three distinct sports, supported by records within the two-year evidence period.",
-    whoMaySubmit: "School nomination",
+    nature: "Separate evidence for three sports — performance records, dates, level of participation and a school or coach endorsement for each.",
+    whoMaySubmit: "School nomination only",
   },
 ];
 
 export const ADDITIONAL_NOMINATIONS_NOTE =
-  "Supportive Teacher, Supportive Parent and Best Principal nominations may also be completed by 23 October through the school account. These are additional recognition routes and are not part of the five assessed award submissions above. All valid teacher and parent nominees receive recognition without competitive assessment. Principal recognition remains capped at 50 recipients.";
+  "Every valid school-nominated Supportive Teacher and Supportive Parent receives recognition through administrative verification only — there is no competitive assessment for either. Best Principal of Future Ready League recognition is an additional, separately announced category capped at 50 recipients, and is not counted among the seven Route 2 nomination categories above.";
 
 export const SCHEDULING_NOTE =
-  "The regular activity calendar excludes Saturday 31 October and Sunday 1 November. Saturday 7 November is the expressly scheduled finale exception. Online registration remains open through Saturday 10 October. Session times, venues and deadline cutoff times will be announced in Pakistan Standard Time.";
+  "The regular Applied Skills activity calendar excludes Saturday 28 and Sunday 29 November. Saturday 5 and Sunday 6 December are the expressly scheduled finale exception. Online registration for both routes remains open through Tuesday 10 November. All deadlines are shown in Pakistan Standard Time; exact closing times, venues and session details will be published in each competition's rules before registration.";

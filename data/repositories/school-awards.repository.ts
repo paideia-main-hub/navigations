@@ -34,7 +34,7 @@ export interface SchoolFormulaInputs {
   distinctCompetitionsCompleted: number;
 }
 
-const TOTAL_COMPETITIONS = 27; // per spec section 6 — the fixed 27-competition model
+const TOTAL_COMPETITIONS = 23; // Route 1's competition count — FRL_Catalogue_REVISED_Nov_Dec_2026.docx
 
 /** Pulls every published Competition Distinction result and every
  * non-rejected registration, grouped per school, as the raw input to the

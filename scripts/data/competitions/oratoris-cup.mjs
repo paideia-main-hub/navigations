@@ -10,7 +10,7 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
-  pathway: "live_response",
+  pathway: "applied_skills",
   image: "/competitions/oratoris-cup.jpg",
   manualVersion: "v1.0",
   manualFile: "Oratoris_Orator_Cup_School_Pitch_Implementation_Manual_v1_0.docx",
@@ -229,7 +229,7 @@ Remember: do not ask "What speech should I memorise?" Ask "How should I communic
     },
   ],
 
-  events: leagueDates("2026-10-30", "Competition day — Stage 1 prepared speech and Stage 2 adaptive speaking", {
-    activityNote: "Week one of the League activity period. Both stages are completed on the same day.",
+  events: leagueDates("2026-11-24", "Competition day — Stage 1 prepared speech and Stage 2 adaptive speaking", {
+    activityNote: "Applied Skills Challenges, week one. Both stages are completed on the same day.",
   }),
 };

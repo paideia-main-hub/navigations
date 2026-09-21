@@ -254,7 +254,8 @@ Final submission checklist: the report answers the organizer-issued problem rath
     },
   ],
 
-  events: leagueDates("2026-11-06", "Inquiry report submission deadline", {
-    activityNote: "Preceded by a 7–10 day research window opening when the official problem brief is released.",
+  events: leagueDates(null, undefined, {
+    workDeadline: true,
+    activityNote: "Preceded by a proposed 13–22 November research window opening when the official problem brief is released.",
   }),
 };

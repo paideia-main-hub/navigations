@@ -183,7 +183,8 @@ No functionality mark is worth compromising student or spectator safety — and 
     },
   ],
 
-  events: leagueDates("2026-11-03", "Competition day — demonstration and judges' defense", {
-    activityNote: "Team-based build competition; allow the full preparation cycle before the event.",
+  events: leagueDates("2026-12-05", "Displayed and demonstrated at the finale", {
+    workDeadline: true,
+    activityNote: "Submit your project record in advance; demonstrate your model across both finale days, 5–6 December.",
   }),
 };

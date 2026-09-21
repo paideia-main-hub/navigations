@@ -10,7 +10,7 @@ export default {
   supportsIndividual: false,
   supportsTeam: true,
   status: "open",
-  pathway: "project_showcase",
+  pathway: "applied_skills",
   image: "/competitions/ventureminds.jpg",
   manualVersion: "v1.0",
   manualFile: "VentureMinds Manual.docx",
@@ -251,7 +251,8 @@ The judging panel is structured as: Judge 1 — Enterprise / Business Model (opp
     },
   ],
 
-  events: leagueDates("2026-11-04", "Pitch day — 10-minute presentation and panel defense", {
-    activityNote: "The Microbusiness Model Pack must be submitted before the live pitch.",
+  events: leagueDates("2026-12-02", "Pitch day — 10-minute presentation and panel defense", {
+    workDeadline: true,
+    activityNote: "Applied Skills Challenges, week two. Submit your Microbusiness Model Pack by the work deadline, then deliver your live pitch and panel defense on the pitch day.",
   }),
 };

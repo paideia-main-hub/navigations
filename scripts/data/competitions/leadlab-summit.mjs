@@ -10,7 +10,7 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
-  pathway: "live_response",
+  pathway: "applied_skills",
   image: "/competitions/leadlab-summit.jpg",
   manualVersion: "v1.1",
   manualFile: "leadlab Summit Manual.docx",
@@ -256,7 +256,7 @@ Event-day timings: check-in and seating 30 min • call to order and Bill readin
     },
   ],
 
-  events: leagueDates("2026-11-05", "House session — speeches, cross-questioning, amendments and the final vote", {
-    activityNote: "The Bill and background dossier are normally released 3–5 days before the session.",
+  events: leagueDates("2026-11-27", "House session — speeches, cross-questioning, amendments and the final vote", {
+    activityNote: "Applied Skills Challenges, week one. The Bill and background dossier are normally released 3–5 days before the session.",
   }),
 };

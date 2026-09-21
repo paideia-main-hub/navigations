@@ -20,9 +20,9 @@ const PROMISE = ["People", "Skills", "Ideas", "A brighter tomorrow"];
 
 /** From the published 2026 calendar (ui/components/calendar/calendar2026.ts). */
 const DATES = [
-  { label: "Registration", value: "1 – 10 Oct 2026" },
-  { label: "Activity period", value: "26 Oct – 5 Nov 2026" },
-  { label: "Finals & recognition", value: "6 – 7 Nov 2026" },
+  { label: "Registration", value: "8 Oct – 10 Nov 2026" },
+  { label: "Activity period", value: "23 Nov – 4 Dec 2026" },
+  { label: "Finals & recognition", value: "5 – 6 Dec 2026" },
 ];
 
 export function AboutInitiative() {

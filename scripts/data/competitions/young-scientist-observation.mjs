@@ -9,7 +9,7 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
-  pathway: "applied_skills",
+  pathway: "live_response",
   image: "/competitions/young-scientist-observation.jpg",
   manualFile: "Young_Scientist_Observation_Manual.docx",
 
@@ -124,7 +124,7 @@ League principle: good scientists do not begin by knowing every answer. They beg
     },
   ],
 
-  events: leagueDates("2026-10-29", "Competition day — five-station observation rotation", {
-    activityNote: "Week one of the League activity period.",
+  events: leagueDates("2026-12-06", "Competition day — five-station observation rotation", {
+    activityNote: "Finale weekend, day two.",
   }),
 };

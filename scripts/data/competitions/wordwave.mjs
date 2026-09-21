@@ -200,7 +200,7 @@ Recommended materials: a personal vocabulary notebook organised by meaning and c
     },
   ],
 
-  events: leagueDates("2026-10-28", "Competition day — 90-minute live writing session", {
-    activityNote: "Week one of the League activity period. Arena / one-day live format.",
+  events: leagueDates("2026-12-05", "Competition day — 90-minute live writing session", {
+    activityNote: "Finale weekend, day one. Arena / one-day live format.",
   }),
 };

@@ -6,10 +6,13 @@
 // a time; this script does the same inserts in bulk from the spec).
 //
 // Safe to re-run: upserts by slug, so editing this file and re-running only
-// touches the fields you changed. Evidence period / closing dates are left
-// null on purpose — the doc marks them as editorial placeholders
-// ([EDITION], [CLOSING DATE AND TIME], etc.) for the client to fill in, so
-// set those from the admin panel once real dates exist.
+// touches the fields you changed. Nomination closing date now comes from
+// documentation/FRL_Website_Calendar_REVISED_Nov_Dec_2026.docx (Route 2
+// shares Route 1's registration window and its 22 November 2026 evidence
+// deadline). Evidence period start/end are still left null — the awards doc
+// gives each category its own evidence-window language (e.g. "the preceding
+// two years") rather than one shared calendar window — so set those from
+// the admin panel per category if a fixed window is ever wanted.
 //
 // Usage: node scripts/seed-award-categories.mjs
 
@@ -38,19 +41,27 @@ function crit(key, label, weight) {
   return { key, label, weight };
 }
 
+// Route 2 registration and evidence submission share Route 1's window:
+// register 8 October - 10 November 2026, submit the complete nomination by
+// 22 November 2026 (Pakistan Standard Time), per
+// documentation/FRL_Website_Calendar_REVISED_Nov_Dec_2026.docx. Review runs
+// 23 November - 4 December, with recognition at the 5-6 December finale.
+const NOMINATION_CLOSING_AT = "2026-11-22T23:59:00+05:00";
+
 const CATEGORIES = [
   {
     slug: "outstanding-performer",
     title: "Outstanding Performer, Distinguished Finalist & Emerging Talent",
     layer: "competition_distinction",
     description:
-      "Each of the 27 competitions recognises three leading entries. Outstanding Performer is awarded to the first-ranked entry, Distinguished Finalist to the second, and Emerging Talent to the third. Rankings follow the competition's published assessment rules.",
+      "Each of the 23 Route 1 competitions recognises three leading entries. Outstanding Performer is awarded to the first-ranked entry, Distinguished Finalist to the second, and Emerging Talent to the third. Rankings follow the competition's published assessment rules.",
     requiresSchool: false,
     allowsIndependent: false,
     rubricCriteria: [],
     passThreshold: 70,
     tieBreakOrder: [],
     maxWinners: null,
+    closingAt: NOMINATION_CLOSING_AT,
   },
   {
     slug: "champion-school",
@@ -64,6 +75,7 @@ const CATEGORIES = [
     passThreshold: 70,
     tieBreakOrder: [],
     maxWinners: null,
+    closingAt: NOMINATION_CLOSING_AT,
   },
   {
     slug: "school-excellence",
@@ -76,6 +88,7 @@ const CATEGORIES = [
     passThreshold: 70,
     tieBreakOrder: [],
     maxWinners: null,
+    closingAt: NOMINATION_CLOSING_AT,
   },
   {
     slug: "whole-school-participation",
@@ -89,19 +102,21 @@ const CATEGORIES = [
     passThreshold: 70,
     tieBreakOrder: [],
     maxWinners: null,
+    closingAt: NOMINATION_CLOSING_AT,
   },
   {
     slug: "diversified-school",
     title: "Diversified School Award",
     layer: "school_award",
     description:
-      "Awarded to the school participating successfully across the widest range of competitions. Coverage is the number of competitions completed divided by 27, multiplied by 100.",
+      "Awarded to the school participating successfully across the widest range of competitions. Coverage is the number of competitions completed divided by 23, multiplied by 100.",
     requiresSchool: false,
     allowsIndependent: false,
     rubricCriteria: [],
     passThreshold: 70,
     tieBreakOrder: [],
     maxWinners: null,
+    closingAt: NOMINATION_CLOSING_AT,
   },
   {
     slug: "collaboration-and-integrity",
@@ -121,6 +136,7 @@ const CATEGORIES = [
     passThreshold: 70,
     tieBreakOrder: [],
     maxWinners: null,
+    closingAt: NOMINATION_CLOSING_AT,
   },
   {
     slug: "idea-of-the-year",
@@ -140,6 +156,7 @@ const CATEGORIES = [
     passThreshold: 70,
     tieBreakOrder: ["evidence_learning", "originality_contribution"],
     maxWinners: 1,
+    closingAt: NOMINATION_CLOSING_AT,
   },
   {
     slug: "story-of-the-year",
@@ -159,6 +176,7 @@ const CATEGORIES = [
     passThreshold: 70,
     tieBreakOrder: ["authenticity_evidence", "significance_progress"],
     maxWinners: 1,
+    closingAt: NOMINATION_CLOSING_AT,
   },
   {
     slug: "young-changemaker",
@@ -178,6 +196,7 @@ const CATEGORIES = [
     passThreshold: 70,
     tieBreakOrder: ["positive_change", "influence_involvement"],
     maxWinners: 1,
+    closingAt: NOMINATION_CLOSING_AT,
   },
   {
     slug: "supportive-teacher",
@@ -191,6 +210,7 @@ const CATEGORIES = [
     passThreshold: 0,
     tieBreakOrder: [],
     maxWinners: null,
+    closingAt: NOMINATION_CLOSING_AT,
   },
   {
     slug: "supportive-parent",
@@ -204,6 +224,7 @@ const CATEGORIES = [
     passThreshold: 0,
     tieBreakOrder: [],
     maxWinners: null,
+    closingAt: NOMINATION_CLOSING_AT,
   },
   {
     slug: "excellence-athlete",
@@ -223,6 +244,7 @@ const CATEGORIES = [
     passThreshold: 70,
     tieBreakOrder: ["consistency_two_years", "performance_progression"],
     maxWinners: 1,
+    closingAt: NOMINATION_CLOSING_AT,
   },
   {
     slug: "blazer-athlete",
@@ -244,6 +266,7 @@ const CATEGORIES = [
     passThreshold: 70,
     tieBreakOrder: ["sport_1", "consistency_two_years"],
     maxWinners: 1,
+    closingAt: NOMINATION_CLOSING_AT,
   },
   {
     slug: "best-principal",
@@ -263,6 +286,7 @@ const CATEGORIES = [
     passThreshold: 0,
     tieBreakOrder: ["integrity", "timely_coordination", "communication"],
     maxWinners: 50,
+    closingAt: NOMINATION_CLOSING_AT,
   },
 ];
 
@@ -290,6 +314,7 @@ async function main() {
         pass_threshold: c.passThreshold,
         tie_break_order: c.tieBreakOrder,
         max_winners: c.maxWinners,
+        closing_at: c.closingAt,
         status: "open",
       },
       { onConflict: "slug" },

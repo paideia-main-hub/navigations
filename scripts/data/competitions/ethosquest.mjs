@@ -219,7 +219,7 @@ Readiness checklist: I understand the Values Bank is a resource, not a list of "
     },
   ],
 
-  events: leagueDates("2026-10-28", "Competition day — written session and oral defense", {
-    activityNote: "Week one of the League activity period. Arena / one-day live format.",
+  events: leagueDates("2026-12-05", "Competition day — written session and oral defense", {
+    activityNote: "Finale weekend, day one. Arena / one-day live format.",
   }),
 };

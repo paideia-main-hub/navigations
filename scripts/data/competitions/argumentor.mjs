@@ -9,7 +9,7 @@ export default {
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
-  pathway: "live_response",
+  pathway: "applied_skills",
   image: "/competitions/argumentor.jpg",
   manualFile: "Argumentor_Complete_Operations_Manual_v2_1.docx",
   manualVersion: "v2.1",
@@ -206,7 +206,7 @@ Learning point: a strong finalist understands both sets of arguments without tre
     },
   ],
 
-  events: leagueDates("2026-10-28", "Competition day — qualifying speeches and role-reversal final", {
-    activityNote: "Week one of the League activity period. Qualifying rooms run first; selected finalists debate the same day.",
+  events: leagueDates("2026-11-25", "Competition day — qualifying speeches and role-reversal final", {
+    activityNote: "Applied Skills Challenges, week one. Qualifying rooms run first; selected finalists debate the same day.",
   }),
 };
