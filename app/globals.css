@@ -140,11 +140,30 @@ body {
   --animate-orbit-reverse: orbit-reverse 120s linear infinite;
 }
 
-/* A full revolution every two minutes is gentle, but it never stops, so it
-   still goes when the viewer has asked for less motion. */
+/* The four steps on the About page's "why we exist" band
+   (ui/components/marketing/AboutJourney.tsx) each run this with a staggered
+   delay, so the row undulates as one travelling wave rather than bobbing in
+   unison. It drives `translate`, leaving `scale` free for the hover. */
+@keyframes wave-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -14px;
+  }
+}
+
+@theme inline {
+  --animate-wave-float: wave-float 3.2s ease-in-out infinite;
+}
+
+/* None of these stop on their own, so they stop when the viewer has asked
+   for less motion. */
 @media (prefers-reduced-motion: reduce) {
   .animate-orbit,
-  .animate-orbit-reverse {
+  .animate-orbit-reverse,
+  .animate-wave-float {
     animation: none;
   }
 }
