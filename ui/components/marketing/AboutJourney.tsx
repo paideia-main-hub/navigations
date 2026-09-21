@@ -1,4 +1,6 @@
 import { Fragment, type ReactNode } from "react";
+import { BandDivider } from "./BandDivider";
+import { BandTexture } from "./BandTexture";
 
 /** "Why we exist" — the four steps a student moves through, on a dark band.
  *
@@ -49,7 +51,11 @@ function Connector() {
 
 export function AboutJourney() {
   return (
-    <section className="relative overflow-hidden bg-brand-deep px-6 py-20">
+    <section className="relative overflow-hidden bg-brand-deep px-6 pt-36 pb-40 lg:pt-44 lg:pb-48">
+      <BandDivider shape="blob" side="top" color="text-surface-alt" className="h-28 sm:h-36 lg:h-44" flip />
+      <BandDivider shape="dune" side="bottom" color="text-background" className="h-28 sm:h-36 lg:h-44" />
+      <BandTexture pattern="grid" className="text-brand-deep-foreground/[0.05]" />
+
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute -top-24 left-1/4 h-80 w-80 rounded-full bg-accent/10 blur-[130px]" />
         <div className="absolute right-1/3 -bottom-28 h-96 w-96 rounded-full bg-accent/[0.06] blur-[130px]" />

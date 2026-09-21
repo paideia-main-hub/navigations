@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { BandDivider } from "./BandDivider";
+import { BandTexture } from "./BandTexture";
 
 /** "Who it is for" — the four parties the League is built around.
  *
@@ -57,8 +59,10 @@ const AUDIENCES = [
 
 export function AboutAudiences() {
   return (
-    <section className="bg-surface-alt px-6 py-24">
-      <div className="mx-auto max-w-7xl">
+    <section className="relative overflow-hidden bg-surface-alt px-6 pt-36 pb-24 lg:pt-44">
+      <BandDivider shape="dune" side="top" color="text-background" className="h-28 sm:h-36 lg:h-44" flip />
+      <BandTexture pattern="contours" className="text-brand-deep/[0.05]" position="top-[-20%] left-[-15%] h-[120%] w-[60%]" />
+      <div className="relative mx-auto max-w-7xl">
         <div className="max-w-2xl">
           <p className="text-xs font-bold tracking-[0.22em] text-accent-strong uppercase">Who it is for</p>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-balance text-foreground sm:text-4xl">

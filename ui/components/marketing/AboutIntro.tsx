@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { BandDivider } from "./BandDivider";
 
 /** "What is Navigations?" — the explainer under the About hero.
  *
@@ -31,8 +32,11 @@ const STRANDS = [
 
 export function AboutIntro() {
   return (
-    <section className="bg-surface-alt px-6 py-20">
-      <div className="mx-auto max-w-7xl">
+    <section className="relative overflow-hidden bg-surface-alt px-6 pt-36 pb-20 lg:pt-44">
+      {/* Run deep on purpose: at 9rem the Platinum above stops being an edge
+          and becomes a form pressing into this band. */}
+      <BandDivider shape="blob" side="top" color="text-background" className="h-28 sm:h-36 lg:h-44" />
+      <div className="relative mx-auto max-w-7xl">
         <div className="grid overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_30px_70px_-45px_rgba(31,32,65,0.55)] lg:grid-cols-[5fr_7fr]">
           {/* Photo panel — the promise inscribed on the image, as in the
               reference, rather than set as a caption beneath it. */}

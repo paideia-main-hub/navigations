@@ -9,7 +9,7 @@
  * The host section needs `relative overflow-hidden`, and enough padding on
  * that side to keep content clear of the shape. */
 
-type Shape = "wave" | "curve" | "arc" | "tilt";
+type Shape = "wave" | "curve" | "arc" | "tilt" | "blob" | "dune";
 
 /** Each path is drawn on a 1440x100 box filling the TOP of it; a bottom
  * divider is the same path flipped vertically. preserveAspectRatio="none"
@@ -23,6 +23,13 @@ const PATHS: Record<Shape, string> = {
   arc: "M0 0h1440v92c-338-56-1102-56-1440 0Z",
   // Diagonal slant.
   tilt: "M0 0h1440v16L0 88Z",
+  // Lumpy and asymmetric. Meant to be run tall — at 8rem or more it stops
+  // reading as a trimmed edge and becomes a mass of the neighbouring colour
+  // pushing down into this band.
+  blob:
+    "M0 0h1440v34c-96 34-183 18-268 2-118-22-214-34-320 12-88 38-166 64-262 52-84-10-140-46-222-52C289 40 214 66 137 74 89 79 44 72 0 56Z",
+  // One long swell that crests left of centre, for a slower, calmer break.
+  dune: "M0 0h1440v22c-170 76-356 88-536 52C716 36 560 4 392 20 248 34 122 62 0 96Z",
 };
 
 export function BandDivider({

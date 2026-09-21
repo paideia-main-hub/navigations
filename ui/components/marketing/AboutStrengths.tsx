@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { BandTexture } from "./BandTexture";
 
 /** "What students can explore" — the six strengths, as cards.
  *
@@ -68,8 +69,9 @@ const STRENGTHS = [
 
 export function AboutStrengths() {
   return (
-    <section className="bg-background px-6 py-24">
-      <div className="mx-auto max-w-7xl">
+    <section className="relative overflow-hidden bg-background px-6 py-24">
+      <BandTexture pattern="rings" className="text-accent/[0.16]" position="inset-y-0 right-0 w-[55%]" />
+      <div className="relative mx-auto max-w-7xl">
         <div className="max-w-2xl">
           <p className="text-xs font-bold tracking-[0.22em] text-accent-strong uppercase">
             What students can explore

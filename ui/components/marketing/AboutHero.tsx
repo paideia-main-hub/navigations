@@ -10,6 +10,8 @@
  *
  * Photos are Unsplash placeholders; swap the `src` values for real ones. */
 
+import { BandTexture } from "./BandTexture";
+
 const PHOTOS = {
   study: {
     src: "https://images.unsplash.com/photo-1780742961135-7f6b965530fa?auto=format&fit=crop&w=900&q=70",
@@ -69,6 +71,9 @@ const SATELLITES = [
 export function AboutHero() {
   return (
     <section className="relative overflow-hidden bg-background px-6 pt-16 pb-24 lg:pb-32">
+      {/* Contours centred roughly where the orbit sits, so the rings read as
+          terrain the collage is placed on rather than wallpaper. */}
+      <BandTexture pattern="contours" className="text-brand-deep/[0.06]" position="top-0 right-[-10%] h-full w-[70%]" />
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute -top-32 -left-24 h-96 w-96 rounded-full bg-accent/[0.07] blur-[130px]" />
         <div className="absolute -right-20 bottom-0 h-[28rem] w-[28rem] rounded-full bg-brand-deep/[0.06] blur-[130px]" />
