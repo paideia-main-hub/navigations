@@ -1,14 +1,12 @@
-/** Opening section of the About page: a copy column beside a photo collage.
+/** Opening section of the About page: a copy column beside an orbit.
  *
- * The collage is scattered rather than gridded — every print is absolutely
- * placed, rotated and overlapping — but it is mirror-symmetric about the
- * vertical centre line: each outer print has a partner at the same distance
- * from centre carrying the opposite rotation. The irregularity is in the
- * sizes, the aspect ratios, the stacking order and small vertical offsets, so
- * the composition reads as balanced without reading as tidy.
+ * Six square photographs ride a ring around one circular photograph, a
+ * revolution every two minutes. The ring rotates; each square runs the same
+ * rotation in reverse so it stays upright rather than tumbling as it goes.
+ * Hovering the collage pauses both together.
  *
- * Positions are percentages of the container, so the whole thing scales with
- * its box and needs no breakpoint of its own.
+ * Every measurement is a percentage of the square container, so the whole
+ * thing scales with its box and needs no breakpoint of its own.
  *
  * Photos are Unsplash placeholders; swap the `src` values for real ones. */
 
@@ -45,20 +43,28 @@ const PHOTOS = {
 
 const WORDS = ["Explore", "Learn", "Create", "Grow"];
 
-/** left/width and top are percentages of the collage box. A centre print plus
- * three mirrored pairs: partners sit the same distance from the middle and
- * take opposite rotations, so the scatter balances. Sizes, aspect ratios,
- * stacking order and the small vertical offsets between partners are what
- * keep it from looking arranged. */
-const PRINTS = [
-  { photo: PHOTOS.solder, left: 0, top: 32, width: 24, ratio: "1 / 1", rotate: 5, z: 10, round: "rounded-2xl" },
-  { photo: PHOTOS.classroom, left: 76, top: 34, width: 24, ratio: "4 / 3", rotate: -5, z: 10, round: "rounded-2xl" },
-  { photo: PHOTOS.tablet, left: 6, top: 3, width: 32, ratio: "4 / 3", rotate: -8, z: 20, round: "rounded-2xl" },
-  { photo: PHOTOS.robot, left: 62, top: 0, width: 32, ratio: "1 / 1", rotate: 8, z: 20, round: "rounded-2xl" },
-  { photo: PHOTOS.project, left: 9, top: 55, width: 30, ratio: "4 / 5", rotate: 7, z: 30, round: "rounded-2xl" },
-  { photo: PHOTOS.team, left: 61, top: 58, width: 30, ratio: "1 / 1", rotate: -7, z: 30, round: "rounded-full" },
-  { photo: PHOTOS.study, left: 27, top: 27, width: 46, ratio: "5 / 4", rotate: 2, z: 40, round: "rounded-3xl" },
-] as const;
+/** Centre to satellite centre, and the side of a satellite — both percentages
+ * of the box. 35 + 22/2 = 46 keeps every square inside the box, and the gap
+ * between neighbours on the ring works out at 13 points, so they never touch. */
+const ORBIT_RADIUS = 35;
+const SATELLITE_SIZE = 22;
+
+/** Six evenly spaced points on the circle, starting at twelve o'clock. */
+const SATELLITES = [
+  PHOTOS.tablet,
+  PHOTOS.robot,
+  PHOTOS.classroom,
+  PHOTOS.project,
+  PHOTOS.team,
+  PHOTOS.solder,
+].map((photo, i, all) => {
+  const radians = ((-90 + (360 / all.length) * i) * Math.PI) / 180;
+  return {
+    photo,
+    left: 50 + ORBIT_RADIUS * Math.cos(radians),
+    top: 50 + ORBIT_RADIUS * Math.sin(radians),
+  };
+});
 
 export function AboutHero() {
   return (
@@ -92,30 +98,50 @@ export function AboutHero() {
           </ul>
         </div>
 
-        {/* Collage */}
-        <div className="relative aspect-[7/6] w-full">
-          {PRINTS.map((print) => (
-            <div
-              key={print.photo.src}
-              className={`group absolute overflow-hidden border-[6px] border-background shadow-[0_22px_50px_-28px_rgba(31,32,65,0.65)] transition-transform duration-300 hover:z-50 hover:rotate-0 ${print.round}`}
-              style={{
-                left: `${print.left}%`,
-                top: `${print.top}%`,
-                width: `${print.width}%`,
-                aspectRatio: print.ratio,
-                rotate: `${print.rotate}deg`,
-                zIndex: print.z,
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element -- remote placeholder host, not in next.config's image remotePatterns */}
-              <img
-                src={print.photo.src}
-                alt={print.photo.alt}
-                loading="lazy"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            </div>
-          ))}
+        {/* Orbit */}
+        <div className="group relative mx-auto aspect-square w-full max-w-[36rem] lg:max-w-none">
+          {/* The ring carries the squares; it has no size of its own. */}
+          <div className="absolute inset-0 animate-orbit group-hover:[animation-play-state:paused]">
+            {SATELLITES.map((satellite) => (
+              <div
+                key={satellite.photo.src}
+                className="absolute -translate-x-1/2 -translate-y-1/2"
+                style={{
+                  left: `${satellite.left}%`,
+                  top: `${satellite.top}%`,
+                  width: `${SATELLITE_SIZE}%`,
+                }}
+              >
+                {/* Same duration, opposite direction: the square travels the
+                    circle without turning with it. */}
+                <div className="animate-orbit-reverse group-hover:[animation-play-state:paused]">
+                  <div className="aspect-square overflow-hidden rounded-2xl border-[5px] border-background shadow-[0_18px_40px_-22px_rgba(31,32,65,0.65)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- remote placeholder host, not in next.config's image remotePatterns */}
+                    <img
+                      src={satellite.photo.src}
+                      alt={satellite.photo.alt}
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* The still centre. */}
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-[7px] border-background shadow-[0_28px_60px_-28px_rgba(31,32,65,0.7)]"
+            style={{ width: "40%", aspectRatio: "1 / 1" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- remote placeholder host, not in next.config's image remotePatterns */}
+            <img
+              src={PHOTOS.study.src}
+              alt={PHOTOS.study.alt}
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
+          </div>
         </div>
       </div>
     </section>

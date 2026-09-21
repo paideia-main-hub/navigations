@@ -111,6 +111,44 @@ body {
   --animate-podium-in: podium-in 0.55s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Slow orbit for the About page collage
+   (ui/components/marketing/AboutHero.tsx). The ring carries the squares
+   around; each square runs the same rotation in reverse at the same duration
+   so it stays upright instead of tumbling. Both are driven by the `rotate`
+   property rather than `transform`, so neither clobbers the translate that
+   positions a square on the circle. */
+@keyframes orbit {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes orbit-reverse {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: -360deg;
+  }
+}
+
+@theme inline {
+  --animate-orbit: orbit 120s linear infinite;
+  --animate-orbit-reverse: orbit-reverse 120s linear infinite;
+}
+
+/* A full revolution every two minutes is gentle, but it never stops, so it
+   still goes when the viewer has asked for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-orbit,
+  .animate-orbit-reverse {
+    animation: none;
+  }
+}
+
 ::selection {
   background: var(--accent-soft);
   color: var(--foreground);
