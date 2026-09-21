@@ -2,13 +2,13 @@ import Link from "next/link";
 import { ThemeToggle } from "./ThemeToggle";
 
 const navLinks = [
+  { href: "/about-us", label: "About Us" },
   { href: "/competitions", label: "Competitions" },
   { href: "/calendar", label: "Calendar" },
   { href: "/results", label: "Results" },
   { href: "/awards", label: "Awards" },
   { href: "/schools", label: "For Schools" },
   { href: "/students", label: "For Students" },
-  { href: "/about-us", label: "About Us" },
 ];
 
 export function Header() {
