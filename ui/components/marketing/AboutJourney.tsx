@@ -6,14 +6,7 @@ import { Fragment, type ReactNode } from "react";
  * as one wave travelling left to right rather than four things bobbing
  * together. The float drives `translate` and the hover drives `scale`, which
  * are separate CSS properties, so the pop does not fight the wave; hovering
- * also holds that circle still so it can be looked at.
- *
- * Photo is an Unsplash placeholder; swap the `src` for a real one. */
-
-const PHOTO = {
-  src: "https://images.unsplash.com/photo-1708276422568-9785721eeeb3?auto=format&fit=crop&w=760&h=1100&q=72",
-  alt: "A young person with a backpack looking out over a mountain range",
-};
+ * also holds that circle still so it can be looked at. */
 
 const icons: Record<string, ReactNode> = {
   compass: <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm3.5-13.5-2 5.5-5.5 2 2-5.5 5.5-2Z" />,
@@ -62,65 +55,49 @@ export function AboutJourney() {
         <div className="absolute right-1/3 -bottom-28 h-96 w-96 rounded-full bg-accent/[0.06] blur-[130px]" />
       </div>
 
-      <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-12">
-        <div>
-          <p className="text-xs font-bold tracking-[0.25em] text-accent uppercase">Why we exist</p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-brand-deep-foreground sm:text-4xl">
-            Learning needs room to grow.
-          </h2>
+      <div className="relative mx-auto max-w-7xl text-center">
+        <p className="text-xs font-bold tracking-[0.25em] text-accent uppercase">Why we exist</p>
+        <h2 className="mt-3 text-3xl font-black tracking-tight text-balance text-brand-deep-foreground sm:text-4xl lg:text-5xl">
+          Learning needs room to grow.
+        </h2>
 
-          <ol className="mt-14 flex flex-col items-center gap-10 sm:flex-row sm:items-start sm:justify-between sm:gap-0">
-            {STEPS.map((step, i) => (
-              <Fragment key={step.line1}>
-                <li className="group flex shrink-0 flex-col items-center text-center sm:flex-1">
-                  {/* Wrapper carries the wave; the circle carries the pop, so
-                      neither overwrites the other. */}
-                  <div
-                    className="animate-wave-float group-hover:[animation-play-state:paused]"
-                    style={{ animationDelay: `${i * STAGGER}s` }}
-                  >
-                    <span className="grid h-[4.5rem] w-[4.5rem] place-items-center rounded-full border-2 border-accent/45 bg-accent/10 text-accent shadow-[0_0_0_0_rgba(255,105,31,0)] transition-[scale,background-color,color,border-color,box-shadow] duration-300 ease-out group-hover:scale-115 group-hover:border-accent group-hover:bg-accent group-hover:text-accent-foreground group-hover:shadow-[0_0_0_12px_rgba(255,105,31,0.16)]">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.7"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                        className="h-7 w-7"
-                      >
-                        {icons[step.icon]}
-                      </svg>
-                    </span>
-                  </div>
+        <ol className="mx-auto mt-16 flex max-w-5xl flex-col items-center gap-10 sm:flex-row sm:items-start sm:justify-between sm:gap-0">
+          {STEPS.map((step, i) => (
+            <Fragment key={step.line1}>
+              <li className="group flex shrink-0 flex-col items-center text-center sm:flex-1">
+                {/* Wrapper carries the wave; the circle carries the pop, so
+                    neither overwrites the other. */}
+                <div
+                  className="animate-wave-float group-hover:[animation-play-state:paused]"
+                  style={{ animationDelay: `${i * STAGGER}s` }}
+                >
+                  <span className="grid h-[4.5rem] w-[4.5rem] place-items-center rounded-full border-2 border-accent/45 bg-accent/10 text-accent shadow-[0_0_0_0_rgba(255,105,31,0)] transition-[scale,background-color,color,border-color,box-shadow] duration-300 ease-out group-hover:scale-115 group-hover:border-accent group-hover:bg-accent group-hover:text-accent-foreground group-hover:shadow-[0_0_0_12px_rgba(255,105,31,0.16)]">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                      className="h-7 w-7"
+                    >
+                      {icons[step.icon]}
+                    </svg>
+                  </span>
+                </div>
 
-                  <p className="mt-5 text-sm leading-snug font-bold text-brand-deep-foreground transition-colors duration-300 group-hover:text-accent">
-                    {step.line1}
-                    <br />
-                    {step.line2}
-                  </p>
-                </li>
+                <p className="mt-5 text-sm leading-snug font-bold text-brand-deep-foreground transition-colors duration-300 group-hover:text-accent">
+                  {step.line1}
+                  <br />
+                  {step.line2}
+                </p>
+              </li>
 
-                {i < STEPS.length - 1 && <Connector />}
-              </Fragment>
-            ))}
-          </ol>
-        </div>
-
-        {/* Where the four steps lead. */}
-        <div className="relative min-h-[16rem] overflow-hidden rounded-3xl lg:min-h-0">
-          {/* eslint-disable-next-line @next/next/no-img-element -- remote placeholder host, not in next.config's image remotePatterns */}
-          <img src={PHOTO.src} alt={PHOTO.alt} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-brand-deep/90 via-brand-deep/35 to-brand-deep/70" />
-          <div className="relative flex h-full flex-col items-end justify-start gap-3 p-6 text-right">
-            <p className="text-[11px] leading-relaxed font-bold tracking-[0.2em] text-brand-deep-foreground uppercase">
-              Bigger possibilities
-              <br />A brighter you
-            </p>
-            <span aria-hidden="true" className="h-0.5 w-10 rounded-full bg-accent" />
-          </div>
-        </div>
+              {i < STEPS.length - 1 && <Connector />}
+            </Fragment>
+          ))}
+        </ol>
       </div>
     </section>
   );
