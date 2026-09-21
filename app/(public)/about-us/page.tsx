@@ -3,6 +3,7 @@ import { AboutIntro } from "@/ui/components/marketing/AboutIntro";
 import { AboutJourney } from "@/ui/components/marketing/AboutJourney";
 import { AboutStrengths } from "@/ui/components/marketing/AboutStrengths";
 import { AboutAudiences } from "@/ui/components/marketing/AboutAudiences";
+import { AboutInitiative } from "@/ui/components/marketing/AboutInitiative";
 
 export const metadata = {
   title: "About Us | Future Competence Series",
@@ -17,6 +18,7 @@ export default function AboutUsPage() {
       <AboutJourney />
       <AboutStrengths />
       <AboutAudiences />
+      <AboutInitiative />
     </div>
   );
 }
