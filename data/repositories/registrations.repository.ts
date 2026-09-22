@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Registration, RegistrationStatus } from "@/domain/registrations/types";
+import type { PaymentStatus } from "@/domain/payments/types";
 
 type Row = {
   id: string;
@@ -11,6 +12,7 @@ type Row = {
   submitted_at: string;
   students: { full_name: string } | null;
   teams: { team_name: string; team_members: { students: { full_name: string } | null }[] } | null;
+  registration_payments: { status: PaymentStatus } | null;
 };
 
 function toRegistration(row: Row): Registration {
@@ -27,32 +29,45 @@ function toRegistration(row: Row): Registration {
         : undefined,
     status: row.status,
     submittedAt: row.submitted_at,
+    paymentStatus: row.registration_payments?.status ?? null,
   };
 }
 
 const SELECT =
+  "id, registration_number, competition_slug, competition_title, entry_type, status, submitted_at, students(full_name), teams(team_name, team_members(students(full_name))), registration_payments(status)";
+
+// registration_payments (migration 0019) may not exist yet on a database
+// that hasn't had it applied — the embedded-relationship select then fails
+// outright (PostgREST can't resolve the FK to embed), not just drop one
+// column, so every call here retries once without the join rather than
+// probing a specific error code the way the pathway/image_url fallback
+// does. Every caller gets paymentStatus: null until the migration runs.
+const SELECT_PRE_0019 =
   "id, registration_number, competition_slug, competition_title, entry_type, status, submitted_at, students(full_name), teams(team_name, team_members(students(full_name)))";
 
-export async function listRegistrationsBySchool(supabase: SupabaseClient, schoolId: string): Promise<Registration[]> {
-  const { data, error } = await supabase
-    .from("registrations")
-    .select(SELECT)
-    .eq("school_id", schoolId)
-    .order("submitted_at", { ascending: false });
+async function runWithPaymentFallback(
+  build: (select: string) => PromiseLike<{ data: unknown; error: { message: string } | null }>,
+): Promise<Registration[]> {
+  const first = await build(SELECT);
+  if (!first.error && first.data) return (first.data as unknown as Row[]).map(toRegistration);
 
-  if (error || !data) return [];
-  return (data as unknown as Row[]).map(toRegistration);
+  const fallback = await build(SELECT_PRE_0019);
+  if (fallback.error || !fallback.data) return [];
+  return (fallback.data as unknown as Omit<Row, "registration_payments">[]).map((row) =>
+    toRegistration({ ...row, registration_payments: null }),
+  );
+}
+
+export async function listRegistrationsBySchool(supabase: SupabaseClient, schoolId: string): Promise<Registration[]> {
+  return runWithPaymentFallback((select) =>
+    supabase.from("registrations").select(select).eq("school_id", schoolId).order("submitted_at", { ascending: false }),
+  );
 }
 
 export async function listRegistrationsByRegistrant(supabase: SupabaseClient, profileId: string): Promise<Registration[]> {
-  const { data, error } = await supabase
-    .from("registrations")
-    .select(SELECT)
-    .eq("registered_by", profileId)
-    .order("submitted_at", { ascending: false });
-
-  if (error || !data) return [];
-  return (data as unknown as Row[]).map(toRegistration);
+  return runWithPaymentFallback((select) =>
+    supabase.from("registrations").select(select).eq("registered_by", profileId).order("submitted_at", { ascending: false }),
+  );
 }
 
 /** Admin overview: every registration across every school/student, unscoped,
@@ -65,12 +80,11 @@ export async function adminListAllRegistrations(
   admin: SupabaseClient,
   filters?: { competitionSlug?: string },
 ): Promise<Registration[]> {
-  let query = admin.from("registrations").select(SELECT).order("submitted_at", { ascending: false });
-  if (filters?.competitionSlug) query = query.eq("competition_slug", filters.competitionSlug);
-
-  const { data, error } = await query;
-  if (error || !data) return [];
-  return (data as unknown as Row[]).map(toRegistration);
+  return runWithPaymentFallback((select) => {
+    let query = admin.from("registrations").select(select).order("submitted_at", { ascending: false });
+    if (filters?.competitionSlug) query = query.eq("competition_slug", filters.competitionSlug);
+    return query;
+  });
 }
 
 export interface InsertRegistrationInput {

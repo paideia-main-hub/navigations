@@ -1,6 +1,6 @@
 import { createClient } from "@/data/supabase/server";
 import { listCompetitions } from "@/domain/competitions/service";
-import type { AgeCategory, CompetitionStatus } from "@/domain/competitions/types";
+import { pathwayOrder, type AgeCategory, type CompetitionPathway, type CompetitionStatus } from "@/domain/competitions/types";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { CompetitionsDirectory } from "./CompetitionsDirectory";
 
@@ -14,13 +14,14 @@ const STATUSES: CompetitionStatus[] = ["draft", "upcoming", "open", "closed", "a
 export default async function CompetitionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string; status?: string }>;
+  searchParams: Promise<{ q?: string; category?: string; pathway?: string; status?: string }>;
 }) {
-  const { q, category, status } = await searchParams;
+  const { q, category, pathway, status } = await searchParams;
   const supabase = await createClient();
   const competitions = await listCompetitions(supabase);
 
   const initialCategory = AGE_CATEGORIES.includes(category as AgeCategory) ? (category as AgeCategory) : "all";
+  const initialPathway = pathwayOrder.includes(pathway as CompetitionPathway) ? (pathway as CompetitionPathway) : "all";
   const initialStatus = STATUSES.includes(status as CompetitionStatus) ? (status as CompetitionStatus) : "all";
 
   return (
@@ -28,12 +29,13 @@ export default async function CompetitionsPage({
       <PageBanner
         eyebrow="Competition Directory"
         title="Competitions"
-        subtitle="Browse all competitions in the Future Competence Series. Filter by age category, participation type or status, or search by name."
+        subtitle="Browse all competitions in the Future Competence Series. Filter by Route 1 category, age category, participation type or status, or search by name."
       />
       <div className="mx-auto max-w-7xl px-6 py-12">
         <CompetitionsDirectory
           initialQuery={q ?? ""}
           initialCategory={initialCategory}
+          initialPathway={initialPathway}
           initialStatus={initialStatus}
           competitions={competitions}
         />

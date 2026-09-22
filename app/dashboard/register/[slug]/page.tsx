@@ -39,7 +39,13 @@ export default async function CompetitionRegisterPage({
     return (
       <div>
         <h1 className="mb-6 text-2xl font-bold text-foreground">Register for {competition.title}</h1>
-        <RegistrationWizard competition={competition} mode="school" schoolId={school.id} roster={roster} />
+        <RegistrationWizard
+          competition={competition}
+          mode="school"
+          schoolId={school.id}
+          schoolName={school.officialName}
+          roster={roster}
+        />
       </div>
     );
   }

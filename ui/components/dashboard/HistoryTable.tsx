@@ -60,7 +60,7 @@ export function HistoryTable({
                 Status: registrationStatusLabels[r.status],
                 Result: result ? (result.customAwardLabel ?? result.award ?? "Released") : "",
                 Score: result?.score != null ? String(result.score) : "",
-                "Submitted at": new Date(r.submittedAt).toLocaleDateString(),
+                "Submitted at": new Date(r.submittedAt).toLocaleDateString("en-GB"),
               };
             })}
           />
@@ -122,7 +122,7 @@ export function HistoryTable({
                           "—"
                         )}
                       </td>
-                      <td className="px-4 py-3 text-muted">{new Date(r.submittedAt).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-muted">{new Date(r.submittedAt).toLocaleDateString("en-GB")}</td>
                     </tr>
                   );
                 })}

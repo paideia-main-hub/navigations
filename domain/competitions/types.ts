@@ -108,11 +108,16 @@ export type CompetitionPathway =
   | "project_showcase"
   | "live_response";
 
+// Wording matches the catalogue's own "Choose your journey" table exactly
+// (documentation/FRL_Catalogue_REVISED_Nov_Dec_2026.docx): "Applied Skills
+// Challenges · Independent Submission · Project Showcasing · Live
+// Performances" — not a paraphrase, so a coordinator reading both side by
+// side sees the same four names.
 export const pathwayLabels: Record<CompetitionPathway, string> = {
   applied_skills: "Applied Skills Challenges",
-  independent_submission: "Independent Submission Challenges",
-  project_showcase: "Project Showcase Challenges",
-  live_response: "Live Response Challenges",
+  independent_submission: "Independent Submission",
+  project_showcase: "Project Showcasing",
+  live_response: "Live Performances",
 };
 
 export const pathwayOrder: CompetitionPathway[] = [

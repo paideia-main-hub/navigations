@@ -1,4 +1,5 @@
 import type { AgeCategory } from "@/domain/competitions/types";
+import type { PaymentStatus } from "@/domain/payments/types";
 
 export type RegistrationStatus = "pending" | "approved" | "rejected" | "qualified" | "finalist" | "completed";
 
@@ -13,6 +14,11 @@ export interface Registration {
   teamMembers?: string[];
   status: RegistrationStatus;
   submittedAt: string;
+  /** Null until a receipt has been uploaded for this registration — the fee
+   * payment is a separate approval from the registration's own status, so a
+   * registration can be "pending" review while its payment is already
+   * approved, or vice versa. See domain/payments. */
+  paymentStatus: PaymentStatus | null;
 }
 
 export type DisplayStatus = "registered" | "upcoming" | "in_progress" | "qualified" | "completed" | "rejected";

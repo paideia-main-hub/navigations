@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getCoordinatorSchool } from "@/domain/schools/service";
-import { addStudentToSchool, getOwnStudentProfile, updateOwnStudentProfile } from "./service";
+import { uploadOwnPhoto } from "@/domain/storage/actions";
+import { addStudentToSchool, getOwnStudentProfile, setStudentPhoto, updateOwnStudentProfile } from "./service";
 
 export type ActionState = { error: string | null; success?: boolean };
 
@@ -16,7 +17,7 @@ export async function addStudentAction(_prevState: ActionState, formData: FormDa
   const school = await getCoordinatorSchool(supabase, user.id);
   if (!school) return { error: "No school found for this coordinator." };
 
-  const { error } = await addStudentToSchool(supabase, school.id, {
+  const { student, error } = await addStudentToSchool(supabase, school.id, {
     fullName: String(formData.get("full_name")),
     grade: String(formData.get("grade")) || null,
     dateOfBirth: String(formData.get("date_of_birth")) || null,
@@ -27,7 +28,16 @@ export async function addStudentAction(_prevState: ActionState, formData: FormDa
     guardianMobile: String(formData.get("guardian_mobile")) || null,
   });
 
-  if (error) return { error };
+  if (error || !student) return { error };
+
+  // Optional, same as at student self-registration — a failed upload
+  // doesn't block adding the student, it just leaves photoUrl null until
+  // someone uploads one later.
+  const photo = formData.get("photo");
+  if (photo instanceof File && photo.size > 0) {
+    const { url } = await uploadOwnPhoto(photo, student.id);
+    if (url) await setStudentPhoto(supabase, student.id, url);
+  }
 
   revalidatePath("/dashboard");
   return { error: null, success: true };

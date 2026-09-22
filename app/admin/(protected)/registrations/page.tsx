@@ -22,7 +22,7 @@ export default async function AdminRegistrationsPage() {
             Entrant: r.entrantName,
             "Registration #": r.registrationNumber,
             Status: registrationStatusLabels[r.status],
-            "Submitted at": new Date(r.submittedAt).toLocaleDateString(),
+            "Submitted at": new Date(r.submittedAt).toLocaleDateString("en-GB"),
           }))}
         />
       </div>

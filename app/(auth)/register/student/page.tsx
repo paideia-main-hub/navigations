@@ -25,6 +25,19 @@ export default function StudentRegisterPage() {
         <p className="pt-2 text-xs font-semibold tracking-wide text-muted uppercase">Student identity</p>
         <FormField label="Date of birth" name="date_of_birth" type="date" />
         <FormField label="Gender" name="gender" />
+        <div>
+          <label className="text-sm font-medium text-foreground">Profile photo</label>
+          <input
+            type="file"
+            name="photo"
+            accept="image/*"
+            className="mt-1 block w-full text-sm text-foreground file:mr-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-strong hover:file:bg-accent-soft/80"
+          />
+          <p className="mt-1 text-xs text-muted">
+            Used on your certificate and, if you&apos;re a winner, on the public results page — one upload now saves
+            you from being asked for it again later.
+          </p>
+        </div>
 
         <p className="pt-2 text-xs font-semibold tracking-wide text-muted uppercase">Academic</p>
         <FormField label="School name" name="school_name" />

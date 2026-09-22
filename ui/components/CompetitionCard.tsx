@@ -72,7 +72,7 @@ export function CompetitionCard({ competition }: { competition: CompetitionSumma
         <span className="font-semibold text-accent-strong group-hover:underline">View Details →</span>
       </div>
       <p className="text-xs font-medium text-muted">
-        {deadline ? `Registration closes ${new Date(deadline).toLocaleDateString()}` : "Registration dates not yet scheduled"}
+        {deadline ? `Registration closes ${new Date(deadline).toLocaleDateString("en-GB")}` : "Registration dates not yet scheduled"}
       </p>
       </div>
     </Link>

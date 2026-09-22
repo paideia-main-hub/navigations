@@ -36,8 +36,8 @@ export default async function AwardCategoryPage({ params }: { params: Promise<{ 
             <ul className="mt-2 space-y-1 text-sm text-muted">
               {category.evidencePeriodStart && category.evidencePeriodEnd && (
                 <li>
-                  Evidence period: {new Date(category.evidencePeriodStart).toLocaleDateString()} –{" "}
-                  {new Date(category.evidencePeriodEnd).toLocaleDateString()}
+                  Evidence period: {new Date(category.evidencePeriodStart).toLocaleDateString("en-GB")} –{" "}
+                  {new Date(category.evidencePeriodEnd).toLocaleDateString("en-GB")}
                 </li>
               )}
               {category.closingAt && <li>Nomination deadline: {new Date(category.closingAt).toLocaleString()}</li>}

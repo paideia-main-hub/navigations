@@ -25,6 +25,7 @@ import type {
   RubricCriterion,
   StageRubric,
 } from "@/domain/competitions/types";
+import { PATHWAY_BY_SLUG } from "@/domain/competitions/pathwayFallback";
 
 const FULL_SELECT = `
   *,
@@ -202,7 +203,10 @@ function toCompetition(row: Row): Competition {
     overview: row.overview ?? "",
     domain: row.domain_competency_area ?? "",
     status: row.status,
-    pathway: row.pathway ?? null,
+    // Falls back to the known Route 1 category by slug when the DB's own
+    // pathway column is null (see pathwayFallback.ts for why) — an admin's
+    // own CMS edit always wins once that column exists and holds a value.
+    pathway: row.pathway ?? PATHWAY_BY_SLUG[row.slug] ?? null,
     imageUrl: row.image_url ?? null,
     supportsIndividual: row.supports_individual,
     supportsTeam: row.supports_team,
@@ -308,7 +312,10 @@ function toSummary(row: Row): CompetitionSummary {
     shortDescription: row.short_description ?? "",
     domain: row.domain_competency_area ?? "",
     status: row.status,
-    pathway: row.pathway ?? null,
+    // Falls back to the known Route 1 category by slug when the DB's own
+    // pathway column is null (see pathwayFallback.ts for why) — an admin's
+    // own CMS edit always wins once that column exists and holds a value.
+    pathway: row.pathway ?? PATHWAY_BY_SLUG[row.slug] ?? null,
     imageUrl: row.image_url ?? null,
     supportsIndividual: row.supports_individual,
     supportsTeam: row.supports_team,

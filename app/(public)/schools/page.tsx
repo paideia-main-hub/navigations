@@ -13,8 +13,8 @@ const items: FaqCardItem[] = [
     answer: (
       <>
         The League gives your students a structured way to develop and demonstrate real competencies — not just
-        collect certificates — across four pathways: applied skills, independent submissions, project showcases and
-        live response challenges. Registering as a school also unlocks School Awards: Champion School, School
+        collect certificates — across four Route 1 categories: Applied Skills Challenges, Independent Submission,
+        Project Showcasing and Live Performances. Registering as a school also unlocks School Awards: Champion School, School
         Excellence, Whole School Participation, Diversified School and Collaboration &amp; Integrity, computed from
         your students&apos; own participation and results across the season.
       </>

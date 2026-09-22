@@ -6,6 +6,7 @@ import {
   insertAdHocStudent,
   findStudentByProfile,
   updateStudentProfile,
+  updateStudentPhoto,
 } from "@/data/repositories/students.repository";
 import type { AddStudentInput, StudentProfile } from "./types";
 
@@ -42,4 +43,8 @@ export async function createAdHocTeammate(
   fullName: string,
 ): Promise<{ id: string | null; error: string | null }> {
   return insertAdHocStudent(supabase, fullName);
+}
+
+export async function setStudentPhoto(supabase: SupabaseClient, studentId: string, photoUrl: string): Promise<{ error: string | null }> {
+  return updateStudentPhoto(supabase, studentId, photoUrl);
 }

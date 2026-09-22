@@ -43,6 +43,16 @@ export function AddStudentForm() {
         <FormField label="Guardian email" name="guardian_email" type="email" />
         <FormField label="Guardian mobile" name="guardian_mobile" type="tel" />
       </div>
+      <div>
+        <label className="text-sm font-medium text-foreground">Profile photo</label>
+        <input
+          type="file"
+          name="photo"
+          accept="image/*"
+          className="mt-1 block w-full text-sm text-foreground file:mr-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-strong hover:file:bg-accent-soft/80"
+        />
+        <p className="mt-1 text-xs text-muted">Used on this student&apos;s certificate and, if they win, on the public results page.</p>
+      </div>
       {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
       <div className="flex gap-3">
         <button

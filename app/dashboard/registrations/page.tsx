@@ -87,9 +87,9 @@ export default async function RegistrationsPage() {
                     {c.title}
                   </Link>
                   <p className="mt-1 text-sm text-muted">
-                    {deadline && `Registration closes ${new Date(deadline).toLocaleDateString()}`}
+                    {deadline && `Registration closes ${new Date(deadline).toLocaleDateString("en-GB")}`}
                     {deadline && event && " · "}
-                    {event && `Event ${new Date(event).toLocaleDateString()}`}
+                    {event && `Event ${new Date(event).toLocaleDateString("en-GB")}`}
                     {!deadline && !event && "Dates not yet scheduled"}
                   </p>
                   {(announcementsByCompetition.get(c.slug) ?? []).slice(0, 2).map((a) => (

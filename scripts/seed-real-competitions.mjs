@@ -106,9 +106,15 @@ async function seedCompetition(sb, c, withPathway) {
     supports_individual: c.supportsIndividual,
     supports_team: c.supportsTeam,
     status: c.status ?? "open",
-    fee_required: false,
     season: c.season ?? "2026",
     updated_at: new Date().toISOString(),
+    // fee_required/fee_amount are admin-set from Admin Console > Competitions
+    // (the fee receipt review flow reads them directly), not something this
+    // data file knows — omitted entirely rather than defaulted to false, so
+    // re-running this seeder after an edit never wipes an admin's fee
+    // settings back out. Set c.feeRequired/c.feeAmount in a data file only
+    // if you want THIS seeder to be the source of truth for that competition.
+    ...(c.feeRequired !== undefined ? { fee_required: c.feeRequired, fee_amount: c.feeAmount ?? null } : {}),
     ...(withPathway ? { pathway: c.pathway ?? null, image_url: c.image ?? null } : {}),
   };
 

@@ -49,10 +49,10 @@ const ROUTES = [
     // Explicit placement on lg: header across tracks 1-4, cards one per track.
     headerClass: "lg:col-start-1 lg:col-span-4 lg:row-start-1",
     cards: [
-      { label: "Applied Skills Challenges", icon: "bulb", href: "/competitions", col: "lg:col-start-1" },
-      { label: "Independent Submission Challenges", icon: "document", href: "/competitions", col: "lg:col-start-2" },
-      { label: "Project Showcase Challenges", icon: "people", href: "/competitions", col: "lg:col-start-3" },
-      { label: "Live Response Challenges", icon: "bolt", href: "/competitions", col: "lg:col-start-4" },
+      { label: "Applied Skills Challenges", icon: "bulb", href: "/competitions?pathway=applied_skills", col: "lg:col-start-1" },
+      { label: "Independent Submission", icon: "document", href: "/competitions?pathway=independent_submission", col: "lg:col-start-2" },
+      { label: "Project Showcasing", icon: "people", href: "/competitions?pathway=project_showcase", col: "lg:col-start-3" },
+      { label: "Live Performances", icon: "bolt", href: "/competitions?pathway=live_response", col: "lg:col-start-4" },
     ],
   },
   {

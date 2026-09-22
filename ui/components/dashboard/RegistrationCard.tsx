@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Registration, DisplayStatus } from "@/domain/registrations/types";
 import { displayStatusLabels } from "@/domain/registrations/types";
+import { paymentStatusLabels } from "@/domain/payments/types";
 import { registrationDeadlineOf, finalEventDateOf } from "@/domain/competitions/service";
 import type { CompetitionSummary } from "@/domain/competitions/types";
 import type { ResultInfo } from "@/domain/results/types";
@@ -12,6 +13,12 @@ const statusTone: Record<DisplayStatus, "success" | "warning" | "neutral" | "acc
   in_progress: "accent",
   qualified: "success",
   completed: "success",
+  rejected: "neutral",
+};
+
+const paymentTone: Record<string, "success" | "warning" | "neutral"> = {
+  approved: "success",
+  pending_review: "warning",
   rejected: "neutral",
 };
 
@@ -41,7 +48,10 @@ export function RegistrationCard({
             {r.entrantName} <span className="capitalize">({r.entryType})</span> · {r.registrationNumber}
           </p>
         </div>
-        <Badge tone={statusTone[status]}>{displayStatusLabels[status]}</Badge>
+        <div className="flex flex-col items-end gap-1">
+          <Badge tone={statusTone[status]}>{displayStatusLabels[status]}</Badge>
+          {r.paymentStatus && <Badge tone={paymentTone[r.paymentStatus]}>{paymentStatusLabels[r.paymentStatus]}</Badge>}
+        </div>
       </div>
 
       {r.entryType === "team" && r.teamMembers && r.teamMembers.length > 0 && (
@@ -56,13 +66,13 @@ export function RegistrationCard({
             <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted">
               {deadline && (
                 <span>
-                  Registration closes {new Date(deadline).toLocaleDateString()}
+                  Registration closes {new Date(deadline).toLocaleDateString("en-GB")}
                   {daysUntil(deadline) >= 0 && ` (${daysUntil(deadline)}d)`}
                 </span>
               )}
               {event && (
                 <span>
-                  Event {new Date(event).toLocaleDateString()}
+                  Event {new Date(event).toLocaleDateString("en-GB")}
                   {daysUntil(event) >= 0 && ` (${daysUntil(event)}d)`}
                 </span>
               )}

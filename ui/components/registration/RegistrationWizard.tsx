@@ -8,8 +8,9 @@ import { isGradeEligible } from "@/domain/competitions/service";
 import type { StudentProfile } from "@/domain/students/types";
 import type { Registration } from "@/domain/registrations/types";
 import { submitRegistrationAction } from "@/domain/registrations/actions";
+import { submitPaymentAction } from "@/domain/payments/actions";
 
-type Step = "eligibility" | "entry" | "consent" | "review" | "success";
+type Step = "eligibility" | "entry" | "consent" | "review" | "payment" | "success";
 
 export function RegistrationWizard({
   competition,
@@ -17,6 +18,7 @@ export function RegistrationWizard({
   studentName,
   studentId,
   schoolId,
+  schoolName,
   roster = [],
 }: {
   competition: Competition;
@@ -24,8 +26,10 @@ export function RegistrationWizard({
   /** Required for mode="student": the logged-in student's own students.id and full name. */
   studentName?: string;
   studentId?: string;
-  /** Required for mode="school": the coordinator's schools.id. */
+  /** Required for mode="school": the coordinator's schools.id (and, for the
+   * payment record's display, the school's name). */
   schoolId?: string;
+  schoolName?: string;
   roster?: StudentProfile[];
 }) {
   const [step, setStep] = useState<Step>("eligibility");
@@ -37,18 +41,35 @@ export function RegistrationWizard({
   const allowTeam = competition.supportsTeam;
   const [entryType, setEntryType] = useState<"individual" | "team">(allowIndividual ? "individual" : "team");
 
-  const [selectedStudentId, setSelectedStudentId] = useState(roster[0]?.id ?? "");
+  /** mode="school" + entryType="individual" only: a coordinator can enter
+   * more than one student from the roster at once, one registration each,
+   * sharing a single fee payment (fee amount x number selected) at the end —
+   * this is the "multiply by number of students" the coordinator flow needs
+   * and the old single-select dropdown couldn't express. */
+  const [selectedIndividualIds, setSelectedIndividualIds] = useState<string[]>([]);
   const [teamName, setTeamName] = useState("");
   const [teamMemberNames, setTeamMemberNames] = useState<string[]>([""]);
   const [selectedRosterIds, setSelectedRosterIds] = useState<string[]>([]);
 
   const [consent, setConsent] = useState({ terms: false, privacy: false, results: false, photo: false });
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<Registration | null>(null);
+  const [results, setResults] = useState<Registration[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentDone, setPaymentDone] = useState(false);
 
   const teamMin = matchedRule?.teamMinSize ?? 1;
   const teamMax = matchedRule?.teamMaxSize ?? 10;
+
+  const isCoordinatorIndividualBatch = mode === "school" && entryType === "individual";
+  /** One "entry" is one registration — a coordinator paying for 3 students
+   * pays fee x 3, a team registration is one entry regardless of its size,
+   * a student registering themself is always exactly one. */
+  const entryCount = isCoordinatorIndividualBatch ? Math.max(1, selectedIndividualIds.length) : 1;
+  const amountExpected = competition.feeAmount != null ? competition.feeAmount * entryCount : null;
 
   function checkEligibility() {
     const numericGrade = grade.trim();
@@ -64,10 +85,15 @@ export function RegistrationWizard({
 
   const entrantName = useMemo(() => {
     if (entryType === "individual") {
-      return mode === "student" ? studentName ?? "" : roster.find((s) => s.id === selectedStudentId)?.fullName ?? "";
+      if (mode === "student") return studentName ?? "";
+      if (selectedIndividualIds.length === 1) {
+        return roster.find((s) => s.id === selectedIndividualIds[0])?.fullName ?? "";
+      }
+      if (selectedIndividualIds.length > 1) return `${selectedIndividualIds.length} students`;
+      return "";
     }
     return teamName;
-  }, [entryType, mode, studentName, roster, selectedStudentId, teamName]);
+  }, [entryType, mode, studentName, roster, selectedIndividualIds, teamName]);
 
   const consentComplete = consent.terms && consent.privacy && consent.results && consent.photo;
 
@@ -75,25 +101,57 @@ export function RegistrationWizard({
     setSubmitting(true);
     setSubmitError(null);
 
-    const { registration, error } = await submitRegistrationAction({
+    const category = matchedRule?.category ?? competition.eligibility[0]?.category ?? "primary";
+    const baseInput = {
       competitionSlug: competition.slug,
       competitionTitle: competition.title,
-      category: matchedRule?.category ?? competition.eligibility[0]?.category ?? "primary",
-      entryType,
+      category,
       schoolId: mode === "school" ? (schoolId ?? null) : null,
-      studentId: entryType === "individual" ? (mode === "student" ? studentId : selectedStudentId) : undefined,
+      consent,
+    };
+
+    if (isCoordinatorIndividualBatch) {
+      // One registration per selected student, sharing this one submission —
+      // if a middle one fails, stop rather than silently under-reporting how
+      // many actually went through.
+      const created: Registration[] = [];
+      for (const sid of selectedIndividualIds) {
+        const student = roster.find((s) => s.id === sid);
+        const { registration, error } = await submitRegistrationAction({
+          ...baseInput,
+          entryType: "individual",
+          studentId: sid,
+          entrantNameForDisplay: student?.fullName ?? "Student",
+        });
+        if (error || !registration) {
+          setSubmitting(false);
+          setSubmitError(
+            created.length > 0
+              ? `Registered ${created.length} of ${selectedIndividualIds.length} students before this failed: ${error ?? "unknown error"}. The ones already registered are saved — go back and remove them from your selection before retrying the rest.`
+              : (error ?? "Something went wrong submitting your registration."),
+          );
+          return;
+        }
+        created.push(registration);
+      }
+      setResults(created);
+      setSubmitting(false);
+      setStep(competition.feeRequired ? "payment" : "success");
+      return;
+    }
+
+    const { registration, error } = await submitRegistrationAction({
+      ...baseInput,
+      entryType,
+      // Reachable only for mode="student" + entryType="individual" — the
+      // mode="school" + entryType="individual" case is always handled by the
+      // batch branch above, before this call is ever reached.
+      studentId: entryType === "individual" ? studentId : undefined,
       teamName: entryType === "team" ? teamName : undefined,
       existingMemberIds:
-        entryType === "team"
-          ? mode === "student"
-            ? studentId
-              ? [studentId]
-              : []
-            : selectedRosterIds
-          : undefined,
+        entryType === "team" ? (mode === "student" ? (studentId ? [studentId] : []) : selectedRosterIds) : undefined,
       newTeammateNames: entryType === "team" && mode === "student" ? teamMemberNames.filter((n) => n.trim()) : undefined,
       entrantNameForDisplay: entrantName,
-      consent,
     });
 
     setSubmitting(false);
@@ -103,14 +161,48 @@ export function RegistrationWizard({
       return;
     }
 
-    setResult(registration);
+    setResults([registration]);
+    setStep(competition.feeRequired ? "payment" : "success");
+  }
+
+  async function handlePaymentSubmit() {
+    if (!receiptFile) {
+      setPaymentError("Please attach your fee receipt before continuing.");
+      return;
+    }
+    setPaymentSubmitting(true);
+    setPaymentError(null);
+
+    const { error } = await submitPaymentAction({
+      competitionSlug: competition.slug,
+      competitionTitle: competition.title,
+      schoolId: mode === "school" ? (schoolId ?? null) : null,
+      schoolName: mode === "school" ? (schoolName ?? null) : null,
+      entryCount,
+      amountExpected,
+      registrationIds: results.map((r) => r.id),
+      receiptFile,
+    });
+
+    setPaymentSubmitting(false);
+
+    if (error) {
+      setPaymentError(error);
+      return;
+    }
+
+    setPaymentDone(true);
     setStep("success");
   }
+
+  const steps: Step[] = competition.feeRequired
+    ? ["eligibility", "entry", "consent", "review", "payment"]
+    : ["eligibility", "entry", "consent", "review"];
 
   return (
     <div className="mx-auto max-w-2xl">
       <ol className="mb-8 flex flex-wrap gap-2 text-xs font-medium text-muted">
-        {(["eligibility", "entry", "consent", "review"] as Step[]).map((s, i) => (
+        {steps.map((s, i) => (
           <li
             key={s}
             className={`rounded-full px-3 py-1 ${step === s ? "bg-accent-soft text-accent" : "bg-surface-muted"}`}
@@ -195,7 +287,9 @@ export function RegistrationWizard({
 
           {entryType === "individual" && mode === "school" && (
             <div>
-              <label className="text-sm font-medium text-foreground">Select student</label>
+              <label className="text-sm font-medium text-foreground">
+                Select students <span className="font-normal text-muted">(one registration per student selected)</span>
+              </label>
               {roster.length === 0 ? (
                 <p className="mt-1 text-sm text-muted">
                   No students in your roster yet.{" "}
@@ -205,17 +299,29 @@ export function RegistrationWizard({
                   first.
                 </p>
               ) : (
-                <select
-                  value={selectedStudentId}
-                  onChange={(e) => setSelectedStudentId(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                >
+                <div className="mt-1 max-h-64 space-y-2 overflow-y-auto rounded-lg border border-border p-3">
                   {roster.map((s) => (
-                    <option key={s.id} value={s.id}>
+                    <label key={s.id} className="flex items-center gap-2 text-sm text-foreground">
+                      <input
+                        type="checkbox"
+                        checked={selectedIndividualIds.includes(s.id)}
+                        onChange={(e) =>
+                          setSelectedIndividualIds((prev) =>
+                            e.target.checked ? [...prev, s.id] : prev.filter((id) => id !== s.id),
+                          )
+                        }
+                      />
                       {s.fullName} (Grade {s.grade})
-                    </option>
+                    </label>
                   ))}
-                </select>
+                </div>
+              )}
+              {selectedIndividualIds.length > 0 && competition.feeRequired && competition.feeAmount != null && (
+                <p className="mt-2 text-sm text-muted">
+                  {selectedIndividualIds.length} student{selectedIndividualIds.length === 1 ? "" : "s"} selected — fee
+                  due: <span className="font-semibold text-foreground">{competition.feeAmount * selectedIndividualIds.length}</span>{" "}
+                  ({competition.feeAmount} × {selectedIndividualIds.length}).
+                </p>
               )}
             </div>
           )}
@@ -311,7 +417,7 @@ export function RegistrationWizard({
               disabled={
                 (entryType === "team" && !teamName.trim()) ||
                 (entryType === "team" && mode === "school" && selectedRosterIds.length < 2) ||
-                (entryType === "individual" && mode === "school" && !selectedStudentId)
+                (isCoordinatorIndividualBatch && selectedIndividualIds.length === 0)
               }
               className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
             >
@@ -371,10 +477,25 @@ export function RegistrationWizard({
               <span className="font-medium text-foreground capitalize">{entryType}</span>
             </p>
             <p>
-              <span className="text-muted">Entrant:</span>{" "}
+              <span className="text-muted">Entrant{isCoordinatorIndividualBatch && selectedIndividualIds.length > 1 ? "s" : ""}:</span>{" "}
               <span className="font-medium text-foreground">{entrantName || "—"}</span>
             </p>
+            {competition.feeRequired && (
+              <p>
+                <span className="text-muted">Fee due:</span>{" "}
+                <span className="font-medium text-foreground">
+                  {amountExpected != null ? amountExpected : "To be confirmed"}
+                  {entryCount > 1 && amountExpected != null ? ` (${competition.feeAmount} × ${entryCount})` : ""}
+                </span>
+              </p>
+            )}
           </div>
+          {competition.feeRequired && (
+            <p className="text-xs text-muted">
+              After you submit, you&apos;ll be asked to upload your fee payment receipt. Your registration stays under
+              review until an admin approves the payment.
+            </p>
+          )}
           {submitError && <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>}
           <div className="flex gap-3">
             <button
@@ -394,12 +515,71 @@ export function RegistrationWizard({
         </div>
       )}
 
-      {step === "success" && result && (
+      {step === "payment" && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold text-foreground">Pay the entry fee</h2>
+          <div className="rounded-xl border border-border bg-surface p-4 text-sm">
+            <p>
+              <span className="text-muted">Registration{results.length > 1 ? "s" : ""}:</span>{" "}
+              <span className="font-medium text-foreground">{results.map((r) => r.registrationNumber).join(", ")}</span>
+            </p>
+            <p className="mt-1">
+              <span className="text-muted">Amount due:</span>{" "}
+              <span className="font-semibold text-foreground">
+                {amountExpected != null ? amountExpected : "See competition rules"}
+              </span>
+              {entryCount > 1 && amountExpected != null && (
+                <span className="text-muted"> ({competition.feeAmount} × {entryCount} students)</span>
+              )}
+            </p>
+          </div>
+          <p className="text-sm text-muted">
+            Pay the fee using the bank/payment details published for this competition, then upload a photo or scan of
+            your receipt below. An admin reviews every receipt — your registration is marked under review until it&apos;s
+            approved.
+          </p>
+          <div>
+            <label className="text-sm font-medium text-foreground">Fee receipt</label>
+            <input
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
+              className="mt-1 block w-full text-sm text-foreground file:mr-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-strong hover:file:bg-accent-soft/80"
+            />
+          </div>
+          {paymentError && <p className="text-sm text-red-600 dark:text-red-400">{paymentError}</p>}
+          <div className="flex gap-3">
+            <button
+              onClick={handlePaymentSubmit}
+              disabled={paymentSubmitting || !receiptFile}
+              className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
+            >
+              {paymentSubmitting ? "Uploading…" : "Upload receipt"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "success" && results.length > 0 && (
         <div className="space-y-4 text-center">
-          <h2 className="text-xl font-bold text-foreground">Registration submitted</h2>
+          <h2 className="text-xl font-bold text-foreground">
+            {results.length > 1 ? "Registrations submitted" : "Registration submitted"}
+          </h2>
           <p className="text-muted">
-            Your registration number is <span className="font-semibold text-foreground">{result.registrationNumber}</span>.
-            It will appear on your dashboard as pending review.
+            {results.length > 1 ? (
+              <>
+                Registration numbers:{" "}
+                <span className="font-semibold text-foreground">{results.map((r) => r.registrationNumber).join(", ")}</span>.
+              </>
+            ) : (
+              <>
+                Your registration number is{" "}
+                <span className="font-semibold text-foreground">{results[0].registrationNumber}</span>.
+              </>
+            )}{" "}
+            {paymentDone
+              ? "Your receipt has been submitted and is now under review — you'll see it marked approved on your dashboard once an admin has checked it."
+              : "It will appear on your dashboard as pending review."}
           </p>
           <Link
             href="/dashboard"

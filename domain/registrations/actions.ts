@@ -82,6 +82,7 @@ export async function submitRegistrationAction(
       competitionSlug: input.competitionSlug,
       competitionTitle: input.competitionTitle,
       entryType: input.entryType,
+      paymentStatus: null,
       entrantName: input.entrantNameForDisplay,
       status: "pending",
       submittedAt: new Date().toISOString(),

@@ -11,7 +11,11 @@ type Row = {
   guardian_relationship: string | null;
   guardian_email: string | null;
   guardian_mobile: string | null;
+  photo_url: string | null;
 };
+
+const STUDENT_COLUMNS =
+  "id, full_name, grade, date_of_birth, gender, guardian_name, guardian_relationship, guardian_email, guardian_mobile, photo_url";
 
 function toStudent(row: Row): StudentProfile {
   return {
@@ -24,15 +28,12 @@ function toStudent(row: Row): StudentProfile {
     guardianRelationship: row.guardian_relationship,
     guardianEmail: row.guardian_email,
     guardianMobile: row.guardian_mobile,
+    photoUrl: row.photo_url,
   };
 }
 
 export async function findStudentByProfile(supabase: SupabaseClient, profileId: string): Promise<StudentProfile | null> {
-  const { data, error } = await supabase
-    .from("students")
-    .select("id, full_name, grade, date_of_birth, gender, guardian_name, guardian_relationship, guardian_email, guardian_mobile")
-    .eq("profile_id", profileId)
-    .maybeSingle();
+  const { data, error } = await supabase.from("students").select(STUDENT_COLUMNS).eq("profile_id", profileId).maybeSingle();
 
   if (error || !data) return null;
   return toStudent(data as Row);
@@ -43,9 +44,7 @@ export async function findStudentByProfile(supabase: SupabaseClient, profileId: 
 export async function adminListAllStudents(admin: SupabaseClient): Promise<StudentProfile[]> {
   const { data, error } = await admin
     .from("students")
-    .select(
-      "id, full_name, grade, date_of_birth, gender, guardian_name, guardian_relationship, guardian_email, guardian_mobile, school_id, schools(official_name)",
-    )
+    .select(`${STUDENT_COLUMNS}, school_id, schools(official_name)`)
     .order("full_name");
 
   if (error || !data) return [];
@@ -57,14 +56,19 @@ export async function adminListAllStudents(admin: SupabaseClient): Promise<Stude
 }
 
 export async function listStudentsBySchool(supabase: SupabaseClient, schoolId: string): Promise<StudentProfile[]> {
-  const { data, error } = await supabase
-    .from("students")
-    .select("id, full_name, grade, date_of_birth, gender, guardian_name, guardian_relationship, guardian_email, guardian_mobile")
-    .eq("school_id", schoolId)
-    .order("full_name");
+  const { data, error } = await supabase.from("students").select(STUDENT_COLUMNS).eq("school_id", schoolId).order("full_name");
 
   if (error || !data) return [];
   return (data as Row[]).map(toStudent);
+}
+
+/** Sets photo_url on an existing student row — called after the photo has
+ * already been uploaded to storage, since the upload path needs the
+ * student's id and insertStudent/signUpStudent don't have that until the
+ * insert itself returns. */
+export async function updateStudentPhoto(supabase: SupabaseClient, studentId: string, photoUrl: string): Promise<{ error: string | null }> {
+  const { error } = await supabase.from("students").update({ photo_url: photoUrl }).eq("id", studentId);
+  return { error: error?.message ?? null };
 }
 
 export async function updateStudentProfile(
@@ -106,7 +110,7 @@ export async function insertStudent(
       guardian_email: input.guardianEmail,
       guardian_mobile: input.guardianMobile,
     })
-    .select("id, full_name, grade, date_of_birth, gender, guardian_name, guardian_relationship, guardian_email, guardian_mobile")
+    .select(STUDENT_COLUMNS)
     .single();
 
   if (error || !data) return { student: null, error: error?.message ?? "Failed to add student." };

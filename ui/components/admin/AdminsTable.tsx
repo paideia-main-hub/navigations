@@ -26,7 +26,7 @@ export function AdminsTable({ admins }: { admins: AdminAccount[] }) {
                 <tr key={a.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 font-medium text-foreground">{a.fullName}</td>
                   <td className="px-4 py-3 text-muted">{a.email}</td>
-                  <td className="px-4 py-3 text-muted">{new Date(a.createdAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-muted">{new Date(a.createdAt).toLocaleDateString("en-GB")}</td>
                 </tr>
               ))}
             </tbody>

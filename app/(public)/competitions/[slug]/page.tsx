@@ -78,7 +78,7 @@ export default async function CompetitionPage({
           </ul>
           <p className={`text-sm ${muted}`}>
             {registrationDeadline
-              ? `Registration closes ${new Date(registrationDeadline).toLocaleDateString()}.`
+              ? `Registration closes ${new Date(registrationDeadline).toLocaleDateString("en-GB")}.`
               : "Registration dates not yet scheduled."}
           </p>
           {registrationRulesManual && (
@@ -227,7 +227,7 @@ export default async function CompetitionPage({
                 {eventTypeLabels[e.type]}
                 {e.title && e.title !== eventTypeLabels[e.type] ? ` — ${e.title}` : ""}
               </span>
-              <span className="font-medium text-foreground">{new Date(e.eventDate).toLocaleDateString()}</span>
+              <span className="font-medium text-foreground">{new Date(e.eventDate).toLocaleDateString("en-GB")}</span>
             </li>
           ))}
           {competition.events.length === 0 && <li className={`py-2 ${muted}`}>Dates not yet scheduled.</li>}

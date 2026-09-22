@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/data/supabase/server";
 import { createAdminClient } from "@/data/supabase/admin";
+import { uploadOwnPhoto } from "@/domain/storage/actions";
 
 export type ActionState = { error: string | null };
 
@@ -135,21 +136,34 @@ export async function signUpStudent(_prevState: ActionState, formData: FormData)
   });
   if ("error" in result) return { error: result.error };
 
-  const { error: studentError } = await supabase.from("students").insert({
-    profile_id: result.userId,
-    full_name: fullName,
-    date_of_birth: String(formData.get("date_of_birth")) || null,
-    gender: String(formData.get("gender")) || null,
-    grade: String(formData.get("grade")) || null,
-    school_name_input: String(formData.get("school_name")) || null,
-    guardian_name: String(formData.get("guardian_name")) || null,
-    guardian_relationship: String(formData.get("guardian_relationship")) || null,
-    guardian_email: String(formData.get("guardian_email")) || null,
-    guardian_mobile: String(formData.get("guardian_mobile")) || null,
-  });
+  const { data: student, error: studentError } = await supabase
+    .from("students")
+    .insert({
+      profile_id: result.userId,
+      full_name: fullName,
+      date_of_birth: String(formData.get("date_of_birth")) || null,
+      gender: String(formData.get("gender")) || null,
+      grade: String(formData.get("grade")) || null,
+      school_name_input: String(formData.get("school_name")) || null,
+      guardian_name: String(formData.get("guardian_name")) || null,
+      guardian_relationship: String(formData.get("guardian_relationship")) || null,
+      guardian_email: String(formData.get("guardian_email")) || null,
+      guardian_mobile: String(formData.get("guardian_mobile")) || null,
+    })
+    .select("id")
+    .single();
 
-  if (studentError) {
-    return { error: `Account created, but saving your student profile failed: ${studentError.message}` };
+  if (studentError || !student) {
+    return { error: `Account created, but saving your student profile failed: ${studentError?.message ?? "unknown error"}` };
+  }
+
+  // Photo is optional — a missing or failed upload doesn't block account
+  // creation, it just means the photo prompt appears again on the student's
+  // own dashboard until they add one.
+  const photo = formData.get("photo");
+  if (photo instanceof File && photo.size > 0) {
+    const { url } = await uploadOwnPhoto(photo, student.id);
+    if (url) await supabase.from("students").update({ photo_url: url }).eq("id", student.id);
   }
 
   redirect("/dashboard");

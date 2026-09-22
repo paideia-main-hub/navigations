@@ -2,6 +2,7 @@
 
 import type { Registration } from "@/domain/registrations/types";
 import { registrationStatusLabels } from "@/domain/registrations/types";
+import { paymentStatusLabels } from "@/domain/payments/types";
 import { Badge } from "@/ui/components/Badge";
 import { DataTable } from "@/ui/components/DataTable";
 
@@ -11,6 +12,12 @@ const statusTone: Record<string, "success" | "warning" | "neutral"> = {
   finalist: "success",
   completed: "success",
   pending: "warning",
+  rejected: "neutral",
+};
+
+const paymentTone: Record<string, "success" | "warning" | "neutral"> = {
+  approved: "success",
+  pending_review: "warning",
   rejected: "neutral",
 };
 
@@ -49,6 +56,7 @@ export function RegistrationsTable({
                 <th className="px-4 py-3 font-medium">Entry</th>
                 <th className="px-4 py-3 font-medium">Registration #</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Payment</th>
               </tr>
             </thead>
             <tbody>
@@ -61,6 +69,13 @@ export function RegistrationsTable({
                   <td className="px-4 py-3 text-muted">{r.registrationNumber}</td>
                   <td className="px-4 py-3">
                     <Badge tone={statusTone[r.status] ?? "neutral"}>{registrationStatusLabels[r.status]}</Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    {r.paymentStatus ? (
+                      <Badge tone={paymentTone[r.paymentStatus] ?? "neutral"}>{paymentStatusLabels[r.paymentStatus]}</Badge>
+                    ) : (
+                      <span className="text-xs text-muted">—</span>
+                    )}
                   </td>
                 </tr>
               ))}

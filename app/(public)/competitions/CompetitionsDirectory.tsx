@@ -2,7 +2,16 @@
 
 import { useMemo, useState } from "react";
 import { filterCompetitionsClientSide } from "@/domain/competitions/service";
-import { categoryLabels, statusLabels, type AgeCategory, type CompetitionStatus, type CompetitionSummary } from "@/domain/competitions/types";
+import {
+  categoryLabels,
+  pathwayLabels,
+  pathwayOrder,
+  statusLabels,
+  type AgeCategory,
+  type CompetitionPathway,
+  type CompetitionStatus,
+  type CompetitionSummary,
+} from "@/domain/competitions/types";
 import { CompetitionCard } from "@/ui/components/CompetitionCard";
 
 type SortOption = "deadline" | "event-date" | "alphabetical";
@@ -10,22 +19,25 @@ type SortOption = "deadline" | "event-date" | "alphabetical";
 export function CompetitionsDirectory({
   initialQuery,
   initialCategory = "all",
+  initialPathway = "all",
   initialStatus = "all",
   competitions,
 }: {
   initialQuery: string;
   initialCategory?: AgeCategory | "all";
+  initialPathway?: CompetitionPathway | "all";
   initialStatus?: CompetitionStatus | "all";
   competitions: CompetitionSummary[];
 }) {
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState<AgeCategory | "all">(initialCategory);
+  const [pathway, setPathway] = useState<CompetitionPathway | "all">(initialPathway);
   const [status, setStatus] = useState<CompetitionStatus | "all">(initialStatus);
   const [sort, setSort] = useState<SortOption>("deadline");
 
   const results = useMemo(
-    () => filterCompetitionsClientSide(competitions, { query, category, status, sort }),
-    [competitions, query, category, status, sort],
+    () => filterCompetitionsClientSide(competitions, { query, category, pathway, status, sort }),
+    [competitions, query, category, pathway, status, sort],
   );
 
   return (
@@ -39,11 +51,25 @@ export function CompetitionsDirectory({
           className="flex-1 rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground outline-none focus:border-accent"
         />
         <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value as AgeCategory | "all")}
+          value={pathway}
+          onChange={(e) => setPathway(e.target.value as CompetitionPathway | "all")}
+          aria-label="Filter by Route 1 category"
           className="rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground"
         >
-          <option value="all">All categories</option>
+          <option value="all">All Route 1 categories</option>
+          {pathwayOrder.map((p) => (
+            <option key={p} value={p}>
+              {pathwayLabels[p]}
+            </option>
+          ))}
+        </select>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value as AgeCategory | "all")}
+          aria-label="Filter by grade category"
+          className="rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground"
+        >
+          <option value="all">All grade categories</option>
           {Object.entries(categoryLabels).map(([value, label]) => (
             <option key={value} value={value}>
               {label}

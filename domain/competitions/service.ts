@@ -10,6 +10,7 @@ import type {
   AgeCategory,
   Competition,
   CompetitionEvent,
+  CompetitionPathway,
   CompetitionStatus,
   CompetitionSummary,
   EventType,
@@ -186,6 +187,10 @@ function findEvent(events: CompetitionEvent[], type: CompetitionEvent["type"]): 
 export interface CompetitionFilters {
   query?: string;
   category?: AgeCategory | "all";
+  /** Route 1's four categories — Applied Skills Challenges, Independent
+   * Submission, Project Showcasing, Live Performances. Distinct from
+   * `category`, which is the grade tier (Primary/Middle/Secondary). */
+  pathway?: CompetitionPathway | "all";
   status?: CompetitionStatus | "all";
   sort?: "deadline" | "event-date" | "alphabetical";
 }
@@ -197,7 +202,7 @@ export function filterCompetitionsClientSide<T extends CompetitionSummary>(
   competitions: T[],
   filters: CompetitionFilters,
 ): T[] {
-  const { query = "", category = "all", status = "all", sort = "deadline" } = filters;
+  const { query = "", category = "all", pathway = "all", status = "all", sort = "deadline" } = filters;
 
   let list = competitions.filter((c) => {
     const matchesQuery =
@@ -205,8 +210,9 @@ export function filterCompetitionsClientSide<T extends CompetitionSummary>(
       c.title.toLowerCase().includes(query.toLowerCase()) ||
       c.domain.toLowerCase().includes(query.toLowerCase());
     const matchesCategory = category === "all" || c.eligibility.some((e) => e.category === category);
+    const matchesPathway = pathway === "all" || c.pathway === pathway;
     const matchesStatus = status === "all" || c.status === status;
-    return matchesQuery && matchesCategory && matchesStatus;
+    return matchesQuery && matchesCategory && matchesPathway && matchesStatus;
   });
 
   list = [...list].sort((a, b) => {

@@ -36,10 +36,10 @@ const items: FaqCardItem[] = [
     question: "What the competition is designed to develop",
     answer: (
       <>
-        Every competition sits under one of four pathways: Applied Skills Challenges, Independent Submission
-        Challenges, Project Showcase Challenges or Live Response Challenges. That pathway is the clearest signal of
-        what a competition is actually testing — pick the one that matches how you like to work before picking by
-        subject alone.
+        Every competition sits under one of four Route 1 categories: Applied Skills Challenges, Independent
+        Submission, Project Showcasing or Live Performances. That category is the clearest signal of what a
+        competition is actually testing — filter by it on the Competitions page, and pick the one that matches how
+        you like to work before picking by subject alone.
       </>
     ),
   },
