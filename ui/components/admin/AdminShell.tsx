@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { adminLogout } from "@/domain/admin-auth/actions";
+import { Logo } from "@/ui/components/Logo";
 import { ThemeToggle } from "@/ui/components/ThemeToggle";
 
 interface NavItem {
@@ -60,8 +61,8 @@ export function AdminShell({ fullName, children }: { fullName: string; children:
   const sidebarInner = (
     <div className="flex h-full flex-col">
       <Link href="/admin" className="flex items-center gap-2 px-5 py-5 font-semibold tracking-tight text-foreground">
-        <span className="rounded-md bg-accent px-2 py-1 text-sm text-accent-foreground">FCS</span>
-        <span>Admin Console</span>
+        <Logo className="h-6 w-auto" />
+        <span className="text-muted">Admin Console</span>
       </Link>
       <div className="flex-1 overflow-y-auto px-3">
         <NavLinks pathname={pathname} onNavigate={() => setMobileOpen(false)} />

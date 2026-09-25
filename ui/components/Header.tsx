@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 
 const navLinks = [
@@ -13,13 +14,10 @@ const navLinks = [
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
-        <Link href="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight text-foreground">
-          <span className="rounded-md bg-accent px-2 py-1 text-sm text-accent-foreground">FCS</span>
-          {/* Seven nav links fill the lg track exactly, so the wordmark waits
-              for xl; the badge carries the brand until then. */}
-          <span className="hidden xl:inline">Future Competence Series</span>
+    <header className="fixed inset-x-0 top-4 z-50 px-4 sm:top-6 sm:px-6">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 rounded-2xl border border-border bg-background/80 px-6 py-3 shadow-lg shadow-black/5 backdrop-blur-lg">
+        <Link href="/" className="flex shrink-0 items-center">
+          <Logo className="h-7 w-auto" />
         </Link>
 
         <nav className="hidden flex-1 items-center justify-center gap-4 text-sm font-medium text-muted lg:flex xl:gap-6">

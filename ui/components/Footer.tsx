@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/ui/components/Logo";
 
 const columns = [
   {
@@ -35,7 +36,7 @@ export function Footer() {
     <footer className="bg-brand-deep text-brand-deep-muted">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 py-16 sm:grid-cols-4">
         <div className="col-span-2 sm:col-span-1">
-          <span className="rounded-md bg-accent px-2 py-1 text-sm font-bold text-accent-foreground">FCS</span>
+          <Logo className="h-7 w-auto" onDark />
           <p className="mt-3 max-w-xs text-sm text-brand-deep-muted">
             Future Competence Series — competitions that build real-world skills for Primary,
             Middle and Secondary students.

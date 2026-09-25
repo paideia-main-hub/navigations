@@ -12,7 +12,7 @@ export default {
   supportsTeam: true,
   status: "open",
   pathway: "live_response",
-  image: "/competitions/think-masters-championship.jpg",
+  image: "/competitions/think-masters-championship.webp",
   manualFile: "Think_Masters_Championship-2.docx",
   manualVersion: "Review Draft v4.0",
   manualDate: "2026-08-17",

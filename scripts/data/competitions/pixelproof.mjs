@@ -11,7 +11,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "project_showcase",
-  image: "/competitions/pixelproof.jpg",
+  image: "/competitions/pixelproof.webp",
   manualFile: "PixelProof_Environmental_Photography_Voting_Competition_Manual_v1_1_Easy_Guide.docx",
   manualVersion: "v1.1",
 

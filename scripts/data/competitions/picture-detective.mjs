@@ -15,7 +15,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "live_response",
-  image: "/competitions/picture-detective.jpg",
+  image: "/competitions/picture-detective.webp",
 
   overview: `Picture Detective is a live, one-day observation and reasoning challenge for Junior students. Each candidate examines a visual scene, identifies the clues it contains, and explains the conclusions those clues support — a compact version of the same skill that runs through every reasoning-based competition in the League, sized to a Junior audience.
 

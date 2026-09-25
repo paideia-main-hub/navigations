@@ -200,33 +200,12 @@ export async function updateResultAward(
   return { error: error?.message ?? null };
 }
 
-/** Admin-supplied photo (e.g. a team photo, or overriding a student's profile
- * photo). Consent is re-checked from the registration's own consent record
- * rather than trusted from the caller, so a photo can never go out without
- * the guardian/school having actually accepted photo publication. */
-export async function setWinnerPhoto(admin: SupabaseClient, resultId: string, photoUrl: string): Promise<{ error: string | null }> {
-  const { data: result } = await admin.from("results").select("registration_id").eq("id", resultId).maybeSingle();
-  if (!result) return { error: "Result not found." };
-
-  const { data: consent } = await admin
-    .from("consent_records")
-    .select("accepted")
-    .eq("registration_id", result.registration_id)
-    .eq("type", "photo_publication")
-    .maybeSingle();
-
-  const { error } = await admin
-    .from("winner_media")
-    .upsert({ result_id: resultId, photo_url: photoUrl, consent_confirmed: consent?.accepted ?? false }, { onConflict: "result_id" });
-  return { error: error?.message ?? null };
-}
-
 /** Publishes the selected draft results (FR-16: admin approval gate). A
  * result is skipped — left in draft — if its registration never captured
  * result-publication consent. Individual entries get their winner photo
- * auto-filled from the student's profile photo when the admin hasn't set one
- * (team entries have no single profile photo, so stay blank until the admin
- * uploads one via setWinnerPhoto). */
+ * auto-filled from the student's own registration profile photo — there's no
+ * admin photo upload anywhere in this pipeline (team entries have no single
+ * profile photo, so stay blank). */
 type PublishOutcome = { resultId: string; published: true } | { resultId: string; published: false; reason: string };
 
 /** Everything publishResults does for one result — consent gate, flip

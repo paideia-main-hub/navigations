@@ -136,7 +136,7 @@ export function RegistrationWizard({
       }
       setResults(created);
       setSubmitting(false);
-      setStep(competition.feeRequired ? "payment" : "success");
+      setStep("payment");
       return;
     }
 
@@ -162,7 +162,7 @@ export function RegistrationWizard({
     }
 
     setResults([registration]);
-    setStep(competition.feeRequired ? "payment" : "success");
+    setStep("payment");
   }
 
   async function handlePaymentSubmit() {
@@ -195,9 +195,7 @@ export function RegistrationWizard({
     setStep("success");
   }
 
-  const steps: Step[] = competition.feeRequired
-    ? ["eligibility", "entry", "consent", "review", "payment"]
-    : ["eligibility", "entry", "consent", "review"];
+  const steps: Step[] = ["eligibility", "entry", "consent", "review", "payment"];
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -316,7 +314,7 @@ export function RegistrationWizard({
                   ))}
                 </div>
               )}
-              {selectedIndividualIds.length > 0 && competition.feeRequired && competition.feeAmount != null && (
+              {selectedIndividualIds.length > 0 && competition.feeAmount != null && (
                 <p className="mt-2 text-sm text-muted">
                   {selectedIndividualIds.length} student{selectedIndividualIds.length === 1 ? "" : "s"} selected — fee
                   due: <span className="font-semibold text-foreground">{competition.feeAmount * selectedIndividualIds.length}</span>{" "}
@@ -480,22 +478,18 @@ export function RegistrationWizard({
               <span className="text-muted">Entrant{isCoordinatorIndividualBatch && selectedIndividualIds.length > 1 ? "s" : ""}:</span>{" "}
               <span className="font-medium text-foreground">{entrantName || "—"}</span>
             </p>
-            {competition.feeRequired && (
-              <p>
-                <span className="text-muted">Fee due:</span>{" "}
-                <span className="font-medium text-foreground">
-                  {amountExpected != null ? amountExpected : "To be confirmed"}
-                  {entryCount > 1 && amountExpected != null ? ` (${competition.feeAmount} × ${entryCount})` : ""}
-                </span>
-              </p>
-            )}
-          </div>
-          {competition.feeRequired && (
-            <p className="text-xs text-muted">
-              After you submit, you&apos;ll be asked to upload your fee payment receipt. Your registration stays under
-              review until an admin approves the payment.
+            <p>
+              <span className="text-muted">Fee due:</span>{" "}
+              <span className="font-medium text-foreground">
+                {amountExpected != null ? amountExpected : "To be confirmed"}
+                {entryCount > 1 && amountExpected != null ? ` (${competition.feeAmount} × ${entryCount})` : ""}
+              </span>
             </p>
-          )}
+          </div>
+          <p className="text-xs text-muted">
+            After you submit, you&apos;ll be asked to upload your fee payment receipt. Your registration stays under
+            review until an admin approves the payment.
+          </p>
           {submitError && <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>}
           <div className="flex gap-3">
             <button

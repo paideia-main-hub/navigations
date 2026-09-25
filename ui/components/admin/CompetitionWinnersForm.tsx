@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { deleteWinnerAction, saveWinnerAction, type ActionState } from "@/domain/competitions/actions";
 import { awardLabels, type Competition, type CompetitionWinner, type AwardType } from "@/domain/competitions/types";
 import { FormField } from "@/ui/components/FormField";
@@ -25,9 +25,14 @@ export function CompetitionWinnersForm({ competition }: { competition: Competiti
   const [editing, setEditing] = useState<CompetitionWinner | null>(null);
   const [state, formAction, pending] = useActionState(saveWinnerAction, initialState);
 
-  useEffect(() => {
+  // Close the edit form after a successful save — adjusted during render
+  // (React's own recommended pattern for "reset state when a value changes")
+  // rather than an effect, so there's no extra render pass after mount.
+  const [handledSuccess, setHandledSuccess] = useState(state.success);
+  if (state.success !== handledSuccess) {
+    setHandledSuccess(state.success);
     if (state.success) setEditing(null);
-  }, [state.success]);
+  }
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -83,11 +88,6 @@ export function CompetitionWinnersForm({ competition }: { competition: Competiti
           <FormField label="Custom award label" name="custom_award_label" defaultValue={editing?.customAwardLabel ?? ""} />
         </div>
         <FormField label="Position label (optional)" name="position_label" defaultValue={editing?.positionLabel ?? ""} />
-        <div>
-          <label className="text-sm font-medium text-foreground">Photo</label>
-          <input type="file" name="file" accept="image/*" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" />
-          {editing?.photoUrl && <p className="mt-1 text-xs text-muted">Current photo kept unless a new one is uploaded.</p>}
-        </div>
         <div className="flex items-center gap-4">
           <FormField label="Order" name="order_index" type="number" defaultValue={(editing?.orderIndex ?? competition.winners.length).toString()} />
           <label className="mt-6 flex items-center gap-2 text-sm text-foreground">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/ui/components/Logo";
 
 export const metadata = { title: "Register | Future Competence Series" };
 
@@ -57,9 +58,8 @@ export default function RegisterChoicePage() {
   return (
     <div className="min-h-[calc(100vh-1px)] bg-surface-muted">
       <div className="px-6 py-6">
-        <Link href="/" className="inline-flex items-center gap-2 font-semibold tracking-tight text-foreground">
-          <span className="rounded-md bg-accent px-2 py-1 text-sm text-accent-foreground">FCS</span>
-          <span>Future Competence Series</span>
+        <Link href="/" className="inline-flex items-center">
+          <Logo className="h-7 w-auto" />
         </Link>
       </div>
 

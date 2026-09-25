@@ -15,7 +15,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "project_showcase",
-  image: "/competitions/digitalhorizon.jpg",
+  image: "/competitions/digitalhorizon.webp",
 
   overview: `DigitalHorizon asks students to design an original environmental awareness poster and submit it ahead of the League finale, where it joins a curated display alongside the other Project Showcasing entries. It is a submission-and-display competition rather than a live judged round: the work is made in advance, on the student's own time, and assessed from the finished poster and its supporting sources.
 

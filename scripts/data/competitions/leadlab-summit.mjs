@@ -11,7 +11,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "applied_skills",
-  image: "/competitions/leadlab-summit.jpg",
+  image: "/competitions/leadlab-summit.webp",
   manualVersion: "v1.1",
   manualFile: "leadlab Summit Manual.docx",
 

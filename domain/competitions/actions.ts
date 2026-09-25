@@ -77,7 +77,7 @@ export async function createCompetitionAction(_prevState: ActionState, formData:
     status: "draft",
     supportsIndividual: true,
     supportsTeam: false,
-    feeRequired: false,
+    feeRequired: true,
     feeAmount: null,
     season: null,
   });
@@ -109,7 +109,10 @@ export async function updateCompetitionCoreAction(_prevState: ActionState, formD
     status: existing.status,
     supportsIndividual: formData.get("supports_individual") === "on",
     supportsTeam: formData.get("supports_team") === "on",
-    feeRequired: formData.get("fee_required") === "on",
+    // Every competition requires a fee receipt upload now — there's no
+    // per-competition toggle in the registration wizard anymore, so this is
+    // always true; only the amount itself is admin-configurable.
+    feeRequired: true,
     feeAmount: formData.get("fee_amount") ? Number(formData.get("fee_amount")) : null,
     season: String(formData.get("season") ?? "") || null,
   });
@@ -345,13 +348,10 @@ export async function saveWinnerAction(_prevState: ActionState, formData: FormDa
   const competitionId = String(formData.get("competition_id"));
   const winnerId = String(formData.get("winner_id") ?? "") || null;
 
-  let photoUrl = String(formData.get("existing_photo_url") ?? "") || null;
-  const file = formData.get("file") as File | null;
-  if (file && file.size > 0) {
-    const { url, error: uploadError } = await uploadFile("winner-photos", file, competitionId);
-    if (uploadError) return { error: uploadError };
-    photoUrl = url;
-  }
+  // Manually-entered winners have no linked student to fetch a photo from —
+  // there's no admin upload for this anymore, so a photo only ever appears
+  // here if it was already set before that upload path was removed.
+  const photoUrl = String(formData.get("existing_photo_url") ?? "") || null;
 
   const input = {
     studentName: String(formData.get("student_name") ?? ""),

@@ -30,8 +30,8 @@ export default async function AdminPaymentsPage() {
 
       {payments.length === 0 && (
         <p className="mt-4 text-xs text-muted">
-          Nothing here yet because migration 0019_registration_payments.sql hasn&apos;t been applied, or no
-          competition has fee_required turned on in Admin Console &gt; Competitions.
+          Nothing here yet — receipts appear as soon as a student, team or school coordinator uploads one during
+          registration.
         </p>
       )}
     </div>

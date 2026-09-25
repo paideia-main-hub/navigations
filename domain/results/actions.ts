@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/data/supabase/admin";
 import { requireAdminSession } from "@/domain/admin-auth/guard";
-import { uploadFile } from "@/domain/storage/actions";
 import type { AwardType } from "@/domain/competitions/types";
 import * as service from "./service";
 
@@ -41,22 +40,6 @@ export async function overrideAwardAction(_prevState: ActionState, formData: For
   const customAwardLabel = String(formData.get("custom_award_label") ?? "") || null;
 
   const { error } = await service.overrideAward(admin, resultId, award, customAwardLabel);
-  if (error) return { error };
-  revalidatePath("/admin/results");
-  return { error: null, success: true };
-}
-
-export async function uploadWinnerPhotoAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireAdminSession();
-  const admin = createAdminClient();
-  const resultId = String(formData.get("result_id"));
-  const file = formData.get("file") as File | null;
-  if (!file || file.size === 0) return { error: "Choose a photo to upload." };
-
-  const { url, error: uploadError } = await uploadFile("winner-photos", file, resultId);
-  if (uploadError || !url) return { error: uploadError ?? "Upload failed." };
-
-  const { error } = await service.setWinnerPhoto(admin, resultId, url);
   if (error) return { error };
   revalidatePath("/admin/results");
   return { error: null, success: true };

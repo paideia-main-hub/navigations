@@ -52,7 +52,7 @@ export function CompetitionOverviewForm({ competition }: { competition: Competit
         <div>
           <FormField label="Image URL" name="image_url" defaultValue={competition.imageUrl ?? ""} />
           <p className="mt-1 text-xs text-muted">
-            Card artwork. Leave blank to use the placeholder at /competitions/{competition.slug}.jpg.
+            Card artwork. Leave blank to use the default at /competitions/{competition.slug}.webp.
           </p>
         </div>
       </div>
@@ -68,12 +68,14 @@ export function CompetitionOverviewForm({ competition }: { competition: Competit
         </label>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <label className="flex items-center gap-2 text-sm text-foreground">
-          <input type="checkbox" name="fee_required" defaultChecked={competition.feeRequired} />
-          Fee required
-        </label>
-        <FormField label="Fee amount" name="fee_amount" type="number" defaultValue={competition.feeAmount?.toString() ?? ""} />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <FormField label="Fee amount" name="fee_amount" type="number" defaultValue={competition.feeAmount?.toString() ?? ""} />
+          <p className="mt-1 text-xs text-muted">
+            Every registration requires a fee receipt upload regardless — leave blank if the amount isn&apos;t set yet and
+            students will see &ldquo;to be confirmed&rdquo;.
+          </p>
+        </div>
         <FormField label="Season" name="season" defaultValue={competition.season ?? ""} />
       </div>
 

@@ -11,7 +11,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "independent_submission",
-  image: "/competitions/culturescript.jpg",
+  image: "/competitions/culturescript.webp",
   manualFile: "CulturalScript_Future_Ready_League_Official_Manual.docx",
 
   overview: `CulturalScript is a digital storytelling competition that challenges students to explore the cultural diversity of Pakistan and transform their understanding into an original, meaningful and responsible short video.

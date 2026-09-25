@@ -7,7 +7,6 @@ import {
   overrideAwardAction,
   publishResultsAction,
   unpublishResultAction,
-  uploadWinnerPhotoAction,
   type ActionState,
 } from "@/domain/results/actions";
 import { awardLabels, type AwardType } from "@/domain/competitions/types";
@@ -76,24 +75,6 @@ function AwardOverrideForm({ row }: { row: DraftResultRow }) {
         </button>
       )}
       {state.error && <p className="w-full text-xs text-red-600 dark:text-red-400">{state.error}</p>}
-    </form>
-  );
-}
-
-function PhotoUploadForm({ resultId }: { resultId: string }) {
-  const [state, formAction, pending] = useActionState(uploadWinnerPhotoAction, initialState);
-  return (
-    <form action={formAction} className="flex flex-col gap-1">
-      <input type="hidden" name="result_id" value={resultId} />
-      <input type="file" name="file" accept="image/*" className="text-xs text-muted" />
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-fit rounded-full border border-border px-3 py-1 text-xs font-semibold text-foreground hover:border-accent disabled:opacity-60"
-      >
-        {pending ? "Uploading…" : "Upload photo"}
-      </button>
-      {state.error && <p className="text-xs text-red-600 dark:text-red-400">{state.error}</p>}
     </form>
   );
 }
@@ -282,12 +263,11 @@ export function ResultsReviewPanel({ competitionId, competitionSlug, rows }: { c
                       </td>
                       <td className="px-3 py-3">
                         {row.photoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element -- admin-controlled Supabase Storage / student profile URL
+                          // eslint-disable-next-line @next/next/no-img-element -- student's own registration profile photo
                           <img src={row.photoUrl} alt={row.entrantName} className="h-10 w-10 rounded-full object-cover" />
                         ) : (
-                          <div className="h-10 w-10 rounded-full bg-surface-muted" />
+                          <div className="h-10 w-10 rounded-full bg-surface-muted" title="No profile photo on file for this student" />
                         )}
-                        {row.resultId && <div className="mt-1"><PhotoUploadForm resultId={row.resultId} /></div>}
                       </td>
                       <td className="px-3 py-3">
                         {row.isPublished ? (

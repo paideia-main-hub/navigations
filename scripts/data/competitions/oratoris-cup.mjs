@@ -11,7 +11,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "applied_skills",
-  image: "/competitions/oratoris-cup.jpg",
+  image: "/competitions/oratoris-cup.webp",
   manualVersion: "v1.0",
   manualFile: "Oratoris_Orator_Cup_School_Pitch_Implementation_Manual_v1_0.docx",
 

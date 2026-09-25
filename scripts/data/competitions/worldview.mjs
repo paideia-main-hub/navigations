@@ -11,7 +11,7 @@ export default {
   supportsTeam: true,
   status: "open",
   pathway: "applied_skills",
-  image: "/competitions/worldview.jpg",
+  image: "/competitions/worldview.webp",
   manualVersion: "v2.0",
   manualFile: "WorldView_Global_Change_Pakistan_Impact_Challenge_Manual_v2_0.docx",
 

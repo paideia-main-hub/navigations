@@ -28,11 +28,10 @@ function eligibilityLabel(competition: CompetitionSummary): string {
   return low === high ? `${categories} — Grade ${low}` : `${categories} — Grades ${low}–${high}`;
 }
 
-/** An admin-set image wins. Otherwise fall back to the placeholder shipped at
- * public/competitions/<slug>.jpg, which is what every competition shows until
- * real artwork is uploaded. */
+/** An admin-set image wins. Otherwise fall back to the real artwork shipped at
+ * public/competitions/<slug>.webp. */
 function artworkFor(competition: CompetitionSummary): string {
-  return competition.imageUrl || `/competitions/${competition.slug}.jpg`;
+  return competition.imageUrl || `/competitions/${competition.slug}.webp`;
 }
 
 export function CompetitionCard({ competition }: { competition: CompetitionSummary }) {

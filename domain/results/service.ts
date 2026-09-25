@@ -34,10 +34,6 @@ export async function overrideAward(
   return repo.updateResultAward(admin, resultId, award, customAwardLabel);
 }
 
-export async function setWinnerPhoto(admin: SupabaseClient, resultId: string, photoUrl: string): Promise<{ error: string | null }> {
-  return repo.setWinnerPhoto(admin, resultId, photoUrl);
-}
-
 export async function publishSelected(
   admin: SupabaseClient,
   resultIds: string[],

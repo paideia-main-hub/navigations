@@ -11,7 +11,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "applied_skills",
-  image: "/competitions/mindworks-decathlon.jpg",
+  image: "/competitions/mindworks-decathlon.webp",
   manualFile: "MindWorks Decathlon Implementation Manual 25-08-26.pdf",
 
   overview: `MindWorks Decathlon is a ten-station intellectual performance competition in which students demonstrate how they interpret information, reason logically, evaluate evidence, solve constrained problems, connect concepts, audit flawed reasoning, synthesise research and reflect on their own thinking.

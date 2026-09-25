@@ -11,7 +11,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "live_response",
-  image: "/competitions/wordwave.jpg",
+  image: "/competitions/wordwave.webp",
   manualVersion: "v2.1",
   manualFile: "WordWave_Live_Narrative_Writing_Competition_Manual_v2_1 (1).docx",
 

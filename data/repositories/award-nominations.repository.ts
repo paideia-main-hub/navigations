@@ -101,6 +101,23 @@ function toNomination(row: Row): AwardNomination {
   };
 }
 
+/** Fills in a winner photo from the nominee's own student profile wherever
+ * the nominator is a registered student and no admin-uploaded photo already
+ * exists — the common case, since Spotlight categories are usually a
+ * student nominating their own idea/story/action. Nominations submitted by
+ * a school coordinator or an independent nominator on someone else's behalf
+ * have no such link and stay null until an admin uploads one via
+ * setWinnerPhoto — there's no way to auto-derive whose photo that should be. */
+async function attachAutoPhotos(client: SupabaseClient, nominations: AwardNomination[]): Promise<AwardNomination[]> {
+  const missingProfileIds = Array.from(new Set(nominations.filter((n) => !n.winnerPhotoUrl).map((n) => n.nominatorProfileId)));
+  if (missingProfileIds.length === 0) return nominations;
+
+  const { data } = await client.from("students").select("profile_id, photo_url").in("profile_id", missingProfileIds);
+  const photoByProfile = new Map((data ?? []).map((s) => [s.profile_id as string, s.photo_url as string | null]));
+
+  return nominations.map((n) => (n.winnerPhotoUrl ? n : { ...n, winnerPhotoUrl: photoByProfile.get(n.nominatorProfileId) ?? null }));
+}
+
 export async function listMyNominations(supabase: SupabaseClient, profileId: string): Promise<AwardNomination[]> {
   const { data, error } = await supabase
     .from("award_nominations")
@@ -129,7 +146,7 @@ export async function listSchoolNominations(supabase: SupabaseClient, schoolId: 
 export async function listPublishedNominations(supabase: SupabaseClient): Promise<AwardNomination[]> {
   const { data, error } = await supabase.from("award_nominations").select(SELECT).eq("status", "published").order("created_at", { ascending: false });
   if (error || !data) return [];
-  return (data as unknown as Row[]).map(toNomination);
+  return attachAutoPhotos(supabase, (data as unknown as Row[]).map(toNomination));
 }
 
 export async function adminListNominations(admin: SupabaseClient, categoryId?: string): Promise<AwardNomination[]> {
@@ -137,13 +154,14 @@ export async function adminListNominations(admin: SupabaseClient, categoryId?: s
   if (categoryId) query = query.eq("category_id", categoryId);
   const { data, error } = await query;
   if (error || !data) return [];
-  return (data as unknown as Row[]).map(toNomination);
+  return attachAutoPhotos(admin, (data as unknown as Row[]).map(toNomination));
 }
 
 export async function getNominationById(supabase: SupabaseClient, id: string): Promise<AwardNomination | null> {
   const { data, error } = await supabase.from("award_nominations").select(SELECT).eq("id", id).maybeSingle();
   if (error || !data) return null;
-  return toNomination(data as unknown as Row);
+  const [nomination] = await attachAutoPhotos(supabase, [toNomination(data as unknown as Row)]);
+  return nomination;
 }
 
 export interface InsertNominationInput {

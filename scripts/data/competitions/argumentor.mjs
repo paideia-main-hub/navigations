@@ -10,7 +10,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "applied_skills",
-  image: "/competitions/argumentor.jpg",
+  image: "/competitions/argumentor.webp",
   manualFile: "Argumentor_Complete_Operations_Manual_v2_1.docx",
   manualVersion: "v2.1",
 
