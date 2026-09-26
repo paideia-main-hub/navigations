@@ -46,7 +46,7 @@ export default async function HomePage() {
           still while the next section rises over it below — a deliberate
           reveal instead of the default "everything scrolls together". */}
       <div className="relative -mt-24 h-[200dvh] sm:-mt-28">
-        <section className="sticky top-0 h-dvh w-full overflow-hidden">
+        <section className="sticky top-0 h-dvh w-full overflow-hidden bg-background">
           <HeroVideo />
         </section>
       </div>
