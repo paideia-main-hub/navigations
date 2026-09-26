@@ -59,7 +59,9 @@ const AUDIENCES = [
 
 export function AboutAudiences() {
   return (
-    <section className="relative overflow-hidden bg-surface-alt px-6 pt-36 pb-24 lg:pt-44">
+    <section className="relative overflow-hidden bg-surface-alt px-6 pt-36 pb-24 sm:pt-44 lg:pt-48">
+      {/* dune's curve dips to ~96% of its box height, which left almost no
+          clearance at sm/lg once the divider's own height class matched pt-. */}
       <BandDivider shape="dune" side="top" color="text-background" className="h-28 sm:h-36 lg:h-44" flip />
       <BandTexture pattern="contours" className="text-brand-deep/[0.05]" position="top-[-20%] left-[-15%] h-[120%] w-[60%]" />
       <div className="relative mx-auto max-w-7xl">

@@ -51,7 +51,10 @@ function Connector() {
 
 export function AboutJourney() {
   return (
-    <section className="relative overflow-hidden bg-brand-deep px-6 pt-36 pb-40 lg:pt-44 lg:pb-48">
+    <section className="relative overflow-hidden bg-brand-deep px-6 pt-36 pb-40 sm:pt-44 lg:pt-52 lg:pb-48">
+      {/* The blob's own curve dips to ~103% of its nominal box height (measured
+          from its path data), so pt- has to clear more than just the divider's
+          own height class or the eyebrow text below sits right on the dip. */}
       <BandDivider shape="blob" side="top" color="text-surface-alt" className="h-28 sm:h-36 lg:h-44" flip />
       <BandDivider shape="dune" side="bottom" color="text-background" className="h-28 sm:h-36 lg:h-44" />
       <BandTexture pattern="grid" className="text-brand-deep-foreground/[0.05]" />

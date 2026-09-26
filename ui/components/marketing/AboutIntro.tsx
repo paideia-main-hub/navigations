@@ -32,9 +32,11 @@ const STRANDS = [
 
 export function AboutIntro() {
   return (
-    <section className="relative overflow-hidden bg-surface-alt px-6 pt-36 pb-20 lg:pt-44">
+    <section className="relative overflow-hidden bg-surface-alt px-6 pt-36 pb-20 sm:pt-44 lg:pt-52">
       {/* Run deep on purpose: at 9rem the Platinum above stops being an edge
-          and becomes a form pressing into this band. */}
+          and becomes a form pressing into this band. The blob's own curve
+          dips to ~103% of its box height, so pt- needs a bit more than the
+          divider's own height class to keep the card below clear of it. */}
       <BandDivider shape="blob" side="top" color="text-background" className="h-28 sm:h-36 lg:h-44" />
       <div className="relative mx-auto max-w-7xl">
         <div className="grid overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_30px_70px_-45px_rgba(31,32,65,0.55)] lg:grid-cols-[5fr_7fr]">

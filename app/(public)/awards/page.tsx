@@ -88,7 +88,7 @@ export default async function AwardsLandingPage() {
           // straight to the layer they describe.
           <div key={layer} id={layer} className={`relative scroll-mt-24 overflow-hidden ${band.bg}`}>
             <BandDivider shape={band.seamShape} side="top" color={band.seamFrom} />
-            <div className="relative mx-auto max-w-5xl px-6 pt-20 pb-16 sm:pt-24">
+            <div className="relative mx-auto max-w-5xl px-6 pt-20 pb-16 sm:pt-24 lg:pt-28">
               <div className="flex items-start gap-4">
                 <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-accent-soft text-accent-strong">
                   <AwardLayerIcon layer={layer} className="h-6 w-6" />
