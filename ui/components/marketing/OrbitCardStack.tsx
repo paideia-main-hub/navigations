@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   type CSSProperties,
   type FocusEvent,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -65,6 +66,32 @@ function OrbitPortrait({ item }: { item: OrbitStackItem }) {
   );
 }
 
+/** The card's visual content, shared between the fanned desktop stage and
+ * the flat mobile carousel so the two layouts never drift apart. */
+function CardBody({ item }: { item: OrbitStackItem }) {
+  return (
+    <>
+      <div className="relative">
+        <OrbitPortrait item={item} />
+        <Link
+          href={item.href}
+          aria-label={`View ${item.name}`}
+          onClick={(event) => event.stopPropagation()}
+          className="absolute top-3 right-3 grid size-11 place-items-center rounded-full bg-accent text-accent-foreground shadow-lg shadow-black/20 transition-transform hover:scale-105"
+        >
+          <ArrowUpRightIcon className="size-4" />
+        </Link>
+      </div>
+      <div className="px-2 pt-6 pb-2">
+        <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-muted uppercase">{item.eyebrow}</p>
+        <h3 className="mt-2 text-[2rem] leading-none font-semibold tracking-[-0.04em] text-foreground">{item.name}</h3>
+        <p className="mt-4 line-clamp-3 max-w-[17rem] text-[0.98rem] leading-[1.42] font-medium tracking-[-0.01em] text-muted">{item.description}</p>
+        <div className="mt-5 border-t border-border pt-4 text-[0.68rem] font-bold tracking-[0.2em] text-muted uppercase">{item.stat}</div>
+      </div>
+    </>
+  );
+}
+
 /** Subscribes to a media query via useSyncExternalStore rather than a
  * setState-in-effect — the canonical way to read a browser API that can
  * change out from under React, and SSR-safe: the server (and the client's
@@ -90,31 +117,81 @@ function usePrefersReducedMotion(): boolean {
 
 /** The fan's horizontal spread only makes sense as a raw pixel number (it
  * feeds a JS transform, not a class), so the responsive step has to happen
- * in JS too — narrower on phones so five fanned cards don't run off-screen. */
+ * in JS too — narrower on tablets so five fanned cards don't run off-screen.
+ * (Phones don't use this at all — see the carousel branch below.) */
 function useResponsiveSpread(): number {
-  const isMobile = useMediaQuery("(max-width: 639px)");
   const isTablet = useMediaQuery("(max-width: 1023px)");
-  return isMobile ? 76 : isTablet ? 122 : 168;
+  return isTablet ? 100 : 168;
 }
 
-export function OrbitCardStack({
+/** True from the moment the stage first scrolls into view, and stays true —
+ * a one-shot reveal, not a toggle, so the fan doesn't collapse again if the
+ * user scrolls a little past it and back. */
+function useHasScrolledIntoView<T extends HTMLElement>(ref: React.RefObject<T | null>): boolean {
+  const [seen, setSeen] = useState(false);
+
+  useEffect(() => {
+    if (seen) return;
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setSeen(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [seen, ref]);
+
+  return seen;
+}
+
+/** A plain horizontal, swipe-to-scroll row of cards — the fan-out physics
+ * don't translate to a touchscreen with no hover, so phones get a simple
+ * carousel instead of a shrunk-down version of the desktop stage. */
+function MobileCardCarousel({ items, ariaLabel }: { items: OrbitStackItem[]; ariaLabel: string }) {
+  return (
+    <ul
+      role="list"
+      aria-label={ariaLabel}
+      className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:hidden"
+    >
+      {items.map((item) => (
+        <li
+          key={item.id}
+          className="w-[78vw] shrink-0 snap-center rounded-[1.9rem] border border-border bg-surface-warm p-4 text-foreground"
+        >
+          <CardBody item={item} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function DesktopOrbitStage({
   items,
   ariaLabel,
-  defaultActiveIndex = 2,
-  lift = 34,
+  defaultActiveIndex,
+  lift,
 }: {
   items: OrbitStackItem[];
   ariaLabel: string;
-  defaultActiveIndex?: number;
-  lift?: number;
+  defaultActiveIndex: number;
+  lift: number;
 }) {
   const reduceMotion = usePrefersReducedMotion();
   const spread = useResponsiveSpread();
   const cards = items;
   const restingIndex = inRange(defaultActiveIndex, cards.length);
   const [activeIndex, setActiveIndex] = useState(restingIndex);
-  const [open, setOpen] = useState(false);
+  const [hoverOpen, setHoverOpen] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
+  const scatteredIntoView = useHasScrolledIntoView(stageRef);
+  const open = hoverOpen || scatteredIntoView;
   const midpoint = (cards.length - 1) / 2;
 
   const layouts = useMemo(
@@ -145,17 +222,17 @@ export function OrbitCardStack({
   if (cards.length !== seenLength) {
     setSeenLength(cards.length);
     setActiveIndex(restingIndex);
-    setOpen(false);
+    setHoverOpen(false);
   }
 
   if (cards.length === 0) return null;
 
   const activate = (index: number) => {
-    setOpen(true);
+    setHoverOpen(true);
     setActiveIndex(inRange(index, cards.length));
   };
   const close = () => {
-    setOpen(false);
+    setHoverOpen(false);
     setActiveIndex(restingIndex);
   };
   const leaveFocus = (event: FocusEvent<HTMLDivElement>) => {
@@ -166,7 +243,7 @@ export function OrbitCardStack({
   };
 
   return (
-    <div className="relative flex w-full items-center justify-center overflow-hidden py-8">
+    <div className="relative hidden w-full items-center justify-center overflow-hidden py-8 sm:flex">
       <div
         ref={stageRef}
         className="relative h-[520px] w-full max-w-[980px] sm:h-[500px]"
@@ -192,7 +269,7 @@ export function OrbitCardStack({
               role="listitem"
               tabIndex={0}
               aria-current={active ? "true" : undefined}
-              className="absolute top-1/2 left-1/2 w-[min(78vw,21rem)] origin-bottom cursor-pointer rounded-[1.9rem] border border-border bg-surface-warm p-4 text-foreground outline-none transition-[transform] ease-[cubic-bezier(.2,.8,.2,1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="absolute top-1/2 left-1/2 w-64 origin-bottom cursor-pointer rounded-[1.9rem] border border-border bg-surface-warm p-4 text-foreground outline-none transition-[transform] ease-[cubic-bezier(.2,.8,.2,1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:w-[21rem]"
               style={style}
               onMouseEnter={() => activate(index)}
               onFocus={() => activate(index)}
@@ -216,29 +293,32 @@ export function OrbitCardStack({
                 }
               }}
             >
-              <div className="relative">
-                <OrbitPortrait item={item} />
-                <Link
-                  href={item.href}
-                  aria-label={`View ${item.name}`}
-                  onClick={(event) => event.stopPropagation()}
-                  className="absolute top-3 right-3 grid size-11 place-items-center rounded-full bg-accent text-accent-foreground shadow-lg shadow-black/20 transition-transform hover:scale-105"
-                >
-                  <ArrowUpRightIcon className="size-4" />
-                </Link>
-              </div>
-              <div className="px-2 pt-6 pb-2">
-                <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-muted uppercase">{item.eyebrow}</p>
-                <h3 className="mt-2 text-[2rem] leading-none font-semibold tracking-[-0.04em] text-foreground">{item.name}</h3>
-                <p className="mt-4 line-clamp-3 max-w-[17rem] text-[0.98rem] leading-[1.42] font-medium tracking-[-0.01em] text-muted">
-                  {item.description}
-                </p>
-                <div className="mt-5 border-t border-border pt-4 text-[0.68rem] font-bold tracking-[0.2em] text-muted uppercase">{item.stat}</div>
-              </div>
+              <CardBody item={item} />
             </article>
           );
         })}
       </div>
     </div>
+  );
+}
+
+export function OrbitCardStack({
+  items,
+  ariaLabel,
+  defaultActiveIndex = 2,
+  lift = 34,
+}: {
+  items: OrbitStackItem[];
+  ariaLabel: string;
+  defaultActiveIndex?: number;
+  lift?: number;
+}) {
+  if (items.length === 0) return null;
+
+  return (
+    <>
+      <MobileCardCarousel items={items} ariaLabel={ariaLabel} />
+      <DesktopOrbitStage items={items} ariaLabel={ariaLabel} defaultActiveIndex={defaultActiveIndex} lift={lift} />
+    </>
   );
 }

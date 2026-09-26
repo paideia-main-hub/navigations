@@ -15,6 +15,7 @@ import { WhyTheLeague } from "@/ui/components/marketing/WhyTheLeague";
 import { UpcomingEventsBoard } from "@/ui/components/marketing/UpcomingEventsBoard";
 import { ChampionsPodium } from "@/ui/components/marketing/ChampionsPodium";
 import { BandDivider } from "@/ui/components/marketing/BandDivider";
+import { HeroVideo } from "@/ui/components/marketing/HeroVideo";
 
 const portals = [
   { href: "/manuals", label: "Manuals & Guidelines" },
@@ -46,16 +47,20 @@ export default async function HomePage() {
           reveal instead of the default "everything scrolls together". */}
       <div className="relative -mt-24 h-[200dvh] sm:-mt-28">
         <section className="sticky top-0 h-dvh w-full overflow-hidden">
-          <video className="absolute inset-0 h-full w-full object-cover" autoPlay muted loop playsInline preload="auto">
-            <source src="/hero-animation.mp4" type="video/mp4" />
-          </video>
+          <HeroVideo />
         </section>
       </div>
 
       {/* Curtain — rises over the pinned hero as the user scrolls (see the
           runway above), landing with a rounded top edge like a sheet
-          settling into place rather than just sliding up flush behind it. */}
-      <div className="relative z-10 -mt-[100dvh] overflow-hidden rounded-t-[2.5rem] bg-background shadow-[0_-25px_50px_-12px_rgba(0,0,0,0.25)] sm:rounded-t-[4rem]">
+          settling into place rather than just sliding up flush behind it.
+          The extra pt- here (matching <main>'s own header clearance) keeps
+          the rounded edge flush at the very top while still giving the
+          first heading room to clear the floating header once the curtain
+          finishes rising — without it, LeagueSpotlight's heading lands
+          right under the header at exactly the scroll position where the
+          reveal completes. */}
+      <div className="relative z-10 -mt-[100dvh] overflow-hidden rounded-t-[2.5rem] bg-background pt-24 shadow-[0_-25px_50px_-12px_rgba(0,0,0,0.25)] sm:rounded-t-[4rem] sm:pt-28">
         {/* 2. Featuring Now — static League billboard beside a rotating panel. */}
         <LeagueSpotlight />
 

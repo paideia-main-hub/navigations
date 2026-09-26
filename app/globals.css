@@ -172,3 +172,12 @@ body {
   background: var(--accent-soft);
   color: var(--foreground);
 }
+
+/* The header floats fixed above everything, so any anchor jump (#id links,
+   keyboard focus) that lands an element's top edge at the literal viewport
+   top would tuck it right behind the header. This gives every anchor target
+   sitewide the same clearance <main>'s own pt-24/28 already gives normal
+   page flow. */
+[id] {
+  scroll-margin-top: 6rem;
+}
