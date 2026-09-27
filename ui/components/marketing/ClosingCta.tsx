@@ -1,0 +1,58 @@
+import Link from "next/link";
+import { BandDivider } from "./BandDivider";
+import { BandTexture } from "./BandTexture";
+
+const STATS = [
+  { value: "14,200+", label: "Students registered" },
+  { value: "23", label: "Competitions this season" },
+  { value: "6", label: "Recognition layers" },
+] as const;
+
+export function ClosingCta() {
+  return (
+    <section className="relative overflow-hidden bg-brand-deep px-6 pt-28 pb-20 text-center lg:pt-32 lg:pb-24">
+      <BandDivider shape="curve" side="top" color="text-surface-alt" flip />
+      <BandTexture pattern="grid" className="text-brand-deep-foreground/[0.05]" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute top-1/2 left-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.08] blur-[130px]" />
+      </div>
+
+      {/* Positioned, so the seam above cannot paint over the copy. */}
+      <div className="relative">
+        <h2 className="text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">READY TO REGISTER?</h2>
+        <p className="mx-auto mt-4 max-w-xl text-brand-deep-muted">
+          Join students across the country already registered for this season&apos;s competitions.
+        </p>
+
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Link
+            href="/register"
+            className="group inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 text-sm font-bold text-accent-foreground shadow-[0_0_0_0_rgba(255,105,31,0)] transition-all duration-300 hover:scale-105 hover:bg-accent/90 hover:shadow-[0_0_0_10px_rgba(255,105,31,0.16)]"
+          >
+            Register Now
+            <span aria-hidden="true" className="inline-block transition-transform duration-300 group-hover:translate-x-1">
+              →
+            </span>
+          </Link>
+          <Link
+            href="/competitions"
+            className="rounded-full border border-white/20 px-7 py-3.5 text-sm font-bold text-white transition-colors hover:border-white/40 hover:bg-white/5"
+          >
+            Browse Competitions
+          </Link>
+        </div>
+
+        <dl className="mx-auto mt-14 grid max-w-2xl grid-cols-3 gap-4 border-t border-white/10 pt-8">
+          {STATS.map((s) => (
+            <div key={s.label}>
+              <dd className="text-2xl font-black text-white sm:text-3xl">{s.value}</dd>
+              <dt className="mt-1 text-[11px] leading-snug font-semibold tracking-wide text-brand-deep-muted uppercase">
+                {s.label}
+              </dt>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  );
+}

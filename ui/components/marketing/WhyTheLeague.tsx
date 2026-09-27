@@ -11,51 +11,81 @@ const icons: Record<string, ReactNode> = {
 };
 
 const REASONS = [
-  { line1: "Demonstrate learning", line2: "beyond grades", icon: "chart" },
-  { line1: "Apply skills in", line2: "meaningful challenges", icon: "gear" },
-  { line1: "Gain visible recognition", line2: "for competencies", icon: "people" },
+  {
+    line1: "Demonstrate learning",
+    line2: "beyond grades",
+    detail: "A published portfolio of real work, not just a transcript line.",
+    icon: "chart",
+  },
+  {
+    line1: "Apply skills in",
+    line2: "meaningful challenges",
+    detail: "Every task maps to a competence a school report can't capture.",
+    icon: "gear",
+  },
+  {
+    line1: "Gain visible recognition",
+    line2: "for competencies",
+    detail: "Certificates, badges and rankings a college or employer can check.",
+    icon: "people",
+  },
 ] as const;
 
 export function WhyTheLeague() {
   return (
-    <section className="relative overflow-hidden bg-background px-6 py-16">
-      {/* This band sits between two shaped seams with nothing but three small
-          cards in it, so a wide, very low-opacity wash gives it some depth. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-20 left-1/2 h-72 w-[46rem] -translate-x-1/2 rounded-full bg-accent/[0.07] blur-[120px]" />
-      </div>
-
+    <section className="relative overflow-hidden bg-background px-6 py-20 sm:py-24">
       <div className="relative mx-auto max-w-7xl">
         <h2 className="flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
           <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
           Why Future Ready League?
         </h2>
 
-        <ul className="mt-6 grid gap-4 md:grid-cols-3">
-          {REASONS.map((r) => (
+        <ul className="mt-10 grid gap-6 sm:grid-cols-3">
+          {REASONS.map((r, i) => (
             <li
               key={r.line1}
-              className="group flex items-center gap-4 rounded-2xl border border-border bg-surface-muted px-5 py-5 transition-colors hover:border-accent hover:bg-surface"
+              // A slight vertical stagger on the middle card, so three equally
+              // important reasons read as a considered composition rather
+              // than three boxes stamped out of the same die.
+              className={i === 1 ? "sm:translate-y-6" : ""}
             >
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent-strong transition-colors duration-200 group-hover:bg-accent group-hover:text-accent-foreground">
+              <div className="group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-border bg-surface p-7 shadow-[0_20px_45px_-30px_rgba(31,32,65,0.4)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1.5 hover:border-accent/50 hover:shadow-[0_32px_60px_-28px_rgba(255,105,31,0.35)] sm:p-8">
+                {/* Giant watermark icon, same "shape behind the words" trick
+                    used on the About page's audience cards, scaled up and
+                    given the icon itself rather than a step number. */}
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="1.7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  strokeWidth="1"
                   aria-hidden="true"
-                  className="h-6 w-6"
+                  className="pointer-events-none absolute -right-6 -bottom-8 h-40 w-40 text-foreground/[0.04] transition-colors duration-300 group-hover:text-accent/[0.08]"
                 >
                   {icons[r.icon]}
                 </svg>
-              </span>
-              <span className="text-[15px] leading-snug font-semibold text-foreground">
-                {r.line1}
-                <br />
-                {r.line2}
-              </span>
+
+                <span className="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-accent-soft text-accent-strong shadow-[0_8px_20px_-8px_rgba(255,105,31,0.35)] transition-colors duration-300 group-hover:bg-accent group-hover:text-accent-foreground">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className="h-7 w-7"
+                  >
+                    {icons[r.icon]}
+                  </svg>
+                </span>
+
+                <p className="relative mt-6 text-xl leading-snug font-extrabold tracking-tight text-balance text-foreground">
+                  {r.line1}
+                  <br />
+                  {r.line2}
+                </p>
+                <p className="relative mt-3 text-sm leading-relaxed text-balance text-muted">{r.detail}</p>
+              </div>
             </li>
           ))}
         </ul>
