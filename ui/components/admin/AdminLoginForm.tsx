@@ -13,7 +13,7 @@ export function AdminLoginForm() {
   return (
     <form action={formAction} className="space-y-4">
       <FormField label="Email" name="email" type="email" required />
-      <FormField label="Password" name="password" type="password" required />
+      <FormField label="Password" name="password" type="password" required autoComplete="current-password" />
       {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
       <button
         type="submit"

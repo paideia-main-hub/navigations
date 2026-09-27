@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { login, type ActionState } from "@/domain/auth/actions";
+import { PasswordInput } from "@/ui/components/PasswordInput";
 
 const initialState: ActionState = { error: null };
 
@@ -29,12 +30,7 @@ export function LoginForm() {
         </div>
         <div>
           <label className="text-sm font-medium text-foreground">Password</label>
-          <input
-            type="password"
-            name="password"
-            required
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
-          />
+          <PasswordInput name="password" required autoComplete="current-password" />
         </div>
 
         {(state.error || linkError) && (
