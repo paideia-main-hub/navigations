@@ -124,6 +124,17 @@ function useResponsiveSpread(): number {
   return isTablet ? 100 : 168;
 }
 
+/** How far up the open (fanned) layout is shifted from the stage's vertical
+ * centre, and how much taller the stage box is than it would otherwise need
+ * to be — both exist purely to give the outermost cards' rotation-induced
+ * sag (see the `open.y` comment below) somewhere to go without the stage's
+ * own `overflow-hidden` clipping their bottoms. Verified empirically against
+ * the actual rendered card heights at the widest (5-card, desktop) fan;
+ * narrower fans and the tablet spread sag less, so this comfortably covers
+ * them too. */
+const FAN_VERTICAL_SHIFT = 60;
+const STAGE_EXTRA_HEIGHT = 120;
+
 /** True from the moment the stage first scrolls into view, and stays true —
  * a one-shot reveal, not a toggle, so the fan doesn't collapse again if the
  * user scrolls a little past it and back. */
@@ -202,7 +213,14 @@ function DesktopOrbitStage({
         return {
           open: {
             x: orbit * spread,
-            y: Math.abs(orbit) * 30 + Math.max(0, Math.abs(orbit) - 1) * 10,
+            // `origin-bottom` below means rotation pivots on the card's own
+            // bottom edge, so the more a card is fanned out the further its
+            // bottom corners swing DOWN past where an unrotated card would
+            // sit — the outermost cards can sag over 100px past the rest.
+            // FAN_VERTICAL_SHIFT (paired with the taller stage box below)
+            // moves the whole open fan up to give that sag room without
+            // clipping, while barely nudging the resting/closed stack.
+            y: Math.abs(orbit) * 30 + Math.max(0, Math.abs(orbit) - 1) * 10 - FAN_VERTICAL_SHIFT,
             rotation: orbit * 8.5,
           },
           closed: {
@@ -246,7 +264,9 @@ function DesktopOrbitStage({
     <div className="relative hidden w-full items-center justify-center overflow-hidden py-8 sm:flex">
       <div
         ref={stageRef}
-        className="relative h-[520px] w-full max-w-[980px] sm:h-[500px]"
+        // 640/620 = the original 520/500 plus STAGE_EXTRA_HEIGHT (Tailwind
+        // needs the literal value; can't interpolate the constant here).
+        className="relative h-[640px] w-full max-w-[980px] sm:h-[620px]"
         onMouseLeave={close}
         onBlur={leaveFocus}
         role="list"
