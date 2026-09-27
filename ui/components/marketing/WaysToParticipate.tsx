@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
 import { BandDivider } from "./BandDivider";
+import { RouteCard } from "./RouteCard";
 
 // Inline so the section carries no icon-library dependency. 24x24, drawn in
 // currentColor so each card controls its own tint.
@@ -111,27 +111,17 @@ export function WaysToParticipate() {
                 <p className="mt-1 text-sm text-brand-deep-muted">{route.blurb}</p>
               </div>
 
-              {route.cards.map((card) => (
-                <Link
+              {route.cards.map((card, cardIndex) => (
+                <RouteCard
                   key={card.label}
                   href={card.href}
-                  // The band stays dark in both themes, so the card uses the
-                  // theme-independent brand pair rather than surface/foreground.
-                  className={`group flex h-full flex-col items-center gap-3 rounded-2xl bg-brand-deep-foreground px-4 py-6 text-center shadow-sm ring-1 ring-transparent transition duration-200 hover:-translate-y-1 hover:shadow-xl hover:ring-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep focus-visible:outline-none ${card.col} lg:row-start-2`}
-                >
-                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-accent/10 text-brand-deep-accent transition-colors duration-200 group-hover:bg-accent group-hover:text-accent-foreground">
-                    <Icon name={card.icon} />
-                  </span>
-                  <span className="flex-1 text-sm leading-snug font-semibold text-balance text-brand-deep">
-                    {card.label}
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    className="text-brand-deep-accent opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                  >
-                    →
-                  </span>
-                </Link>
+                  label={card.label}
+                  icon={<Icon name={card.icon} />}
+                  className={`${card.col} lg:row-start-2`}
+                  // Route 2 continues the wave rather than restarting it, so
+                  // the whole row reads as one motion, not two groups.
+                  floatDelay={(route.number === 1 ? cardIndex : 4 + cardIndex) * 0.12}
+                />
               ))}
             </Fragment>
           ))}
