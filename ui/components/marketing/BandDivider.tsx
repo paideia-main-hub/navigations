@@ -55,7 +55,13 @@ export function BandDivider({
   return (
     <div
       aria-hidden="true"
-      className={`pointer-events-none absolute inset-x-0 ${side === "top" ? "top-0" : "bottom-0"} ${className} ${color}`}
+      // z-10: every section's own decorative glow blobs are also plain
+      // `absolute` with no z-index, and several sit deliberately near a top
+      // or bottom edge for "depth behind the cards" — without this, whichever
+      // one comes later in that section's JSX paints over the divider and
+      // tints its precisely-matched colour, showing as a thin off-colour
+      // seam exactly where the two bands are supposed to meet cleanly.
+      className={`pointer-events-none absolute inset-x-0 z-10 ${side === "top" ? "top-0" : "bottom-0"} ${className} ${color}`}
     >
       <svg
         viewBox="0 0 1440 100"

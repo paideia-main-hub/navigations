@@ -47,7 +47,7 @@ export function AboutInitiative() {
       />
       {/* The cool band above spills over the photograph rather than meeting
           it on a rule. Above the image, so it reads as an overlap. */}
-      <BandDivider shape="blob" side="top" color="text-surface-alt" className="z-10 h-24 sm:h-32 lg:h-40" />
+      <BandDivider shape="blob" side="top" color="text-surface-alt" className="h-24 sm:h-32 lg:h-40" />
 
       <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-6 py-24">
         <div className="flex flex-wrap items-start justify-between gap-12">
