@@ -128,9 +128,14 @@ export function UpcomingEventsBoard({ dates }: { dates: UpcomingDate[] }) {
   const competitions = new Set(dates.map((d) => d.slug)).size;
 
   return (
-    <section className="relative overflow-hidden bg-surface-alt px-6 pt-24 pb-28 lg:pt-28 lg:pb-32">
+    <section className="relative bg-surface-alt px-6 pt-24 pb-28 lg:pt-28 lg:pb-32">
       {/* Platinum on both sides of this band, shaped differently top and
-          bottom so the two seams do not mirror each other. */}
+          bottom so the two seams do not mirror each other. No
+          overflow-hidden: this section's own decorative elements (the two
+          BandDividers below) are already exactly the size of their own box
+          with nothing bleeding past it, and the sidebar further down needs
+          to be position: sticky, which any overflow other than visible on
+          an ancestor silently breaks. */}
       <BandDivider shape="wave" side="top" color="text-background" />
       <BandDivider shape="curve" side="bottom" color="text-background" flip />
 

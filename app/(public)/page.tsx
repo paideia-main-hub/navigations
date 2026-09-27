@@ -49,8 +49,19 @@ export default async function HomePage() {
           first heading room to clear the floating header once the curtain
           finishes rising — without it, LeagueSpotlight's heading lands
           right under the header at exactly the scroll position where the
-          reveal completes. */}
-      <div className="relative z-10 -mt-[100dvh] overflow-hidden rounded-t-[2.5rem] bg-background pt-24 shadow-[0_-25px_50px_-12px_rgba(0,0,0,0.25)] sm:rounded-t-[4rem] sm:pt-28">
+          reveal completes.
+          Deliberately no overflow-hidden here even though the rounded top
+          edge might suggest it: `overflow` other than visible on ANY
+          ancestor — even one that never actually scrolls its own content,
+          like this one — breaks `position: sticky` for every descendant on
+          the page (confirmed empirically while wiring up a sticky sidebar
+          further down). The rounded corner doesn't need it: border-radius
+          clips this div's own background regardless of overflow, and
+          LeagueSpotlight (the first child) shares this same bg-background,
+          so nothing actually bleeds past the corner. Every section below
+          that DOES need to clip its own decorative bleed (glow blobs,
+          BandDivider seams) still does, via its own `overflow-hidden`. */}
+      <div className="relative z-10 -mt-[100dvh] rounded-t-[2.5rem] bg-background pt-24 shadow-[0_-25px_50px_-12px_rgba(0,0,0,0.25)] sm:rounded-t-[4rem] sm:pt-28">
         {/* 2. Featuring Now — static League billboard beside a rotating panel. */}
         <LeagueSpotlight />
 
