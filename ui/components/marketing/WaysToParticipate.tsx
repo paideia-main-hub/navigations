@@ -72,10 +72,11 @@ const ROUTES = [
 export function WaysToParticipate() {
   return (
     <section className="relative overflow-hidden bg-brand-deep px-6 pt-24 pb-28 lg:pt-28 lg:pb-32">
-      {/* Shaped seams: Platinum spills down from the spotlight above, and the
-          warm Explore band rises into the bottom edge. */}
+      {/* Shaped seams: Platinum spills down on both sides — the Explore
+          section below is bg-background too, not the warm tint this used to
+          border when that section carried a different fill. */}
       <BandDivider shape="curve" side="top" color="text-background" />
-      <BandDivider shape="wave" side="bottom" color="text-surface-warm" flip />
+      <BandDivider shape="wave" side="bottom" color="text-background" flip />
 
       {/* Depth behind the cards, so the band reads as lit rather than flat. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">

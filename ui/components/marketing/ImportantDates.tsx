@@ -47,6 +47,7 @@ const icons: Record<string, ReactNode> = {
   upload: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M12 3v13m0-13 4 4m-4-4-4 4" />,
   calendar: <path d="M8 2v4m8-4v4M3 10h18M5 6h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />,
   trophy: <path d="M8 21h8m-4-4v4m-6-17h12v5a6 6 0 0 1-12 0V4Zm0 2H4a2 2 0 0 0 0 4h2m12-4h2a2 2 0 0 1 0 4h-2" />,
+  check: <path d="M20 6 9 17l-5-5" />,
 };
 
 type Status = "done" | "now" | "next" | "later";
@@ -112,11 +113,17 @@ export function ImportantDates() {
   const progress = live?.progress ?? 0;
   const daysToNext = live?.daysToNext ?? null;
   const highlightIndex = statuses.findIndex((s) => s === "now" || s === "next");
+  // Nothing left to look forward to once every milestone is done — spotlight
+  // the closing one instead of an index that no longer means "next".
+  const spotlightIndex = highlightIndex === -1 ? MILESTONES.length - 1 : highlightIndex;
+  const spotlight = MILESTONES[spotlightIndex];
+  const spotlightStatus = statuses[spotlightIndex];
 
   return (
     <section className="relative overflow-hidden bg-brand-deep px-6 pt-24 pb-28 lg:pt-28 lg:pb-32">
-      {/* Warm Explore above slants into this band; Platinum below scoops up. */}
-      <BandDivider shape="tilt" side="top" color="text-surface-warm" />
+      {/* Platinum on both sides of this band — the section above and below
+          are both bg-background. */}
+      <BandDivider shape="tilt" side="top" color="text-background" />
       <BandDivider shape="arc" side="bottom" color="text-background" />
 
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -125,90 +132,143 @@ export function ImportantDates() {
       </div>
 
       <div className="relative mx-auto max-w-7xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="flex items-center gap-3 text-sm font-bold tracking-wider text-brand-deep-foreground uppercase">
-            <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
-            Important Dates
-          </h2>
-          {daysToNext !== null && daysToNext >= 0 && (
-            <p className="rounded-full bg-accent px-4 py-1.5 text-sm font-bold text-accent-foreground">
-              {daysToNext === 0
-                ? `${MILESTONES[highlightIndex].label} opens today`
-                : `${MILESTONES[highlightIndex].label} opens in ${daysToNext} day${daysToNext === 1 ? "" : "s"}`}
-            </p>
-          )}
-        </div>
+        <h2 className="flex items-center gap-3 text-sm font-bold tracking-wider text-brand-deep-foreground uppercase">
+          <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
+          Important Dates
+        </h2>
 
-        <ol className="relative mt-12 grid gap-10 md:grid-cols-4 md:gap-6">
-          {/* The rail runs behind the nodes, aligned to their centres: a node
-              is 3.5rem tall, so its middle sits 1.75rem down. */}
-          <div aria-hidden="true" className="absolute top-7 right-0 left-0 hidden h-0.5 bg-white/15 md:block">
-            <div
-              className="h-full bg-gradient-to-r from-accent to-accent-strong transition-[width] duration-700 ease-out"
-              style={{ width: `${progress}%` }}
+        {/* Spotlight (what matters right now) beside the full schedule,
+            instead of four equal boxes in a row — the countdown that used to
+            be a small pill in the header is the whole left panel now. */}
+        <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-stretch">
+          <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.03] to-transparent p-8 sm:p-10">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-20 -right-16 h-64 w-64 animate-pulse rounded-full bg-accent/20 blur-[90px]"
+              style={{ animationDuration: "4s" }}
             />
+
+            <p className="relative text-xs font-bold tracking-[0.22em] text-brand-deep-muted uppercase">
+              {spotlightStatus === "now" ? "Happening now" : spotlightStatus === "done" ? "Season complete" : "Coming up next"}
+            </p>
+
+            {live === null ? (
+              <div className="mt-5 h-20 w-44 animate-pulse rounded-2xl bg-white/5" />
+            ) : daysToNext !== null && daysToNext >= 0 ? (
+              <div className="relative mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="text-7xl font-black tracking-tighter text-brand-deep-foreground tabular-nums sm:text-8xl">
+                  {daysToNext}
+                </span>
+                <span className="text-lg font-bold text-brand-deep-muted">day{daysToNext === 1 ? "" : "s"} to go</span>
+              </div>
+            ) : (
+              <p className="relative mt-4 text-4xl font-black tracking-tight text-brand-deep-foreground">
+                {spotlightStatus === "now" ? "Underway" : "All done"}
+              </p>
+            )}
+
+            <div className="relative mt-7 flex items-center gap-4 border-t border-white/10 pt-6">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground shadow-[0_0_0_6px_rgba(255,105,31,0.18)]">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  className="h-6 w-6"
+                >
+                  {icons[spotlight.icon]}
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <p className="font-bold text-brand-deep-foreground">{spotlight.label}</p>
+                <p className="text-sm text-brand-deep-muted">{spotlight.display}</p>
+              </div>
+            </div>
+            <p className="relative mt-4 text-sm leading-relaxed text-brand-deep-muted">{spotlight.note}</p>
           </div>
 
-          {MILESTONES.map((m, i) => {
-            const status = statuses[i];
-            const active = status === "now" || status === "next";
-            return (
-              <li key={m.label} className="relative flex gap-5 md:block">
-                <div
-                  className={`relative z-10 grid h-14 w-14 shrink-0 place-items-center rounded-full ring-8 ring-brand-deep transition-colors duration-300 ${
-                    status === "done"
-                      ? "bg-accent text-accent-foreground"
-                      : active
-                        ? "bg-accent text-accent-foreground shadow-[0_0_0_6px_rgba(255,105,31,0.18)]"
-                        : "bg-brand-deep-foreground/10 text-brand-deep-foreground"
-                  }`}
+          {/* Full schedule — a compact vertical stepper rather than the old
+              four-across row, so it reads as a list to scan next to the
+              spotlight rather than needing its own separate width budget. */}
+          <ol className="relative flex flex-col gap-1 rounded-[2rem] border border-white/10 bg-white/[0.03] p-3 sm:p-4">
+            <div
+              aria-hidden="true"
+              className="absolute top-9 bottom-9 left-[2.65rem] w-0.5 overflow-hidden rounded-full bg-white/10 sm:left-[3.15rem]"
+            >
+              <div
+                className="w-full bg-gradient-to-b from-accent to-accent-strong transition-[height] duration-700 ease-out"
+                style={{ height: `${progress}%` }}
+              />
+            </div>
+
+            {MILESTONES.map((m, i) => {
+              const status = statuses[i];
+              const active = status === "now" || status === "next";
+              return (
+                <li
+                  key={m.label}
+                  className="group relative flex items-center gap-4 overflow-hidden rounded-2xl px-3 py-3.5 transition-colors duration-200 hover:bg-white/[0.06] sm:px-4"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                    className="h-6 w-6"
-                  >
-                    {icons[m.icon]}
-                  </svg>
-                  <span className="absolute -top-1 -right-1 grid h-5 w-5 place-items-center rounded-full bg-brand-deep text-[10px] font-bold text-brand-deep-foreground ring-2 ring-brand-deep">
-                    {i + 1}
-                  </span>
-                </div>
-
-                <div className="md:mt-6">
-                  <p
-                    className={`text-lg font-extrabold tracking-tight transition-colors ${
-                      active ? "text-accent" : "text-brand-deep-foreground"
-                    }`}
-                  >
-                    {m.display}
-                  </p>
-                  <p className="mt-0.5 font-semibold text-brand-deep-foreground">{m.label}</p>
-                  <p className="mt-1.5 max-w-xs text-sm text-brand-deep-muted">{m.note}</p>
-                  {status === "done" && (
-                    <p className="mt-2 text-xs font-semibold tracking-wide text-brand-deep-muted uppercase">Complete</p>
-                  )}
-                  {status === "now" && (
-                    <p className="mt-2 text-xs font-bold tracking-wide text-accent uppercase">Happening now</p>
-                  )}
-                </div>
-
-                {/* Vertical rail for the stacked layout. */}
-                {i < MILESTONES.length - 1 && (
+                  {/* Giant faint step number, same trick as the About page's
+                      audience cards — a shape behind the words, not a second
+                      thing to read. */}
                   <span
                     aria-hidden="true"
-                    className="absolute top-14 left-7 h-[calc(100%+2.5rem-3.5rem)] w-0.5 -translate-x-1/2 bg-white/15 md:hidden"
-                  />
-                )}
-              </li>
-            );
-          })}
-        </ol>
+                    className="pointer-events-none absolute -top-3 right-2 text-[5rem] leading-none font-black tabular-nums text-brand-deep-foreground/[0.04] select-none"
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+
+                  <span
+                    className={`relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-full ring-4 ring-brand-deep transition-all duration-300 sm:h-13 sm:w-13 ${
+                      status === "done"
+                        ? "bg-accent/70 text-accent-foreground"
+                        : active
+                          ? "bg-accent text-accent-foreground shadow-[0_0_0_6px_rgba(255,105,31,0.18)]"
+                          : "bg-white/10 text-brand-deep-foreground"
+                    }`}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                      className="h-5 w-5"
+                    >
+                      {icons[status === "done" ? "check" : m.icon]}
+                    </svg>
+                  </span>
+
+                  <div className="relative z-10 min-w-0 flex-1">
+                    <div className="flex flex-wrap items-baseline gap-x-2">
+                      <p className={`text-sm font-extrabold ${active ? "text-accent" : "text-brand-deep-foreground"}`}>
+                        {m.display}
+                      </p>
+                      <p className="text-sm font-semibold text-brand-deep-muted">{m.label}</p>
+                    </div>
+                    {/* Truncated at rest so four rows never fight for height;
+                        the full note is one hover away. */}
+                    <p className="mt-0.5 truncate text-xs text-brand-deep-muted/80 group-hover:text-clip group-hover:whitespace-normal">
+                      {m.note}
+                    </p>
+                  </div>
+
+                  {active && (
+                    <span className="relative z-10 hidden shrink-0 rounded-full bg-accent/15 px-2.5 py-1 text-[10px] font-bold tracking-wide text-accent uppercase sm:inline-block">
+                      {status === "now" ? "Now" : "Next"}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       </div>
     </section>
   );
