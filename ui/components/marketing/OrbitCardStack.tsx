@@ -40,15 +40,6 @@ function initialsFor(name: string): string {
     .toUpperCase();
 }
 
-function ArrowUpRightIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <path d="M7 17 17 7" />
-      <path d="M7 7h10v10" />
-    </svg>
-  );
-}
-
 /** Falls back to an initials badge on a brand-deep tile if the artwork 404s
  * (not every card — e.g. an award category with no supplied photo yet —
  * has real art), instead of a broken-image icon. */
@@ -81,12 +72,6 @@ function CardBody({ item }: { item: OrbitStackItem }) {
     <>
       <div className="relative">
         <OrbitPortrait item={item} />
-        <span
-          aria-hidden="true"
-          className="absolute right-3 bottom-3 grid size-11 place-items-center rounded-full bg-accent text-accent-foreground shadow-lg shadow-black/20 transition-transform group-hover:scale-105"
-        >
-          <ArrowUpRightIcon className="size-4" />
-        </span>
       </div>
       <div className="px-2 pt-6 pb-2">
         <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-muted uppercase">{item.eyebrow}</p>
@@ -179,7 +164,7 @@ function MobileCardCarousel({ items, ariaLabel }: { items: OrbitStackItem[]; ari
           <Link
             href={item.href}
             aria-label={`View ${item.name}`}
-            className={`group block rounded-[1.9rem] border border-border p-4 text-foreground ${CARD_PALETTE[index % CARD_PALETTE.length]}`}
+            className={`block rounded-[1.9rem] border border-border p-4 text-foreground ${CARD_PALETTE[index % CARD_PALETTE.length]}`}
           >
             <CardBody item={item} />
           </Link>
@@ -305,7 +290,7 @@ function DesktopOrbitStage({
                 href={item.href}
                 aria-label={`View ${item.name}`}
                 tabIndex={visible ? 0 : -1}
-                className={`group block w-full rounded-[1.9rem] border border-border p-4 text-foreground outline-none transition-[box-shadow] duration-[420ms] ease-[cubic-bezier(.2,.8,.2,1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                className={`block w-full rounded-[1.9rem] border border-border p-4 text-foreground outline-none transition-[box-shadow] duration-[420ms] ease-[cubic-bezier(.2,.8,.2,1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   CARD_PALETTE[itemIndex % CARD_PALETTE.length]
                 } ${active ? "shadow-[0_40px_75px_-20px_rgba(31,32,65,0.6)]" : "shadow-[0_20px_45px_-22px_rgba(31,32,65,0.42)]"}`}
               >
@@ -314,6 +299,23 @@ function DesktopOrbitStage({
             </article>
           );
         })}
+
+        <button
+          type="button"
+          onClick={() => advance(-1)}
+          aria-label="Show previous card"
+          className="absolute top-1/2 left-0 z-[90] grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+        >
+          <span aria-hidden="true">‹</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => advance(1)}
+          aria-label="Show next card"
+          className="absolute top-1/2 right-0 z-[90] grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+        >
+          <span aria-hidden="true">›</span>
+        </button>
       </div>
     </div>
   );
