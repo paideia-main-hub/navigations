@@ -27,7 +27,7 @@ const ICON_PATH: Record<string, string> = {
 };
 
 const RECOGNITION_IMAGE =
-  "https://images.unsplash.com/photo-1565350897149-38dfafa81d83?q=80&w=2400&auto=format&fit=crop";
+  "https://images.unsplash.com/photo-1698993082050-19ca94c62fb8?q=80&w=2400&auto=format&fit=crop";
 
 const RECOGNITION_CARDS: ScrollSplitCardItem[] = [
   {
