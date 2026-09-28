@@ -11,12 +11,12 @@ import { FlipStack, type FlipStackItem } from "./FlipStack";
  * the same reason the older badge treatment reached past the brand palette
  * for schedule/venue/results/final_round. */
 const CATEGORY_CARD: Record<AnnouncementCategory, { bgClassName: string; textClassName: string }> = {
-  registration: { bgClassName: "bg-accent", textClassName: "text-accent-foreground" },
-  schedule: { bgClassName: "bg-blue-700", textClassName: "text-white" },
-  venue: { bgClassName: "bg-violet-700", textClassName: "text-white" },
-  manual_update: { bgClassName: "bg-slate-700", textClassName: "text-white" },
-  results: { bgClassName: "bg-emerald-700", textClassName: "text-white" },
-  final_round: { bgClassName: "bg-amber-600", textClassName: "text-white" },
+  registration: { bgClassName: "bg-accent-strong", textClassName: "text-white" },
+  schedule: { bgClassName: "bg-blue-800", textClassName: "text-white" },
+  venue: { bgClassName: "bg-violet-800", textClassName: "text-white" },
+  manual_update: { bgClassName: "bg-slate-800", textClassName: "text-white" },
+  results: { bgClassName: "bg-emerald-800", textClassName: "text-white" },
+  final_round: { bgClassName: "bg-amber-800", textClassName: "text-white" },
   general: { bgClassName: "bg-brand-deep", textClassName: "text-brand-deep-foreground" },
 };
 

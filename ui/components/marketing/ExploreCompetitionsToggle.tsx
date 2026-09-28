@@ -54,15 +54,7 @@ export function ExploreCompetitionsToggle({
 
   return (
     <div>
-      <SectionHeading
-        eyebrow="Competition Directory"
-        title="Explore Competitions"
-        action={
-          route === 1
-            ? { href: "/competitions", label: "View all competitions" }
-            : { href: "/awards", label: "View all awards" }
-        }
-      />
+      <SectionHeading eyebrow="Competition Directory" title="Explore Competitions" />
       <div
         role="tablist"
         aria-label="Ways to participate"
@@ -86,13 +78,20 @@ export function ExploreCompetitionsToggle({
       </div>
 
       {route === 1 ? (
-        <OrbitCardStack ariaLabel="Featured competitions" items={competitions.map(competitionToItem)} />
+        <OrbitCardStack
+          ariaLabel="Featured competitions"
+          items={competitions.map(competitionToItem)}
+          viewAllHref="/competitions"
+          viewAllLabel="View all competitions"
+        />
       ) : (
         <>
-          <p className="mt-5 text-sm text-muted">
-            {awardCategories.length} award{awardCategories.length === 1 ? "" : "s"} open for nomination
-          </p>
-          <OrbitCardStack ariaLabel="Open award nominations" items={awardCategories.map(awardToItem)} />
+          <OrbitCardStack
+            ariaLabel="Open award nominations"
+            items={awardCategories.map(awardToItem)}
+            viewAllHref="/awards"
+            viewAllLabel="View all awards"
+          />
           {awardCategories.length === 0 && (
             <p className="py-12 text-center text-sm text-muted">No award categories are open for submissions right now.</p>
           )}

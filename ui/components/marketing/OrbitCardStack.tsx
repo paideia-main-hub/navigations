@@ -31,18 +31,9 @@ const CARD_PALETTE = [
   "bg-violet-50 dark:bg-violet-500/10",
 ];
 
-function initialsFor(name: string): string {
-  return name
-    .split(/\s+/)
-    .map((part) => part.at(0))
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
-/** Falls back to an initials badge on a brand-deep tile if the artwork 404s
- * (not every card — e.g. an award category with no supplied photo yet —
- * has real art), instead of a broken-image icon. */
+/** Falls back to a brand-deep tile with the item's name if the artwork 404s
+ * (not every card — e.g. an award category with no supplied photo yet — has
+ * real art), instead of a broken-image icon. */
 function OrbitPortrait({ item }: { item: OrbitStackItem }) {
   const [failed, setFailed] = useState(false);
 
@@ -56,9 +47,6 @@ function OrbitPortrait({ item }: { item: OrbitStackItem }) {
         // eslint-disable-next-line @next/next/no-img-element -- static asset in public/ or an already-public storage URL
         <img src={item.image} alt="" aria-hidden="true" loading="lazy" onError={() => setFailed(true)} className="h-full w-full object-cover" />
       )}
-      <span className="absolute right-4 bottom-4 rounded-full bg-brand-deep px-3 py-1 text-xs font-semibold tracking-[0.18em] text-brand-deep-foreground">
-        {initialsFor(item.name)}
-      </span>
     </div>
   );
 }
@@ -193,11 +181,15 @@ function DesktopOrbitStage({
   ariaLabel,
   defaultActiveIndex,
   lift,
+  viewAllHref,
+  viewAllLabel,
 }: {
   items: OrbitStackItem[];
   ariaLabel: string;
   defaultActiveIndex: number;
   lift: number;
+  viewAllHref?: string;
+  viewAllLabel?: string;
 }) {
   const reduceMotion = usePrefersReducedMotion();
   const spread = useResponsiveSpread();
@@ -237,14 +229,16 @@ function DesktopOrbitStage({
   }
 
   return (
-    <div className="relative hidden w-full items-center justify-center overflow-hidden py-8 sm:flex">
+    <div
+      className="relative hidden w-full items-center justify-center overflow-hidden py-8 sm:flex"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
       <div
         ref={stageRef}
         className="relative h-[640px] w-full max-w-[980px] sm:h-[620px]"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onFocusCapture={() => setPaused(true)}
-        onBlurCapture={() => setPaused(false)}
         onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
           if (event.key === "ArrowRight" || event.key === "ArrowDown") {
             event.preventDefault();
@@ -300,23 +294,45 @@ function DesktopOrbitStage({
           );
         })}
 
-        <button
-          type="button"
-          onClick={() => advance(-1)}
-          aria-label="Show previous card"
-          className="absolute top-1/2 left-0 z-[90] grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-        >
-          <span aria-hidden="true">‹</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => advance(1)}
-          aria-label="Show next card"
-          className="absolute top-1/2 right-0 z-[90] grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-        >
-          <span aria-hidden="true">›</span>
-        </button>
+        {/* Sits in the gap the fan itself leaves behind — the centre card
+            is lifted clear above the side cards (see `lift`/FAN_VERTICAL_SHIFT
+            above), so directly beneath it, inside its own footprint, is
+            empty stage all the way down to the side cards' lower edges. A
+            negative margin isn't needed: positioning it here, inside the
+            stage's own coordinate space, puts it in that hollow directly. */}
+        {viewAllHref && viewAllLabel && (
+          <Link
+            href={viewAllHref}
+            className="absolute bottom-[70px] left-1/2 z-[70] -translate-x-1/2 rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+          >
+            {viewAllLabel} →
+          </Link>
+        )}
       </div>
+
+      {/* Pinned to a fixed height near the top of the stage rather than
+          vertical-centre: the fan's rotated side cards sweep through nearly
+          the whole middle band of the stage (verified empirically — the
+          cards' actual painted shape, not just their box, covers most of
+          mid-height at every width from 1024 to 1920px), so centre is
+          exactly where they'd sit on top of a card. This height is clear at
+          all of those widths. */}
+      <button
+        type="button"
+        onClick={() => advance(-1)}
+        aria-label="Show previous card"
+        className="absolute top-[75px] left-0 z-[90] grid h-10 w-10 place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+      >
+        <span aria-hidden="true">‹</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => advance(1)}
+        aria-label="Show next card"
+        className="absolute top-[75px] right-0 z-[90] grid h-10 w-10 place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+      >
+        <span aria-hidden="true">›</span>
+      </button>
     </div>
   );
 }
@@ -326,18 +342,42 @@ export function OrbitCardStack({
   ariaLabel,
   defaultActiveIndex = 2,
   lift = 34,
+  viewAllHref,
+  viewAllLabel,
 }: {
   items: OrbitStackItem[];
   ariaLabel: string;
   defaultActiveIndex?: number;
   lift?: number;
+  /** Rendered as a "view all" link tucked into the fan's own hollow on
+   * desktop; falls back to a plain centred link below the list on mobile,
+   * where there's no fan (and so no hollow to tuck it into). */
+  viewAllHref?: string;
+  viewAllLabel?: string;
 }) {
   if (items.length === 0) return null;
 
   return (
     <>
       <MobileCardCarousel items={items} ariaLabel={ariaLabel} />
-      <DesktopOrbitStage items={items} ariaLabel={ariaLabel} defaultActiveIndex={defaultActiveIndex} lift={lift} />
+      {viewAllHref && viewAllLabel && (
+        <div className="mt-4 text-center sm:hidden">
+          <Link
+            href={viewAllHref}
+            className="inline-block rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+          >
+            {viewAllLabel} →
+          </Link>
+        </div>
+      )}
+      <DesktopOrbitStage
+        items={items}
+        ariaLabel={ariaLabel}
+        defaultActiveIndex={defaultActiveIndex}
+        lift={lift}
+        viewAllHref={viewAllHref}
+        viewAllLabel={viewAllLabel}
+      />
     </>
   );
 }
