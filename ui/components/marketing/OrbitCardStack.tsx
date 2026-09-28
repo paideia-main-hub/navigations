@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   type CSSProperties,
   type FocusEvent,
+  type KeyboardEvent,
   useEffect,
   useMemo,
   useRef,
@@ -20,6 +21,19 @@ export interface OrbitStackItem {
   stat: string;
   image: string;
 }
+
+/** Cycled by position rather than supplied by callers — competitions and
+ * award categories are real, admin-managed lists (competitionToItem/
+ * awardToItem in ExploreCompetitionsToggle.tsx), so there's no fixed set of
+ * named items to hand-pick a colour for. Cycling by index still gives any
+ * five of them five distinct tints. */
+const CARD_PALETTE = [
+  "bg-blue-50 dark:bg-blue-500/10",
+  "bg-emerald-50 dark:bg-emerald-500/10",
+  "bg-amber-50 dark:bg-amber-500/10",
+  "bg-rose-50 dark:bg-rose-500/10",
+  "bg-violet-50 dark:bg-violet-500/10",
+];
 
 function initialsFor(name: string): string {
   return name
@@ -67,20 +81,22 @@ function OrbitPortrait({ item }: { item: OrbitStackItem }) {
 }
 
 /** The card's visual content, shared between the fanned desktop stage and
- * the flat mobile carousel so the two layouts never drift apart. */
+ * the flat mobile carousel so the two layouts never drift apart. Purely
+ * presentational — no link of its own; the whole card is one click target
+ * now, so the caller wraps this in the actual `<Link>`. The arrow badge is
+ * just a decorative cue (bottom-right, was top-right), riding the parent
+ * link's own hover via `group-hover`. */
 function CardBody({ item }: { item: OrbitStackItem }) {
   return (
     <>
       <div className="relative">
         <OrbitPortrait item={item} />
-        <Link
-          href={item.href}
-          aria-label={`View ${item.name}`}
-          onClick={(event) => event.stopPropagation()}
-          className="absolute top-3 right-3 grid size-11 place-items-center rounded-full bg-accent text-accent-foreground shadow-lg shadow-black/20 transition-transform hover:scale-105"
+        <span
+          aria-hidden="true"
+          className="absolute right-3 bottom-3 grid size-11 place-items-center rounded-full bg-accent text-accent-foreground shadow-lg shadow-black/20 transition-transform group-hover:scale-105"
         >
           <ArrowUpRightIcon className="size-4" />
-        </Link>
+        </span>
       </div>
       <div className="px-2 pt-6 pb-2">
         <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-muted uppercase">{item.eyebrow}</p>
@@ -171,12 +187,15 @@ function MobileCardCarousel({ items, ariaLabel }: { items: OrbitStackItem[]; ari
       aria-label={ariaLabel}
       className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:hidden"
     >
-      {items.map((item) => (
-        <li
-          key={item.id}
-          className="w-[78vw] shrink-0 snap-center rounded-[1.9rem] border border-border bg-surface-warm p-4 text-foreground"
-        >
-          <CardBody item={item} />
+      {items.map((item, index) => (
+        <li key={item.id} className="w-[78vw] shrink-0 snap-center">
+          <Link
+            href={item.href}
+            aria-label={`View ${item.name}`}
+            className={`group block rounded-[1.9rem] border border-border p-4 text-foreground ${CARD_PALETTE[index % CARD_PALETTE.length]}`}
+          >
+            <CardBody item={item} />
+          </Link>
         </li>
       ))}
     </ul>
@@ -256,8 +275,10 @@ function DesktopOrbitStage({
   const leaveFocus = (event: FocusEvent<HTMLDivElement>) => {
     if (!event.currentTarget.contains(event.relatedTarget)) close();
   };
+  // Each listitem now holds exactly one focusable element — its card link —
+  // rather than being focusable itself, so keyboard nav focuses that.
   const focusCard = (index: number) => {
-    stageRef.current?.querySelectorAll<HTMLElement>("[role=listitem]")[index]?.focus();
+    stageRef.current?.querySelectorAll<HTMLAnchorElement>("[role=listitem] a")[index]?.focus();
   };
 
   return (
@@ -283,37 +304,48 @@ function DesktopOrbitStage({
             transitionDuration: reduceMotion ? "0ms" : "420ms",
           };
 
+          const onKeyDown = (event: KeyboardEvent<HTMLAnchorElement>) => {
+            if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+              event.preventDefault();
+              const next = (index + 1) % cards.length;
+              activate(next);
+              focusCard(next);
+            }
+            if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+              event.preventDefault();
+              const next = (index - 1 + cards.length) % cards.length;
+              activate(next);
+              focusCard(next);
+            }
+            if (event.key === "Escape") {
+              event.currentTarget.blur();
+              close();
+            }
+          };
+
           return (
             <article
               key={item.id}
               role="listitem"
-              tabIndex={0}
               aria-current={active ? "true" : undefined}
-              className="absolute top-1/2 left-1/2 w-64 origin-bottom cursor-pointer rounded-[1.9rem] border border-border bg-surface-warm p-4 text-foreground outline-none transition-[transform] ease-[cubic-bezier(.2,.8,.2,1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:w-[21rem]"
+              // Position/rotation-only now — the card link inside carries
+              // the actual interaction, so this wrapper has no tabIndex,
+              // click or key handling of its own beyond the hover trigger.
+              className="absolute top-1/2 left-1/2 w-64 origin-bottom transition-[transform] ease-[cubic-bezier(.2,.8,.2,1)] lg:w-[21rem]"
               style={style}
               onMouseEnter={() => activate(index)}
-              onFocus={() => activate(index)}
-              onClick={() => activate(index)}
-              onKeyDown={(event) => {
-                if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-                  event.preventDefault();
-                  const next = (index + 1) % cards.length;
-                  activate(next);
-                  focusCard(next);
-                }
-                if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-                  event.preventDefault();
-                  const next = (index - 1 + cards.length) % cards.length;
-                  activate(next);
-                  focusCard(next);
-                }
-                if (event.key === "Escape") {
-                  event.currentTarget.blur();
-                  close();
-                }
-              }}
             >
-              <CardBody item={item} />
+              <Link
+                href={item.href}
+                aria-label={`View ${item.name}`}
+                onFocus={() => activate(index)}
+                onKeyDown={onKeyDown}
+                className={`group block w-full rounded-[1.9rem] border border-border p-4 text-foreground outline-none transition-[box-shadow] duration-[420ms] ease-[cubic-bezier(.2,.8,.2,1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                  CARD_PALETTE[index % CARD_PALETTE.length]
+                } ${active ? "shadow-[0_40px_75px_-20px_rgba(31,32,65,0.6)]" : "shadow-[0_20px_45px_-22px_rgba(31,32,65,0.42)]"}`}
+              >
+                <CardBody item={item} />
+              </Link>
             </article>
           );
         })}

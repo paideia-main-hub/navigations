@@ -41,6 +41,9 @@ function Icon({ name }: { name: keyof typeof icons }) {
 
 // Route 1's four cards are the competition categories. They all point at the
 // directory until the categories exist in the data model and can be filtered.
+// Each card carries its own coordinated card/bubble tint — different hues so
+// the section reads as colourful rather than a wall of identical white
+// tiles, with the bubble a more saturated shade of the same card colour.
 const ROUTES = [
   {
     number: 1,
@@ -49,10 +52,38 @@ const ROUTES = [
     // Explicit placement on lg: header across tracks 1-4, cards one per track.
     headerClass: "lg:col-start-1 lg:col-span-4 lg:row-start-1",
     cards: [
-      { label: "Applied Skills Challenges", icon: "bulb", href: "/competitions?pathway=applied_skills", col: "lg:col-start-1" },
-      { label: "Independent Submission", icon: "document", href: "/competitions?pathway=independent_submission", col: "lg:col-start-2" },
-      { label: "Project Showcasing", icon: "people", href: "/competitions?pathway=project_showcase", col: "lg:col-start-3" },
-      { label: "Live Performances", icon: "bolt", href: "/competitions?pathway=live_response", col: "lg:col-start-4" },
+      {
+        label: "Applied Skills Challenges",
+        icon: "bulb",
+        href: "/competitions?pathway=applied_skills",
+        col: "lg:col-start-1",
+        bg: "bg-blue-50 dark:bg-blue-500/10",
+        bubble: "bg-blue-200 dark:bg-blue-400/40",
+      },
+      {
+        label: "Independent Submission",
+        icon: "document",
+        href: "/competitions?pathway=independent_submission",
+        col: "lg:col-start-2",
+        bg: "bg-emerald-50 dark:bg-emerald-500/10",
+        bubble: "bg-emerald-200 dark:bg-emerald-400/40",
+      },
+      {
+        label: "Project Showcasing",
+        icon: "people",
+        href: "/competitions?pathway=project_showcase",
+        col: "lg:col-start-3",
+        bg: "bg-amber-50 dark:bg-amber-500/10",
+        bubble: "bg-amber-200 dark:bg-amber-400/40",
+      },
+      {
+        label: "Live Performances",
+        icon: "bolt",
+        href: "/competitions?pathway=live_response",
+        col: "lg:col-start-4",
+        bg: "bg-rose-50 dark:bg-rose-500/10",
+        bubble: "bg-rose-200 dark:bg-rose-400/40",
+      },
     ],
   },
   {
@@ -62,20 +93,50 @@ const ROUTES = [
     // Track 5 is the rule, so this group starts at 6.
     headerClass: "lg:col-start-6 lg:col-span-3 lg:row-start-1",
     cards: [
-      { label: "Spotlight Awards", icon: "trophy", href: "/awards#spotlight", col: "lg:col-start-6" },
-      { label: "Future Readiness School Awards", icon: "star", href: "/awards#school_award", col: "lg:col-start-7" },
-      { label: "Sports Recognition Awards", icon: "medal", href: "/awards#sports", col: "lg:col-start-8" },
+      {
+        label: "Spotlight Awards",
+        icon: "trophy",
+        href: "/awards#spotlight",
+        col: "lg:col-start-6",
+        bg: "bg-violet-50 dark:bg-violet-500/10",
+        bubble: "bg-violet-200 dark:bg-violet-400/40",
+      },
+      {
+        label: "Future Readiness School Awards",
+        icon: "star",
+        href: "/awards#school_award",
+        col: "lg:col-start-7",
+        bg: "bg-cyan-50 dark:bg-cyan-500/10",
+        bubble: "bg-cyan-200 dark:bg-cyan-400/40",
+      },
+      {
+        label: "Sports Recognition Awards",
+        icon: "medal",
+        href: "/awards#sports",
+        col: "lg:col-start-8",
+        bg: "bg-accent-soft",
+        bubble: "bg-accent/30",
+      },
     ],
   },
 ] as const;
 
 export function WaysToParticipate() {
   return (
-    <section className="relative overflow-hidden bg-brand-deep px-6 pt-24 pb-28 lg:pt-28 lg:pb-32">
+    <section
+      // Same-family gradient instead of a flat fill — three shades of the
+      // Space Indigo brand colour, darkest on the left rising to a clearly
+      // lighter shade on the right. Fixed (no dark: variant) to match
+      // bg-brand-deep's own "stays dark in both themes" behaviour, which
+      // this replaces. background-size 200% 200% + animate-gradient-travel
+      // (app/globals.css) slides that gradient back and forth so the light
+      // slowly travels across the band instead of sitting static.
+      className="relative overflow-hidden bg-[linear-gradient(100deg,#14152c_0%,#1f2041_50%,#3d4173_100%)] bg-[length:200%_200%] animate-gradient-travel px-6 pt-28 pb-28 sm:pt-32 lg:pt-40 lg:pb-32"
+    >
       {/* Shaped seams: Platinum spills down on both sides — the Explore
           section below is bg-background too, not the warm tint this used to
           border when that section carried a different fill. */}
-      <BandDivider shape="curve" side="top" color="text-background" />
+      <BandDivider shape="curve" side="top" color="text-background" className="h-16 sm:h-24 lg:h-36" />
       <BandDivider shape="wave" side="bottom" color="text-background" flip />
 
       {/* Depth behind the cards, so the band reads as lit rather than flat. */}
@@ -118,6 +179,9 @@ export function WaysToParticipate() {
                   href={card.href}
                   label={card.label}
                   icon={<Icon name={card.icon} />}
+                  number={cardIndex + 1}
+                  bgClassName={card.bg}
+                  bubbleClassName={card.bubble}
                   className={`${card.col} lg:row-start-2`}
                   // Route 2 continues the wave rather than restarting it, so
                   // the whole row reads as one motion, not two groups.

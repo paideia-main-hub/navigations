@@ -16,12 +16,25 @@ export function RouteCard({
   href,
   label,
   icon,
+  number,
+  bgClassName,
+  bubbleClassName,
   className = "",
   floatDelay = 0,
 }: {
   href: string;
   label: string;
   icon: ReactNode;
+  /** Shown small, bottom-right, as a light watermark-style index. */
+  number: number;
+  /** Tailwind classes for the card's own resting tint — each card gets a
+   * different one so the section reads as colourful rather than a wall of
+   * identical white tiles. */
+  bgClassName: string;
+  /** Tint for the corner bubble below — usually a more saturated shade of
+   * the same hue as `bgClassName`, so the bubble reads as "belonging" to
+   * its card rather than a flat, unrelated accent. */
+  bubbleClassName: string;
   className?: string;
   floatDelay?: number;
 }) {
@@ -70,7 +83,7 @@ export function RouteCard({
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{ transform: "perspective(800px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg))" }}
-        className="group relative flex h-full w-full flex-col items-center gap-4 overflow-hidden rounded-[1.75rem] border border-white/10 bg-brand-deep-foreground px-5 py-7 text-center shadow-[0_18px_38px_-20px_rgba(0,0,0,0.55)] transition-[transform,box-shadow,border-color] duration-150 ease-out will-change-transform hover:border-accent/50 hover:shadow-[0_30px_60px_-22px_rgba(255,105,31,0.4)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep focus-visible:outline-none"
+        className={`group relative flex h-full w-full flex-col items-center gap-4 overflow-hidden rounded-[1.75rem] border border-white/10 px-5 py-7 text-center shadow-[0_18px_38px_-20px_rgba(0,0,0,0.55)] transition-[transform,box-shadow,border-color] duration-150 ease-out will-change-transform hover:border-accent/50 hover:shadow-[0_30px_60px_-22px_rgba(255,105,31,0.4)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep focus-visible:outline-none ${bgClassName}`}
       >
         {/* Cursor-tracking spotlight. */}
         <span
@@ -83,6 +96,13 @@ export function RouteCard({
         <span
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-0 top-0 z-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent"
+        />
+        {/* Corner bubble — small and half-clipped by the card's own edge at
+            rest, swells outward on hover with a slight overshoot so it reads
+            as "popping" rather than just scaling. */}
+        <span
+          aria-hidden="true"
+          className={`pointer-events-none absolute -bottom-5 -left-5 z-0 h-14 w-14 rounded-full opacity-70 transition-transform duration-500 ease-[cubic-bezier(.34,1.56,.64,1)] group-hover:scale-150 ${bubbleClassName}`}
         />
 
         <span className="relative z-10 grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-accent/10 text-brand-deep-accent transition-all duration-300 ease-out group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-accent group-hover:text-accent-foreground group-hover:shadow-[0_0_0_8px_rgba(255,105,31,0.14)]">
@@ -97,6 +117,10 @@ export function RouteCard({
         >
           Explore
           <span className="inline-block transition-transform duration-300 ease-out group-hover:translate-x-1">→</span>
+        </span>
+
+        <span aria-hidden="true" className="absolute right-4 bottom-3 z-0 text-xl font-bold text-foreground/20 tabular-nums">
+          {String(number).padStart(2, "0")}
         </span>
       </Link>
     </div>
