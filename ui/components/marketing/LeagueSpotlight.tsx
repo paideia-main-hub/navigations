@@ -73,7 +73,7 @@ export function LeagueSpotlight() {
             <div className="relative min-h-0 flex-1 overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element -- directly-hosted external photo, not a domain Next Image needs configuring for */}
               <img
-                src="https://images.unsplash.com/photo-1627556704290-2b1f5853ff78?q=80&w=2400&auto=format&fit=crop"
+                src="https://images.unsplash.com/photo-1630068846062-3ffe78aa5049?q=80&w=2400&auto=format&fit=crop"
                 alt=""
                 aria-hidden="true"
                 className="absolute inset-0 h-full w-full object-cover [filter:saturate(1.2)]"
