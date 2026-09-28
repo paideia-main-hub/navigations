@@ -27,12 +27,15 @@ function toAnnouncement(row: Row): Announcement {
   };
 }
 
-/** Public reads: current (not yet expired) announcements only. */
+/** Public reads: current (not yet expired) announcements only. Pinned
+ * (`is_important`) announcements sort to the top regardless of date,
+ * then newest-first within each group. */
 export async function listAnnouncements(supabase: SupabaseClient): Promise<Announcement[]> {
   const { data, error } = await supabase
     .from("announcements")
     .select(SELECT)
     .or(`expiry_date.is.null,expiry_date.gt.${new Date().toISOString()}`)
+    .order("is_important", { ascending: false })
     .order("publish_date", { ascending: false });
 
   if (error || !data) return [];
