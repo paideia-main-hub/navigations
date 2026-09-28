@@ -303,7 +303,7 @@ function DesktopOrbitStage({
         {viewAllHref && viewAllLabel && (
           <Link
             href={viewAllHref}
-            className="absolute bottom-[70px] left-1/2 z-[70] -translate-x-1/2 rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+            className="absolute bottom-[20px] left-1/2 z-[70] mt-8 -translate-x-1/2 rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
           >
             {viewAllLabel} →
           </Link>
