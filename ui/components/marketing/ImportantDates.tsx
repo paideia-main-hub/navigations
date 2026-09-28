@@ -137,7 +137,13 @@ function CompetitionSpotlight({ competitions }: { competitions: CompetitionSumma
   const item = competitions[index]!;
 
   return (
-    <div className="relative w-full overflow-hidden">
+    // Fixed height, not just enough for the content: title and description
+    // length both vary competition to competition, and without a stable
+    // height here the flythrough used to also jump vertically — the flex
+    // box re-centering itself on every swap — on top of its intended
+    // horizontal motion. Clamping the title to 2 lines bounds the tallest
+    // case so this height is never exceeded.
+    <div className="relative flex h-[168px] w-full flex-col items-center justify-center overflow-hidden sm:h-[188px]">
       <div
         key={index}
         onAnimationEnd={() => {
@@ -145,7 +151,9 @@ function CompetitionSpotlight({ competitions }: { competitions: CompetitionSumma
         }}
         className={`text-center ${reduceMotion ? "" : "animate-text-flythrough"}`}
       >
-        <p className="text-2xl font-black tracking-tight text-brand-deep-foreground sm:text-3xl">{item.title}</p>
+        <p className="line-clamp-2 text-2xl font-black tracking-tight text-balance text-brand-deep-foreground sm:text-3xl">
+          {item.title}
+        </p>
         <p className="mx-auto mt-3 line-clamp-3 max-w-md text-base text-brand-deep-muted">{item.shortDescription}</p>
       </div>
     </div>

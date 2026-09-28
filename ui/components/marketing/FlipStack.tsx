@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type CSSProperties, useEffect, useRef, useSyncExternalStore } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useRef, useSyncExternalStore } from "react";
 
 export interface FlipStackItem {
   eyebrow: string;
@@ -14,6 +14,12 @@ export interface FlipStackItem {
   textClassName: string;
   badge?: string;
   href?: string;
+  /** A giant faint watermark, same motif as ScrollSplitCard/WhyTheLeague —
+   * on a wide card the text block never needs the full card width, so
+   * without this the right side of every card is just empty. Rendered in
+   * `currentColor` at low opacity, so it automatically matches whatever
+   * `textClassName` this item already uses. */
+  icon?: ReactNode;
 }
 
 interface FlipStackProps {
@@ -78,6 +84,18 @@ function cardTiming(index: number, total: number) {
 function CardBody({ item, index }: { item: FlipStackItem; index: number }) {
   return (
     <>
+      {/* Only shown once the card is actually wide enough to leave a gap
+          beside the (capped-width) text block — below xl the text already
+          fills the card, and the icon would just overlap it. */}
+      {item.icon && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 right-[clamp(24px,4vw,56px)] hidden h-[clamp(160px,20vw,320px)] w-[clamp(160px,20vw,320px)] -translate-y-1/2 opacity-[0.16] [&_svg]:h-full [&_svg]:w-full xl:block"
+        >
+          {item.icon}
+        </div>
+      )}
+
       <div className="absolute top-[clamp(20px,2.5vw,32px)] left-[clamp(20px,2.5vw,32px)] flex items-center gap-3">
         <span className="text-[clamp(18px,1.8vw,24px)] leading-none font-medium tracking-[-0.04em] opacity-60">
           {String(index + 1).padStart(2, "0")}
@@ -87,7 +105,7 @@ function CardBody({ item, index }: { item: FlipStackItem; index: number }) {
         )}
       </div>
 
-      <div className="max-w-4xl">
+      <div className="relative max-w-4xl">
         <p className="mb-[clamp(8px,1.2vw,16px)] text-[10px] font-semibold tracking-[0.16em] uppercase opacity-70 sm:text-xs">
           {item.eyebrow}
         </p>
