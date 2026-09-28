@@ -158,12 +158,91 @@ body {
   --animate-wave-float: wave-float 3.2s ease-in-out infinite;
 }
 
+/* Slowly slides an oversized background-image across its box — used on the
+   Ways to Participate band (ui/components/marketing/WaysToParticipate.tsx)
+   so its three-shade gradient drifts like a slow wave instead of sitting
+   static. Needs `background-size` well past 100% (that component sets
+   200% 200%) so the visible window has room to travel before looping. */
+@keyframes gradient-travel {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@theme inline {
+  --animate-gradient-travel: gradient-travel 12s ease-in-out infinite;
+}
+
+/* A loose, organic wander rather than a straight bob — used for the
+   decorative background bubbles on the League Spotlight rotating panel
+   (ui/components/marketing/LeagueSpotlight.tsx). Each bubble runs this same
+   keyframe at its own speed/offset (set inline per span), so a cluster of
+   them drifts out of sync instead of bobbing in unison. Drives `translate`,
+   leaving `scale`/opacity free for anything layered on top later. */
+@keyframes bubble-drift {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  25% {
+    translate: 14px -18px;
+  }
+  50% {
+    translate: -6px -32px;
+  }
+  75% {
+    translate: -18px -10px;
+  }
+}
+
+@theme inline {
+  --animate-bubble-drift: bubble-drift 14s ease-in-out infinite;
+}
+
+/* A single flight from right to left, small at both ends and full-size as
+   it crosses the middle — used for the rotating competition spotlight on
+   Important Dates (ui/components/marketing/ImportantDates.tsx). Runs ONCE
+   (not infinite): the component re-keys its text on every rotation, which
+   restarts the animation fresh, and listens for `onAnimationEnd` to pick the
+   next competition in sync with the animation finishing — a continuously
+   looping animation would never fire that event. */
+@keyframes text-flythrough {
+  0% {
+    transform: translateX(65%) scale(0.6);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(0) scale(1);
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-65%) scale(0.6);
+    opacity: 0;
+  }
+}
+
+@theme inline {
+  --animate-text-flythrough: text-flythrough 5s ease-in-out 1;
+}
+
 /* None of these stop on their own, so they stop when the viewer has asked
    for less motion. */
 @media (prefers-reduced-motion: reduce) {
   .animate-orbit,
   .animate-orbit-reverse,
-  .animate-wave-float {
+  .animate-wave-float,
+  .animate-bubble-drift,
+  .animate-gradient-travel,
+  .animate-text-flythrough {
     animation: none;
   }
 }
