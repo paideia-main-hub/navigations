@@ -98,13 +98,26 @@ function CardFace({
    * `HTMLElement` style properties both share. */
   onBackRef: (el: HTMLElement | null) => void;
 }) {
-  const backClassName = `absolute inset-0 flex flex-col justify-end overflow-hidden border border-white/5 bg-gradient-to-br from-white/10 to-transparent p-5 [backface-visibility:hidden] will-change-transform sm:p-7 ${card.bgClassName} ${card.textClassName}`;
+  const backClassName = `absolute inset-0 overflow-hidden border border-white/5 bg-gradient-to-br from-white/10 to-transparent p-5 [backface-visibility:hidden] will-change-transform sm:p-7 ${card.bgClassName} ${card.textClassName}`;
   const backStyle: CSSProperties = { transform: "rotateY(180deg)", zIndex: 1 };
   const backContent = (
     <>
-      {card.icon && <div className="relative z-10 mb-auto opacity-90">{card.icon}</div>}
-      <h3 className="relative z-10 mt-4 text-lg leading-tight font-semibold sm:text-xl">{card.title}</h3>
-      <p className="relative z-10 mt-2 text-sm opacity-80">{card.description}</p>
+      {/* Giant faint watermark of the same icon, same trick used on
+          WhyTheLeague/AboutAudiences — fills the space behind the text
+          instead of leaving it empty. */}
+      {card.icon && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-6 -bottom-8 opacity-[0.14] [&_svg]:h-36 [&_svg]:w-36 sm:[&_svg]:h-44 sm:[&_svg]:w-44"
+        >
+          {card.icon}
+        </div>
+      )}
+      <div className="relative z-10 flex h-full flex-col justify-center">
+        {card.icon && <div className="mb-4 w-fit opacity-90 [&_svg]:h-7 [&_svg]:w-7">{card.icon}</div>}
+        <h3 className="text-lg leading-tight font-semibold sm:text-xl">{card.title}</h3>
+        <p className="mt-2 text-sm opacity-80">{card.description}</p>
+      </div>
     </>
   );
 
@@ -245,12 +258,22 @@ export function ScrollSplitCard({
           grid instead of the scroll-jacked version below. */}
       <div className={`mx-auto grid max-w-6xl gap-4 px-6 py-16 sm:grid-cols-2 lg:grid-cols-3 ${reduceMotion ? "" : "sm:hidden"}`}>
         {cards.map((card) => {
-          const className = `flex h-52 flex-col justify-end rounded-2xl p-6 ${card.bgClassName} ${card.textClassName}`;
+          const className = `relative h-52 overflow-hidden rounded-2xl p-6 ${card.bgClassName} ${card.textClassName}`;
           const body = (
             <>
-              {card.icon && <div className="mb-auto opacity-90">{card.icon}</div>}
-              <h3 className="mt-4 text-lg font-semibold leading-tight">{card.title}</h3>
-              <p className="mt-2 text-sm opacity-80">{card.description}</p>
+              {card.icon && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-4 -bottom-6 opacity-[0.14] [&_svg]:h-28 [&_svg]:w-28"
+                >
+                  {card.icon}
+                </div>
+              )}
+              <div className="relative z-10 flex h-full flex-col justify-center">
+                {card.icon && <div className="mb-3 w-fit opacity-90 [&_svg]:h-6 [&_svg]:w-6">{card.icon}</div>}
+                <h3 className="text-lg font-semibold leading-tight">{card.title}</h3>
+                <p className="mt-2 text-sm opacity-80">{card.description}</p>
+              </div>
             </>
           );
           return card.href ? (
