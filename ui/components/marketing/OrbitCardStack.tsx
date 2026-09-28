@@ -3,10 +3,8 @@
 import Link from "next/link";
 import {
   type CSSProperties,
-  type FocusEvent,
   type KeyboardEvent,
   useEffect,
-  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -22,11 +20,9 @@ export interface OrbitStackItem {
   image: string;
 }
 
-/** Cycled by position rather than supplied by callers — competitions and
- * award categories are real, admin-managed lists (competitionToItem/
- * awardToItem in ExploreCompetitionsToggle.tsx), so there's no fixed set of
- * named items to hand-pick a colour for. Cycling by index still gives any
- * five of them five distinct tints. */
+/** Cycled by position so any real list (competitions, award categories —
+ * whatever the caller passes, of whatever length) comes out visually
+ * distinct, without either caller needing to know or supply a colour. */
 const CARD_PALETTE = [
   "bg-blue-50 dark:bg-blue-500/10",
   "bg-emerald-50 dark:bg-emerald-500/10",
@@ -42,10 +38,6 @@ function initialsFor(name: string): string {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-}
-
-function inRange(index: number, length: number): number {
-  return Math.min(Math.max(0, index), Math.max(0, length - 1));
 }
 
 function ArrowUpRightIcon({ className }: { className?: string }) {
@@ -82,10 +74,8 @@ function OrbitPortrait({ item }: { item: OrbitStackItem }) {
 
 /** The card's visual content, shared between the fanned desktop stage and
  * the flat mobile carousel so the two layouts never drift apart. Purely
- * presentational — no link of its own; the whole card is one click target
- * now, so the caller wraps this in the actual `<Link>`. The arrow badge is
- * just a decorative cue (bottom-right, was top-right), riding the parent
- * link's own hover via `group-hover`. */
+ * presentational — no link of its own; the whole card is one click target,
+ * wrapped by the caller. */
 function CardBody({ item }: { item: OrbitStackItem }) {
   return (
     <>
@@ -125,35 +115,30 @@ function useMediaQuery(query: string): boolean {
 }
 
 /** Same "don't animate for someone who asked the OS not to" check already
- * used in LeagueSpotlight.tsx, reimplemented here rather than pulling in
- * framer-motion for one boolean. */
+ * used in LeagueSpotlight.tsx. */
 function usePrefersReducedMotion(): boolean {
   return useMediaQuery("(prefers-reduced-motion: reduce)");
 }
 
 /** The fan's horizontal spread only makes sense as a raw pixel number (it
  * feeds a JS transform, not a class), so the responsive step has to happen
- * in JS too — narrower on tablets so five fanned cards don't run off-screen.
+ * in JS too — narrower on tablets so the fan doesn't run off-screen.
  * (Phones don't use this at all — see the carousel branch below.) */
 function useResponsiveSpread(): number {
   const isTablet = useMediaQuery("(max-width: 1023px)");
   return isTablet ? 100 : 168;
 }
 
-/** How far up the open (fanned) layout is shifted from the stage's vertical
- * centre, and how much taller the stage box is than it would otherwise need
- * to be — both exist purely to give the outermost cards' rotation-induced
- * sag (see the `open.y` comment below) somewhere to go without the stage's
- * own `overflow-hidden` clipping their bottoms. Verified empirically against
- * the actual rendered card heights at the widest (5-card, desktop) fan;
- * narrower fans and the tablet spread sag less, so this comfortably covers
- * them too. */
+/** How far up the fanned layout is shifted from the stage's vertical centre,
+ * purely to give the outermost cards' rotation-induced sag (see the
+ * position-formula comment below) somewhere to go without the stage's own
+ * overflow-hidden clipping their bottoms. Verified empirically against the
+ * actual rendered card heights at the widest (5-card) fan. */
 const FAN_VERTICAL_SHIFT = 60;
-const STAGE_EXTRA_HEIGHT = 120;
 
 /** True from the moment the stage first scrolls into view, and stays true —
- * a one-shot reveal, not a toggle, so the fan doesn't collapse again if the
- * user scrolls a little past it and back. */
+ * a one-shot reveal, not a toggle, so the auto-rotation doesn't start while
+ * nobody's looking at it, but also doesn't stop again once it has. */
 function useHasScrolledIntoView<T extends HTMLElement>(ref: React.RefObject<T | null>): boolean {
   const [seen, setSeen] = useState(false);
 
@@ -179,7 +164,9 @@ function useHasScrolledIntoView<T extends HTMLElement>(ref: React.RefObject<T | 
 
 /** A plain horizontal, swipe-to-scroll row of cards — the fan-out physics
  * don't translate to a touchscreen with no hover, so phones get a simple
- * carousel instead of a shrunk-down version of the desktop stage. */
+ * carousel instead of a shrunk-down version of the desktop stage. Not
+ * auto-rotated (auto-advancing a list someone might be mid-swipe on is bad
+ * practice) — just every item, natively lazy-loaded as the visitor scrolls. */
 function MobileCardCarousel({ items, ariaLabel }: { items: OrbitStackItem[]; ariaLabel: string }) {
   return (
     <ul
@@ -202,6 +189,20 @@ function MobileCardCarousel({ items, ariaLabel }: { items: OrbitStackItem[]; ari
   );
 }
 
+/** Visible slots either side of centre (5 cards fanned out in total) — the
+ * geometry below (FAN_VERTICAL_SHIFT, the stage's own fixed height) was
+ * tuned and verified empirically for exactly this many. */
+const VISIBLE_RADIUS = 2;
+/** Slots actually mounted either side of centre — one more than is ever
+ * visible, purely so a card already has somewhere to animate from/to when
+ * it crosses into or out of the visible range, instead of popping in place.
+ * Together with VISIBLE_RADIUS this is the "lazy load" of the carousel:
+ * with 23 real competitions, at most 7 are ever in the DOM at once, not 23. */
+const RENDER_RADIUS = VISIBLE_RADIUS + 1;
+/** How long each competition sits centred before the carousel advances —
+ * slow on purpose, there's a title and a description to actually read. */
+const ROTATE_MS = 5500;
+
 function DesktopOrbitStage({
   items,
   ariaLabel,
@@ -215,112 +216,80 @@ function DesktopOrbitStage({
 }) {
   const reduceMotion = usePrefersReducedMotion();
   const spread = useResponsiveSpread();
-  const cards = items;
-  const restingIndex = inRange(defaultActiveIndex, cards.length);
-  const [activeIndex, setActiveIndex] = useState(restingIndex);
-  const [hoverOpen, setHoverOpen] = useState(false);
+  const total = items.length;
+  const [centerIndex, setCenterIndex] = useState(() => ((defaultActiveIndex % Math.max(total, 1)) + total) % Math.max(total, 1));
+  const [paused, setPaused] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
-  const scatteredIntoView = useHasScrolledIntoView(stageRef);
-  const open = hoverOpen || scatteredIntoView;
-  const midpoint = (cards.length - 1) / 2;
+  const inView = useHasScrolledIntoView(stageRef);
 
-  const layouts = useMemo(
-    () =>
-      cards.map((_, index) => {
-        const orbit = index - midpoint;
-        const stack = index - restingIndex;
-        return {
-          open: {
-            x: orbit * spread,
-            // `origin-bottom` below means rotation pivots on the card's own
-            // bottom edge, so the more a card is fanned out the further its
-            // bottom corners swing DOWN past where an unrotated card would
-            // sit — the outermost cards can sag over 100px past the rest.
-            // FAN_VERTICAL_SHIFT (paired with the taller stage box below)
-            // moves the whole open fan up to give that sag room without
-            // clipping, while barely nudging the resting/closed stack.
-            y: Math.abs(orbit) * 30 + Math.max(0, Math.abs(orbit) - 1) * 10 - FAN_VERTICAL_SHIFT,
-            rotation: orbit * 8.5,
-          },
-          closed: {
-            x: stack * 10,
-            y: Math.abs(stack) * 5,
-            rotation: stack * 2.8,
-          },
-        };
-      }),
-    [cards, midpoint, restingIndex, spread],
-  );
-
-  // Reset to this item set's own resting card whenever the set changes (e.g.
-  // switching Route 1 <-> Route 2), rather than keeping a stale index from
-  // a differently-sized array.
-  const [seenLength, setSeenLength] = useState(cards.length);
-  if (cards.length !== seenLength) {
-    setSeenLength(cards.length);
-    setActiveIndex(restingIndex);
-    setHoverOpen(false);
+  // Reset to the front of the list whenever the item SET changes identity
+  // (e.g. switching Route 1 <-> Route 2), rather than keeping a stale index
+  // from a differently-sized array.
+  const [seenLength, setSeenLength] = useState(total);
+  if (total !== seenLength) {
+    setSeenLength(total);
+    setCenterIndex(0);
   }
 
-  if (cards.length === 0) return null;
+  useEffect(() => {
+    if (reduceMotion || paused || !inView || total <= 1) return;
+    const id = setInterval(() => setCenterIndex((i) => (i + 1) % total), ROTATE_MS);
+    return () => clearInterval(id);
+  }, [reduceMotion, paused, inView, total]);
 
-  const activate = (index: number) => {
-    setHoverOpen(true);
-    setActiveIndex(inRange(index, cards.length));
-  };
-  const close = () => {
-    setHoverOpen(false);
-    setActiveIndex(restingIndex);
-  };
-  const leaveFocus = (event: FocusEvent<HTMLDivElement>) => {
-    if (!event.currentTarget.contains(event.relatedTarget)) close();
-  };
-  // Each listitem now holds exactly one focusable element — its card link —
-  // rather than being focusable itself, so keyboard nav focuses that.
-  const focusCard = (index: number) => {
-    stageRef.current?.querySelectorAll<HTMLAnchorElement>("[role=listitem] a")[index]?.focus();
-  };
+  if (total === 0) return null;
+
+  const advance = (delta: number) => setCenterIndex((i) => ((i + delta) % total + total) % total);
+
+  // Only the render window (at most 2*RENDER_RADIUS+1 items) is ever
+  // mounted, each mapped circularly back onto the real, full list — the
+  // "lazy load" the carousel needs to stay light with dozens of entries.
+  const slots: { offset: number; item: OrbitStackItem; itemIndex: number }[] = [];
+  const radius = Math.min(RENDER_RADIUS, Math.floor((total - 1) / 2));
+  for (let offset = -radius; offset <= radius; offset++) {
+    const itemIndex = ((centerIndex - offset) % total + total) % total;
+    slots.push({ offset, item: items[itemIndex]!, itemIndex });
+  }
 
   return (
     <div className="relative hidden w-full items-center justify-center overflow-hidden py-8 sm:flex">
       <div
         ref={stageRef}
-        // 640/620 = the original 520/500 plus STAGE_EXTRA_HEIGHT (Tailwind
-        // needs the literal value; can't interpolate the constant here).
         className="relative h-[640px] w-full max-w-[980px] sm:h-[620px]"
-        onMouseLeave={close}
-        onBlur={leaveFocus}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocusCapture={() => setPaused(true)}
+        onBlurCapture={() => setPaused(false)}
+        onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
+          if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+            event.preventDefault();
+            advance(1);
+          }
+          if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+            event.preventDefault();
+            advance(-1);
+          }
+        }}
         role="list"
         aria-label={ariaLabel}
       >
-        {cards.map((item, index) => {
-          const position = open ? layouts[index]!.open : layouts[index]!.closed;
-          const active = index === activeIndex;
+        {slots.map(({ offset, item, itemIndex }) => {
+          const active = offset === 0;
+          const visible = Math.abs(offset) <= VISIBLE_RADIUS;
+          // Same fan geometry the old hover-triggered "open" layout used —
+          // unchanged so the 5 visible cards still land exactly where the
+          // stage's height/clipping was tuned for.
+          const y = Math.abs(offset) * 30 + Math.max(0, Math.abs(offset) - 1) * 10 - FAN_VERTICAL_SHIFT;
+          const rotation = offset * 8.5;
           const style: CSSProperties = {
-            zIndex: active ? 80 : 50 - Math.abs(index - activeIndex),
-            transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${
-              position.y - (open && active ? lift : 0)
-            }px)) rotate(${position.rotation}deg) scale(${open ? 0.985 : 0.97})`,
-            transitionDuration: reduceMotion ? "0ms" : "420ms",
-          };
-
-          const onKeyDown = (event: KeyboardEvent<HTMLAnchorElement>) => {
-            if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-              event.preventDefault();
-              const next = (index + 1) % cards.length;
-              activate(next);
-              focusCard(next);
-            }
-            if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-              event.preventDefault();
-              const next = (index - 1 + cards.length) % cards.length;
-              activate(next);
-              focusCard(next);
-            }
-            if (event.key === "Escape") {
-              event.currentTarget.blur();
-              close();
-            }
+            zIndex: active ? 80 : 50 - Math.abs(offset),
+            opacity: visible ? 1 : 0,
+            pointerEvents: visible ? "auto" : "none",
+            transform: `translate(calc(-50% + ${offset * spread}px), calc(-50% + ${
+              y - (active ? lift : 0)
+            }px)) rotate(${rotation}deg) scale(0.985)`,
+            transitionProperty: "transform, opacity",
+            transitionDuration: reduceMotion ? "0ms" : "900ms",
           };
 
           return (
@@ -328,20 +297,16 @@ function DesktopOrbitStage({
               key={item.id}
               role="listitem"
               aria-current={active ? "true" : undefined}
-              // Position/rotation-only now — the card link inside carries
-              // the actual interaction, so this wrapper has no tabIndex,
-              // click or key handling of its own beyond the hover trigger.
-              className="absolute top-1/2 left-1/2 w-64 origin-bottom transition-[transform] ease-[cubic-bezier(.2,.8,.2,1)] lg:w-[21rem]"
+              aria-hidden={visible ? undefined : true}
+              className="absolute top-1/2 left-1/2 w-64 origin-bottom transition-[transform,opacity] ease-[cubic-bezier(.2,.8,.2,1)] lg:w-[21rem]"
               style={style}
-              onMouseEnter={() => activate(index)}
             >
               <Link
                 href={item.href}
                 aria-label={`View ${item.name}`}
-                onFocus={() => activate(index)}
-                onKeyDown={onKeyDown}
+                tabIndex={visible ? 0 : -1}
                 className={`group block w-full rounded-[1.9rem] border border-border p-4 text-foreground outline-none transition-[box-shadow] duration-[420ms] ease-[cubic-bezier(.2,.8,.2,1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                  CARD_PALETTE[index % CARD_PALETTE.length]
+                  CARD_PALETTE[itemIndex % CARD_PALETTE.length]
                 } ${active ? "shadow-[0_40px_75px_-20px_rgba(31,32,65,0.6)]" : "shadow-[0_20px_45px_-22px_rgba(31,32,65,0.42)]"}`}
               >
                 <CardBody item={item} />

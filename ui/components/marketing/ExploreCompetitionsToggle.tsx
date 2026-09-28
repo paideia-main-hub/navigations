@@ -86,13 +86,13 @@ export function ExploreCompetitionsToggle({
       </div>
 
       {route === 1 ? (
-        <OrbitCardStack ariaLabel="Featured competitions" items={competitions.slice(0, 5).map(competitionToItem)} />
+        <OrbitCardStack ariaLabel="Featured competitions" items={competitions.map(competitionToItem)} />
       ) : (
         <>
           <p className="mt-5 text-sm text-muted">
             {awardCategories.length} award{awardCategories.length === 1 ? "" : "s"} open for nomination
           </p>
-          <OrbitCardStack ariaLabel="Open award nominations" items={awardCategories.slice(0, 5).map(awardToItem)} />
+          <OrbitCardStack ariaLabel="Open award nominations" items={awardCategories.map(awardToItem)} />
           {awardCategories.length === 0 && (
             <p className="py-12 text-center text-sm text-muted">No award categories are open for submissions right now.</p>
           )}
