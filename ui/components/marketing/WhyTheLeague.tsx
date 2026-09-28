@@ -10,24 +10,60 @@ const icons: Record<string, ReactNode> = {
   ),
 };
 
+/** Per-card "coordinated card + accent" treatment — same convention as
+ * RouteCard/FlipStack/OrbitCardStack elsewhere on the page: a light pastel
+ * card surface paired with a darker shade of the SAME hue for the icon, so
+ * three equally-important reasons read as distinct but clearly related
+ * rather than a wall of identical white tiles. */
+const REASON_COLOR = {
+  blue: {
+    card: "bg-blue-50 dark:bg-blue-500/10",
+    badge: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300 group-hover:bg-blue-600 group-hover:text-white",
+    watermark:
+      "text-blue-600/[0.07] dark:text-blue-400/[0.08] group-hover:text-blue-600/[0.14] dark:group-hover:text-blue-400/[0.16]",
+    border: "hover:border-blue-400/60 dark:hover:border-blue-500/50",
+    glow: "hover:shadow-[0_32px_60px_-28px_rgba(59,130,246,0.35)]",
+  },
+  violet: {
+    card: "bg-violet-50 dark:bg-violet-500/10",
+    badge: "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300 group-hover:bg-violet-600 group-hover:text-white",
+    watermark:
+      "text-violet-600/[0.07] dark:text-violet-400/[0.08] group-hover:text-violet-600/[0.14] dark:group-hover:text-violet-400/[0.16]",
+    border: "hover:border-violet-400/60 dark:hover:border-violet-500/50",
+    glow: "hover:shadow-[0_32px_60px_-28px_rgba(139,92,246,0.35)]",
+  },
+  emerald: {
+    card: "bg-emerald-50 dark:bg-emerald-500/10",
+    badge:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 group-hover:bg-emerald-600 group-hover:text-white",
+    watermark:
+      "text-emerald-600/[0.07] dark:text-emerald-400/[0.08] group-hover:text-emerald-600/[0.14] dark:group-hover:text-emerald-400/[0.16]",
+    border: "hover:border-emerald-400/60 dark:hover:border-emerald-500/50",
+    glow: "hover:shadow-[0_32px_60px_-28px_rgba(16,185,129,0.35)]",
+  },
+} as const;
+
 const REASONS = [
   {
     line1: "Demonstrate learning",
     line2: "beyond grades",
     detail: "A published portfolio of real work, not just a transcript line.",
     icon: "chart",
+    color: "blue",
   },
   {
     line1: "Apply skills in",
     line2: "meaningful challenges",
     detail: "Every task maps to a competence a school report can't capture.",
     icon: "gear",
+    color: "violet",
   },
   {
     line1: "Gain visible recognition",
     line2: "for competencies",
     detail: "Certificates, badges and rankings a college or employer can check.",
     icon: "people",
+    color: "emerald",
   },
 ] as const;
 
@@ -41,53 +77,60 @@ export function WhyTheLeague() {
         </h2>
 
         <ul className="mt-10 grid gap-6 sm:grid-cols-3">
-          {REASONS.map((r, i) => (
-            <li
-              key={r.line1}
-              // A slight vertical stagger on the middle card, so three equally
-              // important reasons read as a considered composition rather
-              // than three boxes stamped out of the same die.
-              className={i === 1 ? "sm:translate-y-6" : ""}
-            >
-              <div className="group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-border bg-surface p-7 shadow-[0_20px_45px_-30px_rgba(31,32,65,0.4)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1.5 hover:border-accent/50 hover:shadow-[0_32px_60px_-28px_rgba(255,105,31,0.35)] sm:p-8">
-                {/* Giant watermark icon, same "shape behind the words" trick
-                    used on the About page's audience cards, scaled up and
-                    given the icon itself rather than a step number. */}
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1"
-                  aria-hidden="true"
-                  className="pointer-events-none absolute -right-6 -bottom-8 h-40 w-40 text-foreground/[0.04] transition-colors duration-300 group-hover:text-accent/[0.08]"
+          {REASONS.map((r, i) => {
+            const colors = REASON_COLOR[r.color];
+            return (
+              <li
+                key={r.line1}
+                // A slight vertical stagger on the middle card, so three equally
+                // important reasons read as a considered composition rather
+                // than three boxes stamped out of the same die.
+                className={i === 1 ? "sm:translate-y-6" : ""}
+              >
+                <div
+                  className={`group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-border p-7 shadow-[0_20px_45px_-30px_rgba(31,32,65,0.4)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1.5 sm:p-8 ${colors.card} ${colors.border} ${colors.glow}`}
                 >
-                  {icons[r.icon]}
-                </svg>
-
-                <span className="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-accent-soft text-accent-strong shadow-[0_8px_20px_-8px_rgba(255,105,31,0.35)] transition-colors duration-300 group-hover:bg-accent group-hover:text-accent-foreground">
+                  {/* Giant watermark icon, same "shape behind the words" trick
+                      used on the About page's audience cards, scaled up and
+                      given the icon itself rather than a step number. */}
                   <svg
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="1.7"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    strokeWidth="1"
                     aria-hidden="true"
-                    className="h-7 w-7"
+                    className={`pointer-events-none absolute -right-6 -bottom-8 h-40 w-40 transition-colors duration-300 ${colors.watermark}`}
                   >
                     {icons[r.icon]}
                   </svg>
-                </span>
 
-                <p className="relative mt-6 text-xl leading-snug font-extrabold tracking-tight text-balance text-foreground">
-                  {r.line1}
-                  <br />
-                  {r.line2}
-                </p>
-                <p className="relative mt-3 text-sm leading-relaxed text-balance text-muted">{r.detail}</p>
-              </div>
-            </li>
-          ))}
+                  <span
+                    className={`relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl shadow-[0_8px_20px_-8px_rgba(31,32,65,0.25)] transition-colors duration-300 ${colors.badge}`}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                      className="h-7 w-7"
+                    >
+                      {icons[r.icon]}
+                    </svg>
+                  </span>
+
+                  <p className="relative mt-6 text-xl leading-snug font-extrabold tracking-tight text-balance text-foreground">
+                    {r.line1}
+                    <br />
+                    {r.line2}
+                  </p>
+                  <p className="relative mt-3 text-sm leading-relaxed text-balance text-muted">{r.detail}</p>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>

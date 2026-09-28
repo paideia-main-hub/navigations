@@ -87,12 +87,12 @@ function CardBody({ item, index }: { item: FlipStackItem; index: number }) {
         )}
       </div>
 
-      <div className="max-w-3xl">
-        <p className="mb-[clamp(8px,1.2vw,14px)] text-[10px] font-semibold tracking-[0.16em] uppercase opacity-70 sm:text-xs">
+      <div className="max-w-4xl">
+        <p className="mb-[clamp(8px,1.2vw,16px)] text-[10px] font-semibold tracking-[0.16em] uppercase opacity-70 sm:text-xs">
           {item.eyebrow}
         </p>
-        <h3 className="text-[clamp(22px,2.6vw,34px)] leading-[1.05] font-semibold tracking-[-0.03em] text-balance">{item.title}</h3>
-        <p className="mt-[clamp(10px,1.4vw,16px)] line-clamp-3 text-[clamp(13px,1.05vw,15px)] leading-[1.55] opacity-85 sm:line-clamp-4">
+        <h3 className="text-[clamp(24px,3vw,42px)] leading-[1.05] font-semibold tracking-[-0.03em] text-balance">{item.title}</h3>
+        <p className="mt-[clamp(12px,1.6vw,20px)] line-clamp-3 text-[clamp(14px,1.15vw,18px)] leading-[1.55] opacity-85 sm:line-clamp-4">
           {item.description}
         </p>
       </div>
@@ -120,7 +120,7 @@ function FlipCard({
     backfaceVisibility: "hidden",
   };
   const innerStyle: CSSProperties = { transformOrigin: "50% 100%" };
-  const innerClassName = `relative flex h-full w-full flex-col justify-center overflow-hidden rounded-[clamp(18px,2vw,28px)] p-[clamp(24px,3vw,48px)] shadow-[0_16px_50px_rgba(20,17,10,0.25)] ${item.bgClassName} ${item.textClassName}`;
+  const innerClassName = `relative flex h-full w-full flex-col justify-center overflow-hidden rounded-[clamp(18px,2vw,32px)] p-[clamp(28px,3.4vw,64px)] shadow-[0_16px_50px_rgba(20,17,10,0.25)] ${item.bgClassName} ${item.textClassName}`;
 
   return (
     <div ref={onOuterRef} className="absolute inset-0 will-change-transform" style={outerStyle}>
@@ -203,9 +203,9 @@ export function FlipStack({ items, hint = "Scroll to see more" }: FlipStackProps
   // so there's no loss skipping straight to the flat version.
   if (reduceMotion) {
     return (
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 sm:px-8">
         {items.map((item, i) => {
-          const className = `relative overflow-hidden rounded-2xl p-6 sm:p-8 ${item.bgClassName} ${item.textClassName}`;
+          const className = `relative overflow-hidden rounded-2xl p-6 sm:p-10 ${item.bgClassName} ${item.textClassName}`;
           return item.href ? (
             <Link key={item.title} href={item.href} className={className}>
               <CardBody item={item} index={i} />
@@ -222,7 +222,7 @@ export function FlipStack({ items, hint = "Scroll to see more" }: FlipStackProps
 
   return (
     <div ref={sectionRef} className="relative" style={{ height: `${(count + 1) * 100}vh` }}>
-      <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden px-4 py-8 sm:px-8">
+      <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden px-4 py-8 sm:px-8 lg:px-12 xl:px-16">
         <p
           ref={hintRef}
           className="absolute top-4 right-0 left-0 text-center text-xs font-semibold tracking-[0.2em] text-foreground/50 uppercase"
@@ -230,7 +230,7 @@ export function FlipStack({ items, hint = "Scroll to see more" }: FlipStackProps
           {hint}
         </p>
 
-        <div className="relative mx-auto h-[260px] w-full max-w-5xl [perspective:800px] sm:h-[320px]">
+        <div className="relative mx-auto h-[380px] w-full max-w-[1600px] [perspective:800px] sm:h-[460px] lg:h-[540px] xl:h-[600px]">
           {items.map((item, i) => (
             <FlipCard
               key={item.title}

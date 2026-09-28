@@ -50,19 +50,25 @@ export function AnnouncementsBoard({ announcements }: { announcements: Announcem
     // render correctly.
     <div className="relative bg-surface-warm">
       <BandDivider shape="arc" side="top" color="text-background" />
-      <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-16 lg:pt-28">
+      <div className="relative mx-auto max-w-7xl px-6 pt-24 lg:pt-28">
         <SectionHeading eyebrow="Announcements" title="Latest Announcements" action={{ href: "/announcements", label: "View all" }} />
+      </div>
 
-        {shown.length === 0 ? (
+      {/* Full-bleed, not capped to max-w-7xl like the heading above — the
+          stack itself is the point of this section, so it should use the
+          width a wide viewport actually has instead of leaving both sides
+          empty. */}
+      {shown.length === 0 ? (
+        <div className="mx-auto max-w-7xl px-6 pb-16">
           <p className="rounded-2xl border border-dashed border-border bg-surface/60 py-10 text-center text-sm text-muted">
             No announcements published yet.
           </p>
-        ) : (
-          <div className="mt-4">
-            <FlipStack items={shown.map(toFlipStackItem)} />
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="mt-4 pb-16">
+          <FlipStack items={shown.map(toFlipStackItem)} />
+        </div>
+      )}
     </div>
   );
 }
