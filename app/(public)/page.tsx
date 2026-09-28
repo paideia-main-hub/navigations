@@ -80,8 +80,10 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* 5. Important dates — the published 2026 programme. */}
-        <ImportantDates />
+        {/* 5. Important dates — the published 2026 programme, plus a
+            rotating pick from the same open/upcoming list Explore
+            Competitions already fetched below. */}
+        <ImportantDates competitions={featured} />
 
         {/* 6. What every participant takes away */}
         <RecognitionStrip />

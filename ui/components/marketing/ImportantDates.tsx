@@ -1,12 +1,10 @@
 "use client";
 
-import { useSyncExternalStore, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type ReactNode } from "react";
+import type { CompetitionSummary } from "@/domain/competitions/types";
 import { BandDivider } from "./BandDivider";
 
-/** The published 2026 programme, from ui/components/calendar/calendar2026.ts.
- * Four milestones rather than three: the calendar puts a submission deadline
- * between registration closing and the activity period, and award nominations
- * hang off it, so collapsing it into the others would lose a real date. */
+/** The published 2026 programme, from ui/components/calendar/calendar2026.ts. */
 const MILESTONES = [
   {
     label: "Registration",
@@ -15,14 +13,6 @@ const MILESTONES = [
     from: "2026-10-08",
     to: "2026-11-10",
     icon: "document",
-  },
-  {
-    label: "Submissions Close",
-    display: "22 Nov 2026",
-    note: "Advance work, project records and Route 2 nomination evidence are due.",
-    from: "2026-11-22",
-    to: "2026-11-22",
-    icon: "upload",
   },
   {
     label: "Activity Period",
@@ -44,7 +34,6 @@ const MILESTONES = [
 
 const icons: Record<string, ReactNode> = {
   document: <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7l-5-5Zm0 0v5h5M9 13h6M9 17h4" />,
-  upload: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M12 3v13m0-13 4 4m-4-4-4 4" />,
   calendar: <path d="M8 2v4m8-4v4M3 10h18M5 6h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />,
   trophy: <path d="M8 21h8m-4-4v4m-6-17h12v5a6 6 0 0 1-12 0V4Zm0 2H4a2 2 0 0 0 0 4h2m12-4h2a2 2 0 0 1 0 4h-2" />,
   check: <path d="M20 6 9 17l-5-5" />,
@@ -105,19 +94,69 @@ const clock = {
   getServerSnapshot: () => null,
 };
 
-export function ImportantDates() {
+/** Same "don't animate for someone who asked the OS not to" check already
+ * used in OrbitCardStack.tsx/LeagueSpotlight.tsx. */
+function usePrefersReducedMotion(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false,
+  );
+}
+
+function pickNext(current: number, length: number): number {
+  if (length <= 1) return current;
+  let next = current;
+  while (next === current) next = Math.floor(Math.random() * length);
+  return next;
+}
+
+/** Replaces the old static "next milestone" preview with a rotating pick
+ * from the real competition catalogue — just its title and short
+ * description, cycling on its own. Flies in from the right at reduced size,
+ * grows to full size crossing the middle, then shrinks away to the left
+ * (animate-text-flythrough, app/globals.css), advancing to a new random
+ * competition exactly when that flight finishes (`onAnimationEnd`) rather
+ * than on a separately-timed interval, so the swap and the animation can
+ * never drift out of sync.
+ *
+ * Starts at a fixed index (0), not a random one: picking randomly during
+ * render would make the server's pick and the client's first-hydration pick
+ * disagree. Every rotation *after* that first paint is a genuine client-only
+ * random pick, via `pickNext` in the animation's own end handler. */
+function CompetitionSpotlight({ competitions }: { competitions: CompetitionSummary[] }) {
+  const reduceMotion = usePrefersReducedMotion();
+  const [index, setIndex] = useState(0);
+
+  if (competitions.length === 0) return null;
+
+  const item = competitions[index]!;
+
+  return (
+    <div className="relative w-full overflow-hidden">
+      <div
+        key={index}
+        onAnimationEnd={() => {
+          if (!reduceMotion) setIndex((i) => pickNext(i, competitions.length));
+        }}
+        className={`text-center ${reduceMotion ? "" : "animate-text-flythrough"}`}
+      >
+        <p className="text-2xl font-black tracking-tight text-brand-deep-foreground sm:text-3xl">{item.title}</p>
+        <p className="mx-auto mt-3 line-clamp-3 max-w-md text-base text-brand-deep-muted">{item.shortDescription}</p>
+      </div>
+    </div>
+  );
+}
+
+export function ImportantDates({ competitions }: { competitions: CompetitionSummary[] }) {
   const today = useSyncExternalStore(clock.subscribe, clock.getSnapshot, clock.getServerSnapshot);
   const live = today === null ? null : statusesAt(today * DAY);
 
   const statuses = live?.statuses ?? (MILESTONES.map(() => "later") as Status[]);
-  const progress = live?.progress ?? 0;
-  const daysToNext = live?.daysToNext ?? null;
-  const highlightIndex = statuses.findIndex((s) => s === "now" || s === "next");
-  // Nothing left to look forward to once every milestone is done — spotlight
-  // the closing one instead of an index that no longer means "next".
-  const spotlightIndex = highlightIndex === -1 ? MILESTONES.length - 1 : highlightIndex;
-  const spotlight = MILESTONES[spotlightIndex];
-  const spotlightStatus = statuses[spotlightIndex];
 
   return (
     <section className="relative overflow-hidden bg-brand-deep px-6 pt-24 pb-28 lg:pt-28 lg:pb-32">
@@ -137,73 +176,23 @@ export function ImportantDates() {
           Important Dates
         </h2>
 
-        {/* Spotlight (what matters right now) beside the full schedule,
-            instead of four equal boxes in a row — the countdown that used to
-            be a small pill in the header is the whole left panel now. */}
+        {/* Spotlight (a rotating competition) beside the full schedule,
+            instead of four equal boxes in a row. */}
         <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-stretch">
-          <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.03] to-transparent p-8 sm:p-10">
+          <div className="relative flex min-h-[280px] flex-col items-center justify-center overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.03] to-transparent p-8 text-center sm:p-10">
             <span
               aria-hidden="true"
               className="pointer-events-none absolute -top-20 -right-16 h-64 w-64 animate-pulse rounded-full bg-accent/20 blur-[90px]"
               style={{ animationDuration: "4s" }}
             />
 
-            <p className="relative text-xs font-bold tracking-[0.22em] text-brand-deep-muted uppercase">
-              {spotlightStatus === "now" ? "Happening now" : spotlightStatus === "done" ? "Season complete" : "Coming up next"}
-            </p>
-
-            {live === null ? (
-              <div className="mt-5 h-20 w-44 animate-pulse rounded-2xl bg-white/5" />
-            ) : daysToNext !== null && daysToNext >= 0 ? (
-              <div className="relative mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="text-7xl font-black tracking-tighter text-brand-deep-foreground tabular-nums sm:text-8xl">
-                  {daysToNext}
-                </span>
-                <span className="text-lg font-bold text-brand-deep-muted">day{daysToNext === 1 ? "" : "s"} to go</span>
-              </div>
-            ) : (
-              <p className="relative mt-4 text-4xl font-black tracking-tight text-brand-deep-foreground">
-                {spotlightStatus === "now" ? "Underway" : "All done"}
-              </p>
-            )}
-
-            <div className="relative mt-7 flex items-center gap-4 border-t border-white/10 pt-6">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground shadow-[0_0_0_6px_rgba(255,105,31,0.18)]">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                  className="h-6 w-6"
-                >
-                  {icons[spotlight.icon]}
-                </svg>
-              </span>
-              <div className="min-w-0">
-                <p className="font-bold text-brand-deep-foreground">{spotlight.label}</p>
-                <p className="text-sm text-brand-deep-muted">{spotlight.display}</p>
-              </div>
-            </div>
-            <p className="relative mt-4 text-sm leading-relaxed text-brand-deep-muted">{spotlight.note}</p>
+            <CompetitionSpotlight competitions={competitions} />
           </div>
 
           {/* Full schedule — a compact vertical stepper rather than the old
               four-across row, so it reads as a list to scan next to the
               spotlight rather than needing its own separate width budget. */}
           <ol className="relative flex flex-col gap-1 rounded-[2rem] border border-white/10 bg-white/[0.03] p-3 sm:p-4">
-            <div
-              aria-hidden="true"
-              className="absolute top-9 bottom-9 left-[2.65rem] w-0.5 overflow-hidden rounded-full bg-white/10 sm:left-[3.15rem]"
-            >
-              <div
-                className="w-full bg-gradient-to-b from-accent to-accent-strong transition-[height] duration-700 ease-out"
-                style={{ height: `${progress}%` }}
-              />
-            </div>
-
             {MILESTONES.map((m, i) => {
               const status = statuses[i];
               const active = status === "now" || status === "next";
