@@ -65,40 +65,50 @@ export function LeagueSpotlight() {
         </p>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.45fr_1fr]">
-          {/* Static half — the League billboard. Content now spans the
-              card top-to-bottom (a badge up top, the title block anchored
-              to the bottom) instead of just the bottom third, so the photo
-              doesn't read as empty space with a caption stuck on it. */}
-          <div className="relative min-h-[320px] overflow-hidden rounded-2xl border border-white/10 shadow-[0_25px_60px_-25px_rgba(0,0,0,0.6)] sm:min-h-[420px]">
-            {/* eslint-disable-next-line @next/next/no-img-element -- directly-hosted external photo, not a domain Next Image needs configuring for */}
-            <img
-              src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2400&auto=format&fit=crop"
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-brand-deep via-brand-deep/60 to-brand-deep/10" />
-            <div className="absolute inset-0 bg-gradient-to-br from-black/35 via-transparent to-transparent" />
+          {/* Static half — the League billboard. A poster composition now:
+              a duotone-tinted photo zone with a diagonal ribbon, then a
+              solid info panel (title + a real stat row) below it with a
+              hard edge — not text floated over a photo gradient. */}
+          <div className="relative flex min-h-[320px] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-[0_25px_60px_-25px_rgba(0,0,0,0.6)] sm:min-h-[420px]">
+            <div className="relative min-h-0 flex-1 overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element -- directly-hosted external photo, not a domain Next Image needs configuring for */}
+              <img
+                src="https://images.unsplash.com/photo-1627556704290-2b1f5853ff78?q=80&w=2400&auto=format&fit=crop"
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full object-cover [filter:saturate(1.2)]"
+              />
+              {/* Brand duotone over the photo, not just a darkening fade. */}
+              <div className="absolute inset-0 bg-gradient-to-br from-accent/50 via-transparent to-brand-deep/70 mix-blend-multiply" />
+              <div className="absolute inset-0 bg-brand-deep/25" />
 
-            <div className="relative flex h-full flex-col justify-between gap-6 p-7 sm:p-10">
-              <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-bold tracking-wide text-white uppercase ring-1 ring-white/20 backdrop-blur-sm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4 text-accent">
-                  <path d="M8 21h8m-4-4v4m-6-17h12v5a6 6 0 0 1-12 0V4Zm0 2H4a2 2 0 0 0 0 4h2m12-4h2a2 2 0 0 1 0 4h-2" />
-                </svg>
-                Season 2026 · Now Registering
-              </span>
-
-              <div>
-                <h2 className="text-3xl leading-[1.05] font-extrabold tracking-tight text-white sm:text-5xl">
-                  FUTURE READY
-                  <br />
-                  <span className="text-accent">LEAGUE</span>
-                </h2>
-                <p className="mt-4 text-xl font-semibold text-white sm:text-2xl">Lahore Edition 2026</p>
-                <p className="mt-2 max-w-sm text-sm text-brand-deep-foreground sm:text-base">
-                  Academically grounded in Future Competence Frameworks
-                </p>
+              {/* Diagonal ribbon, draped across the top-right corner. */}
+              <div className="absolute top-6 -right-12 w-44 rotate-45 bg-accent py-1.5 text-center text-[11px] font-black tracking-[0.2em] text-accent-foreground uppercase shadow-lg">
+                2026
               </div>
+            </div>
+
+            {/* Info panel — a solid block, not an overlay. */}
+            <div className="relative bg-brand-deep px-7 py-6 sm:px-10 sm:py-7">
+              <h2 className="text-2xl leading-[1.05] font-extrabold tracking-tight text-white sm:text-4xl">
+                FUTURE READY <span className="text-accent">LEAGUE</span>
+              </h2>
+              <p className="mt-1.5 text-base font-semibold text-brand-deep-foreground sm:text-lg">Lahore Edition 2026</p>
+
+              <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-white/10 pt-4">
+                <div>
+                  <dt className="text-[10px] font-bold tracking-wider text-brand-deep-muted uppercase">Students</dt>
+                  <dd className="text-lg font-black text-white sm:text-xl">14,200+</dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] font-bold tracking-wider text-brand-deep-muted uppercase">Competitions</dt>
+                  <dd className="text-lg font-black text-white sm:text-xl">23</dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] font-bold tracking-wider text-brand-deep-muted uppercase">Layers</dt>
+                  <dd className="text-lg font-black text-white sm:text-xl">6</dd>
+                </div>
+              </dl>
             </div>
           </div>
 
