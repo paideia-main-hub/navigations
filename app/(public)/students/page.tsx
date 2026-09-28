@@ -3,7 +3,7 @@ import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { FaqExpandGrid, type FaqCardItem } from "@/ui/components/marketing/FaqExpandGrid";
 import { FaqIcon } from "@/ui/components/marketing/faqIcons";
 
-export const metadata = { title: "For Students | Future Competence Series" };
+export const metadata = { title: "For Students | Navigations" };
 
 const items: FaqCardItem[] = [
   {
@@ -172,7 +172,7 @@ export default function ForStudentsPage() {
       <PageBanner
         eyebrow="Competitor Tier"
         title="For Students"
-        subtitle="What you need to know before signing up and competing in the Future Competence Series."
+        subtitle="What you need to know before signing up and competing in Navigations."
       />
       <div className="mx-auto max-w-6xl px-6 py-14">
         <FaqExpandGrid items={items} />

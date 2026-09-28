@@ -9,7 +9,7 @@ import { OpenNominationCard } from "@/ui/components/awards/OpenNominationCard";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { BandDivider } from "@/ui/components/marketing/BandDivider";
 
-export const metadata = { title: "Awards | Future Competence Series" };
+export const metadata = { title: "Awards | Navigations" };
 
 const LAYER_ORDER: AwardLayer[] = ["competition_distinction", "school_award", "spotlight", "teacher_parent", "sports", "principal"];
 

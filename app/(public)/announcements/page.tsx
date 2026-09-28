@@ -3,7 +3,7 @@ import { listAllAnnouncements } from "@/domain/announcements/service";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { AnnouncementsList } from "./AnnouncementsList";
 
-export const metadata = { title: "Announcements | Future Competence Series" };
+export const metadata = { title: "Announcements | Navigations" };
 
 export default async function AnnouncementsPage() {
   const supabase = await createClient();

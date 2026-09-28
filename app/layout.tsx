@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Future Competence Series",
+  title: "Navigations",
   description:
     "Competition Announcements, Registration, Competition Portals, Practice Resources, Results, School & Student Accounts.",
 };

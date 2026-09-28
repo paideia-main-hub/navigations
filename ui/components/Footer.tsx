@@ -21,7 +21,7 @@ const columns = [
     ],
   },
   {
-    title: "More Future Competence",
+    title: "More Navigations",
     links: [
       { href: "/about-us", label: "About Us" },
       { href: "/about", label: "Competency Vision" },
@@ -38,7 +38,7 @@ export function Footer() {
         <div className="col-span-2 sm:col-span-1">
           <Logo className="h-7 w-auto" onDark />
           <p className="mt-3 max-w-xs text-sm text-brand-deep-muted">
-            Future Competence Series — competitions that build real-world skills for Primary,
+            Navigations — competitions that build real-world skills for Primary,
             Middle and Secondary students.
           </p>
         </div>
@@ -59,7 +59,7 @@ export function Footer() {
       </div>
       <div className="border-t border-white/10 px-6 py-6 text-xs text-muted">
         <p>
-          © {new Date().getFullYear()} Future Competence Series. Privacy, terms and safeguarding
+          © {new Date().getFullYear()} Navigations. Privacy, terms and safeguarding
           notices apply to all student data and photo publication.
         </p>
       </div>

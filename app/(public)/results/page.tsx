@@ -3,7 +3,7 @@ import { listPublishedWinners } from "@/domain/competitions/service";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { ResultsSearch } from "./ResultsSearch";
 
-export const metadata = { title: "Results & Winners | Future Competence Series" };
+export const metadata = { title: "Results & Winners | Navigations" };
 
 export default async function ResultsPage() {
   const supabase = await createClient();

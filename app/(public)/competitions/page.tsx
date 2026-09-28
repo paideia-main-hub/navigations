@@ -5,7 +5,7 @@ import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { CompetitionsDirectory } from "./CompetitionsDirectory";
 
 export const metadata = {
-  title: "Competitions | Future Competence Series",
+  title: "Competitions | Navigations",
 };
 
 const AGE_CATEGORIES: AgeCategory[] = ["primary", "middle", "secondary"];
@@ -29,7 +29,7 @@ export default async function CompetitionsPage({
       <PageBanner
         eyebrow="Competition Directory"
         title="Competitions"
-        subtitle="Browse all competitions in the Future Competence Series. Filter by Route 1 category, age category, participation type or status, or search by name."
+        subtitle="Browse all competitions in Navigations. Filter by Route 1 category, age category, participation type or status, or search by name."
       />
       <div className="mx-auto max-w-7xl px-6 py-12">
         <CompetitionsDirectory

@@ -13,7 +13,7 @@ const COMPETITION_DISTINCTION_LABEL: Record<string, string> = {
   bronze: "Emerging Talent",
 };
 
-export const metadata = { title: "Award Results | Future Competence Series" };
+export const metadata = { title: "Award Results | Navigations" };
 
 export default async function AwardResultsPage() {
   const supabase = await createClient();

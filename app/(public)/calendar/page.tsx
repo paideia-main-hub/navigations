@@ -23,7 +23,7 @@ import {
   type ScheduledActivity,
 } from "@/ui/components/calendar/calendar2026";
 
-export const metadata = { title: "Competition Calendar 2026 | Future Competence Series" };
+export const metadata = { title: "Competition Calendar 2026 | Navigations" };
 
 const formatTone: Record<ActivityFormat, "blue" | "warning" | "success" | "neutral"> = {
   "One-day activity": "blue",

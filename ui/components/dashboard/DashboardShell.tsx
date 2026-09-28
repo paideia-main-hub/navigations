@@ -141,7 +141,7 @@ export function DashboardShell({
             ☰
           </button>
           <Link href="/" className="font-semibold tracking-tight text-foreground">
-            Future Competence Series
+            Navigations
           </Link>
           <ThemeToggle />
         </header>

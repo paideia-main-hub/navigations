@@ -3,7 +3,7 @@ import { createClient } from "@/data/supabase/server";
 import { listCompetitionIndex } from "@/domain/competitions/service";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 
-export const metadata = { title: "Practice & Resource Centre | Future Competence Series" };
+export const metadata = { title: "Practice & Resource Centre | Navigations" };
 
 export default async function ResourcesPage() {
   const supabase = await createClient();

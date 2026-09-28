@@ -6,7 +6,7 @@ import { AboutAudiences } from "@/ui/components/marketing/AboutAudiences";
 import { AboutInitiative } from "@/ui/components/marketing/AboutInitiative";
 
 export const metadata = {
-  title: "About Us | Future Competence Series",
+  title: "About Us | Navigations",
   description: "More than a classroom — where opportunities lead.",
 };
 

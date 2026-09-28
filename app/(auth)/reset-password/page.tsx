@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/domain/auth/session";
 import { ChangePasswordForm } from "@/ui/components/ChangePasswordForm";
 
-export const metadata = { title: "Reset Password | Future Competence Series" };
+export const metadata = { title: "Reset Password | Navigations" };
 
 export default async function ResetPasswordPage() {
   // Reached only after app/auth/confirm/route.ts verifies the emailed

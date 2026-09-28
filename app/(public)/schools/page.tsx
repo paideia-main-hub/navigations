@@ -3,7 +3,7 @@ import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { FaqExpandGrid, type FaqCardItem } from "@/ui/components/marketing/FaqExpandGrid";
 import { FaqIcon } from "@/ui/components/marketing/faqIcons";
 
-export const metadata = { title: "For Schools | Future Competence Series" };
+export const metadata = { title: "For Schools | Navigations" };
 
 const items: FaqCardItem[] = [
   {
@@ -166,7 +166,7 @@ export default function ForSchoolsPage() {
       <PageBanner
         eyebrow="Institutional Access"
         title="For Schools"
-        subtitle="Everything a school coordinator needs to register their school and manage student and team entries across the Future Competence Series."
+        subtitle="Everything a school coordinator needs to register their school and manage student and team entries across Navigations."
       />
       <div className="mx-auto max-w-6xl px-6 py-14">
         <FaqExpandGrid items={items} />

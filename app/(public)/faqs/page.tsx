@@ -1,6 +1,6 @@
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 
-export const metadata = { title: "FAQs | Future Competence Series" };
+export const metadata = { title: "FAQs | Navigations" };
 
 const faqs = [
   {

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/ui/components/Logo";
 
-export const metadata = { title: "Register | Future Competence Series" };
+export const metadata = { title: "Register | Navigations" };
 
 const paths = [
   {
@@ -65,7 +65,7 @@ export default function RegisterChoicePage() {
 
       <div className="mx-auto max-w-5xl px-6 pt-8 pb-20 text-center">
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Who&apos;s joining the Future Competence Series?
+          Who&apos;s joining Navigations?
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-muted">
           Pick the path that fits you — each one leads to a different registration experience.

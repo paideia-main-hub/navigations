@@ -1,7 +1,7 @@
 import { AdminLoginForm } from "@/ui/components/admin/AdminLoginForm";
 import { Logo } from "@/ui/components/Logo";
 
-export const metadata = { title: "Admin Login | Future Competence Series" };
+export const metadata = { title: "Admin Login | Navigations" };
 
 export default function AdminLoginPage() {
   return (
