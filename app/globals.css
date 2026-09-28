@@ -209,19 +209,31 @@ body {
    (not infinite): the component re-keys its text on every rotation, which
    restarts the animation fresh, and listens for `onAnimationEnd` to pick the
    next competition in sync with the animation finishing — a continuously
-   looping animation would never fire that event. */
+   looping animation would never fire that event.
+
+   opacity and transform each interpolate only across the keyframes where
+   THEY are explicitly set, independently of each other. The previous version
+   set opacity's 0->1 stop at 12% but transform's matching stop at 50%, so
+   opacity finished its fade while the shape was still barely underway (round
+   24% of the way there) — text would flash to fully visible while still
+   small and off to the side, then keep visibly sliding/growing afterward.
+   Giving opacity and transform a shared checkpoint at 22%/78% (instead of
+   12%/88%) makes them arrive together, so the entrance/exit reads as one
+   motion instead of a fast pop followed by a slower drift. */
 @keyframes text-flythrough {
   0% {
     transform: translateX(65%) scale(0.6);
     opacity: 0;
   }
-  12% {
+  22% {
+    transform: translateX(24%) scale(0.85);
     opacity: 1;
   }
   50% {
     transform: translateX(0) scale(1);
   }
-  88% {
+  78% {
+    transform: translateX(-24%) scale(0.85);
     opacity: 1;
   }
   100% {
@@ -231,7 +243,14 @@ body {
 }
 
 @theme inline {
-  --animate-text-flythrough: text-flythrough 5s ease-in-out 1;
+  /* `both`: without an explicit fill-mode, the browser can render a
+     newly-mounted element in its own base (non-keyframe) style for a frame
+     before the animation engine catches up — a flash of full-size, fully
+     opaque text right at the start of every rotation, before it "corrects"
+     itself back to small/offscreen/transparent and flies in properly. Also
+     freezes the 100% (shrunk, invisible) state after the animation ends,
+     for the one frame before onAnimationEnd's key change unmounts it. */
+  --animate-text-flythrough: text-flythrough 5s ease-in-out 1 both;
 }
 
 /* None of these stop on their own, so they stop when the viewer has asked

@@ -149,12 +149,22 @@ function CompetitionSpotlight({ competitions }: { competitions: CompetitionSumma
         onAnimationEnd={() => {
           if (!reduceMotion) setIndex((i) => pickNext(i, competitions.length));
         }}
-        className={`text-center ${reduceMotion ? "" : "animate-text-flythrough"}`}
+        className={`flex w-full flex-col items-center text-center ${reduceMotion ? "" : "animate-text-flythrough"}`}
       >
-        <p className="line-clamp-2 text-2xl font-black tracking-tight text-balance text-brand-deep-foreground sm:text-3xl">
-          {item.title}
-        </p>
-        <p className="mx-auto mt-3 line-clamp-3 max-w-md text-base text-brand-deep-muted">{item.shortDescription}</p>
+        {/* Each piece gets its own fixed-height, internally-centred zone —
+            a 1-line title and a 3-line title reserve the same space, so
+            swapping to a shorter/longer competition never re-centres this
+            block within the flythrough, on top of the flight's own
+            (intended) horizontal motion. Without this, THAT recentring is
+            what read as a sudden jump/snap rather than a smooth transition. */}
+        <div className="flex h-16 w-full items-center justify-center sm:h-[72px]">
+          <p className="line-clamp-2 text-2xl font-black tracking-tight text-balance text-brand-deep-foreground sm:text-3xl">
+            {item.title}
+          </p>
+        </div>
+        <div className="mt-3 flex h-[72px] w-full items-center justify-center">
+          <p className="mx-auto line-clamp-3 max-w-md text-base text-brand-deep-muted">{item.shortDescription}</p>
+        </div>
       </div>
     </div>
   );
