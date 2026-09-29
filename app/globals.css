@@ -203,6 +203,37 @@ body {
   --animate-bubble-drift: bubble-drift 14s ease-in-out infinite;
 }
 
+/* League Spotlight corner marks. The wrapper fades and grows in when the
+   slide changes; the icon itself keeps a slow drift on `translate`/`rotate`
+   so the entrance scale is not overwritten. */
+@keyframes spotlight-mark-in {
+  from {
+    opacity: 0;
+    scale: 0.72;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes spotlight-mark-float {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: -8deg;
+  }
+  50% {
+    translate: 0 -4px;
+    rotate: 5deg;
+  }
+}
+
+@theme inline {
+  --animate-spotlight-mark-in: spotlight-mark-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-spotlight-mark-float: spotlight-mark-float 7s ease-in-out infinite;
+}
+
 /* A single flight from right to left, small at both ends and full-size as
    it crosses the middle — used for the rotating competition spotlight on
    Important Dates (ui/components/marketing/ImportantDates.tsx). Runs ONCE
@@ -261,7 +292,9 @@ body {
   .animate-wave-float,
   .animate-bubble-drift,
   .animate-gradient-travel,
-  .animate-text-flythrough {
+  .animate-text-flythrough,
+  .animate-spotlight-mark-in,
+  .animate-spotlight-mark-float {
     animation: none;
   }
 }
