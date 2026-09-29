@@ -111,6 +111,27 @@ const INK = {
   violet: "text-violet-300 dark:text-violet-300/70",
 } as const;
 
+/** Active dot is a solid step darker than the slide wash; idle dots are the
+ * same hue, lighter, so the row still reads against that background. */
+const DOT = {
+  accent: {
+    active: "bg-[#d4652e] dark:bg-[#ff8a4a]",
+    idle: "bg-[#e8b394] hover:bg-[#d4956e] dark:bg-[#d48962]/55 dark:hover:bg-[#d48962]",
+  },
+  blue: {
+    active: "bg-blue-600 dark:bg-blue-400",
+    idle: "bg-blue-300 hover:bg-blue-400 dark:bg-blue-400/40 dark:hover:bg-blue-400/70",
+  },
+  emerald: {
+    active: "bg-emerald-600 dark:bg-emerald-400",
+    idle: "bg-emerald-300 hover:bg-emerald-400 dark:bg-emerald-400/40 dark:hover:bg-emerald-400/70",
+  },
+  violet: {
+    active: "bg-violet-600 dark:bg-violet-400",
+    idle: "bg-violet-300 hover:bg-violet-400 dark:bg-violet-400/40 dark:hover:bg-violet-400/70",
+  },
+} as const;
+
 const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner: SlideCorner; ink: string; hue: keyof typeof INK }[] = [
   {
     title: "25+ Competitions & Challenges",
@@ -375,8 +396,8 @@ export function LeagueSpotlight() {
                   onClick={() => go(i)}
                   aria-label={`Show highlight ${i + 1}: ${s.title}`}
                   aria-current={i === index}
-                  className={`h-2 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
-                    i === index ? "w-6 bg-accent" : "w-2 bg-border hover:bg-muted"
+                  className={`h-2 cursor-pointer rounded-full transition-all focus-visible:ring-2 focus-visible:ring-current focus-visible:outline-none ${
+                    i === index ? `w-6 ${DOT[slide.hue].active}` : `w-2 ${DOT[slide.hue].idle}`
                   }`}
                 />
               ))}
