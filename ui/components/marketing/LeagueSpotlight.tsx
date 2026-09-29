@@ -12,7 +12,10 @@ const slideTitleFont = Plus_Jakarta_Sans({
 /** Landing-page slider copy. Each slide carries its own light, dark-mode-aware
  * tint (same "bg-X-50 / dark:bg-X-500/10" pattern used for the announcement
  * categories) so the rotating panel picks up a bit of colour on every turn
- * instead of sitting on the same plain card every time. */
+ * instead of sitting on the same plain card every time. `hue` picks which
+ * BUBBLE_TINTS entry the background bubbles use, so they stay coordinated
+ * with whichever tint is currently showing instead of a single fixed colour
+ * regardless of slide. */
 const SLIDE_ICONS = {
   formats: (
     <>
@@ -108,7 +111,7 @@ const INK = {
   violet: "text-violet-300 dark:text-violet-300/70",
 } as const;
 
-const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner: SlideCorner; ink: string }[] = [
+const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner: SlideCorner; ink: string; hue: keyof typeof INK }[] = [
   {
     title: "25+ Competitions & Challenges",
     body: "Diverse opportunities across multiple challenge formats.",
@@ -116,6 +119,7 @@ const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner
     icon: "formats",
     corner: "top-right",
     ink: INK.accent,
+    hue: "accent",
   },
   {
     title: "1,500+ Participants",
@@ -124,6 +128,7 @@ const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner
     icon: "participants",
     corner: "bottom-left",
     ink: INK.blue,
+    hue: "blue",
   },
   {
     title: "40+ Future Competencies",
@@ -132,6 +137,7 @@ const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner
     icon: "compass",
     corner: "top-left",
     ink: INK.emerald,
+    hue: "emerald",
   },
   {
     title: "100+ Skills Being Demonstrated",
@@ -140,6 +146,7 @@ const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner
     icon: "skills",
     corner: "bottom-right",
     ink: INK.violet,
+    hue: "violet",
   },
   {
     title: "Connected with the United Nations SDGs",
@@ -148,6 +155,7 @@ const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner
     icon: "globe",
     corner: "bottom-left",
     ink: INK.accent,
+    hue: "accent",
   },
   {
     title: "Every Participant Recognised",
@@ -156,6 +164,7 @@ const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner
     icon: "certificate",
     corner: "top-right",
     ink: INK.blue,
+    hue: "blue",
   },
   {
     title: "Awards & Distinctions for Students",
@@ -164,6 +173,7 @@ const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner
     icon: "medal",
     corner: "bottom-right",
     ink: INK.emerald,
+    hue: "emerald",
   },
   {
     title: "Recognition for Educators",
@@ -172,6 +182,7 @@ const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner
     icon: "educator",
     corner: "top-left",
     ink: INK.violet,
+    hue: "violet",
   },
   {
     title: "Honouring Parent Support",
@@ -180,6 +191,7 @@ const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner
     icon: "parents",
     corner: "top-left",
     ink: INK.accent,
+    hue: "accent",
   },
   {
     title: "School Excellence Awards",
@@ -188,8 +200,19 @@ const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner
     icon: "school",
     corner: "bottom-right",
     ink: INK.blue,
+    hue: "blue",
   },
 ];
+
+/** [saturated tint, softer tint] per hue — two shades of the same slide
+ * colour, mixed in with a couple of plain white "glossy highlight" bubbles
+ * below so the cluster reads as coloured light rather than a flat wash. */
+const BUBBLE_TINTS: Record<string, [string, string]> = {
+  accent: ["bg-accent/35", "bg-accent/20"],
+  blue: ["bg-blue-400/40", "bg-blue-300/25"],
+  emerald: ["bg-emerald-400/40", "bg-emerald-300/25"],
+  violet: ["bg-violet-400/40", "bg-violet-300/25"],
+};
 
 function SlideGlyph({ name, corner, ink }: { name: SlideIcon; corner: SlideCorner; ink: string }) {
   return (
@@ -233,6 +256,7 @@ export function LeagueSpotlight() {
   }, [paused]);
 
   const slide = SLIDES[index];
+  const [tintStrong, tintSoft] = BUBBLE_TINTS[slide.hue];
 
   return (
     <section className="bg-background px-6 py-16">
@@ -263,30 +287,38 @@ export function LeagueSpotlight() {
             aria-label="League highlights"
           >
             {/* Decorative bubbles filling the plain space around the text —
-                each drifts on its own timing (animate-bubble-drift, staggered
-                via inline duration/delay) so the cluster wanders rather than
-                bobbing in lockstep. Purely background: z-0, and the content
-                below is explicit z-10 so text always stays legible on top. */}
+                each drifts and breathes on its own timing (animate-bubble-
+                drift, staggered via inline duration/delay) so the cluster
+                wanders out of sync rather than bobbing in lockstep. Two
+                shades of the CURRENT slide's own hue, crossfading via
+                transition-colors whenever the slide changes, plus a couple
+                of plain white "glossy highlight" bubbles for contrast.
+                Purely background: z-0, and the content below is explicit
+                z-10 so text always stays legible on top. */}
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
               <span
-                className="absolute -top-10 -left-8 h-36 w-36 rounded-full bg-accent/10 blur-2xl animate-bubble-drift sm:h-44 sm:w-44"
+                className={`absolute -top-12 -left-10 h-44 w-44 rounded-full blur-2xl animate-bubble-drift transition-colors duration-500 sm:h-56 sm:w-56 ${tintStrong}`}
                 style={{ animationDuration: "16s" }}
               />
               <span
-                className="absolute top-[6%] right-[9%] h-20 w-20 rounded-full bg-white/50 blur-xl animate-bubble-drift"
+                className="absolute top-[5%] right-[8%] h-28 w-28 rounded-full bg-white/60 blur-xl animate-bubble-drift sm:h-32 sm:w-32"
                 style={{ animationDuration: "11s", animationDelay: "-3s" }}
               />
               <span
-                className="absolute bottom-[12%] left-[7%] h-16 w-16 rounded-full bg-accent/15 blur-lg animate-bubble-drift"
+                className={`absolute bottom-[10%] left-[6%] h-24 w-24 rounded-full blur-lg animate-bubble-drift transition-colors duration-500 sm:h-28 sm:w-28 ${tintSoft}`}
                 style={{ animationDuration: "13s", animationDelay: "-7s" }}
               />
               <span
-                className="absolute right-[13%] bottom-[16%] h-12 w-12 rounded-full bg-white/40 blur-md animate-bubble-drift"
+                className="absolute right-[11%] bottom-[15%] h-16 w-16 rounded-full bg-white/50 blur-md animate-bubble-drift sm:h-20 sm:w-20"
                 style={{ animationDuration: "9s", animationDelay: "-1.5s" }}
               />
               <span
-                className="absolute top-[38%] left-[18%] h-10 w-10 rounded-full bg-accent/10 blur-md animate-bubble-drift"
+                className={`absolute top-[36%] left-[16%] h-14 w-14 rounded-full blur-md animate-bubble-drift transition-colors duration-500 sm:h-16 sm:w-16 ${tintStrong}`}
                 style={{ animationDuration: "18s", animationDelay: "-10s" }}
+              />
+              <span
+                className={`absolute top-[16%] left-[40%] h-10 w-10 rounded-full blur-sm animate-bubble-drift transition-colors duration-500 sm:h-12 sm:w-12 ${tintSoft}`}
+                style={{ animationDuration: "10s", animationDelay: "-5s" }}
               />
             </div>
 
@@ -302,10 +334,24 @@ export function LeagueSpotlight() {
             </button>
 
             <div aria-live="polite" aria-atomic="true" className="relative z-10 mx-auto w-full max-w-xs">
-              {/* Keying on the index replays the entrance on every change. */}
-              <div key={index} className="animate-podium-in">
-                <p className={`${slideTitleFont.className} text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl`}>{slide.title}</p>
-                <p className="mx-auto mt-4 max-w-sm text-base text-muted sm:text-lg">{slide.body}</p>
+              {/* Keying on the index replays the entrance on every change.
+                  Title and body each run the same blur-to-focus entrance
+                  (animate-spotlight-text-in, app/globals.css), with the body
+                  starting slightly after the title so the two cascade in
+                  rather than materialising as one flat block. */}
+              <div key={index}>
+                <p
+                  className={`${slideTitleFont.className} animate-spotlight-text-in text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl`}
+                  style={{ animationDelay: "0ms" }}
+                >
+                  {slide.title}
+                </p>
+                <p
+                  className="animate-spotlight-text-in mx-auto mt-4 text-base text-muted sm:text-lg"
+                  style={{ animationDelay: "90ms" }}
+                >
+                  {slide.body}
+                </p>
               </div>
               <span className="sr-only">
                 Slide {index + 1} of {SLIDES.length}

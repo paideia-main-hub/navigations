@@ -107,8 +107,32 @@ body {
   }
 }
 
+/* Replay-on-key-change entrance for the League Spotlight's heading/body
+   (ui/components/marketing/LeagueSpotlight.tsx) — text starts blurred,
+   scaled down and shifted, sharpens to full focus early (60%), then keeps
+   settling into its final position/scale for the rest of the flight. The
+   blur-to-focus "materialising" read is what makes this feel more eye-
+   catching than a plain fade/slide — distinct from podium-in above. */
+@keyframes spotlight-text-in {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.94);
+    filter: blur(6px);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
 @theme inline {
   --animate-podium-in: podium-in 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-spotlight-text-in: spotlight-text-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Slow orbit for the About page collage
@@ -181,21 +205,26 @@ body {
    decorative background bubbles on the League Spotlight rotating panel
    (ui/components/marketing/LeagueSpotlight.tsx). Each bubble runs this same
    keyframe at its own speed/offset (set inline per span), so a cluster of
-   them drifts out of sync instead of bobbing in unison. Drives `translate`,
-   leaving `scale`/opacity free for anything layered on top later. */
+   them drifts out of sync instead of bobbing in unison. Drives `translate`
+   and a gentle `scale` breathing pulse together, so the cluster reads as
+   alive rather than just sliding around at a fixed size. */
 @keyframes bubble-drift {
   0%,
   100% {
     translate: 0 0;
+    scale: 1;
   }
   25% {
     translate: 14px -18px;
+    scale: 1.12;
   }
   50% {
     translate: -6px -32px;
+    scale: 0.92;
   }
   75% {
     translate: -18px -10px;
+    scale: 1.08;
   }
 }
 
@@ -294,7 +323,8 @@ body {
   .animate-gradient-travel,
   .animate-text-flythrough,
   .animate-spotlight-mark-in,
-  .animate-spotlight-mark-float {
+  .animate-spotlight-mark-float,
+  .animate-spotlight-text-in {
     animation: none;
   }
 }
