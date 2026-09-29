@@ -95,7 +95,16 @@ async function hasPathwayColumns(sb) {
   return false;
 }
 
-async function seedCompetition(sb, c, withPathway) {
+// competencies arrives in migration 0020 — same probe-and-skip as above.
+async function hasCompetenciesColumn(sb) {
+  const { error } = await sb.from("competitions").select("competencies").limit(1);
+  if (!error) return true;
+  console.log("! competitions.competencies not found — seeding without it.");
+  console.log("  Apply supabase/migrations/0020_competition_competencies.sql, then re-run.\n");
+  return false;
+}
+
+async function seedCompetition(sb, c, withPathway, withCompetencies) {
   const row = {
     slug: c.slug,
     title: c.title,
@@ -116,6 +125,9 @@ async function seedCompetition(sb, c, withPathway) {
     // if you want THIS seeder to be the source of truth for that competition.
     ...(c.feeRequired !== undefined ? { fee_required: c.feeRequired, fee_amount: c.feeAmount ?? null } : {}),
     ...(withPathway ? { pathway: c.pathway ?? null, image_url: c.image ?? null } : {}),
+    // Like fees, only written when the data file lists competencies, so a
+    // re-run never wipes tags an admin added from the CMS.
+    ...(withCompetencies && c.competencies ? { competencies: c.competencies } : {}),
   };
 
   const { data: saved, error } = await sb.from("competitions").upsert(row, { onConflict: "slug" }).select("id").single();
@@ -276,9 +288,10 @@ async function main() {
   if (only.length === 0) await removeDemoCompetitions(sb);
 
   const withPathway = await hasPathwayColumns(sb);
+  const withCompetencies = await hasCompetenciesColumn(sb);
 
   console.log(`\nSeeding ${targets.length} competition(s) from the official manuals:`);
-  for (const c of targets) await seedCompetition(sb, c, withPathway);
+  for (const c of targets) await seedCompetition(sb, c, withPathway, withCompetencies);
 
   console.log(`\nDone. Review and edit any of them from Admin Console > Competitions.`);
 }

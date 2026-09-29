@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "Creative sketchbook and final sketch challenge: interpret a theme, explore alternatives, experiment, refine, execute and explain.",
   domain: "Creativity, Arts & Cultural Expression",
+  competencies: ["C21", "C22", "C23"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
@@ -38,7 +39,7 @@ Recommended registration for the pilot: PKR 1,000 per student, subject to organi
     {
       category: "secondary",
       minGrade: "9",
-      maxGrade: "12",
+      maxGrade: "10",
       notes:
         "Senior category — Grades 9, 10 or O Level / equivalent. Individual participation. Themes are more abstract, symbolic, conceptual, future-facing and context-rich. Expected ideation: at least 4 distinct initial ideas or thumbnails with clearer conceptual alternatives, and a more developed explanation of concept, symbolism, composition and refinement decisions.",
     },

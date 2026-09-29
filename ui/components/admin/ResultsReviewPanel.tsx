@@ -143,7 +143,7 @@ export function ResultsReviewPanel({ competitionId, competitionSlug, rows }: { c
       <div className="rounded-xl border border-border bg-surface p-4">
         <GenerateButton competitionId={competitionId} />
         <p className="mt-2 text-xs text-muted">
-          Averages every judge&apos;s score per entrant, ranks them, and assigns Gold/Silver/Bronze to the top 3 — everyone
+          Averages every judge&apos;s score per entrant, ranks them, and assigns Outstanding Performer, Distinguished Finalist and Emerging Talent to the top 3 — everyone
           else who was scored gets Finalist. Safe to re-run any time a judge updates a score; it never touches a row that&apos;s
           already published.
         </p>

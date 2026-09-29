@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "Cultural diversity and digital storytelling challenge — a 3–5 minute video on Many Cultures, One Nation.",
   domain: "Cultural Expression & Creative Communication",
+  competencies: ["C24", "C25"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
@@ -37,7 +38,7 @@ The core message every submission must carry: Pakistan's cultural diversity is a
     {
       category: "secondary",
       minGrade: "9",
-      maxGrade: "12",
+      maxGrade: "10",
       notes:
         "Senior Category — Grades 9 to O Level. Individual competition — one candidate submits one official video entry.",
     },

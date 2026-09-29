@@ -8,12 +8,12 @@
 // Competition work / Route 2 nomination deadline: 22 November 2026.
 // League opens: Monday 23 November 2026.
 // Applied Skills Challenges run 23 November – 4 December (weekdays only).
-// Final celebrations, live arenas and showcases: 5–6 December 2026.
-// Closing awards ceremony: Sunday 6 December 2026 (proposed session).
+// Final competitions, showcases and screenings: Friday 11 December 2026.
+// Closing and awards ceremony: Saturday 12 December 2026.
 
 export const REGISTRATION_CLOSE = "2026-11-10";
 export const WORK_DEADLINE = "2026-11-22";
-export const FINAL_EVENT = "2026-12-06";
+export const FINAL_EVENT = "2026-12-12";
 
 /** Builds the Important Dates rows for a competition.
  * @param activityDate ISO date of the competition's own scheduled day, or
@@ -46,7 +46,7 @@ export function leagueDates(activityDate, activityTitle = "Competition day", opt
     type: "final_event",
     title: "League award ceremony",
     eventDate: FINAL_EVENT,
-    description: "Closing ceremony (proposed session) on the second finale day.",
+    description: "Closing and awards ceremony on the second finale day, 12 December.",
   });
 
   return dates;

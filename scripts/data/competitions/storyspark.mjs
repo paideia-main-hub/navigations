@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "Young storytelling challenge for Grades 3–5: see an idea, imagine possibilities, tell a story that connects.",
   domain: "Creative Communication & Storytelling",
+  competencies: ["C06", "C21", "Storytelling"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",

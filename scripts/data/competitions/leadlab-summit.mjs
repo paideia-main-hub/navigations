@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "Student Senate / House bill-passage simulation: evidence, argument, speech, cross-question, rebuttal, amendment and vote.",
   domain: "Enterprise, Financial & Civic Development",
+  competencies: ["C26", "C27", "C28"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",

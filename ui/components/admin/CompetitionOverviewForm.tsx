@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { updateCompetitionCoreAction, type ActionState } from "@/domain/competitions/actions";
 import { pathwayLabels, pathwayOrder, type Competition } from "@/domain/competitions/types";
 import { FormField } from "@/ui/components/FormField";
+import { CompetencyPicker } from "@/ui/components/admin/CompetencyPicker";
 
 const initialState: ActionState = { error: null };
 
@@ -31,6 +32,7 @@ export function CompetitionOverviewForm({ competition }: { competition: Competit
         />
       </div>
       <FormField label="Domain / competency area" name="domain" defaultValue={competition.domain} />
+      <CompetencyPicker defaultValue={competition.competencies} />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
@@ -80,7 +82,8 @@ export function CompetitionOverviewForm({ competition }: { competition: Competit
       </div>
 
       {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
-      {state.success && <p className="text-sm text-emerald-600 dark:text-emerald-400">Saved.</p>}
+      {state.success && !state.warning && <p className="text-sm text-emerald-600 dark:text-emerald-400">Saved.</p>}
+      {state.warning && <p className="text-sm text-amber-600 dark:text-amber-400">{state.warning}</p>}
       <button
         type="submit"
         disabled={pending}

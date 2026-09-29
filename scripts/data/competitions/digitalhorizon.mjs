@@ -11,6 +11,7 @@ export default {
   title: "DigitalHorizon",
   shortDescription: "Design an environmental awareness poster, submit it in advance, and see it displayed at the League finale.",
   domain: "D4 – Digital & Media Literacy",
+  competencies: ["C16", "C20"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",

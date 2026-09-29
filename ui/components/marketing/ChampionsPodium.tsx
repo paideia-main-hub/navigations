@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { CompetitionWinnerGroup, PublishedWinner } from "@/domain/competitions/service";
+import { awardLabels } from "@/domain/competitions/types";
 
 function initials(name: string): string {
   return name
@@ -15,8 +16,8 @@ function initials(name: string): string {
 
 const TIERS = {
   gold: {
-    place: "1ST",
-    label: "Gold",
+    place: "★★★",
+    label: awardLabels.gold,
     ring: "ring-amber-400",
     glow: "shadow-[0_0_50px_-8px_rgba(251,191,36,0.55)]",
     chip: "bg-amber-400 text-amber-950",
@@ -26,8 +27,8 @@ const TIERS = {
     order: 1,
   },
   silver: {
-    place: "2ND",
-    label: "Silver",
+    place: "★★",
+    label: awardLabels.silver,
     ring: "ring-border",
     glow: "shadow-[0_0_30px_-10px_rgba(203,213,225,0.4)]",
     chip: "bg-surface-muted text-foreground",
@@ -37,8 +38,8 @@ const TIERS = {
     order: 0,
   },
   bronze: {
-    place: "3RD",
-    label: "Bronze",
+    place: "★",
+    label: awardLabels.bronze,
     ring: "ring-orange-400",
     glow: "shadow-[0_0_26px_-10px_rgba(251,146,60,0.4)]",
     chip: "bg-orange-400 text-orange-950",
@@ -92,7 +93,7 @@ function PodiumCard({ winner, tier }: { winner: PublishedWinner; tier: Tier }) {
         }`}
       >
         <span
-          className={`absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-[10px] font-black tracking-wide whitespace-nowrap uppercase ${t.chip}`}
+          className={`absolute -top-3 left-1/2 w-max max-w-[92%] -translate-x-1/2 rounded-full px-3 py-1 text-center text-[10px] leading-tight font-black tracking-wide uppercase ${t.chip}`}
         >
           {grand ? "🏆 " : ""}
           {t.label}

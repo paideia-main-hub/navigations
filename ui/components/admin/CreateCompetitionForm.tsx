@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { createCompetitionAction, type ActionState } from "@/domain/competitions/actions";
 import { FormField } from "@/ui/components/FormField";
+import { CompetencyPicker } from "@/ui/components/admin/CompetencyPicker";
 
 const initialState: ActionState = { error: null };
 
@@ -54,6 +55,7 @@ export function CreateCompetitionForm() {
         </p>
       </div>
       <FormField label="Short description" name="short_description" />
+      <CompetencyPicker />
       {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
       <button
         type="submit"

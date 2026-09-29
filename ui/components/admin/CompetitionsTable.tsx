@@ -45,9 +45,15 @@ export function CompetitionsTable({ competitions }: { competitions: Competition[
                   <td className="px-4 py-3">
                     <CompetitionStatusControl competitionId={c.id} status={c.status} />
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
                     <Link href={`/admin/competitions/${c.id}`} className="text-sm font-semibold text-accent">
                       Edit →
+                    </Link>
+                    <Link
+                      href={`/admin/competitions/${c.id}#delete`}
+                      className="ml-4 text-sm font-semibold text-red-600 hover:underline dark:text-red-400"
+                    >
+                      Delete
                     </Link>
                   </td>
                 </tr>

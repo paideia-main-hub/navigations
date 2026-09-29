@@ -8,6 +8,7 @@ export default {
   shortDescription:
     "A one-venue, one-day team championship combining a reasoning competition with a problem-solving tournament: research an unseen scenario, present, defend and document.",
   domain: "D1 – Academic Excellence & Intellectual Development",
+  competencies: ["C01", "C02", "C03"],
   supportsIndividual: false,
   supportsTeam: true,
   status: "open",
@@ -27,7 +28,7 @@ Core competencies developed: C01 Critical Thinking and C02 Problem Solving. A te
     {
       category: "secondary",
       minGrade: "9",
-      maxGrade: "12",
+      maxGrade: "10",
       teamMinSize: 3,
       teamMaxSize: 3,
       notes:

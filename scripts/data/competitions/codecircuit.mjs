@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "Web-based progressive coding challenge: understand, decompose, design an algorithm, code, test, debug, improve and submit live.",
   domain: "Digital, Computing & Media Literacy",
+  competencies: ["C17", "C18"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
@@ -38,7 +39,7 @@ Fairness principle: no specialist libraries, hardware, databases or internet API
     {
       category: "secondary",
       minGrade: "9",
-      maxGrade: "12",
+      maxGrade: "10",
       notes:
         "Senior category — Grades 9 to O Level / equivalent — individual. Recommended duration 120 minutes. Coding complexity: stronger control structures, functions, data collections, validation and multi-test logic, including nested logic, list and dictionary processing, aggregation and modular structure. Decomposition is more open with fewer prompts, and 5–7 tests are used including edge and invalid cases.",
     },

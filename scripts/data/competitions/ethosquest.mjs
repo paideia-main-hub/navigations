@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "Values Tree and ethical decision challenge: know your values, recognise conflict, consider consequences, decide, reflect, defend.",
   domain: "Character, Personal Growth & Global Citizenship",
+  competencies: ["C41", "C44"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
@@ -40,7 +41,7 @@ A Values Bank is published in advance as an official preparation resource, and t
     {
       category: "secondary",
       minGrade: "9",
-      maxGrade: "12",
+      maxGrade: "10",
       notes:
         "Senior category — Grades 9 to O Level / Matric equivalent — individual participation, ranked separately. Same structure with greater independence and depth; the dilemma involves more complex competing interests and consequences. 65-minute written session plus a 5–7 minute oral defense.",
     },

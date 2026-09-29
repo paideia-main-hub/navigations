@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "Environmental robotics and working model challenge for teams: investigate, design, build, test, demonstrate and defend a real solution.",
   domain: "Engineering Design & Environmental Responsibility",
+  competencies: ["Scientific Inquiry", "C12", "Innovation"],
   supportsIndividual: false,
   supportsTeam: true,
   status: "open",
@@ -39,7 +40,7 @@ Competency promise: Critical Thinking, Problem-Solving, Scientific Inquiry, Engi
     {
       category: "secondary",
       minGrade: "9",
-      maxGrade: "12",
+      maxGrade: "10",
       teamMinSize: 2,
       teamMaxSize: 4,
       notes:

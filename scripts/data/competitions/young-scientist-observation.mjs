@@ -6,6 +6,7 @@ export default {
   title: "Young Scientist Observation",
   shortDescription: "Science and mathematics observation challenge for Grades 3–5: observe carefully, record evidence, discover patterns.",
   domain: "Scientific Inquiry & Observation",
+  competencies: ["Scientific Inquiry", "Scientific Communication"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",

@@ -12,6 +12,7 @@ export default {
   shortDescription:
     "Three levels — Discover, Connect and Master — two puzzle games per level, attempted by every candidate, with separate Junior and Senior rankings.",
   domain: "D1 – Academic Excellence & Intellectual Development",
+  competencies: ["C01", "C02"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
@@ -34,9 +35,16 @@ Evidence of learning: candidates keep their puzzle responses, the strategies the
       notes: "Junior bracket, Grades 3–5, individual entry. Ranked separately from the Senior bracket.",
     },
     {
-      category: "secondary",
+      category: "middle",
       minGrade: "6",
-      maxGrade: "12",
+      maxGrade: "8",
+      notes:
+        "Senior bracket, Grades 6 through O Level, individual entry, competing as one combined group rather than split Middle/Secondary categories. Ranked separately from the Junior bracket.",
+    },
+    {
+      category: "secondary",
+      minGrade: "9",
+      maxGrade: "10",
       notes:
         "Senior bracket, Grades 6 through O Level, individual entry, competing as one combined group rather than split Middle/Secondary categories. Ranked separately from the Junior bracket.",
     },

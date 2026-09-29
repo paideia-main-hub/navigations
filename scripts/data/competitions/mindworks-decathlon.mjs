@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "A ten-station intellectual performance circuit: interpret, reason, evaluate, solve, connect, audit, synthesise and reflect.",
   domain: "Academic Excellence & Intellectual Development",
+  competencies: ["C01", "C05"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",

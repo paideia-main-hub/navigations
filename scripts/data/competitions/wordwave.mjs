@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "Live narrative writing competition: choose, imagine, plan, draft, develop, revise, edit, submit — one unseen prompt, 90 minutes.",
   domain: "Communication & Public Expression",
+  competencies: ["C07"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",

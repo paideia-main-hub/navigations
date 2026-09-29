@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "Environmental photography and public voting challenge: see a problem, capture a message, share responsibly, engage the public.",
   domain: "Digital Media Creation & Environmental Responsibility",
+  competencies: ["C19", "C20"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",

@@ -48,6 +48,12 @@ export const categoryStatusLabels: Record<AwardCategoryStatus, string> = {
   archived: "Archived",
 };
 
+/** Route 2's seven nomination categories (3 Spotlight, 2 Teacher & Parent,
+ * 2 Sports), per the published calendar. Competition Distinctions and School
+ * Awards come out of Route 1 results, and Principal recognition is announced
+ * separately, so none of those are entered through Route 2. */
+export const routeTwoLayers: AwardLayer[] = ["spotlight", "teacher_parent", "sports"];
+
 /** Layers with no submission at all — categories exist purely for their
  * public criteria page and computed/published results. */
 export const computedLayers: AwardLayer[] = ["competition_distinction", "school_award"];

@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "Empathy, kindness and human connection challenge — one focused message, delivered in writing, a drawing or a 30-second video.",
   domain: "Empathy, Inclusion & Social-Emotional Intelligence",
+  competencies: ["Empathy", "Responsibility", "Advocacy"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
@@ -30,6 +31,13 @@ Registration fee: PKR 500 per entry. Top award: Best Humanity Message — PKR 10
     {
       category: "middle",
       minGrade: "6",
+      maxGrade: "8",
+      notes:
+        "Individual competition. Each student may submit one official entry under one selected theme (Empathy in Teaching or Empathy Among Peers) and one selected submission format (written, drawing or 30-second video). Grade or age categories, where applicable, are displayed on the registration portal. Registration fee: PKR 500 per entry.",
+    },
+    {
+      category: "secondary",
+      minGrade: "9",
       maxGrade: "10",
       notes:
         "Individual competition. Each student may submit one official entry under one selected theme (Empathy in Teaching or Empathy Among Peers) and one selected submission format (written, drawing or 30-second video). Grade or age categories, where applicable, are displayed on the registration portal. Registration fee: PKR 500 per entry.",

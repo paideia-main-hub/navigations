@@ -6,6 +6,7 @@ import { createAdminClient } from "@/data/supabase/admin";
 import type { CompetitionPathway } from "@/domain/competitions/types";
 import { requireAdminSession } from "@/domain/admin-auth/guard";
 import { uploadFile } from "@/domain/storage/actions";
+import { normalizeCompetencies } from "./competencies";
 import * as service from "./service";
 import type {
   AgeCategory,
@@ -16,7 +17,12 @@ import type {
   ResourceType,
 } from "./types";
 
-export type ActionState = { error: string | null; success?: boolean };
+export type ActionState = { error: string | null; success?: boolean; warning?: string };
+
+/** The competency picker submits one `competencies` field per selection. */
+function readCompetencies(formData: FormData): string[] {
+  return normalizeCompetencies(formData.getAll("competencies").map(String));
+}
 
 /** Parses repeatable-row fields submitted as name="prefix[0][field]" into an
  * ordered array of plain string maps. Avoids needing a client-side JSON
@@ -72,6 +78,7 @@ export async function createCompetitionAction(_prevState: ActionState, formData:
     overview: "",
     // Both are set later from the competition editor.
     pathway: null,
+    competencies: readCompetencies(formData),
     imageUrl: null,
     domain: "",
     status: "draft",
@@ -98,13 +105,14 @@ export async function updateCompetitionCoreAction(_prevState: ActionState, formD
 
   const newSlug = slugify(String(formData.get("slug") ?? existing.slug)) || existing.slug;
 
-  const { error } = await service.updateCompetitionCore(admin, id, {
+  const { error, warning } = await service.updateCompetitionCore(admin, id, {
     slug: newSlug,
     title: String(formData.get("title") ?? "").trim(),
     shortDescription: String(formData.get("short_description") ?? ""),
     overview: String(formData.get("overview") ?? ""),
     domain: String(formData.get("domain") ?? ""),
     pathway: (String(formData.get("pathway") ?? "") || null) as CompetitionPathway | null,
+    competencies: readCompetencies(formData),
     imageUrl: String(formData.get("image_url") ?? "").trim() || null,
     status: existing.status,
     supportsIndividual: formData.get("supports_individual") === "on",
@@ -120,7 +128,7 @@ export async function updateCompetitionCoreAction(_prevState: ActionState, formD
   if (error) return { error };
   revalidateCompetition(id, newSlug);
   if (newSlug !== existing.slug) revalidatePath(`/competitions/${existing.slug}`);
-  return { error: null, success: true };
+  return { error: null, success: true, warning };
 }
 
 export async function updateCompetitionStatusAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -133,6 +141,27 @@ export async function updateCompetitionStatusAction(_prevState: ActionState, for
   if (error) return { error };
   revalidateCompetition(id);
   return { error: null, success: true };
+}
+
+export async function deleteCompetitionAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdminSession();
+  const admin = createAdminClient();
+  const id = String(formData.get("competition_id"));
+
+  const existing = await service.adminGetCompetitionById(admin, id);
+  if (!existing) return { error: "Competition not found." };
+  // The form asks the admin to type the title; checked here too so the
+  // confirmation can't be skipped by submitting the form directly.
+  if (String(formData.get("confirm_title") ?? "").trim() !== existing.title.trim()) {
+    return { error: "The title you typed doesn't match — nothing was deleted." };
+  }
+
+  const { error } = await service.deleteCompetition(admin, id);
+  if (error) return { error };
+
+  revalidateCompetition(id, existing.slug);
+  revalidatePath("/");
+  redirect("/admin/competitions");
 }
 
 // ---------------------------------------------------------------------------

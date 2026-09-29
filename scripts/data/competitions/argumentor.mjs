@@ -6,6 +6,7 @@ export default {
   title: "Argumentor",
   shortDescription: "Role-reversal motion debate challenge: argue, listen, challenge, rebut, reverse and defend.",
   domain: "D2 – Communication & Public Expression",
+  competencies: ["C09", "C10"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
@@ -34,7 +35,7 @@ What students gain: practice speaking within a strict three-minute limit; buildi
     {
       category: "secondary",
       minGrade: "9",
-      maxGrade: "12",
+      maxGrade: "10",
       notes:
         "Open through O Level. A Level and college students are not eligible. Candidates must register through an invited or organizer-approved school. Recommended default language is English. Speech content and live responses must be the candidate's own work; coaching during live rounds is prohibited.",
     },

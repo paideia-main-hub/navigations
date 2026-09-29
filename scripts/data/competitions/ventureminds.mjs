@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "Microbusiness challenge for teams of three: business model submission, a 10-minute pitch and a panel defense.",
   domain: "Enterprise, Financial & Civic Development",
+  competencies: ["C29", "C28", "C27"],
   supportsIndividual: false,
   supportsTeam: true,
   status: "open",
@@ -31,9 +32,18 @@ Recommended registration: PKR 1,500 per team, subject to organizer approval.`,
 
   eligibility: [
     {
-      category: "secondary",
+      category: "middle",
       minGrade: "8",
-      maxGrade: "12",
+      maxGrade: "8",
+      teamMinSize: 3,
+      teamMaxSize: 3,
+      notes:
+        "Grade 8 through O Level or equivalent secondary grades; the organizer may create Junior and Senior subcategories if entry numbers justify them. Teams are exactly 3 candidates, all normally representing the same registered school. Business scope must be age-appropriate, lawful and safe — restricted, hazardous or age-restricted products and services are not permitted. English by default. The submitted microbusiness model must be the team's own competition work.",
+    },
+    {
+      category: "secondary",
+      minGrade: "9",
+      maxGrade: "10",
       teamMinSize: 3,
       teamMaxSize: 3,
       notes:

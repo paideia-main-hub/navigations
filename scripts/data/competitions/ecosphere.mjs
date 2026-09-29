@@ -11,6 +11,7 @@ export default {
   title: "EcoSphere",
   shortDescription: "Team challenge: turn an issued school-improvement problem and evidence pack into an action plan and present it.",
   domain: "D5 – Environmental & Social Responsibility",
+  competencies: ["C38", "C40"],
   supportsIndividual: false,
   supportsTeam: true,
   status: "open",

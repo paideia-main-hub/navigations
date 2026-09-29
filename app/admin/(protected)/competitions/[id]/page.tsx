@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/data/supabase/admin";
-import { adminGetCompetitionById } from "@/domain/competitions/service";
+import { adminGetCompetitionById, countCompetitionRegistrations } from "@/domain/competitions/service";
 import { statusLabels } from "@/domain/competitions/types";
 import { Tabs } from "@/ui/components/Tabs";
 import { Badge } from "@/ui/components/Badge";
@@ -14,11 +14,15 @@ import { CompetitionResourcesForm } from "@/ui/components/admin/CompetitionResou
 import { CompetitionFaqsForm } from "@/ui/components/admin/CompetitionFaqsForm";
 import { CompetitionDatesForm } from "@/ui/components/admin/CompetitionDatesForm";
 import { CompetitionWinnersForm } from "@/ui/components/admin/CompetitionWinnersForm";
+import { DeleteCompetitionPanel } from "@/ui/components/admin/DeleteCompetitionPanel";
 
 export default async function EditCompetitionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const admin = createAdminClient();
-  const competition = await adminGetCompetitionById(admin, id);
+  const [competition, registrationCount] = await Promise.all([
+    adminGetCompetitionById(admin, id),
+    countCompetitionRegistrations(admin, id),
+  ]);
   if (!competition) notFound();
 
   const tabs = [
@@ -74,6 +78,8 @@ export default async function EditCompetitionPage({ params }: { params: Promise<
       <div className="mt-8">
         <Tabs tabs={tabs} />
       </div>
+
+      <DeleteCompetitionPanel competitionId={competition.id} title={competition.title} registrationCount={registrationCount} />
     </div>
   );
 }

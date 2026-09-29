@@ -135,6 +135,9 @@ export interface CompetitionSummary {
   domain: string;
   status: CompetitionStatus;
   pathway: CompetitionPathway | null;
+  /** Framework codes ("C01") or custom names — see competencies.ts. Empty
+   * until an admin tags the competition. */
+  competencies: string[];
   imageUrl: string | null;
   supportsIndividual: boolean;
   supportsTeam: boolean;
@@ -166,6 +169,16 @@ export const categoryLabels: Record<AgeCategory, string> = {
   secondary: "Secondary",
 };
 
+/** Statuses the public site shows. Draft (not ready yet) and Archived
+ * (retired) competitions stay admin-only: they're left out of every public
+ * listing and their public pages return 404. Signed-in dashboards still see
+ * them, so a student's history keeps working after a competition is archived. */
+export const publicStatuses: CompetitionStatus[] = ["upcoming", "open", "closed"];
+
+export function isPubliclyVisible(status: CompetitionStatus): boolean {
+  return publicStatuses.includes(status);
+}
+
 export const statusLabels: Record<CompetitionStatus, string> = {
   draft: "Draft",
   upcoming: "Upcoming",
@@ -190,9 +203,12 @@ export const resourceTypeLabels: Record<ResourceType, string> = {
 };
 
 export const awardLabels: Record<AwardType, string> = {
-  gold: "Gold",
-  silver: "Silver",
-  bronze: "Bronze",
+  // The stored values stay gold/silver/bronze; these are the League's official
+  // names for the three competition distinctions (Awards & Recognition
+  // Framework), used everywhere a place is shown.
+  gold: "Outstanding Performer",
+  silver: "Distinguished Finalist",
+  bronze: "Emerging Talent",
   finalist: "Finalist",
   merit: "Merit",
   custom: "Custom",

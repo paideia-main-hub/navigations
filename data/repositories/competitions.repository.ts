@@ -49,6 +49,7 @@ type Row = {
   status: CompetitionStatus;
   pathway?: CompetitionPathway | null;
   image_url?: string | null;
+  competencies?: string[] | null;
   supports_individual: boolean;
   supports_team: boolean;
   fee_required: boolean;
@@ -207,6 +208,7 @@ function toCompetition(row: Row): Competition {
     // pathway column is null (see pathwayFallback.ts for why) — an admin's
     // own CMS edit always wins once that column exists and holds a value.
     pathway: row.pathway ?? PATHWAY_BY_SLUG[row.slug] ?? null,
+    competencies: row.competencies ?? [],
     imageUrl: row.image_url ?? null,
     supportsIndividual: row.supports_individual,
     supportsTeam: row.supports_team,
@@ -271,14 +273,23 @@ const SUMMARY_COLUMNS = `
 `;
 
 const SUMMARY_SELECT = `
+  ${SUMMARY_COLUMNS}, pathway, image_url, competencies,
+  competition_eligibility_rules (*),
+  events (*)
+`;
+
+/** Without the column migration 0020 adds, for a database that has 0018 but
+ * not 0020 yet. */
+const SUMMARY_SELECT_PRE_0020 = `
   ${SUMMARY_COLUMNS}, pathway, image_url,
   competition_eligibility_rules (*),
   events (*)
 `;
 
 /** Same query without the two columns migration 0018 adds, so a database that
- * hasn't had it applied still serves every listing on the site. Remove this,
- * and the retry below, once 0018 is applied everywhere. */
+ * hasn't had it applied still serves every listing on the site. Remove these
+ * fallbacks, and the retries below, once 0018 and 0020 are applied
+ * everywhere. */
 const SUMMARY_SELECT_PRE_0018 = `
   ${SUMMARY_COLUMNS},
   competition_eligibility_rules (*),
@@ -316,6 +327,7 @@ function toSummary(row: Row): CompetitionSummary {
     // pathway column is null (see pathwayFallback.ts for why) — an admin's
     // own CMS edit always wins once that column exists and holds a value.
     pathway: row.pathway ?? PATHWAY_BY_SLUG[row.slug] ?? null,
+    competencies: row.competencies ?? [],
     imageUrl: row.image_url ?? null,
     supportsIndividual: row.supports_individual,
     supportsTeam: row.supports_team,
@@ -332,29 +344,34 @@ function toSummary(row: Row): CompetitionSummary {
 /** Every competition with the card/filter/deadline fields only. The default
  * choice for listings, directories and dashboard slug lookups. */
 export const getCompetitionSummaries = cache(async (supabase: SupabaseClient): Promise<CompetitionSummary[]> => {
-  const first = await supabase.from("competitions").select(SUMMARY_SELECT).order("created_at");
-  if (!first.error && first.data) return (first.data as unknown as Row[]).map(toSummary);
-
-  if (first.error?.code !== UNDEFINED_COLUMN) return [];
-
-  const legacy = await supabase.from("competitions").select(SUMMARY_SELECT_PRE_0018).order("created_at");
-  if (legacy.error || !legacy.data) return [];
-  return (legacy.data as unknown as Row[]).map(toSummary);
+  // Newest schema first; step back one migration at a time only while the
+  // failure is a missing column.
+  for (const select of [SUMMARY_SELECT, SUMMARY_SELECT_PRE_0020, SUMMARY_SELECT_PRE_0018]) {
+    const { data, error } = await supabase.from("competitions").select(select).order("created_at");
+    if (!error && data) return (data as unknown as Row[]).map(toSummary);
+    if (error?.code !== UNDEFINED_COLUMN) return [];
+  }
+  return [];
 });
 
 /** Just enough to render a name and link to the competition — for index pages
  * that only list titles. */
 export const getCompetitionIndex = cache(
-  async (supabase: SupabaseClient): Promise<{ slug: string; title: string; domain: string }[]> => {
+  async (
+    supabase: SupabaseClient,
+  ): Promise<{ slug: string; title: string; domain: string; status: CompetitionStatus }[]> => {
     const { data, error } = await supabase
       .from("competitions")
-      .select("slug, title, domain_competency_area")
+      .select("slug, title, domain_competency_area, status")
       .order("created_at");
     if (error || !data) return [];
-    return (data as { slug: string; title: string; domain_competency_area: string | null }[]).map((r) => ({
+    return (
+      data as { slug: string; title: string; domain_competency_area: string | null; status: CompetitionStatus }[]
+    ).map((r) => ({
       slug: r.slug,
       title: r.title,
       domain: r.domain_competency_area ?? "",
+      status: r.status,
     }));
   },
 );
@@ -390,12 +407,15 @@ export const getCompetitionWinnerRows = cache(
 
 /** Every competition's calendar events, with the competition title and slug. */
 export const getCompetitionEventRows = cache(
-  async (supabase: SupabaseClient): Promise<{ title: string; slug: string; events: CompetitionEvent[] }[]> => {
-    const { data, error } = await supabase.from("competitions").select("title, slug, events (*)").order("created_at");
+  async (
+    supabase: SupabaseClient,
+  ): Promise<{ title: string; slug: string; status: CompetitionStatus; events: CompetitionEvent[] }[]> => {
+    const { data, error } = await supabase.from("competitions").select("title, slug, status, events (*)").order("created_at");
     if (error || !data) return [];
     return (data as unknown as Row[]).map((row) => ({
       title: row.title,
       slug: row.slug,
+      status: row.status,
       events: (row.events ?? []).map((e) => ({
         id: e.id,
         type: e.type,
@@ -447,6 +467,7 @@ export interface CompetitionCoreInput {
   overview: string;
   domain: string;
   pathway: CompetitionPathway | null;
+  competencies: string[];
   imageUrl: string | null;
   status: CompetitionStatus;
   supportsIndividual: boolean;
@@ -464,6 +485,7 @@ function coreToRow(input: CompetitionCoreInput) {
     overview: input.overview,
     domain_competency_area: input.domain,
     pathway: input.pathway,
+    competencies: input.competencies,
     image_url: input.imageUrl,
     status: input.status,
     supports_individual: input.supportsIndividual,
@@ -474,24 +496,52 @@ function coreToRow(input: CompetitionCoreInput) {
   };
 }
 
+/** Shown when a save succeeded except for competencies, because migration
+ * 0020 hasn't been applied to this database yet. */
+export const COMPETENCIES_PENDING_MIGRATION =
+  "Saved, but competencies were not stored: apply supabase/migrations/0020_competition_competencies.sql to the database first.";
+
+/** A missing `competencies` column (migration 0020 not applied) must not
+ * block the rest of a save, so these writes retry once without it and report
+ * that via `warning`. */
+function isMissingCompetenciesColumn(error: { code?: string; message?: string } | null): boolean {
+  return error?.code === UNDEFINED_COLUMN || /competencies/.test(error?.message ?? "");
+}
+
+function withoutCompetencies<T extends { competencies: string[] }>(row: T): Omit<T, "competencies"> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { competencies, ...rest } = row;
+  return rest;
+}
+
 export async function insertCompetition(
   admin: SupabaseClient,
   input: CompetitionCoreInput,
-): Promise<{ id: string | null; error: string | null }> {
-  const { data, error } = await admin.from("competitions").insert(coreToRow(input)).select("id").single();
+): Promise<{ id: string | null; error: string | null; warning?: string }> {
+  const row = coreToRow(input);
+  let result = await admin.from("competitions").insert(row).select("id").single();
+  let warning: string | undefined;
+  if (result.error && isMissingCompetenciesColumn(result.error)) {
+    result = await admin.from("competitions").insert(withoutCompetencies(row)).select("id").single();
+    if (input.competencies.length > 0) warning = COMPETENCIES_PENDING_MIGRATION;
+  }
+  const { data, error } = result;
   if (error || !data) return { id: null, error: error?.message ?? "Failed to create competition." };
-  return { id: data.id as string, error: null };
+  return { id: data.id as string, error: null, warning };
 }
 
 export async function updateCompetitionCore(
   admin: SupabaseClient,
   id: string,
   input: CompetitionCoreInput,
-): Promise<{ error: string | null }> {
-  const { error } = await admin
-    .from("competitions")
-    .update({ ...coreToRow(input), updated_at: new Date().toISOString() })
-    .eq("id", id);
+): Promise<{ error: string | null; warning?: string }> {
+  const row = { ...coreToRow(input), updated_at: new Date().toISOString() };
+  const { error } = await admin.from("competitions").update(row).eq("id", id);
+  if (error && isMissingCompetenciesColumn(error)) {
+    const retry = await admin.from("competitions").update(withoutCompetencies(row)).eq("id", id);
+    if (retry.error) return { error: retry.error.message };
+    return { error: null, warning: input.competencies.length > 0 ? COMPETENCIES_PENDING_MIGRATION : undefined };
+  }
   return { error: error?.message ?? null };
 }
 
@@ -504,6 +554,26 @@ export async function updateCompetitionStatus(
     .from("competitions")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+/** How many registrations a competition has — deleting it would cascade to
+ * all of them (and their payments, scores and results), so deletion is
+ * refused while this is above zero. */
+export async function countCompetitionRegistrations(admin: SupabaseClient, id: string): Promise<number | null> {
+  const { count, error } = await admin
+    .from("registrations")
+    .select("id", { count: "exact", head: true })
+    .eq("competition_id", id);
+  return error ? null : (count ?? 0);
+}
+
+/** Permanently removes a competition. Every child table (eligibility, stages,
+ * rubrics, manuals, resources, FAQs, dates, winners, teams, judge
+ * assignments, announcements) is `on delete cascade`, so the one delete
+ * clears them all. */
+export async function deleteCompetition(admin: SupabaseClient, id: string): Promise<{ error: string | null }> {
+  const { error } = await admin.from("competitions").delete().eq("id", id);
   return { error: error?.message ?? null };
 }
 

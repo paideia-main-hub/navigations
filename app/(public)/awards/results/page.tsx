@@ -7,12 +7,6 @@ import { listPublishedNominations } from "@/domain/award-nominations/service";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
 
-const COMPETITION_DISTINCTION_LABEL: Record<string, string> = {
-  gold: "Outstanding Performer",
-  silver: "Distinguished Finalist",
-  bronze: "Emerging Talent",
-};
-
 export const metadata = { title: "Award Results | Navigations" };
 
 export default async function AwardResultsPage() {
@@ -38,7 +32,7 @@ export default async function AwardResultsPage() {
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {distinctionWinners.map((w, i) => (
               <div key={i} className="rounded-xl border border-border bg-surface p-4">
-                <ArenaBadge tone="blue">{COMPETITION_DISTINCTION_LABEL[w.award] ?? awardLabels[w.award as keyof typeof awardLabels]}</ArenaBadge>
+                <ArenaBadge tone="blue">{awardLabels[w.award]}</ArenaBadge>
                 <p className="mt-2 font-semibold text-foreground">{w.entrantName}</p>
                 <p className="text-sm text-muted">{w.schoolName} · {w.competitionTitle}</p>
               </div>

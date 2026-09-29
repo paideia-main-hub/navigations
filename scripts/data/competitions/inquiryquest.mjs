@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "Scientific inquiry and research report challenge: turn an issued science problem into a disciplined, evidence-based investigation.",
   domain: "Academic & Intellectual Development",
+  competencies: ["C03", "C04"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",
@@ -29,9 +30,16 @@ If the issued problem can be answered adequately through secondary research, stu
 
   eligibility: [
     {
-      category: "secondary",
+      category: "middle",
       minGrade: "8",
-      maxGrade: "12",
+      maxGrade: "8",
+      notes:
+        "Individual participation — every submission must be attributable to one registered student. Recommended category for pilot delivery: Grade 8 to O Level or equivalent, though the organizer may publish narrower grade bands for a particular edition. Students may come from any recognised curriculum; the problem and rubric are common within a category. One entry per student per edition. A school coordinator may support registration and logistics but may not research, write, analyse or edit the student's report.",
+    },
+    {
+      category: "secondary",
+      minGrade: "9",
+      maxGrade: "10",
       notes:
         "Individual participation — every submission must be attributable to one registered student. Recommended category for pilot delivery: Grade 8 to O Level or equivalent, though the organizer may publish narrower grade bands for a particular edition. Students may come from any recognised curriculum; the problem and rubric are common within a category. One entry per student per edition. A school coordinator may support registration and logistics but may not research, write, analyse or edit the student's report.",
     },

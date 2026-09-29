@@ -11,6 +11,7 @@ export default {
   title: "Young Orator",
   shortDescription: "A first speaking competition for younger students: brief preparation, a short speech on a familiar topic, one simple judge response.",
   domain: "D2 – Communication & Public Expression",
+  competencies: ["C06", "C08"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",

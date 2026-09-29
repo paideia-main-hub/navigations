@@ -11,6 +11,7 @@ export default {
   title: "Picture Detective",
   shortDescription: "Examine a visual scene, spot the clues, and explain your conclusions — a live observation and reasoning challenge for Junior students.",
   domain: "D1 – Academic Excellence & Intellectual Development",
+  competencies: ["C01", "Observation", "Explanation"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",

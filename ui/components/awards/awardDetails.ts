@@ -21,7 +21,7 @@ export const AWARD_DETAILS: AwardDetail[] = [
     slug: "outstanding-performer",
     title: "Outstanding Performer, Distinguished Finalist & Emerging Talent",
     layer: "competition_distinction",
-    awardedTo: "The 1st, 2nd and 3rd ranked entry in each of the 23 Route 1 competitions",
+    awardedTo: "The three top-ranked entries in each Route 1 competition",
     description:
       "Each of the 23 Route 1 competitions recognises three leading entries. Outstanding Performer is awarded to the first-ranked entry, Distinguished Finalist to the second, and Emerging Talent to the third. Rankings follow the competition's published assessment rules. A pair or team receives one entry distinction, with certificates for its verified members. An entry can receive only one distinction in the same competition award pool.",
   },

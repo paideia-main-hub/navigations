@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/data/supabase/server";
-import { getCompetitionBySlug, registrationDeadlineOf } from "@/domain/competitions/service";
+import { getPublicCompetitionBySlug, registrationDeadlineOf } from "@/domain/competitions/service";
 import { categoryLabels, statusLabels, awardLabels, eventTypeLabels } from "@/domain/competitions/types";
 import { announcementsForCompetition } from "@/domain/announcements/service";
 import { announcementCategoryLabels } from "@/domain/announcements/types";
@@ -21,7 +21,7 @@ export default async function CompetitionPage({
   // All three reads are independent, so they go out together rather than
   // paying three round trips of latency in series.
   const [competition, competitionAnnouncements, allComputedWinners] = await Promise.all([
-    getCompetitionBySlug(supabase, slug),
+    getPublicCompetitionBySlug(supabase, slug),
     announcementsForCompetition(supabase, slug),
     listPublishedComputedWinners(supabase),
   ]);

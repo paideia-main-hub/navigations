@@ -7,6 +7,7 @@ export default {
   shortDescription:
     "Two-stage speaking competition: a prepared response from a fresh scenario, then adaptive speaking through a live audience shift.",
   domain: "Communication, Languages & Public Speaking",
+  competencies: ["C06", "C08"],
   supportsIndividual: true,
   supportsTeam: false,
   status: "open",

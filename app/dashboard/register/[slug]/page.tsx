@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
-import { getCompetitionBySlug } from "@/domain/competitions/service";
+import { getPublicCompetitionBySlug } from "@/domain/competitions/service";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { listSchoolRoster, getOwnStudentProfile } from "@/domain/students/service";
 import { RegistrationWizard } from "@/ui/components/registration/RegistrationWizard";
@@ -14,7 +14,8 @@ export default async function CompetitionRegisterPage({
   const { slug } = await params;
   const user = await getCurrentUser();
   const supabase = await createClient();
-  const competition = await getCompetitionBySlug(supabase, slug);
+  // Drafts and archived competitions can't be registered for, even by URL.
+  const competition = await getPublicCompetitionBySlug(supabase, slug);
   if (!competition) notFound();
 
   if (!user || user.role === "judge" || user.role === "admin") {

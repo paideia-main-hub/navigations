@@ -6,6 +6,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import * as repo from "@/data/repositories/competitions.repository";
 import { listPublishedComputedWinners } from "@/domain/results/service";
 import { awardRank } from "@/domain/results/types";
+import { competencyLabel } from "./competencies";
+import { isPubliclyVisible } from "./types";
 import type {
   AgeCategory,
   Competition,
@@ -23,9 +25,18 @@ export async function listCompetitions(supabase: SupabaseClient): Promise<Compet
   return repo.getCompetitionSummaries(supabase);
 }
 
-/** Titles and slugs only, for index pages that just link onward. */
+/** listCompetitions minus drafts and archived competitions — for anything a
+ * visitor sees. */
+export async function listPublicCompetitions(supabase: SupabaseClient): Promise<CompetitionSummary[]> {
+  const all = await repo.getCompetitionSummaries(supabase);
+  return all.filter((c) => isPubliclyVisible(c.status));
+}
+
+/** Titles and slugs of publicly visible competitions, for index pages that
+ * just link onward. */
 export async function listCompetitionIndex(supabase: SupabaseClient) {
-  return repo.getCompetitionIndex(supabase);
+  const all = await repo.getCompetitionIndex(supabase);
+  return all.filter((c) => isPubliclyVisible(c.status));
 }
 
 /** Every competition with every child table loaded. Rarely what you want. */
@@ -35,6 +46,13 @@ export async function listCompetitionsFull(supabase: SupabaseClient): Promise<Co
 
 export async function getCompetitionBySlug(supabase: SupabaseClient, slug: string): Promise<Competition | null> {
   return repo.getCompetitionBySlug(supabase, slug);
+}
+
+/** getCompetitionBySlug, but null for a draft or archived competition — so
+ * its public page and registration page 404 like it doesn't exist. */
+export async function getPublicCompetitionBySlug(supabase: SupabaseClient, slug: string): Promise<Competition | null> {
+  const competition = await repo.getCompetitionBySlug(supabase, slug);
+  return competition && isPubliclyVisible(competition.status) ? competition : null;
 }
 
 export async function listOpenAndUpcoming(supabase: SupabaseClient): Promise<CompetitionSummary[]> {
@@ -158,6 +176,7 @@ export interface UpcomingDate {
 export async function upcomingDates(supabase: SupabaseClient): Promise<UpcomingDate[]> {
   const all = await repo.getCompetitionEventRows(supabase);
   return all
+    .filter((c) => isPubliclyVisible(c.status))
     .flatMap((c) =>
       c.events.map((e) => ({
         competition: c.title,
@@ -191,6 +210,8 @@ export interface CompetitionFilters {
    * Submission, Project Showcasing, Live Performances. Distinct from
    * `category`, which is the grade tier (Primary/Middle/Secondary). */
   pathway?: CompetitionPathway | "all";
+  /** A competencies entry — a framework code ("C01") or a custom name. */
+  competency?: string | "all";
   status?: CompetitionStatus | "all";
   sort?: "deadline" | "event-date" | "alphabetical";
 }
@@ -202,17 +223,20 @@ export function filterCompetitionsClientSide<T extends CompetitionSummary>(
   competitions: T[],
   filters: CompetitionFilters,
 ): T[] {
-  const { query = "", category = "all", pathway = "all", status = "all", sort = "deadline" } = filters;
+  const { query = "", category = "all", pathway = "all", competency = "all", status = "all", sort = "deadline" } = filters;
+  const q = query.toLowerCase();
 
   let list = competitions.filter((c) => {
     const matchesQuery =
       query.trim() === "" ||
-      c.title.toLowerCase().includes(query.toLowerCase()) ||
-      c.domain.toLowerCase().includes(query.toLowerCase());
+      c.title.toLowerCase().includes(q) ||
+      c.domain.toLowerCase().includes(q) ||
+      c.competencies.some((v) => competencyLabel(v).toLowerCase().includes(q));
     const matchesCategory = category === "all" || c.eligibility.some((e) => e.category === category);
     const matchesPathway = pathway === "all" || c.pathway === pathway;
+    const matchesCompetency = competency === "all" || c.competencies.includes(competency);
     const matchesStatus = status === "all" || c.status === status;
-    return matchesQuery && matchesCategory && matchesPathway && matchesStatus;
+    return matchesQuery && matchesCategory && matchesPathway && matchesCompetency && matchesStatus;
   });
 
   list = [...list].sort((a, b) => {
@@ -263,6 +287,21 @@ export async function adminGetCompetitionById(admin: SupabaseClient, id: string)
 export const createCompetition = repo.insertCompetition;
 export const updateCompetitionCore = repo.updateCompetitionCore;
 export const updateCompetitionStatus = repo.updateCompetitionStatus;
+export const countCompetitionRegistrations = repo.countCompetitionRegistrations;
+
+/** Deletes a competition only when nothing depends on it: a competition with
+ * registrations carries student entries, payments, scores and results that
+ * the cascade would erase, so it has to be archived instead. */
+export async function deleteCompetition(admin: SupabaseClient, id: string): Promise<{ error: string | null }> {
+  const registrations = await repo.countCompetitionRegistrations(admin, id);
+  if (registrations === null) return { error: "Couldn't check this competition's registrations — nothing was deleted." };
+  if (registrations > 0) {
+    return {
+      error: `This competition has ${registrations} registration${registrations === 1 ? "" : "s"}, so it can't be deleted — deleting would erase those entries, payments and results. Set its status to Archived to hide it from the site instead.`,
+    };
+  }
+  return repo.deleteCompetition(admin, id);
+}
 export const saveEligibility = repo.replaceEligibilityRules;
 export const saveStages = repo.replaceStages;
 export const saveRubric = repo.upsertRubric;
