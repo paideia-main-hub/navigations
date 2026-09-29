@@ -7,29 +7,46 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * counters or figures. Each slide carries its own light, dark-mode-aware
  * tint (same "bg-X-50 / dark:bg-X-500/10" pattern used for the announcement
  * categories) so the rotating panel picks up a bit of colour on every turn
- * instead of sitting on the same plain card every time. */
+ * instead of sitting on the same plain card every time. `hue` picks which
+ * BUBBLE_TINTS entry the background bubbles use, so they stay coordinated
+ * with whichever tint is currently showing instead of a single fixed colour
+ * regardless of slide. */
 const SLIDES = [
   {
     title: "Compete Beyond the Classroom",
     body: "Where talent meets future-ready opportunities across every discipline in the League.",
     bg: "bg-accent-soft",
+    hue: "accent",
   },
   {
     title: "Grounded in Real Competencies",
     body: "Every challenge maps to a published competence framework, so performance means something afterwards.",
     bg: "bg-blue-50 dark:bg-blue-500/10",
+    hue: "blue",
   },
   {
     title: "Judged on Evidence, Not Polish",
     body: "Transparent rubrics are shared before the event, and every score traces back to what a student actually produced.",
     bg: "bg-emerald-50 dark:bg-emerald-500/10",
+    hue: "emerald",
   },
   {
     title: "Built for Every Tier",
     body: "Primary, Middle and Secondary students each compete against age-appropriate standards.",
     bg: "bg-violet-50 dark:bg-violet-500/10",
+    hue: "violet",
   },
-];
+] as const;
+
+/** [saturated tint, softer tint] per hue — two shades of the same slide
+ * colour, mixed in with a couple of plain white "glossy highlight" bubbles
+ * below so the cluster reads as coloured light rather than a flat wash. */
+const BUBBLE_TINTS: Record<string, [string, string]> = {
+  accent: ["bg-accent/35", "bg-accent/20"],
+  blue: ["bg-blue-400/40", "bg-blue-300/25"],
+  emerald: ["bg-emerald-400/40", "bg-emerald-300/25"],
+  violet: ["bg-violet-400/40", "bg-violet-300/25"],
+};
 
 const INTERVAL_MS = 5000;
 
@@ -55,6 +72,7 @@ export function LeagueSpotlight() {
   }, [paused]);
 
   const slide = SLIDES[index];
+  const [tintStrong, tintSoft] = BUBBLE_TINTS[slide.hue];
 
   return (
     <section className="bg-background px-6 py-16">
@@ -123,30 +141,38 @@ export function LeagueSpotlight() {
             aria-label="League highlights"
           >
             {/* Decorative bubbles filling the plain space around the text —
-                each drifts on its own timing (animate-bubble-drift, staggered
-                via inline duration/delay) so the cluster wanders rather than
-                bobbing in lockstep. Purely background: z-0, and the content
-                below is explicit z-10 so text always stays legible on top. */}
+                each drifts and breathes on its own timing (animate-bubble-
+                drift, staggered via inline duration/delay) so the cluster
+                wanders out of sync rather than bobbing in lockstep. Two
+                shades of the CURRENT slide's own hue, crossfading via
+                transition-colors whenever the slide changes, plus a couple
+                of plain white "glossy highlight" bubbles for contrast.
+                Purely background: z-0, and the content below is explicit
+                z-10 so text always stays legible on top. */}
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
               <span
-                className="absolute -top-10 -left-8 h-36 w-36 rounded-full bg-accent/10 blur-2xl animate-bubble-drift sm:h-44 sm:w-44"
+                className={`absolute -top-12 -left-10 h-44 w-44 rounded-full blur-2xl animate-bubble-drift transition-colors duration-500 sm:h-56 sm:w-56 ${tintStrong}`}
                 style={{ animationDuration: "16s" }}
               />
               <span
-                className="absolute top-[6%] right-[9%] h-20 w-20 rounded-full bg-white/50 blur-xl animate-bubble-drift"
+                className="absolute top-[5%] right-[8%] h-28 w-28 rounded-full bg-white/60 blur-xl animate-bubble-drift sm:h-32 sm:w-32"
                 style={{ animationDuration: "11s", animationDelay: "-3s" }}
               />
               <span
-                className="absolute bottom-[12%] left-[7%] h-16 w-16 rounded-full bg-accent/15 blur-lg animate-bubble-drift"
+                className={`absolute bottom-[10%] left-[6%] h-24 w-24 rounded-full blur-lg animate-bubble-drift transition-colors duration-500 sm:h-28 sm:w-28 ${tintSoft}`}
                 style={{ animationDuration: "13s", animationDelay: "-7s" }}
               />
               <span
-                className="absolute right-[13%] bottom-[16%] h-12 w-12 rounded-full bg-white/40 blur-md animate-bubble-drift"
+                className="absolute right-[11%] bottom-[15%] h-16 w-16 rounded-full bg-white/50 blur-md animate-bubble-drift sm:h-20 sm:w-20"
                 style={{ animationDuration: "9s", animationDelay: "-1.5s" }}
               />
               <span
-                className="absolute top-[38%] left-[18%] h-10 w-10 rounded-full bg-accent/10 blur-md animate-bubble-drift"
+                className={`absolute top-[36%] left-[16%] h-14 w-14 rounded-full blur-md animate-bubble-drift transition-colors duration-500 sm:h-16 sm:w-16 ${tintStrong}`}
                 style={{ animationDuration: "18s", animationDelay: "-10s" }}
+              />
+              <span
+                className={`absolute top-[16%] left-[40%] h-10 w-10 rounded-full blur-sm animate-bubble-drift transition-colors duration-500 sm:h-12 sm:w-12 ${tintSoft}`}
+                style={{ animationDuration: "10s", animationDelay: "-5s" }}
               />
             </div>
 
@@ -160,10 +186,24 @@ export function LeagueSpotlight() {
             </button>
 
             <div aria-live="polite" aria-atomic="true" className="relative z-10 w-full">
-              {/* Keying on the index replays the entrance on every change. */}
-              <div key={index} className="animate-podium-in">
-                <p className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">{slide.title}</p>
-                <p className="mx-auto mt-3 max-w-xs text-sm text-muted sm:text-base">{slide.body}</p>
+              {/* Keying on the index replays the entrance on every change.
+                  Title and body each run the same blur-to-focus entrance
+                  (animate-spotlight-text-in, app/globals.css), with the body
+                  starting slightly after the title so the two cascade in
+                  rather than materialising as one flat block. */}
+              <div key={index}>
+                <p
+                  className="animate-spotlight-text-in text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+                  style={{ animationDelay: "0ms" }}
+                >
+                  {slide.title}
+                </p>
+                <p
+                  className="animate-spotlight-text-in mx-auto mt-3 max-w-xs text-base text-muted sm:text-lg"
+                  style={{ animationDelay: "90ms" }}
+                >
+                  {slide.body}
+                </p>
               </div>
               <span className="sr-only">
                 Slide {index + 1} of {SLIDES.length}
