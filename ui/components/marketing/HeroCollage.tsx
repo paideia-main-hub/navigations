@@ -53,7 +53,7 @@ export function HeroCollage() {
   return (
     <div className="absolute inset-0 bg-[#fefffa]">
       <video
-        className="hero-graph-video pointer-events-none absolute top-1/2 left-0 h-auto w-full -translate-y-1/2 opacity-40"
+        className="hero-graph-video pointer-events-none absolute inset-0 h-full w-full origin-center scale-110 object-cover opacity-40"
         autoPlay
         muted
         loop
@@ -64,7 +64,7 @@ export function HeroCollage() {
       <img
         src="/hero-graphs-still.jpg?v=2"
         alt=""
-        className="hero-graph-still pointer-events-none absolute top-1/2 left-0 h-auto w-full -translate-y-1/2 opacity-40"
+        className="hero-graph-still pointer-events-none absolute inset-0 h-full w-full origin-center scale-110 object-cover opacity-40"
       />
       <div
         ref={wrapRef}

@@ -66,7 +66,23 @@ function CardBody({ item }: { item: OrbitStackItem }) {
         <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-muted uppercase">{item.eyebrow}</p>
         <h3 className="mt-2 text-[1.75rem] leading-none font-semibold tracking-[-0.04em] text-foreground">{item.name}</h3>
         <p className="mt-4 line-clamp-3 max-w-[17rem] text-[0.98rem] leading-[1.42] font-medium tracking-[-0.01em] text-muted">{item.description}</p>
-        <div className="mt-5 border-t border-border pt-4 text-[0.68rem] font-bold tracking-[0.2em] text-muted uppercase">{item.stat}</div>
+        <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
+          <span className="text-[0.68rem] font-bold tracking-[0.2em] text-muted uppercase">{item.stat}</span>
+          <span aria-hidden="true" className="text-accent opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 group-focus-visible:opacity-100">
+            <svg
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-3.5 w-3.5 translate-y-1 transition-[translate] duration-300 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-focus-visible:translate-x-0.5 group-focus-visible:-translate-y-0.5"
+            >
+              <path d="M4 12 12 4" />
+              <path d="M6.5 4H12v5.5" />
+            </svg>
+          </span>
+        </div>
       </div>
     </>
   );
@@ -153,7 +169,7 @@ function MobileCardCarousel({ items, ariaLabel }: { items: OrbitStackItem[]; ari
           <Link
             href={item.href}
             aria-label={`View ${item.name}`}
-            className={`block rounded-[1.9rem] border border-border p-4 text-foreground ${CARD_PALETTE[index % CARD_PALETTE.length]}`}
+            className={`group block rounded-[1.9rem] border border-border p-4 text-foreground ${CARD_PALETTE[index % CARD_PALETTE.length]}`}
           >
             <CardBody item={item} />
           </Link>
@@ -173,9 +189,8 @@ const VISIBLE_RADIUS = 2;
  * Together with VISIBLE_RADIUS this is the "lazy load" of the carousel:
  * with 23 real competitions, at most 7 are ever in the DOM at once, not 23. */
 const RENDER_RADIUS = VISIBLE_RADIUS + 1;
-/** How long each competition sits centred before the carousel advances —
- * slow on purpose, there's a title and a description to actually read. */
-const ROTATE_MS = 5500;
+/** How long each competition sits centred before the carousel advances. */
+const ROTATE_MS = 4000;
 const ARROW_SIZE = 40;
 const ARROW_GAP = 32;
 /** Fixed distance from the stage bottom. Card heights vary, so the circles
@@ -328,7 +343,7 @@ function DesktopOrbitStage({
                 href={item.href}
                 aria-label={`View ${item.name}`}
                 tabIndex={visible ? 0 : -1}
-                className={`block w-full rounded-[1.9rem] border border-border p-4 text-foreground outline-none transition-[box-shadow] duration-[420ms] ease-[cubic-bezier(.2,.8,.2,1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                className={`group block w-full rounded-[1.9rem] border border-border p-4 text-foreground outline-none transition-[box-shadow] duration-[420ms] ease-[cubic-bezier(.2,.8,.2,1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   CARD_PALETTE[itemIndex % CARD_PALETTE.length]
                 } ${active ? "shadow-[0_0_40px_10px_rgba(31,32,65,0.42)] dark:shadow-[0_0_40px_10px_rgba(0,0,0,0.65)]" : "shadow-[0_0_26px_6px_rgba(31,32,65,0.3)] dark:shadow-[0_0_26px_6px_rgba(0,0,0,0.5)]"}`}
               >

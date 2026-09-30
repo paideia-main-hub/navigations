@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus_Jakarta_Sans } from "next/font/google";
+import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { CompetitionSummary } from "@/domain/competitions/types";
 import { BandDivider } from "./BandDivider";
@@ -162,7 +163,7 @@ function SpotlightFace({ item }: { item: CompetitionSummary }) {
 }
 
 const STACK_CARD =
-  "absolute inset-x-3 top-2 bottom-1 flex flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/15 p-6 text-center shadow-[0_16px_36px_rgba(0,0,0,0.35)] sm:p-8";
+  "absolute top-2 right-3 bottom-1 left-12 flex flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/15 p-6 text-center shadow-[0_16px_36px_rgba(0,0,0,0.35)] sm:left-14 sm:p-8";
 
 /** Dark schemes far enough apart to read as different cards, still deep
  * enough for the white title and the orange date. */
@@ -191,72 +192,72 @@ function stackPose(fromFront: number, scaleOverride?: number): string {
   return `translate3d(${tx}px, ${ty}px, 0px) ${STACK_TILT} scale(${scale})`;
 }
 
-const STACK_EXIT = `translate3d(0px, -420px, 0px) ${STACK_TILT} scale(1.00)`;
+/** A short lift, not a flight past the section's top edge. The card fades
+ * while it rises, so it is gone before it can leave the band. */
+const STACK_EXIT = `translate3d(0px, -96px, 0px) ${STACK_TILT} scale(1.00)`;
 
 function restTransform(fromFront: number): string {
   if (fromFront > STACK_PEEKS) return stackPose(STACK_PEEKS, 0.8);
   return stackPose(fromFront);
 }
 
-function throwTransform(fromFront: number): string {
-  if (fromFront === 0) return STACK_EXIT;
-  return stackPose(Math.min(fromFront - 1, STACK_PEEKS));
-}
-
-function initialQueue(length: number): number[] {
+/** Cards waiting behind the front, in list order, including one tucked under the last peek. */
+function cardsBehind(front: number, length: number): number[] {
   if (length <= 1) return [];
   const count = Math.min(STACK_PEEKS + 1, length - 1);
-  return Array.from({ length: count }, (_, i) => i + 1);
+  return Array.from({ length: count }, (_, i) => (front + 1 + i) % length);
 }
 
-function shadeOf(itemIndex: number): number {
-  return itemIndex % STACK_SHADES.length;
+const ARROW_BUTTON =
+  "grid h-7 w-7 cursor-pointer place-items-center rounded-full border border-white/30 bg-[#14152c]/80 text-brand-deep-foreground shadow-md transition-[background-color,border-color,color,scale] duration-300 hover:scale-110 hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none";
+
+type Move = "idle" | "up" | "down";
+
+function layerMotion(fromFront: number, move: Move, animate: boolean): { transform: string; opacity: number } {
+  if (move === "up") {
+    if (fromFront === 0) return { transform: STACK_EXIT, opacity: 0 };
+    return { transform: restTransform(fromFront - 1), opacity: 1 };
+  }
+  if (move === "down") {
+    // First paint parks the returning card above the deck. The next frame
+    // lets it drop into front while the others step back.
+    if (fromFront === -1) {
+      return animate ? { transform: restTransform(0), opacity: 1 } : { transform: STACK_EXIT, opacity: 0 };
+    }
+    if (!animate) return { transform: restTransform(fromFront), opacity: 1 };
+    return { transform: restTransform(Math.min(fromFront + 1, STACK_PEEKS)), opacity: 1 };
+  }
+  return { transform: restTransform(fromFront), opacity: 1 };
 }
 
-function advanceQueue(index: number, queue: number[], length: number): { index: number; queue: number[] } {
-  const nextFront = queue[0];
-  if (nextFront === undefined) return { index, queue };
-  const rest = queue.slice(1);
-  if (length <= 2) return { index: nextFront, queue: [index] };
-  const staying = new Set([nextFront, ...rest]);
-  const usedShades = new Set([nextFront, ...rest].map(shadeOf));
-  const candidates = Array.from({ length }, (_, i) => i).filter((i) => !staying.has(i));
-  const distinct = candidates.filter((i) => !usedShades.has(shadeOf(i)));
-  const pool = distinct.length > 0 ? distinct : candidates;
-  const chosen = pool[Math.floor(Math.random() * pool.length)] ?? index;
-  return { index: nextFront, queue: [...rest, chosen] };
-}
-
-/** Front card throws straight up. The cards behind, including the one tucked
- * under the bottom peek, step one place forward together. The card that
- * replaces the tucked one is laid under the deck with the transition off,
- * so nothing pops in after the move. */
+/** Front card fades upward. The cards behind step one place forward together.
+ * Down brings the previous competition back in from above. */
 function StackSpotlight({ competitions }: { competitions: CompetitionSummary[] }) {
   const reduceMotion = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
-  const [queue, setQueue] = useState(() => initialQueue(competitions.length));
-  const [throwing, setThrowing] = useState(false);
+  const [move, setMove] = useState<Move>("idle");
   const [animate, setAnimate] = useState(true);
+  const [paused, setPaused] = useState(false);
+  const length = competitions.length;
 
-  const canPlay = !reduceMotion && competitions.length > 1;
+  const canPlay = !reduceMotion && length > 1;
 
   useEffect(() => {
-    if (!canPlay || throwing || !animate) return;
-    const id = window.setTimeout(() => setThrowing(true), 4200);
+    if (!canPlay || move !== "idle" || !animate || paused) return;
+    const id = window.setTimeout(() => setMove("up"), 4200);
     return () => window.clearTimeout(id);
-  }, [canPlay, throwing, animate, index]);
+  }, [canPlay, move, animate, paused, index]);
 
   useEffect(() => {
-    if (!throwing) return;
+    if (move === "idle") return;
     const id = window.setTimeout(() => {
-      const next = advanceQueue(index, queue, competitions.length);
+      const step = move === "up" ? 1 : -1;
       setAnimate(false);
-      setIndex(next.index);
-      setQueue(next.queue);
-      setThrowing(false);
-    }, 980);
+      setIndex((current) => (current + step + length) % length);
+      setMove("idle");
+    }, 900);
     return () => window.clearTimeout(id);
-  }, [throwing, queue, index, competitions.length]);
+  }, [move, length]);
 
   useEffect(() => {
     if (animate) return;
@@ -270,40 +271,78 @@ function StackSpotlight({ competitions }: { competitions: CompetitionSummary[] }
     };
   }, [animate]);
 
-  if (competitions.length === 0) return null;
+  if (length === 0) return null;
 
-  const layers = [index, ...queue].map((itemIndex, fromFront) => ({
-    fromFront,
-    itemIndex,
-    item: competitions[itemIndex] ?? competitions[0]!,
-  }));
+  const previous = (index - 1 + length) % length;
+  const behind = cardsBehind(index, length).filter((itemIndex) => move !== "down" || itemIndex !== previous);
+  const layers = [
+    ...(move === "down" ? [{ fromFront: -1, itemIndex: previous }] : []),
+    { fromFront: 0, itemIndex: index },
+    ...behind.map((itemIndex, position) => ({ fromFront: position + 1, itemIndex })),
+  ];
   const motion = animate ? `transform 0.85s ${STACK_EASE}` : "none";
-  const leave = animate ? `${motion}, opacity 0.3s ease 0.5s` : "none";
+  const leave = animate ? `${motion}, opacity 0.55s ease` : "none";
+
+  function step(direction: "up" | "down") {
+    if (length < 2 || move !== "idle") return;
+    if (direction === "down") setAnimate(false);
+    setMove(direction);
+  }
 
   return (
-    <div className="relative h-full min-h-[300px]">
+    <div
+      className="relative h-full min-h-[300px]"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
       {layers
         .slice()
         .reverse()
         .map((layer) => {
+          const item = competitions[layer.itemIndex] ?? competitions[0]!;
           const [from, to] = STACK_SHADES[layer.itemIndex % STACK_SHADES.length]!;
+          const posed = layerMotion(layer.fromFront, move, animate);
+          const clickable = layer.fromFront === 0 && move === "idle";
+          const style = {
+            zIndex: 10 - layer.fromFront,
+            backgroundImage: `linear-gradient(to right bottom, ${from}, ${to})`,
+            transition: layer.fromFront === 0 || layer.fromFront === -1 ? leave : motion,
+            transform: posed.transform,
+            opacity: posed.opacity,
+          };
           return (
             <div
-              key={layer.fromFront}
-              aria-hidden={throwing ? layer.fromFront !== 1 : layer.fromFront !== 0}
-              className={STACK_CARD}
-              style={{
-                zIndex: 10 - layer.fromFront,
-                backgroundImage: `linear-gradient(to right bottom, ${from}, ${to})`,
-                transition: layer.fromFront === 0 ? leave : motion,
-                transform: throwing ? throwTransform(layer.fromFront) : restTransform(layer.fromFront),
-                opacity: throwing && layer.fromFront === 0 ? 0 : 1,
-              }}
+              key={layer.itemIndex}
+              aria-hidden={!clickable}
+              className={`${STACK_CARD} ${clickable ? "" : "pointer-events-none"}`}
+              style={style}
             >
-              <SpotlightFace item={layer.item} />
+              {clickable ? (
+                <Link href={`/competitions/${item.slug}`} aria-label={`View ${item.title}`} className="flex h-full w-full cursor-pointer">
+                  <SpotlightFace item={item} />
+                </Link>
+              ) : (
+                <SpotlightFace item={item} />
+              )}
             </div>
           );
         })}
+      {length > 1 && (
+        <div className="absolute bottom-3 left-0 z-30 flex flex-col gap-1.5">
+          <button type="button" aria-label="Next competition" className={ARROW_BUTTON} onClick={() => step("up")}>
+            <svg viewBox="4 6 16 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-2.5 w-2.5">
+              <path d="m6 14 6-6 6 6" />
+            </svg>
+          </button>
+          <button type="button" aria-label="Previous competition" className={ARROW_BUTTON} onClick={() => step("down")}>
+            <svg viewBox="4 6 16 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-2.5 w-2.5">
+              <path d="m6 8 6 6 6-6" />
+            </svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
