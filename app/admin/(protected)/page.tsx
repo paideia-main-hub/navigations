@@ -36,6 +36,7 @@ export default async function AdminDashboardPage() {
           <QuickLink href="/admin/registrations" icon="📋" title="Registrations" body="View and export every registration." />
           <QuickLink href="/admin/judge-applications" icon="📝" title="Judge Applications" body="Review and approve judge applicants." />
           <QuickLink href="/admin/announcements" icon="📣" title="Announcements" body="Publish site-wide or competition notices." />
+          <QuickLink href="/admin/appreciations" icon="✨" title="Appreciations" body="Add appreciations shown under Announcements." />
           <QuickLink href="/admin/schools" icon="🏫" title="Schools" body="View every registered school." />
         </div>
       </section>

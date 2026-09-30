@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { BandDivider } from "./BandDivider";
 import { SectionHeading } from "./SectionHeading";
 
 const icons: Record<string, ReactNode> = {
@@ -50,8 +51,12 @@ const PORTALS = [
 
 export function QuickLinksGrid() {
   return (
-    <div className="bg-surface-alt">
-      <div className="mx-auto max-w-7xl px-6 py-16 sm:py-20">
+    <section className="relative mx-4 overflow-hidden rounded-[2rem] bg-surface-alt px-6 pt-16 pb-20 sm:mx-6 sm:rounded-[2.5rem] sm:pt-20 sm:pb-24 lg:mx-10 lg:pt-28 lg:pb-32">
+      {/* Same dome on both edges, matching Announcements rather than the
+          wave on Ways to Participate. */}
+      <BandDivider shape="curve" side="top" color="text-background" />
+      <BandDivider shape="curve" side="bottom" color="text-background" flip />
+      <div className="relative mx-auto max-w-7xl">
         <SectionHeading eyebrow="Explore the Platform" title="Quick Links" />
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-6">
@@ -92,6 +97,6 @@ export function QuickLinksGrid() {
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -8,6 +8,15 @@ import { FormField } from "@/ui/components/FormField";
 
 const initialState: ActionState = { error: null };
 
+/** Calendar day in the admin's timezone, matching how the public site formats it. */
+function toDateInputValue(iso?: string): string {
+  const date = iso ? new Date(iso) : new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export function AnnouncementForm({
   competitions,
   editing,
@@ -67,6 +76,13 @@ export function AnnouncementForm({
       </div>
 
       <FormField label="Title" name="title" required defaultValue={editing?.title} />
+      <FormField
+        label="Date shown on the site"
+        name="publish_date"
+        type="date"
+        required
+        defaultValue={toDateInputValue(editing?.publishDate)}
+      />
       <div>
         <label className="text-sm font-medium text-foreground">Body</label>
         <textarea

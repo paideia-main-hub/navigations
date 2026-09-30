@@ -17,6 +17,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: "🏠" },
   { href: "/admin/competitions", label: "Competitions", icon: "🏆" },
   { href: "/admin/announcements", label: "Announcements", icon: "📣" },
+  { href: "/admin/appreciations", label: "Appreciations", icon: "✨" },
   { href: "/admin/judge-applications", label: "Judge Applications", icon: "📝" },
   { href: "/admin/schools", label: "Schools", icon: "🏫" },
   { href: "/admin/students", label: "Students", icon: "🎓" },

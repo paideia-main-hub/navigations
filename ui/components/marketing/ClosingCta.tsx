@@ -2,16 +2,10 @@ import Link from "next/link";
 import { BandDivider } from "./BandDivider";
 import { BandTexture } from "./BandTexture";
 
-const STATS = [
-  { value: "14,200+", label: "Students registered" },
-  { value: "23", label: "Competitions this season" },
-  { value: "6", label: "Recognition layers" },
-] as const;
-
 export function ClosingCta() {
   return (
-    <section className="relative overflow-hidden bg-brand-deep px-6 pt-28 pb-20 text-center lg:pt-32 lg:pb-24">
-      <BandDivider shape="curve" side="top" color="text-surface-alt" flip />
+    <section className="relative mx-4 overflow-hidden rounded-tl-[4rem] rounded-tr-[4rem] bg-brand-deep px-6 pt-28 pb-20 text-center sm:mx-6 sm:rounded-tl-[6rem] sm:rounded-tr-[6rem] lg:mx-10 lg:pt-32 lg:pb-24">
+      <BandDivider shape="curve" side="top" color="text-background" flip />
       <BandTexture pattern="grid" className="text-brand-deep-foreground/[0.05]" />
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute top-1/2 left-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.08] blur-[130px]" />
@@ -41,17 +35,6 @@ export function ClosingCta() {
             Browse Competitions
           </Link>
         </div>
-
-        <dl className="mx-auto mt-14 grid max-w-2xl grid-cols-3 gap-4 border-t border-white/10 pt-8">
-          {STATS.map((s) => (
-            <div key={s.label}>
-              <dd className="text-2xl font-black text-white sm:text-3xl">{s.value}</dd>
-              <dt className="mt-1 text-[11px] leading-snug font-semibold tracking-wide text-brand-deep-muted uppercase">
-                {s.label}
-              </dt>
-            </div>
-          ))}
-        </dl>
       </div>
     </section>
   );

@@ -55,11 +55,10 @@ function interpolate(t: number, inputs: readonly number[], outputs: readonly num
   return outputs[last]!;
 }
 
-/** How far the scroll-jacked stage has moved through its own runway: 0 the
- * instant its top edge reaches the viewport top, 1 the instant its bottom
- * edge reaches the viewport bottom — exactly the span the `sticky` stage
- * inside stays pinned for (mirrors framer-motion's
- * `offset: ["start start", "end end"]`). */
+/** How far the sticky stage has travelled through its runway: 0 when the
+ * section's top reaches the viewport top, 1 when its bottom does. The
+ * runway is only a little taller than the screen, so the split still
+ * follows the scroll without pinning the page for several viewports. */
 function stageProgress(section: HTMLElement): number {
   const rect = section.getBoundingClientRect();
   const range = rect.height - window.innerHeight;
@@ -114,9 +113,9 @@ function CardFace({
         </div>
       )}
       <div className="relative z-10 flex h-full flex-col justify-center">
-        {card.icon && <div className="mb-4 w-fit opacity-90 [&_svg]:h-7 [&_svg]:w-7">{card.icon}</div>}
-        <h3 className="text-lg leading-tight font-semibold sm:text-xl">{card.title}</h3>
-        <p className="mt-2 text-sm opacity-80">{card.description}</p>
+        {card.icon && <div className="mb-4 w-fit opacity-90 [&_svg]:h-11 [&_svg]:w-11">{card.icon}</div>}
+        <h3 className="text-2xl leading-tight font-semibold sm:text-3xl">{card.title}</h3>
+        <p className="mt-3 text-lg leading-snug opacity-80">{card.description}</p>
       </div>
     </>
   );
@@ -160,11 +159,8 @@ function CardFace({
 
 /** A flat image that, scrubbed by scroll, cracks into `cards.length` panels,
  * flips each one over in place, and settles into a row of content cards.
- * Ported from a framer-motion original into plain scroll-linked style
- * writes (no new animation-library dependency), matching how
- * OrbitCardStack/RouteCard already drive continuous motion in this
- * project — direct `element.style.x = ...` on refs, not React state, so a
- * scroll tick never triggers a re-render. */
+ * Style writes go straight to refs so a scroll tick never triggers a
+ * re-render. */
 export function ScrollSplitCard({
   imageSrc,
   cards,
@@ -196,8 +192,7 @@ export function ScrollSplitCard({
       const t = stageProgress(section);
 
       const scale = interpolate(t, [0, 0.4], [1, 0.9]);
-      const cardsY = interpolate(t, [0.8, 1], [0, -200]);
-      groupRef.current?.style.setProperty("transform", `scale(${scale}) translateY(${cardsY}px)`);
+      groupRef.current?.style.setProperty("transform", `scale(${scale})`);
 
       const rotateY = interpolate(t, [0.4, 0.8], [0, 180]);
       const borderOpacity = interpolate(t, [0, 0.2], [0, 0.2]);
@@ -255,10 +250,10 @@ export function ScrollSplitCard({
     <>
       {/* Small screens (no room for five slivers to flip in place) and
           anyone who's asked for less motion both get the plain content
-          grid instead of the scroll-jacked version below. */}
+          grid instead of the split below. */}
       <div className={`mx-auto grid max-w-6xl gap-4 px-6 py-16 sm:grid-cols-2 lg:grid-cols-3 ${reduceMotion ? "" : "sm:hidden"}`}>
         {cards.map((card) => {
-          const className = `relative h-52 overflow-hidden rounded-2xl p-6 ${card.bgClassName} ${card.textClassName}`;
+          const className = `relative min-h-72 overflow-hidden rounded-2xl p-6 ${card.bgClassName} ${card.textClassName}`;
           const body = (
             <>
               {card.icon && (
@@ -270,9 +265,9 @@ export function ScrollSplitCard({
                 </div>
               )}
               <div className="relative z-10 flex h-full flex-col justify-center">
-                {card.icon && <div className="mb-3 w-fit opacity-90 [&_svg]:h-6 [&_svg]:w-6">{card.icon}</div>}
-                <h3 className="text-lg font-semibold leading-tight">{card.title}</h3>
-                <p className="mt-2 text-sm opacity-80">{card.description}</p>
+                {card.icon && <div className="mb-3 w-fit opacity-90 [&_svg]:h-9 [&_svg]:w-9">{card.icon}</div>}
+                <h3 className="text-2xl font-semibold leading-tight">{card.title}</h3>
+                <p className="mt-3 text-lg leading-snug opacity-80">{card.description}</p>
               </div>
             </>
           );
@@ -289,18 +284,18 @@ export function ScrollSplitCard({
       </div>
 
       {!reduceMotion && (
-        <div ref={sectionRef} className="relative hidden h-[500vh] w-full sm:block">
-          <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden [perspective:1200px]">
+        <div ref={sectionRef} className="relative hidden h-[200vh] w-full sm:block">
+          <div className="sticky top-0 flex h-screen w-full flex-col items-center justify-center overflow-hidden px-6 [perspective:1200px] sm:px-10">
             <p
               ref={startTextRef}
-              className="absolute top-[20%] right-0 left-0 text-center text-sm font-medium tracking-widest text-foreground/50 uppercase"
+              className="absolute top-[7%] right-0 left-0 text-center text-sm font-medium tracking-widest text-foreground/50 uppercase"
             >
               {startLabel}
             </p>
 
             <div
               ref={groupRef}
-              className="relative flex h-[min(60vh,560px)] min-h-[320px] w-full"
+              className="relative flex h-[min(66vh,640px)] min-h-[360px] w-full"
               style={{ transformStyle: "preserve-3d" }}
             >
               {cards.map((card, i) => (
@@ -326,7 +321,7 @@ export function ScrollSplitCard({
             {endLabel && (
               <p
                 ref={endTextRef}
-                className="absolute right-0 bottom-[20%] left-0 text-center text-2xl font-medium tracking-tight text-foreground/80 italic sm:text-3xl"
+                className="mt-8 text-center text-2xl font-medium tracking-tight text-foreground/80 italic sm:text-3xl"
                 style={{ opacity: 0 }}
               >
                 {endLabel}

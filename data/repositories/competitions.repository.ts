@@ -44,6 +44,8 @@ type Row = {
   slug: string;
   title: string;
   short_description: string | null;
+  dates_card_one?: string | null;
+  dates_card_two?: string | null;
   overview: string | null;
   domain_competency_area: string | null;
   status: CompetitionStatus;
@@ -200,6 +202,8 @@ function toCompetition(row: Row): Competition {
     slug: row.slug,
     title: row.title,
     shortDescription: row.short_description ?? "",
+    datesCardOne: row.dates_card_one ?? "",
+    datesCardTwo: row.dates_card_two ?? "",
     overview: row.overview ?? "",
     domain: row.domain_competency_area ?? "",
     status: row.status,
@@ -271,6 +275,13 @@ const SUMMARY_COLUMNS = `
 `;
 
 const SUMMARY_SELECT = `
+  ${SUMMARY_COLUMNS}, pathway, image_url, dates_card_one, dates_card_two,
+  competition_eligibility_rules (*),
+  events (*)
+`;
+
+/** Without the two columns migration 0020 adds. */
+const SUMMARY_SELECT_PRE_0020 = `
   ${SUMMARY_COLUMNS}, pathway, image_url,
   competition_eligibility_rules (*),
   events (*)
@@ -310,6 +321,8 @@ function toSummary(row: Row): CompetitionSummary {
     slug: row.slug,
     title: row.title,
     shortDescription: row.short_description ?? "",
+    datesCardOne: row.dates_card_one ?? "",
+    datesCardTwo: row.dates_card_two ?? "",
     domain: row.domain_competency_area ?? "",
     status: row.status,
     // Falls back to the known Route 1 category by slug when the DB's own
@@ -336,6 +349,13 @@ export const getCompetitionSummaries = cache(async (supabase: SupabaseClient): P
   if (!first.error && first.data) return (first.data as unknown as Row[]).map(toSummary);
 
   if (first.error?.code !== UNDEFINED_COLUMN) return [];
+
+  const withoutDatesCards = await supabase.from("competitions").select(SUMMARY_SELECT_PRE_0020).order("created_at");
+  if (!withoutDatesCards.error && withoutDatesCards.data) {
+    return (withoutDatesCards.data as unknown as Row[]).map(toSummary);
+  }
+
+  if (withoutDatesCards.error?.code !== UNDEFINED_COLUMN) return [];
 
   const legacy = await supabase.from("competitions").select(SUMMARY_SELECT_PRE_0018).order("created_at");
   if (legacy.error || !legacy.data) return [];
@@ -444,6 +464,8 @@ export interface CompetitionCoreInput {
   slug: string;
   title: string;
   shortDescription: string;
+  datesCardOne: string;
+  datesCardTwo: string;
   overview: string;
   domain: string;
   pathway: CompetitionPathway | null;
@@ -461,6 +483,8 @@ function coreToRow(input: CompetitionCoreInput) {
     slug: input.slug,
     title: input.title,
     short_description: input.shortDescription,
+    dates_card_one: input.datesCardOne,
+    dates_card_two: input.datesCardTwo,
     overview: input.overview,
     domain_competency_area: input.domain,
     pathway: input.pathway,

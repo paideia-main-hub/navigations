@@ -108,7 +108,7 @@ export function RouteCard({
         <span className="relative z-10 grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-accent/10 text-brand-deep-accent transition-all duration-300 ease-out group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-accent group-hover:text-accent-foreground group-hover:shadow-[0_0_0_8px_rgba(255,105,31,0.14)]">
           {icon}
         </span>
-        <span className="relative z-10 flex-1 text-sm leading-snug font-semibold text-balance text-brand-deep">
+        <span className="relative z-10 flex-1 origin-center text-sm leading-snug font-semibold text-balance text-brand-deep transition-transform duration-300 ease-out group-hover:scale-110">
           {label}
         </span>
         <span
@@ -119,7 +119,7 @@ export function RouteCard({
           <span className="inline-block transition-transform duration-300 ease-out group-hover:translate-x-1">→</span>
         </span>
 
-        <span aria-hidden="true" className="absolute right-4 bottom-3 z-0 text-xl font-bold text-foreground/20 tabular-nums">
+        <span aria-hidden="true" className="absolute right-4 bottom-3 z-0 text-3xl font-bold text-foreground/20 tabular-nums">
           {String(number).padStart(2, "0")}
         </span>
       </Link>

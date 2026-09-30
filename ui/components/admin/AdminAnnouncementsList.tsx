@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { expireAnnouncementAction, type ActionState } from "@/domain/announcements/actions";
+import { setAnnouncementStatusAction, type ActionState } from "@/domain/announcements/actions";
 import { announcementCategoryLabels, type Announcement } from "@/domain/announcements/types";
 import type { Competition } from "@/domain/competitions/types";
 import { Badge } from "@/ui/components/Badge";
@@ -9,15 +9,31 @@ import { AnnouncementForm } from "./AnnouncementForm";
 
 const initialState: ActionState = { error: null };
 
-function ExpireButton({ announcementId }: { announcementId: string }) {
-  const [state, formAction, pending] = useActionState(expireAnnouncementAction, initialState);
+function StatusSelect({ announcement }: { announcement: Announcement }) {
+  const published = !announcement.expiryDate || new Date(announcement.expiryDate).getTime() > Date.now();
+  const status = published ? "published" : "expired";
+  const [state, formAction, pending] = useActionState(setAnnouncementStatusAction, initialState);
+
   return (
-    <form action={formAction}>
-      <input type="hidden" name="announcement_id" value={announcementId} />
-      <button type="submit" disabled={pending} className="text-sm font-medium text-red-600 dark:text-red-400">
-        {pending ? "…" : "Expire"}
-      </button>
-      {state.error && <p className="text-xs text-red-600 dark:text-red-400">{state.error}</p>}
+    <form action={formAction} className="flex items-center gap-2">
+      <input type="hidden" name="announcement_id" value={announcement.id} />
+      <input type="hidden" name="competition_slug" value={announcement.competitionSlug ?? ""} />
+      <label htmlFor={`status-${announcement.id}`} className="sr-only">
+        Status for {announcement.title}
+      </label>
+      <select
+        id={`status-${announcement.id}`}
+        key={status}
+        name="status"
+        defaultValue={status}
+        disabled={pending}
+        onChange={(event) => event.currentTarget.form?.requestSubmit()}
+        className="rounded-full border border-border bg-background px-3 py-1.5 text-sm text-foreground disabled:opacity-60"
+      >
+        <option value="published">Published</option>
+        <option value="expired">Expired</option>
+      </select>
+      {state.error && <span className="text-xs text-red-600 dark:text-red-400">{state.error}</span>}
     </form>
   );
 }
@@ -49,7 +65,7 @@ export function AdminAnnouncementsList({
                 <button onClick={() => setEditing(a)} className="text-sm font-medium text-accent">
                   Edit
                 </button>
-                <ExpireButton announcementId={a.id} />
+                <StatusSelect announcement={a} />
               </div>
             </div>
             <p className="mt-2 font-semibold text-foreground">{a.title}</p>

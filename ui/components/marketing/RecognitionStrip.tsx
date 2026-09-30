@@ -26,45 +26,48 @@ const ICON_PATH: Record<string, string> = {
   trophy: "M8 21h8m-4-4v4m-6-17h12v5a6 6 0 0 1-12 0V4Zm0 2H4a2 2 0 0 0 0 4h2m12-4h2a2 2 0 0 1 0 4h-2",
 };
 
-const RECOGNITION_IMAGE =
-  "https://images.unsplash.com/photo-1698993082050-19ca94c62fb8?q=80&w=2400&auto=format&fit=crop";
+const RECOGNITION_IMAGE = "/recognition-ceremony.png";
 
 const RECOGNITION_CARDS: ScrollSplitCardItem[] = [
   {
-    title: "Digital Certificate",
-    description: "Issued to every participant who completes their competition.",
+    title: "Competition Distinctions",
+    description:
+      "Recognising performance in each competition through transparent criteria, evidence-based evaluation and meaningful distinctions for participants.",
     icon: <Icon path={ICON_PATH.certificate!} />,
     bgClassName: "bg-accent-soft",
     textClassName: "text-foreground",
   },
   {
-    title: "Digital Badge",
-    description: "A shareable mark of the competency the competition evidenced.",
+    title: "School Leaderboard and School Awards",
+    description:
+      "Recognising schools for achievement, participation, diversity and engagement through a transparent, balanced, merit-based evaluation framework.",
     icon: <Icon path={ICON_PATH.badge!} />,
     bgClassName: "bg-brand-deep",
     textClassName: "text-brand-deep-foreground",
   },
   {
-    title: "Competition Distinctions",
-    description: "Outstanding Performer, Distinguished Finalist and Emerging Talent.",
+    title: "Spotlight Awards",
+    description:
+      "Celebrating exceptional ideas, stories, mentorship and contributions extending beyond scheduled League competitions and formal challenges.",
     icon: <Icon path={ICON_PATH.chart!} />,
     bgClassName: "bg-accent",
     textClassName: "text-accent-foreground",
   },
   {
-    title: "Special Recognition Opportunities",
-    description: "Spotlight, school, sports and teacher awards across five layers.",
+    title: "Teacher and Parent Recognition",
+    description:
+      "Honouring educators and parents whose guidance, encouragement and support meaningfully strengthen students’ future readiness journeys.",
     icon: <Icon path={ICON_PATH.star!} />,
     bgClassName: "bg-surface-alt",
     textClassName: "text-foreground",
   },
   {
-    title: "Five Layers of Awards",
-    description: "From competition distinctions to school and sports recognition — view the full Awards Framework.",
+    title: "Sports Recognition Awards",
+    description:
+      "Recognising verified sporting achievements earned outside League competitions, reflecting commitment, discipline, excellence and demonstrated perseverance.",
     icon: <Icon path={ICON_PATH.trophy!} />,
     bgClassName: "bg-brand-deep",
     textClassName: "text-brand-deep-foreground",
-    href: "/awards",
   },
 ];
 
@@ -74,7 +77,7 @@ export function RecognitionStrip(): ReactNode {
       <div className="mx-auto max-w-7xl px-6 pt-16">
         <h2 className="flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
           <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
-          Recognition for Every Participant
+          5 Layers Recognitions
         </h2>
       </div>
 

@@ -132,6 +132,9 @@ export interface CompetitionSummary {
   slug: string;
   title: string;
   shortDescription: string;
+  /** Two short lines shown as small cards on the Important Dates carousel. */
+  datesCardOne: string;
+  datesCardTwo: string;
   domain: string;
   status: CompetitionStatus;
   pathway: CompetitionPathway | null;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { pathwayLabels, type CompetitionSummary } from "@/domain/competitions/types";
 import { layerLabels, type AwardCategory } from "@/domain/awards/types";
 import { OrbitCardStack, type OrbitStackItem } from "@/ui/components/marketing/OrbitCardStack";
@@ -51,15 +51,38 @@ export function ExploreCompetitionsToggle({
   awardCategories: AwardCategory[];
 }) {
   const [route, setRoute] = useState<Route>(1);
+  const tabListRef = useRef<HTMLDivElement>(null);
+  const [pill, setPill] = useState<{ x: number; width: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const list = tabListRef.current;
+    if (!list) return;
+
+    const place = () => {
+      const selected = list.querySelector<HTMLElement>('[aria-selected="true"]');
+      if (!selected) return;
+      setPill({ x: selected.offsetLeft, width: selected.offsetWidth });
+    };
+
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [route]);
 
   return (
     <div>
       <SectionHeading eyebrow="Competition Directory" title="Explore Competitions" />
       <div
+        ref={tabListRef}
         role="tablist"
         aria-label="Ways to participate"
-        className="inline-flex rounded-lg border border-border bg-surface p-1"
+        className="relative inline-flex rounded-lg border border-border bg-surface p-1"
       >
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1 bottom-1 left-0 rounded-md bg-accent transition-[transform,width] duration-300 ease-out motion-reduce:transition-none"
+          style={pill ? { width: pill.width, transform: `translateX(${pill.x}px)` } : { opacity: 0 }}
+        />
         {([1, 2] as Route[]).map((r) => (
           <button
             key={r}
@@ -67,8 +90,8 @@ export function ExploreCompetitionsToggle({
             type="button"
             aria-selected={route === r}
             onClick={() => setRoute(r)}
-            className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
-              route === r ? "bg-accent text-accent-foreground" : "text-muted hover:text-foreground"
+            className={`relative z-10 rounded-md px-4 py-2 text-sm font-semibold transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
+              route === r ? "text-accent-foreground" : "text-muted hover:text-foreground"
             }`}
           >
             Route {r}
@@ -77,26 +100,28 @@ export function ExploreCompetitionsToggle({
         ))}
       </div>
 
-      {route === 1 ? (
-        <OrbitCardStack
-          ariaLabel="Featured competitions"
-          items={competitions.map(competitionToItem)}
-          viewAllHref="/competitions"
-          viewAllLabel="View all competitions"
-        />
-      ) : (
-        <>
+      <div role="tabpanel" className="pt-12">
+        {route === 1 ? (
           <OrbitCardStack
-            ariaLabel="Open award nominations"
-            items={awardCategories.map(awardToItem)}
-            viewAllHref="/awards"
-            viewAllLabel="View all awards"
+            ariaLabel="Featured competitions"
+            items={competitions.map(competitionToItem)}
+            viewAllHref="/competitions"
+            viewAllLabel="View all competitions"
           />
-          {awardCategories.length === 0 && (
-            <p className="py-12 text-center text-sm text-muted">No award categories are open for submissions right now.</p>
-          )}
-        </>
-      )}
+        ) : (
+          <>
+            <OrbitCardStack
+              ariaLabel="Open award nominations"
+              items={awardCategories.map(awardToItem)}
+              viewAllHref="/awards"
+              viewAllLabel="View all awards"
+            />
+            {awardCategories.length === 0 && (
+              <p className="py-12 text-center text-sm text-muted">No award categories are open for submissions right now.</p>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

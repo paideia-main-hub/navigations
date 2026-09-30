@@ -23,6 +23,7 @@ function toAnnouncement(row: Row): Announcement {
     title: row.title,
     body: row.body,
     publishDate: row.publish_date,
+    expiryDate: row.expiry_date,
     isImportant: row.is_important,
   };
 }
@@ -55,6 +56,8 @@ export interface AnnouncementInput {
   title: string;
   body: string;
   isImportant: boolean;
+  /** Calendar day stored at noon UTC so the public site shows that date. */
+  publishDate: string;
 }
 
 export async function insertAnnouncement(admin: SupabaseClient, input: AnnouncementInput): Promise<{ error: string | null }> {
@@ -64,6 +67,7 @@ export async function insertAnnouncement(admin: SupabaseClient, input: Announcem
     title: input.title,
     body: input.body,
     is_important: input.isImportant,
+    publish_date: input.publishDate,
   });
   return { error: error?.message ?? null };
 }
@@ -81,13 +85,22 @@ export async function updateAnnouncement(
       title: input.title,
       body: input.body,
       is_important: input.isImportant,
+      publish_date: input.publishDate,
     })
     .eq("id", id);
   return { error: error?.message ?? null };
 }
 
-/** Soft-expire rather than hard-delete, matching the spec's "create/edit/expire" language. */
-export async function expireAnnouncement(admin: SupabaseClient, id: string): Promise<{ error: string | null }> {
-  const { error } = await admin.from("announcements").update({ expiry_date: new Date().toISOString() }).eq("id", id);
+/** Published clears the expiry so the notice returns to the public site.
+ * Expired stamps the current time, which hides it from public reads. */
+export async function setAnnouncementStatus(
+  admin: SupabaseClient,
+  id: string,
+  status: "published" | "expired",
+): Promise<{ error: string | null }> {
+  const { error } = await admin
+    .from("announcements")
+    .update({ expiry_date: status === "published" ? null : new Date().toISOString() })
+    .eq("id", id);
   return { error: error?.message ?? null };
 }
