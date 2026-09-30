@@ -15,6 +15,8 @@ export interface Announcement {
   title: string;
   body: string;
   publishDate: string;
+  /** Null means the notice stays public. A past timestamp hides it. */
+  expiryDate: string | null;
   isImportant?: boolean;
 }
 

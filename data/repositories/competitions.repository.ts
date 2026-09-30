@@ -44,6 +44,8 @@ type Row = {
   slug: string;
   title: string;
   short_description: string | null;
+  dates_card_one?: string | null;
+  dates_card_two?: string | null;
   overview: string | null;
   domain_competency_area: string | null;
   status: CompetitionStatus;
@@ -201,6 +203,8 @@ function toCompetition(row: Row): Competition {
     slug: row.slug,
     title: row.title,
     shortDescription: row.short_description ?? "",
+    datesCardOne: row.dates_card_one ?? "",
+    datesCardTwo: row.dates_card_two ?? "",
     overview: row.overview ?? "",
     domain: row.domain_competency_area ?? "",
     status: row.status,
@@ -272,23 +276,24 @@ const SUMMARY_COLUMNS = `
   created_at, updated_at
 `;
 
-const SUMMARY_SELECT = `
-  ${SUMMARY_COLUMNS}, pathway, image_url, competencies,
+const SUMMARY_CHILDREN = `
   competition_eligibility_rules (*),
   events (*)
 `;
 
-/** Without the column migration 0020 adds, for a database that has 0018 but
- * not 0020 yet. */
-const SUMMARY_SELECT_PRE_0020 = `
-  ${SUMMARY_COLUMNS}, pathway, image_url,
-  competition_eligibility_rules (*),
-  events (*)
-`;
+const SUMMARY_SELECT = `${SUMMARY_COLUMNS}, pathway, image_url, dates_card_one, dates_card_two, competencies, ${SUMMARY_CHILDREN}`;
+
+/** Fallbacks for a database missing migration 0022 (competencies), 0020
+ * (Important Dates card lines) or both — tried in order, each only after the
+ * previous failed on a missing column, so whichever of the two is applied
+ * still gets read. */
+const SUMMARY_SELECT_PRE_0022 = `${SUMMARY_COLUMNS}, pathway, image_url, dates_card_one, dates_card_two, ${SUMMARY_CHILDREN}`;
+const SUMMARY_SELECT_PRE_0020_WITH_COMPETENCIES = `${SUMMARY_COLUMNS}, pathway, image_url, competencies, ${SUMMARY_CHILDREN}`;
+const SUMMARY_SELECT_PRE_0020 = `${SUMMARY_COLUMNS}, pathway, image_url, ${SUMMARY_CHILDREN}`;
 
 /** Same query without the two columns migration 0018 adds, so a database that
  * hasn't had it applied still serves every listing on the site. Remove these
- * fallbacks, and the retries below, once 0018 and 0020 are applied
+ * fallbacks, and the retries below, once 0018, 0020 and 0022 are applied
  * everywhere. */
 const SUMMARY_SELECT_PRE_0018 = `
   ${SUMMARY_COLUMNS},
@@ -321,6 +326,8 @@ function toSummary(row: Row): CompetitionSummary {
     slug: row.slug,
     title: row.title,
     shortDescription: row.short_description ?? "",
+    datesCardOne: row.dates_card_one ?? "",
+    datesCardTwo: row.dates_card_two ?? "",
     domain: row.domain_competency_area ?? "",
     status: row.status,
     // Falls back to the known Route 1 category by slug when the DB's own
@@ -344,9 +351,14 @@ function toSummary(row: Row): CompetitionSummary {
 /** Every competition with the card/filter/deadline fields only. The default
  * choice for listings, directories and dashboard slug lookups. */
 export const getCompetitionSummaries = cache(async (supabase: SupabaseClient): Promise<CompetitionSummary[]> => {
-  // Newest schema first; step back one migration at a time only while the
-  // failure is a missing column.
-  for (const select of [SUMMARY_SELECT, SUMMARY_SELECT_PRE_0020, SUMMARY_SELECT_PRE_0018]) {
+  // Newest schema first; step back only while the failure is a missing column.
+  for (const select of [
+    SUMMARY_SELECT,
+    SUMMARY_SELECT_PRE_0022,
+    SUMMARY_SELECT_PRE_0020_WITH_COMPETENCIES,
+    SUMMARY_SELECT_PRE_0020,
+    SUMMARY_SELECT_PRE_0018,
+  ]) {
     const { data, error } = await supabase.from("competitions").select(select).order("created_at");
     if (!error && data) return (data as unknown as Row[]).map(toSummary);
     if (error?.code !== UNDEFINED_COLUMN) return [];
@@ -464,6 +476,8 @@ export interface CompetitionCoreInput {
   slug: string;
   title: string;
   shortDescription: string;
+  datesCardOne: string;
+  datesCardTwo: string;
   overview: string;
   domain: string;
   pathway: CompetitionPathway | null;
@@ -482,6 +496,8 @@ function coreToRow(input: CompetitionCoreInput) {
     slug: input.slug,
     title: input.title,
     short_description: input.shortDescription,
+    dates_card_one: input.datesCardOne,
+    dates_card_two: input.datesCardTwo,
     overview: input.overview,
     domain_competency_area: input.domain,
     pathway: input.pathway,
@@ -497,11 +513,11 @@ function coreToRow(input: CompetitionCoreInput) {
 }
 
 /** Shown when a save succeeded except for competencies, because migration
- * 0020 hasn't been applied to this database yet. */
+ * 0022 hasn't been applied to this database yet. */
 export const COMPETENCIES_PENDING_MIGRATION =
-  "Saved, but competencies were not stored: apply supabase/migrations/0020_competition_competencies.sql to the database first.";
+  "Saved, but competencies were not stored: apply supabase/migrations/0022_competition_competencies.sql to the database first.";
 
-/** A missing `competencies` column (migration 0020 not applied) must not
+/** A missing `competencies` column (migration 0022 not applied) must not
  * block the rest of a save, so these writes retry once without it and report
  * that via `warning`. */
 function isMissingCompetenciesColumn(error: { code?: string; message?: string } | null): boolean {

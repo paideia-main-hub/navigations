@@ -1,5 +1,5 @@
 import { Fragment, type ReactNode } from "react";
-import { BandDivider } from "./BandDivider";
+import { BLOB_PATH, BandDivider } from "./BandDivider";
 import { BandTexture } from "./BandTexture";
 
 /** "Why we exist" — the four steps a student moves through, on a dark band.
@@ -49,14 +49,48 @@ function Connector() {
   );
 }
 
+/** Shadow that follows the bottom blob, rather than the section's straight box. */
+function CurveShadow() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 1440 108"
+      preserveAspectRatio="none"
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-12 w-full overflow-visible sm:h-16 lg:h-20"
+    >
+      <defs>
+        <mask id="journey-curve-above" maskUnits="userSpaceOnUse">
+          <rect width="1440" height="108" fill="white" />
+          <path d={BLOB_PATH} transform="translate(0 108) scale(1 -1)" fill="black" />
+        </mask>
+        <filter id="journey-curve-shadow" x="-8%" y="-30%" width="116%" height="220%" colorInterpolationFilters="sRGB">
+          <feDropShadow dx="0" dy="12" stdDeviation="7" floodColor="#1f2041" floodOpacity="0.55" />
+        </filter>
+        {/* Keeps the shadow under the curve and off the straight side edges. */}
+        <clipPath id="journey-curve-below" clipPathUnits="userSpaceOnUse">
+          <rect x="0" y="0" width="1440" height="200" />
+        </clipPath>
+      </defs>
+      <g clipPath="url(#journey-curve-below)">
+        <g filter="url(#journey-curve-shadow)">
+          <rect width="1440" height="108" fill="#1f2041" mask="url(#journey-curve-above)" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 export function AboutJourney() {
   return (
-    <section className="relative overflow-hidden bg-brand-deep px-6 pt-36 pb-40 sm:pt-44 lg:pt-52 lg:pb-48">
-      {/* The blob's own curve dips to ~103% of its nominal box height (measured
-          from its path data), so pt- has to clear more than just the divider's
-          own height class or the eyebrow text below sits right on the dip. */}
-      <BandDivider shape="blob" side="top" color="text-surface-alt" className="h-28 sm:h-36 lg:h-44" flip />
-      <BandDivider shape="dune" side="bottom" color="text-background" className="h-28 sm:h-36 lg:h-44" />
+    <div className="relative z-10 mx-4 mt-8 sm:mx-6 sm:mt-10 lg:mx-10 lg:mt-12">
+      {/* Same curve as the top of the second section: this band's colour rises into the one above. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-full z-10 h-12 sm:h-16 lg:h-20">
+        <div className="relative h-full">
+          <BandDivider shape="blob" side="bottom" color="text-brand-deep" className="h-full" />
+        </div>
+      </div>
+    <section className="relative overflow-hidden bg-brand-deep px-6 pt-16 pb-36 sm:pt-20 sm:pb-40 lg:pt-24 lg:pb-44">
+      <BandDivider shape="blob" side="bottom" color="text-background" className="h-12 sm:h-16 lg:h-20" />
       <BandTexture pattern="grid" className="text-brand-deep-foreground/[0.05]" />
 
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -96,7 +130,7 @@ export function AboutJourney() {
                   </span>
                 </div>
 
-                <p className="mt-5 text-sm leading-snug font-bold text-brand-deep-foreground transition-colors duration-300 group-hover:text-accent">
+                <p className="mt-5 text-base leading-snug font-bold text-brand-deep-foreground transition-colors duration-300 group-hover:text-accent sm:text-lg">
                   {step.line1}
                   <br />
                   {step.line2}
@@ -109,5 +143,7 @@ export function AboutJourney() {
         </ol>
       </div>
     </section>
+      <CurveShadow />
+    </div>
   );
 }

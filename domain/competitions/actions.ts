@@ -60,6 +60,7 @@ function revalidateCompetition(id: string, slug?: string) {
   revalidatePath("/admin/competitions");
   revalidatePath(`/admin/competitions/${id}`);
   revalidatePath("/competitions");
+  revalidatePath("/");
   if (slug) revalidatePath(`/competitions/${slug}`);
 }
 
@@ -75,6 +76,8 @@ export async function createCompetitionAction(_prevState: ActionState, formData:
     slug: slugify(String(formData.get("slug") ?? "")),
     title: String(formData.get("title") ?? "").trim(),
     shortDescription: String(formData.get("short_description") ?? ""),
+    datesCardOne: String(formData.get("dates_card_one") ?? "").trim(),
+    datesCardTwo: String(formData.get("dates_card_two") ?? "").trim(),
     overview: "",
     // Both are set later from the competition editor.
     pathway: null,
@@ -109,6 +112,8 @@ export async function updateCompetitionCoreAction(_prevState: ActionState, formD
     slug: newSlug,
     title: String(formData.get("title") ?? "").trim(),
     shortDescription: String(formData.get("short_description") ?? ""),
+    datesCardOne: String(formData.get("dates_card_one") ?? "").trim(),
+    datesCardTwo: String(formData.get("dates_card_two") ?? "").trim(),
     overview: String(formData.get("overview") ?? ""),
     domain: String(formData.get("domain") ?? ""),
     pathway: (String(formData.get("pathway") ?? "") || null) as CompetitionPathway | null,

@@ -9,13 +9,9 @@ const slideTitleFont = Plus_Jakarta_Sans({
   weight: ["700", "800"],
 });
 
-/** Landing-page slider copy. Each slide carries its own light, dark-mode-aware
- * tint (same "bg-X-50 / dark:bg-X-500/10" pattern used for the announcement
- * categories) so the rotating panel picks up a bit of colour on every turn
- * instead of sitting on the same plain card every time. `hue` picks which
- * BUBBLE_TINTS entry the background bubbles use, so they stay coordinated
- * with whichever tint is currently showing instead of a single fixed colour
- * regardless of slide. */
+/** Landing-page slider copy. `hue` fills the whole card with the colour the
+ * old background bubbles used, and picks a darker icon and pagination dot
+ * in that same hue. */
 const SLIDE_ICONS = {
   formats: (
     <>
@@ -102,138 +98,130 @@ const CORNERS: Record<SlideCorner, string> = {
   "bottom-right": "bottom-12 right-4",
 };
 
-/** A step darker than each slide wash, so the mark reads as part of the
- * card rather than a separate badge. */
+/** Card fill is the stronger bubble tint. The icon sits a step darker than
+ * that fill in light mode, and a step lighter in dark mode so it stays
+ * visible on the darker wash. */
 const INK = {
-  accent: "text-[#e8b394] dark:text-[#d48962]",
-  blue: "text-blue-300 dark:text-blue-300/70",
-  emerald: "text-emerald-300 dark:text-emerald-300/70",
-  violet: "text-violet-300 dark:text-violet-300/70",
+  accent: "text-[#c45324] dark:text-[#ffb089]",
+  blue: "text-blue-600 dark:text-blue-300",
+  emerald: "text-emerald-600 dark:text-emerald-300",
+  violet: "text-violet-600 dark:text-violet-300",
 } as const;
 
-/** Active dot is a solid step darker than the slide wash; idle dots are the
- * same hue, lighter, so the row still reads against that background. */
+/** Active dot is solid and darker than the bubble fill; idle dots are the
+ * same hue, lighter, and still darker than the fill so the row stays clear. */
 const DOT = {
   accent: {
-    active: "bg-[#d4652e] dark:bg-[#ff8a4a]",
-    idle: "bg-[#e8b394] hover:bg-[#d4956e] dark:bg-[#d48962]/55 dark:hover:bg-[#d48962]",
+    active: "bg-[#c4400a] dark:bg-[#ffb089]",
+    idle: "bg-[#e07a45] hover:bg-[#c45324] dark:bg-[#ffb089]/45 dark:hover:bg-[#ffb089]/75",
   },
   blue: {
-    active: "bg-blue-600 dark:bg-blue-400",
-    idle: "bg-blue-300 hover:bg-blue-400 dark:bg-blue-400/40 dark:hover:bg-blue-400/70",
+    active: "bg-blue-700 dark:bg-blue-300",
+    idle: "bg-blue-500 hover:bg-blue-600 dark:bg-blue-300/45 dark:hover:bg-blue-300/75",
   },
   emerald: {
-    active: "bg-emerald-600 dark:bg-emerald-400",
-    idle: "bg-emerald-300 hover:bg-emerald-400 dark:bg-emerald-400/40 dark:hover:bg-emerald-400/70",
+    active: "bg-emerald-700 dark:bg-emerald-300",
+    idle: "bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-300/45 dark:hover:bg-emerald-300/75",
   },
   violet: {
-    active: "bg-violet-600 dark:bg-violet-400",
-    idle: "bg-violet-300 hover:bg-violet-400 dark:bg-violet-400/40 dark:hover:bg-violet-400/70",
+    active: "bg-violet-700 dark:bg-violet-300",
+    idle: "bg-violet-500 hover:bg-violet-600 dark:bg-violet-300/45 dark:hover:bg-violet-300/75",
   },
 } as const;
 
-const SLIDES: { title: string; body: string; bg: string; icon: SlideIcon; corner: SlideCorner; ink: string; hue: keyof typeof INK }[] = [
+/** Arrow circles use a deeper step of the slide fill. Hover fills that
+ * circle with the same hue, dark in light mode and light in dark mode. */
+const ARROW = {
+  accent:
+    "border-[#c45324] bg-[#e39a72] text-[#9a3412] hover:border-[#c4400a] hover:bg-[#c4400a] hover:text-white focus-visible:ring-[#c4400a] dark:border-[#ffb089] dark:bg-[#ffb089]/15 dark:text-[#ffb089] dark:hover:border-[#ffb089] dark:hover:bg-[#ffb089] dark:hover:text-[#3a2519] dark:focus-visible:ring-[#ffb089]",
+  blue:
+    "border-blue-600 bg-blue-300 text-blue-800 hover:border-blue-700 hover:bg-blue-700 hover:text-white focus-visible:ring-blue-700 dark:border-blue-300 dark:bg-blue-300/15 dark:text-blue-200 dark:hover:border-blue-300 dark:hover:bg-blue-300 dark:hover:text-blue-950 dark:focus-visible:ring-blue-300",
+  emerald:
+    "border-emerald-600 bg-emerald-300 text-emerald-800 hover:border-emerald-700 hover:bg-emerald-700 hover:text-white focus-visible:ring-emerald-700 dark:border-emerald-300 dark:bg-emerald-300/15 dark:text-emerald-200 dark:hover:border-emerald-300 dark:hover:bg-emerald-300 dark:hover:text-emerald-950 dark:focus-visible:ring-emerald-300",
+  violet:
+    "border-violet-600 bg-violet-300 text-violet-800 hover:border-violet-700 hover:bg-violet-700 hover:text-white focus-visible:ring-violet-700 dark:border-violet-300 dark:bg-violet-300/15 dark:text-violet-200 dark:hover:border-violet-300 dark:hover:bg-violet-300 dark:hover:text-violet-950 dark:focus-visible:ring-violet-300",
+} as const;
+
+/** The saturated bubble colour, used as the full card background. */
+const WASH = {
+  accent: "bg-accent/35 dark:bg-accent/25",
+  blue: "bg-blue-400/40 dark:bg-blue-400/25",
+  emerald: "bg-emerald-400/40 dark:bg-emerald-400/25",
+  violet: "bg-violet-400/40 dark:bg-violet-400/25",
+} as const;
+
+const SLIDES: { title: string; body: string; icon: SlideIcon; corner: SlideCorner; hue: keyof typeof INK }[] = [
   {
     title: "25+ Competitions & Challenges",
     body: "Diverse opportunities across multiple challenge formats.",
-    bg: "bg-accent-soft",
     icon: "formats",
     corner: "top-right",
-    ink: INK.accent,
     hue: "accent",
   },
   {
     title: "1,500+ Participants",
     body: "City-wide participation by students from across Lahore.",
-    bg: "bg-blue-50 dark:bg-blue-500/10",
     icon: "participants",
     corner: "bottom-left",
-    ink: INK.blue,
     hue: "blue",
   },
   {
     title: "40+ Future Competencies",
     body: "Grounded in recognised Future Competence Frameworks.",
-    bg: "bg-emerald-50 dark:bg-emerald-500/10",
     icon: "compass",
     corner: "top-left",
-    ink: INK.emerald,
     hue: "emerald",
   },
   {
     title: "100+ Skills Being Demonstrated",
     body: "Making students' abilities visible beyond academic grades.",
-    bg: "bg-violet-50 dark:bg-violet-500/10",
     icon: "skills",
     corner: "bottom-right",
-    ink: INK.violet,
     hue: "violet",
   },
   {
     title: "Connected with the United Nations SDGs",
     body: "Challenges linked with global priorities and real-world issues.",
-    bg: "bg-accent-soft",
     icon: "globe",
     corner: "bottom-left",
-    ink: INK.accent,
     hue: "accent",
   },
   {
     title: "Every Participant Recognised",
     body: "Digital certificate and badge for every eligible participant.",
-    bg: "bg-blue-50 dark:bg-blue-500/10",
     icon: "certificate",
     corner: "top-right",
-    ink: INK.blue,
     hue: "blue",
   },
   {
     title: "Awards & Distinctions for Students",
     body: "Competition Distinctions, Spotlight and Sports Recognition Awards.",
-    bg: "bg-emerald-50 dark:bg-emerald-500/10",
     icon: "medal",
     corner: "bottom-right",
-    ink: INK.emerald,
     hue: "emerald",
   },
   {
     title: "Recognition for Educators",
     body: "Honouring educators who guide and enable participation.",
-    bg: "bg-violet-50 dark:bg-violet-500/10",
     icon: "educator",
     corner: "top-left",
-    ink: INK.violet,
     hue: "violet",
   },
   {
     title: "Honouring Parent Support",
     body: "Valuing parents who encourage participation and growth.",
-    bg: "bg-accent-soft",
     icon: "parents",
     corner: "top-left",
-    ink: INK.accent,
     hue: "accent",
   },
   {
     title: "School Excellence Awards",
     body: "Recognising achievement, participation and activity diversity.",
-    bg: "bg-blue-50 dark:bg-blue-500/10",
     icon: "school",
     corner: "bottom-right",
-    ink: INK.blue,
     hue: "blue",
   },
 ];
-
-/** [saturated tint, softer tint] per hue — two shades of the same slide
- * colour, mixed in with a couple of plain white "glossy highlight" bubbles
- * below so the cluster reads as coloured light rather than a flat wash. */
-const BUBBLE_TINTS: Record<string, [string, string]> = {
-  accent: ["bg-accent/35", "bg-accent/20"],
-  blue: ["bg-blue-400/40", "bg-blue-300/25"],
-  emerald: ["bg-emerald-400/40", "bg-emerald-300/25"],
-  violet: ["bg-violet-400/40", "bg-violet-300/25"],
-};
 
 function SlideGlyph({ name, corner, ink }: { name: SlideIcon; corner: SlideCorner; ink: string }) {
   return (
@@ -277,7 +265,6 @@ export function LeagueSpotlight() {
   }, [paused]);
 
   const slide = SLIDES[index];
-  const [tintStrong, tintSoft] = BUBBLE_TINTS[slide.hue];
 
   return (
     <section className="bg-background px-6 py-16">
@@ -299,7 +286,7 @@ export function LeagueSpotlight() {
 
           {/* Rotating half. */}
           <div
-            className={`relative flex min-h-[320px] flex-col items-center justify-center overflow-hidden rounded-tl-[2rem] rounded-tr-2xl rounded-br-[2rem] rounded-bl-2xl border border-border px-14 py-10 text-center transition-colors duration-500 sm:min-h-[420px] ${slide.bg}`}
+            className={`relative flex min-h-[320px] flex-col items-center justify-center overflow-hidden rounded-tl-[2rem] rounded-tr-2xl rounded-br-[2rem] rounded-bl-2xl border border-border px-14 py-10 text-center transition-colors duration-500 sm:min-h-[420px] ${WASH[slide.hue]}`}
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
             onFocusCapture={() => setPaused(true)}
@@ -307,51 +294,17 @@ export function LeagueSpotlight() {
             aria-roledescription="carousel"
             aria-label="League highlights"
           >
-            {/* Decorative bubbles filling the plain space around the text —
-                each drifts and breathes on its own timing (animate-bubble-
-                drift, staggered via inline duration/delay) so the cluster
-                wanders out of sync rather than bobbing in lockstep. Two
-                shades of the CURRENT slide's own hue, crossfading via
-                transition-colors whenever the slide changes, plus a couple
-                of plain white "glossy highlight" bubbles for contrast.
-                Purely background: z-0, and the content below is explicit
-                z-10 so text always stays legible on top. */}
-            <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
-              <span
-                className={`absolute -top-12 -left-10 h-44 w-44 rounded-full blur-2xl animate-bubble-drift transition-colors duration-500 sm:h-56 sm:w-56 ${tintStrong}`}
-                style={{ animationDuration: "16s" }}
-              />
-              <span
-                className="absolute top-[5%] right-[8%] h-28 w-28 rounded-full bg-white/60 blur-xl animate-bubble-drift sm:h-32 sm:w-32"
-                style={{ animationDuration: "11s", animationDelay: "-3s" }}
-              />
-              <span
-                className={`absolute bottom-[10%] left-[6%] h-24 w-24 rounded-full blur-lg animate-bubble-drift transition-colors duration-500 sm:h-28 sm:w-28 ${tintSoft}`}
-                style={{ animationDuration: "13s", animationDelay: "-7s" }}
-              />
-              <span
-                className="absolute right-[11%] bottom-[15%] h-16 w-16 rounded-full bg-white/50 blur-md animate-bubble-drift sm:h-20 sm:w-20"
-                style={{ animationDuration: "9s", animationDelay: "-1.5s" }}
-              />
-              <span
-                className={`absolute top-[36%] left-[16%] h-14 w-14 rounded-full blur-md animate-bubble-drift transition-colors duration-500 sm:h-16 sm:w-16 ${tintStrong}`}
-                style={{ animationDuration: "18s", animationDelay: "-10s" }}
-              />
-              <span
-                className={`absolute top-[16%] left-[40%] h-10 w-10 rounded-full blur-sm animate-bubble-drift transition-colors duration-500 sm:h-12 sm:w-12 ${tintSoft}`}
-                style={{ animationDuration: "10s", animationDelay: "-5s" }}
-              />
-            </div>
-
-            <SlideGlyph key={index} name={slide.icon} corner={slide.corner} ink={slide.ink} />
+            <SlideGlyph key={index} name={slide.icon} corner={slide.corner} ink={INK[slide.hue]} />
 
             <button
               type="button"
               onClick={() => go(index - 1)}
               aria-label="Previous highlight"
-              className="absolute top-1/2 left-3 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-border text-foreground transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+              className={`absolute top-1/2 left-3 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border transition-colors duration-500 focus-visible:ring-2 focus-visible:outline-none ${ARROW[slide.hue]}`}
             >
-              <span aria-hidden="true">‹</span>
+              <svg viewBox="5 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-3.5 w-2.5">
+                <path d="M15 5 7 12l8 7" />
+              </svg>
             </button>
 
             <div aria-live="polite" aria-atomic="true" className="relative z-10 mx-auto w-full max-w-xs">
@@ -383,9 +336,11 @@ export function LeagueSpotlight() {
               type="button"
               onClick={() => go(index + 1)}
               aria-label="Next highlight"
-              className="absolute top-1/2 right-3 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-border text-foreground transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+              className={`absolute top-1/2 right-3 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border transition-colors duration-500 focus-visible:ring-2 focus-visible:outline-none ${ARROW[slide.hue]}`}
             >
-              <span aria-hidden="true">›</span>
+              <svg viewBox="7 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-3.5 w-2.5">
+                <path d="m9 5 8 7-8 7" />
+              </svg>
             </button>
 
             <div className="absolute bottom-6 z-10 flex items-center gap-2">
@@ -405,10 +360,10 @@ export function LeagueSpotlight() {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-center">
+        <div className="mt-14 flex justify-center">
           <Link
             href="/register"
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-3.5 text-sm font-bold text-accent-foreground transition-colors hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+            className="inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-3.5 text-sm font-bold text-accent-foreground transition-colors duration-300 hover:bg-brand-deep hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
           >
             Register for the League
             <span aria-hidden="true">→</span>

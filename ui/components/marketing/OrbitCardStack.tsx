@@ -5,6 +5,7 @@ import {
   type CSSProperties,
   type KeyboardEvent,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   useSyncExternalStore,
@@ -63,9 +64,25 @@ function CardBody({ item }: { item: OrbitStackItem }) {
       </div>
       <div className="px-2 pt-6 pb-2">
         <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-muted uppercase">{item.eyebrow}</p>
-        <h3 className="mt-2 text-[2rem] leading-none font-semibold tracking-[-0.04em] text-foreground">{item.name}</h3>
+        <h3 className="mt-2 text-[1.75rem] leading-none font-semibold tracking-[-0.04em] text-foreground">{item.name}</h3>
         <p className="mt-4 line-clamp-3 max-w-[17rem] text-[0.98rem] leading-[1.42] font-medium tracking-[-0.01em] text-muted">{item.description}</p>
-        <div className="mt-5 border-t border-border pt-4 text-[0.68rem] font-bold tracking-[0.2em] text-muted uppercase">{item.stat}</div>
+        <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
+          <span className="text-[0.68rem] font-bold tracking-[0.2em] text-muted uppercase">{item.stat}</span>
+          <span aria-hidden="true" className="text-accent opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 group-focus-visible:opacity-100">
+            <svg
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-3.5 w-3.5 translate-y-1 transition-[translate] duration-300 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-focus-visible:translate-x-0.5 group-focus-visible:-translate-y-0.5"
+            >
+              <path d="M4 12 12 4" />
+              <path d="M6.5 4H12v5.5" />
+            </svg>
+          </span>
+        </div>
       </div>
     </>
   );
@@ -103,10 +120,10 @@ function useResponsiveSpread(): number {
 }
 
 /** How far up the fanned layout is shifted from the stage's vertical centre,
- * purely to give the outermost cards' rotation-induced sag (see the
- * position-formula comment below) somewhere to go without the stage's own
- * overflow-hidden clipping their bottoms. Verified empirically against the
- * actual rendered card heights at the widest (5-card) fan. */
+ * so the outermost cards' rotation-induced sag (see the position-formula
+ * comment below) still lands inside the stage. The wrapper does not clip:
+ * a clip was slicing the fan's shadow into a hard edge on the top and on
+ * the outer left and right cards. */
 const FAN_VERTICAL_SHIFT = 60;
 
 /** True from the moment the stage first scrolls into view, and stays true —
@@ -152,7 +169,7 @@ function MobileCardCarousel({ items, ariaLabel }: { items: OrbitStackItem[]; ari
           <Link
             href={item.href}
             aria-label={`View ${item.name}`}
-            className={`block rounded-[1.9rem] border border-border p-4 text-foreground ${CARD_PALETTE[index % CARD_PALETTE.length]}`}
+            className={`group block rounded-[1.9rem] border border-border p-4 text-foreground ${CARD_PALETTE[index % CARD_PALETTE.length]}`}
           >
             <CardBody item={item} />
           </Link>
@@ -172,9 +189,25 @@ const VISIBLE_RADIUS = 2;
  * Together with VISIBLE_RADIUS this is the "lazy load" of the carousel:
  * with 23 real competitions, at most 7 are ever in the DOM at once, not 23. */
 const RENDER_RADIUS = VISIBLE_RADIUS + 1;
-/** How long each competition sits centred before the carousel advances —
- * slow on purpose, there's a title and a description to actually read. */
-const ROTATE_MS = 5500;
+/** How long each competition sits centred before the carousel advances. */
+const ROTATE_MS = 4000;
+const ARROW_SIZE = 40;
+const ARROW_GAP = 32;
+/** Fixed distance from the stage bottom. Card heights vary, so the circles
+ * stay on this line instead of tracking whichever card is on the outside. */
+const ARROW_BOTTOM = 28;
+
+/** Horizontal position of a fanned card's outer bottom corner, in the stage's
+ * coordinate space. Width and spread are stable across the carousel, so this
+ * does not move when a taller or shorter card rotates into the slot. */
+function cardOuterX(el: HTMLElement, offset: number, spread: number, side: "left" | "right") {
+  const w = el.offsetWidth;
+  const rad = (offset * 8.5 * Math.PI) / 180;
+  const scale = 0.985;
+  const rx = (side === "left" ? 0 : w) - w / 2;
+  const tx = -w / 2 + offset * spread;
+  return el.offsetLeft + w / 2 + Math.cos(rad) * rx * scale + tx;
+}
 
 function DesktopOrbitStage({
   items,
@@ -198,6 +231,7 @@ function DesktopOrbitStage({
   const [paused, setPaused] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const inView = useHasScrolledIntoView(stageRef);
+  const [arrowBox, setArrowBox] = useState<{ left: number; right: number } | null>(null);
 
   // Reset to the front of the list whenever the item SET changes identity
   // (e.g. switching Route 1 <-> Route 2), rather than keeping a stale index
@@ -213,6 +247,30 @@ function DesktopOrbitStage({
     const id = setInterval(() => setCenterIndex((i) => (i + 1) % total), ROTATE_MS);
     return () => clearInterval(id);
   }, [reduceMotion, paused, inView, total]);
+
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    const place = () => {
+      const cards = [...stage.querySelectorAll<HTMLElement>("article[data-offset]")].filter(
+        (el) => Math.abs(Number(el.dataset.offset)) <= VISIBLE_RADIUS,
+      );
+      if (cards.length === 0) return;
+      const leftEl = cards.reduce((a, b) => (Number(a.dataset.offset) < Number(b.dataset.offset) ? a : b));
+      const rightEl = cards.reduce((a, b) => (Number(a.dataset.offset) > Number(b.dataset.offset) ? a : b));
+      const bl = cardOuterX(leftEl, Number(leftEl.dataset.offset), spread, "left");
+      const br = cardOuterX(rightEl, Number(rightEl.dataset.offset), spread, "right");
+      setArrowBox({
+        left: bl - ARROW_SIZE - ARROW_GAP,
+        right: br + ARROW_GAP,
+      });
+    };
+
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [spread]);
 
   if (total === 0) return null;
 
@@ -230,7 +288,7 @@ function DesktopOrbitStage({
 
   return (
     <div
-      className="relative hidden w-full items-center justify-center overflow-hidden py-8 sm:flex"
+      className="relative hidden w-full items-center justify-center py-8 sm:flex"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -274,6 +332,7 @@ function DesktopOrbitStage({
           return (
             <article
               key={item.id}
+              data-offset={offset}
               role="listitem"
               aria-current={active ? "true" : undefined}
               aria-hidden={visible ? undefined : true}
@@ -284,9 +343,9 @@ function DesktopOrbitStage({
                 href={item.href}
                 aria-label={`View ${item.name}`}
                 tabIndex={visible ? 0 : -1}
-                className={`block w-full rounded-[1.9rem] border border-border p-4 text-foreground outline-none transition-[box-shadow] duration-[420ms] ease-[cubic-bezier(.2,.8,.2,1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                className={`group block w-full rounded-[1.9rem] border border-border p-4 text-foreground outline-none transition-[box-shadow] duration-[420ms] ease-[cubic-bezier(.2,.8,.2,1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   CARD_PALETTE[itemIndex % CARD_PALETTE.length]
-                } ${active ? "shadow-[0_40px_75px_-20px_rgba(31,32,65,0.6)]" : "shadow-[0_20px_45px_-22px_rgba(31,32,65,0.42)]"}`}
+                } ${active ? "shadow-[0_0_40px_10px_rgba(31,32,65,0.42)] dark:shadow-[0_0_40px_10px_rgba(0,0,0,0.65)]" : "shadow-[0_0_26px_6px_rgba(31,32,65,0.3)] dark:shadow-[0_0_26px_6px_rgba(0,0,0,0.5)]"}`}
               >
                 <CardBody item={item} />
               </Link>
@@ -303,36 +362,38 @@ function DesktopOrbitStage({
         {viewAllHref && viewAllLabel && (
           <Link
             href={viewAllHref}
-            className="absolute bottom-[20px] left-1/2 z-[70] mt-8 -translate-x-1/2 rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+            className="absolute -bottom-6 left-1/2 z-[70] -translate-x-1/2 rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
           >
             {viewAllLabel} →
           </Link>
         )}
-      </div>
 
-      {/* Pinned to a fixed height near the top of the stage rather than
-          vertical-centre: the fan's rotated side cards sweep through nearly
-          the whole middle band of the stage (verified empirically — the
-          cards' actual painted shape, not just their box, covers most of
-          mid-height at every width from 1024 to 1920px), so centre is
-          exactly where they'd sit on top of a card. This height is clear at
-          all of those widths. */}
-      <button
-        type="button"
-        onClick={() => advance(-1)}
-        aria-label="Show previous card"
-        className="absolute top-[75px] left-0 z-[90] grid h-10 w-10 place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-      >
-        <span aria-hidden="true">‹</span>
-      </button>
-      <button
-        type="button"
-        onClick={() => advance(1)}
-        aria-label="Show next card"
-        className="absolute top-[75px] right-0 z-[90] grid h-10 w-10 place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-      >
-        <span aria-hidden="true">›</span>
-      </button>
+        {/* Beside the outer cards, on a fixed vertical line. Horizontal
+            position follows the fan; height does not, so a taller card
+            rotating into the end slot cannot pull the circles up or down. */}
+        <button
+          type="button"
+          onClick={() => advance(-1)}
+          aria-label="Show previous card"
+          className="absolute z-[90] grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-[background-color,border-color,color,scale] duration-300 hover:scale-110 hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+          style={arrowBox ? { left: arrowBox.left, bottom: ARROW_BOTTOM } : { left: 0, bottom: ARROW_BOTTOM }}
+        >
+          <svg viewBox="5 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-3.5 w-2.5">
+            <path d="M15 5 7 12l8 7" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          onClick={() => advance(1)}
+          aria-label="Show next card"
+          className="absolute z-[90] grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-[background-color,border-color,color,scale] duration-300 hover:scale-110 hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+          style={arrowBox ? { left: arrowBox.right, bottom: ARROW_BOTTOM } : { right: 0, bottom: ARROW_BOTTOM }}
+        >
+          <svg viewBox="7 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-3.5 w-2.5">
+            <path d="m9 5 8 7-8 7" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

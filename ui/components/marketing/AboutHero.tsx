@@ -8,37 +8,38 @@
  * Every measurement is a percentage of the square container, so the whole
  * thing scales with its box and needs no breakpoint of its own.
  *
- * Photos are Unsplash placeholders; swap the `src` values for real ones. */
+ * Photos live in public/about. The scenes stay as they were; the people are Pakistani. */
 
+import { BandDivider } from "./BandDivider";
 import { BandTexture } from "./BandTexture";
 
 const PHOTOS = {
   study: {
-    src: "https://images.unsplash.com/photo-1780742961135-7f6b965530fa?auto=format&fit=crop&w=900&q=70",
+    src: "/about/hero-study.jpg?v=2",
     alt: "Four students working through a task together at a shared table",
   },
   robot: {
-    src: "https://images.unsplash.com/photo-1743677077216-00a458eff9e0?auto=format&fit=crop&w=800&q=70",
+    src: "/about/hero-robot.jpg?v=2",
     alt: "Children gathered around a robot they have built",
   },
   project: {
-    src: "https://images.unsplash.com/photo-1653566031536-4d1b6a9da15e?auto=format&fit=crop&w=800&q=70",
+    src: "/about/hero-project.jpg?v=2",
     alt: "Two students building a project together",
   },
   tablet: {
-    src: "https://images.unsplash.com/photo-1568585262983-9b54814595a9?auto=format&fit=crop&w=600&q=70",
+    src: "/about/hero-tablet.jpg?v=2",
     alt: "A young student working on a tablet",
   },
   team: {
-    src: "https://images.unsplash.com/photo-1758270705518-b61b40527e76?auto=format&fit=crop&w=600&q=70",
+    src: "/about/hero-team.jpg?v=2",
     alt: "A group of students collaborating",
   },
   solder: {
-    src: "https://images.unsplash.com/photo-1537151242758-331155dcf21b?auto=format&fit=crop&w=600&q=70",
+    src: "/about/hero-solder.jpg?v=2",
     alt: "A student soldering a circuit for a model",
   },
   classroom: {
-    src: "https://images.unsplash.com/photo-1585980243496-fe29a36bd382?auto=format&fit=crop&w=600&q=70",
+    src: "/about/hero-classroom.jpg?v=2",
     alt: "Younger students working at a classroom table",
   },
 } as const;
@@ -69,12 +70,11 @@ const SATELLITES = [
 });
 
 export function AboutHero() {
+  // Negative margin cancels the layout top padding so this hero sits under the floating header.
   return (
-    <section className="relative overflow-hidden bg-background px-6 pt-16 pb-24 lg:pb-32">
-      {/* Contours centred roughly where the orbit sits, so the rings read as
-          terrain the collage is placed on rather than wallpaper. */}
-      <BandTexture pattern="contours" className="text-brand-deep/[0.06]" position="top-0 right-[-10%] h-full w-[70%]" />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+    <section className="relative -mt-24 overflow-hidden bg-background px-6 pt-28 pb-24 sm:-mt-28 sm:pt-32 lg:pb-32">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+        <BandTexture pattern="contours" className="text-brand-deep/[0.06]" position="top-0 right-[-10%] h-full w-[70%]" />
         <div className="absolute -top-32 -left-24 h-96 w-96 rounded-full bg-accent/[0.07] blur-[130px]" />
         <div className="absolute -right-20 bottom-0 h-[28rem] w-[28rem] rounded-full bg-brand-deep/[0.06] blur-[130px]" />
       </div>
@@ -149,6 +149,9 @@ export function AboutHero() {
           </div>
         </div>
       </div>
+
+      {/* The next band's colour rises into this hero, so the seam is not a white cap on that section. */}
+      <BandDivider shape="blob" side="bottom" color="text-surface-alt" className="h-12 sm:h-16 lg:h-20" />
     </section>
   );
 }

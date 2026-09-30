@@ -95,12 +95,12 @@ async function hasPathwayColumns(sb) {
   return false;
 }
 
-// competencies arrives in migration 0020 — same probe-and-skip as above.
+// competencies arrives in migration 0022 — same probe-and-skip as above.
 async function hasCompetenciesColumn(sb) {
   const { error } = await sb.from("competitions").select("competencies").limit(1);
   if (!error) return true;
   console.log("! competitions.competencies not found — seeding without it.");
-  console.log("  Apply supabase/migrations/0020_competition_competencies.sql, then re-run.\n");
+  console.log("  Apply supabase/migrations/0022_competition_competencies.sql, then re-run.\n");
   return false;
 }
 

@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { BandDivider } from "./BandDivider";
 import { BandTexture } from "./BandTexture";
 
@@ -57,13 +59,53 @@ const AUDIENCES = [
   },
 ] as const;
 
+/** The contour circles in the top-left, drifted by the page scroll. */
+function AudienceContours() {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const node = ref.current;
+    const section = node?.parentElement;
+    if (!node || !section) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let queued = false;
+    const apply = () => {
+      queued = false;
+      const rect = section.getBoundingClientRect();
+      const progress = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
+      const travel = (progress - 0.5) * 360;
+      node.style.translate = `${travel * -0.4}px ${travel}px`;
+    };
+    const onScroll = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(apply);
+    };
+
+    apply();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
+  return (
+    <div ref={ref} aria-hidden="true" className="pointer-events-none absolute top-[-20%] left-[-15%] h-[120%] w-[60%]">
+      <BandTexture pattern="contours" className="text-brand-deep/[0.05]" position="inset-0" />
+    </div>
+  );
+}
+
 export function AboutAudiences() {
   return (
-    <section className="relative overflow-hidden bg-surface-alt px-6 pt-36 pb-24 sm:pt-44 lg:pt-48">
+    <section className="relative overflow-hidden bg-surface-alt px-6 pt-44 pb-24 sm:pt-52 lg:pt-56">
       {/* dune's curve dips to ~96% of its box height, which left almost no
           clearance at sm/lg once the divider's own height class matched pt-. */}
       <BandDivider shape="dune" side="top" color="text-background" className="h-28 sm:h-36 lg:h-44" flip />
-      <BandTexture pattern="contours" className="text-brand-deep/[0.05]" position="top-[-20%] left-[-15%] h-[120%] w-[60%]" />
+      <AudienceContours />
       <div className="relative mx-auto max-w-7xl">
         <div className="max-w-2xl">
           <p className="text-xs font-bold tracking-[0.22em] text-accent-strong uppercase">Who it is for</p>

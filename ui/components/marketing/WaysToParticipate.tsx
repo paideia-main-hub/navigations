@@ -88,8 +88,8 @@ const ROUTES = [
   },
   {
     number: 2,
-    title: "Apply for Special Recognition Awards",
-    blurb: "Put forward work, a school or an athlete for a League award.",
+    title: "Apply/Nominate for Special Recognition",
+    blurb: "Put forward an individual, submission, school or sporting achievement for a League award.",
     // Track 5 is the rule, so this group starts at 6.
     headerClass: "lg:col-start-6 lg:col-span-3 lg:row-start-1",
     cards: [
@@ -102,7 +102,7 @@ const ROUTES = [
         bubble: "bg-violet-200 dark:bg-violet-400/40",
       },
       {
-        label: "Future Readiness School Awards",
+        label: "School Awards",
         icon: "star",
         href: "/awards#school_award",
         col: "lg:col-start-7",
@@ -131,12 +131,11 @@ export function WaysToParticipate() {
       // this replaces. background-size 200% 200% + animate-gradient-travel
       // (app/globals.css) slides that gradient back and forth so the light
       // slowly travels across the band instead of sitting static.
-      className="relative overflow-hidden bg-[linear-gradient(100deg,#14152c_0%,#1f2041_50%,#3d4173_100%)] bg-[length:200%_200%] animate-gradient-travel px-6 pt-28 pb-28 sm:pt-32 lg:pt-40 lg:pb-32"
+      className="relative mx-4 overflow-hidden rounded-[2rem] bg-[linear-gradient(100deg,#14152c_0%,#1f2041_50%,#3d4173_100%)] bg-[length:200%_200%] animate-gradient-travel px-6 pt-[calc(7rem+30px)] pb-[calc(7rem+50px)] sm:mx-6 sm:pt-[calc(8rem+30px)] lg:mx-10 lg:pt-[calc(10rem+30px)] lg:pb-[calc(8rem+50px)] sm:rounded-[2.5rem]"
     >
-      {/* Shaped seams: Platinum spills down on both sides — the Explore
-          section below is bg-background too, not the warm tint this used to
-          border when that section carried a different fill. */}
-      <BandDivider shape="curve" side="top" color="text-background" className="h-16 sm:h-24 lg:h-36" />
+      {/* Same wave on both edges, so the page colour spills in at the top
+          the way it already does along the bottom. */}
+      <BandDivider shape="wave" side="top" color="text-background" />
       <BandDivider shape="wave" side="bottom" color="text-background" flip />
 
       {/* Depth behind the cards, so the band reads as lit rather than flat. */}
@@ -157,7 +156,7 @@ export function WaysToParticipate() {
             stretches them all to the tallest. DOM order still reads
             header, cards, header, cards, which is the order small screens
             stack in once the explicit placement stops applying. */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto_repeat(3,minmax(0,1fr))] lg:grid-rows-[auto_1fr] lg:gap-x-5 lg:gap-y-6">
+        <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto_repeat(3,minmax(0,1fr))] lg:grid-rows-[auto_1fr] lg:gap-x-5 lg:gap-y-14">
           {ROUTES.map((route) => (
             <Fragment key={route.number}>
               <div className={`sm:col-span-2 ${route.headerClass} ${route.number === 2 ? "mt-6 lg:mt-0" : ""}`}>
@@ -182,7 +181,7 @@ export function WaysToParticipate() {
                   number={cardIndex + 1}
                   bgClassName={card.bg}
                   bubbleClassName={card.bubble}
-                  className={`${card.col} lg:row-start-2`}
+                  className={`${card.col} max-lg:mt-4 lg:row-start-2`}
                   // Route 2 continues the wave rather than restarting it, so
                   // the whole row reads as one motion, not two groups.
                   floatDelay={(route.number === 1 ? cardIndex : 4 + cardIndex) * 0.12}

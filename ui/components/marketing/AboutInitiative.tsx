@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { BandDivider } from "./BandDivider";
 
-/** Closing band of the About page: the current initiative, full bleed.
+/** Closing band of the About page: the current initiative.
  *
  * The photograph is the section — it runs the whole width and very nearly the
  * whole viewport height, with a scrim that is heaviest on the left so the
  * headline has something solid to sit on and thins out to the right where the
  * picture should show.
  *
- * Photo is an Unsplash placeholder; swap the `src` for a real one. */
+ * Photo lives in public/about. */
 
 const PHOTO = {
-  src: "https://images.unsplash.com/photo-1773829020694-413e879d2957?auto=format&fit=crop&w=2000&q=68",
-  alt: "A student presenting to an audience in a large auditorium",
+  src: "/about/initiative.jpg?v=3",
+  alt: "Four school students at quiz desks on stage, with a judge, in a packed auditorium",
 };
 
 /** Small caps down the right, as in the reference. */
@@ -22,7 +22,7 @@ const PROMISE = ["People", "Skills", "Ideas", "A brighter tomorrow"];
 const DATES = [
   { label: "Registration", value: "8 Oct – 10 Nov 2026" },
   { label: "Activity period", value: "23 Nov – 4 Dec 2026" },
-  { label: "Finals & recognition", value: "5 – 6 Dec 2026" },
+  { label: "Finals & recognition", value: "12 – 13 Dec 2026" },
 ];
 
 export function AboutInitiative() {
@@ -45,9 +45,11 @@ export function AboutInitiative() {
         aria-hidden="true"
         className="absolute inset-x-0 bottom-0 -z-10 h-64 bg-gradient-to-t from-brand-deep to-transparent"
       />
-      {/* The cool band above spills over the photograph rather than meeting
-          it on a rule. Above the image, so it reads as an overlap. */}
-      <BandDivider shape="blob" side="top" color="text-surface-alt" className="h-24 sm:h-32 lg:h-40" />
+      {/* Same dune as the top of Who it is for, filled with that band's colour
+          so it spills onto the photograph. */}
+      <BandDivider shape="dune" side="top" color="text-surface-alt" className="h-14 sm:h-18 lg:h-22" flip />
+      {/* Same dune along the floor, filled with the page colour below. */}
+      <BandDivider shape="dune" side="bottom" color="text-background" className="h-14 sm:h-18 lg:h-22" />
 
       <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-6 py-24">
         <div className="flex flex-wrap items-start justify-between gap-12">
@@ -94,7 +96,7 @@ export function AboutInitiative() {
 
       {/* Dates along the floor — the height this section asks for should pay
           for itself with something worth reading. */}
-      <div className="relative mx-auto w-full max-w-7xl px-6 pb-12">
+      <div className="relative mx-auto w-full max-w-7xl px-6 pb-24 sm:pb-28 lg:pb-32">
         <dl className="grid gap-px overflow-hidden rounded-2xl bg-white/15 sm:grid-cols-3">
           {DATES.map((date) => (
             <div key={date.label} className="bg-brand-deep/80 px-6 py-5 backdrop-blur-sm">

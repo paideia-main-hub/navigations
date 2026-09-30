@@ -22,6 +22,13 @@ export function CompetitionOverviewForm({ competition }: { competition: Competit
         </div>
       </div>
       <FormField label="Short description" name="short_description" defaultValue={competition.shortDescription} />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormField label="Important Dates card 1" name="dates_card_one" defaultValue={competition.datesCardOne} />
+        <FormField label="Important Dates card 2" name="dates_card_two" defaultValue={competition.datesCardTwo} />
+      </div>
+      <p className="-mt-2 text-xs text-muted">
+        Shown as small cards at the bottom of this competition&apos;s Important Dates slide. Leave a field blank to hide that card.
+      </p>
       <div>
         <label className="text-sm font-medium text-foreground">Overview</label>
         <textarea

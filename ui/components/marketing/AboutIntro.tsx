@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { BandDivider } from "./BandDivider";
 
 /** "What is Navigations?" — the explainer under the About hero.
  *
@@ -8,13 +7,13 @@ import { BandDivider } from "./BandDivider";
  * ("explore interests, apply learning and demonstrate strengths") is three
  * things in a sentence, so it is set as three, each with its own mark.
  *
- * Photo is an Unsplash placeholder; swap the `src` for a real one. */
+ * Photo lives in public/about. */
 
 const PHOTO = {
   // h is set as well as w so the crop is taken portrait at the source; a
   // landscape frame squeezed into this tall panel crops to a face and loses
   // the room around it.
-  src: "https://images.unsplash.com/photo-1773243906475-715149a80786?auto=format&fit=crop&w=760&h=1040&q=72",
+  src: "/about/intro.jpg",
   alt: "A school student looking up, thinking",
 };
 
@@ -32,12 +31,7 @@ const STRANDS = [
 
 export function AboutIntro() {
   return (
-    <section className="relative overflow-hidden bg-surface-alt px-6 pt-36 pb-20 sm:pt-44 lg:pt-52">
-      {/* Run deep on purpose: at 9rem the Platinum above stops being an edge
-          and becomes a form pressing into this band. The blob's own curve
-          dips to ~103% of its box height, so pt- needs a bit more than the
-          divider's own height class to keep the card below clear of it. */}
-      <BandDivider shape="blob" side="top" color="text-background" className="h-28 sm:h-36 lg:h-44" />
+    <section className="relative overflow-hidden bg-surface-alt px-6 pt-16 pb-28 sm:pt-20 sm:pb-32 lg:pt-24 lg:pb-36">
       <div className="relative mx-auto max-w-7xl">
         <div className="grid overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_30px_70px_-45px_rgba(31,32,65,0.55)] lg:grid-cols-[5fr_7fr]">
           {/* Photo panel — the promise inscribed on the image, as in the
@@ -54,9 +48,7 @@ export function AboutIntro() {
 
             <div className="relative flex h-full flex-col items-end justify-center gap-5 p-8 text-right lg:p-10">
               <p className="text-2xl leading-[1.15] font-light tracking-[0.18em] text-brand-deep-foreground uppercase italic sm:text-3xl">
-                A wider
-                <br />
-                brighter
+                A brighter
                 <br />
                 future
               </p>

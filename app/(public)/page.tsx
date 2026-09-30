@@ -1,6 +1,7 @@
 import { createClient } from "@/data/supabase/server";
 import { listOpenAndUpcoming, listPublishedWinners, groupWinnersByCompetition, upcomingDates } from "@/domain/competitions/service";
 import { listAllAnnouncements } from "@/domain/announcements/service";
+import { listAppreciations } from "@/domain/appreciations/service";
 import { listSubmittableCategories } from "@/domain/awards/service";
 import { ExploreCompetitionsToggle } from "@/ui/components/marketing/ExploreCompetitionsToggle";
 import { LeagueSpotlight } from "@/ui/components/marketing/LeagueSpotlight";
@@ -10,18 +11,21 @@ import { RecognitionStrip } from "@/ui/components/marketing/RecognitionStrip";
 import { WhyTheLeague } from "@/ui/components/marketing/WhyTheLeague";
 import { UpcomingEventsBoard } from "@/ui/components/marketing/UpcomingEventsBoard";
 import { ChampionsPodium } from "@/ui/components/marketing/ChampionsPodium";
-import { AnnouncementsBoard } from "@/ui/components/marketing/AnnouncementsBoard";
+import { CheerConfetti } from "@/ui/components/marketing/CheerConfetti";
+import { AnnouncementsPress } from "@/ui/components/marketing/AnnouncementsPress";
+import { AppreciationsStrip } from "@/ui/components/marketing/AppreciationsStrip";
 import { QuickLinksGrid } from "@/ui/components/marketing/QuickLinksGrid";
 import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
-import { HeroVideo } from "@/ui/components/marketing/HeroVideo";
+import { HeroCollage } from "@/ui/components/marketing/HeroCollage";
 
 export default async function HomePage() {
   const supabase = await createClient();
-  const [featured, winners, dates, announcements, submittableAwards] = await Promise.all([
+  const [featured, winners, dates, announcements, appreciations, submittableAwards] = await Promise.all([
     listOpenAndUpcoming(supabase),
     listPublishedWinners(supabase),
     upcomingDates(supabase),
     listAllAnnouncements(supabase),
+    listAppreciations(supabase),
     listSubmittableCategories(supabase),
   ]);
 
@@ -29,15 +33,15 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* Hero animation — the very first thing on the page, filling the full
+      {/* Hero collage — the very first thing on the page, filling the full
           viewport behind the floating header (the -mt cancels out <main>'s
           top padding, which every other page needs to clear the fixed
           header). Pinned via `sticky` inside a taller runway, so it holds
           still while the next section rises over it below — a deliberate
           reveal instead of the default "everything scrolls together". */}
       <div className="relative -mt-24 h-[200dvh] sm:-mt-28">
-        <section className="sticky top-0 h-dvh w-full overflow-hidden bg-background">
-          <HeroVideo />
+        <section className="sticky top-0 h-dvh w-full overflow-hidden bg-[#fefffa]">
+          <HeroCollage />
         </section>
       </div>
 
@@ -68,7 +72,11 @@ export default async function HomePage() {
         {/* 3. Ways to participate */}
         <WaysToParticipate />
 
-        <div className="bg-background">
+        {/* Clips only past the viewport. The fan's own box is narrower than
+            the screen, and clipping there was cutting the outer cards'
+            shadows off on the left and right. Off-screen staging cards
+            still must not widen the page. */}
+        <div className="overflow-x-clip bg-background">
           <div className="mx-auto max-w-7xl px-6 py-16">
             {/* 4. Explore — Route 1 is a hand-fanned stack of featured
                 competitions (the full filterable directory lives at
@@ -85,28 +93,31 @@ export default async function HomePage() {
             Competitions already fetched below. */}
         <ImportantDates competitions={featured} />
 
-        {/* 6. What every participant takes away */}
+        {/* 6. 5 Layers Recognitions */}
         <RecognitionStrip />
 
-        {/* 7. Upcoming events — grouped by date, because the whole League shares
-            a handful of deadlines and a row per competition was twenty
-            identical rows. */}
-        <UpcomingEventsBoard dates={dates} />
+        {/* Competition Calendar — hidden on the home page. The board and
+            its data stay so the section can be shown again later. */}
+        <div className="hidden" aria-hidden="true">
+          <UpcomingEventsBoard dates={dates} />
+        </div>
 
-        {/* 8. Why the League */}
-        <WhyTheLeague />
+        {/* 7. Announcements — the flip stack stays in the codebase, and is
+            not rendered. The press file uses that section's warm band. */}
+        <AnnouncementsPress announcements={announcements} />
 
-        {/* 9. Announcements */}
-        <AnnouncementsBoard announcements={announcements} />
+        {/* 8. Appreciations */}
+        <AppreciationsStrip appreciations={appreciations} />
 
-        {/* 10. Champions podium — same light/dark-aware section shell as
+        {/* 9. Champions podium — same light/dark-aware section shell as
             everything around it (a permanent full-bleed dark band here read
             as inconsistent with the rest of the page). The podium itself
             (ChampionsPodium.tsx) already carries its own gold/silver/bronze
             step treatment, so the wrapper just needs a heading to match. */}
         <div className="relative overflow-hidden bg-background py-20 sm:py-24">
-          <div className="relative mx-auto max-w-7xl px-6">
-            <div className="mb-12 text-center">
+          <CheerConfetti />
+          <div className="relative z-10 mx-auto max-w-7xl px-6">
+            <div className="mb-20 text-center">
               <h2 className="flex items-center justify-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
                 <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
                 Results &amp; Winners
@@ -123,10 +134,13 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* 11. Portals grid */}
+        {/* 10. Explore the Platform */}
         <QuickLinksGrid />
 
-        {/* 12. Bottom CTA */}
+        {/* 11. Why the League */}
+        <WhyTheLeague />
+
+        {/* Bottom CTA — sits after the last content section. */}
         <ClosingCta />
       </div>
     </div>

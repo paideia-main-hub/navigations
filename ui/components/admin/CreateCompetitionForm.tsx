@@ -55,6 +55,11 @@ export function CreateCompetitionForm() {
         </p>
       </div>
       <FormField label="Short description" name="short_description" />
+      <FormField label="Important Dates card 1" name="dates_card_one" />
+      <FormField label="Important Dates card 2" name="dates_card_two" />
+      <p className="-mt-2 text-xs text-muted">
+        These two lines appear as the small cards under the competition name on the Important Dates carousel.
+      </p>
       <CompetencyPicker />
       {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
       <button

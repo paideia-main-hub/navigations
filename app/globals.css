@@ -133,6 +133,58 @@ body {
 @theme inline {
   --animate-podium-in: podium-in 0.55s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-spotlight-text-in: spotlight-text-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-place-drift: place-drift 4.5s ease-in-out infinite;
+}
+
+/* Confetti and streamers behind the Winners Showcase
+   (ui/components/marketing/CheerConfetti.tsx). The lane is as tall as the
+   section, so translating it by its own height carries each piece from
+   above the band to below it. Spin stays on `rotate` so it does not reset
+   the fall. */
+@keyframes confetti-fall {
+  from {
+    translate: 0 -110%;
+  }
+  to {
+    translate: 0 110%;
+  }
+}
+
+@keyframes confetti-spin {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
+  }
+}
+
+.cheer-lane {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  animation-name: confetti-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-duration: var(--cheer-duration, 12s);
+  animation-delay: var(--cheer-delay, 0s);
+}
+
+.cheer-spin {
+  animation-name: confetti-spin;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-duration: var(--cheer-spin, 4s);
+}
+
+@keyframes place-drift {
+  0%,
+  100% {
+    translate: 0 6px;
+  }
+  50% {
+    translate: 0 -8px;
+  }
 }
 
 /* Slow orbit for the About page collage
@@ -201,37 +253,6 @@ body {
   --animate-gradient-travel: gradient-travel 12s ease-in-out infinite;
 }
 
-/* A loose, organic wander rather than a straight bob — used for the
-   decorative background bubbles on the League Spotlight rotating panel
-   (ui/components/marketing/LeagueSpotlight.tsx). Each bubble runs this same
-   keyframe at its own speed/offset (set inline per span), so a cluster of
-   them drifts out of sync instead of bobbing in unison. Drives `translate`
-   and a gentle `scale` breathing pulse together, so the cluster reads as
-   alive rather than just sliding around at a fixed size. */
-@keyframes bubble-drift {
-  0%,
-  100% {
-    translate: 0 0;
-    scale: 1;
-  }
-  25% {
-    translate: 14px -18px;
-    scale: 1.12;
-  }
-  50% {
-    translate: -6px -32px;
-    scale: 0.92;
-  }
-  75% {
-    translate: -18px -10px;
-    scale: 1.08;
-  }
-}
-
-@theme inline {
-  --animate-bubble-drift: bubble-drift 14s ease-in-out infinite;
-}
-
 /* League Spotlight corner marks. The wrapper fades and grows in when the
    slide changes; the icon itself keeps a slow drift on `translate`/`rotate`
    so the entrance scale is not overwritten. */
@@ -263,69 +284,32 @@ body {
   --animate-spotlight-mark-float: spotlight-mark-float 7s ease-in-out infinite;
 }
 
-/* A single flight from right to left, small at both ends and full-size as
-   it crosses the middle — used for the rotating competition spotlight on
-   Important Dates (ui/components/marketing/ImportantDates.tsx). Runs ONCE
-   (not infinite): the component re-keys its text on every rotation, which
-   restarts the animation fresh, and listens for `onAnimationEnd` to pick the
-   next competition in sync with the animation finishing — a continuously
-   looping animation would never fire that event.
-
-   opacity and transform each interpolate only across the keyframes where
-   THEY are explicitly set, independently of each other. The previous version
-   set opacity's 0->1 stop at 12% but transform's matching stop at 50%, so
-   opacity finished its fade while the shape was still barely underway (round
-   24% of the way there) — text would flash to fully visible while still
-   small and off to the side, then keep visibly sliding/growing afterward.
-   Giving opacity and transform a shared checkpoint at 22%/78% (instead of
-   12%/88%) makes them arrive together, so the entrance/exit reads as one
-   motion instead of a fast pop followed by a slower drift. */
-@keyframes text-flythrough {
-  0% {
-    transform: translateX(65%) scale(0.6);
-    opacity: 0;
-  }
-  22% {
-    transform: translateX(24%) scale(0.85);
-    opacity: 1;
-  }
-  50% {
-    transform: translateX(0) scale(1);
-  }
-  78% {
-    transform: translateX(-24%) scale(0.85);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(-65%) scale(0.6);
-    opacity: 0;
-  }
-}
-
-@theme inline {
-  /* `both`: without an explicit fill-mode, the browser can render a
-     newly-mounted element in its own base (non-keyframe) style for a frame
-     before the animation engine catches up — a flash of full-size, fully
-     opaque text right at the start of every rotation, before it "corrects"
-     itself back to small/offscreen/transparent and flies in properly. Also
-     freezes the 100% (shrunk, invisible) state after the animation ends,
-     for the one frame before onAnimationEnd's key change unmounts it. */
-  --animate-text-flythrough: text-flythrough 5s ease-in-out 1 both;
-}
-
 /* None of these stop on their own, so they stop when the viewer has asked
-   for less motion. */
+   for less motion. The hero chart is a video, so reduced motion swaps it
+   for a single still frame. */
+.hero-graph-still {
+  display: none;
+}
 @media (prefers-reduced-motion: reduce) {
   .animate-orbit,
   .animate-orbit-reverse,
   .animate-wave-float,
-  .animate-bubble-drift,
   .animate-gradient-travel,
-  .animate-text-flythrough,
   .animate-spotlight-mark-in,
   .animate-spotlight-mark-float,
-  .animate-spotlight-text-in {
+  .animate-spotlight-text-in,
+  .animate-place-drift,
+  .cheer-lane,
+  .cheer-spin {
     animation: none;
+  }
+
+  .hero-graph-video {
+    display: none;
+  }
+
+  .hero-graph-still {
+    display: block;
   }
 }
 

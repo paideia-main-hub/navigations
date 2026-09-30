@@ -67,9 +67,9 @@ const REASONS = [
   },
 ] as const;
 
-export function WhyTheLeague() {
+export function WhyTheLeague({ className = "py-20 sm:py-24" }: { className?: string }) {
   return (
-    <section className="relative overflow-hidden bg-background px-6 py-20 sm:py-24">
+    <section className={`relative overflow-hidden bg-background px-6 ${className}`}>
       <div className="relative mx-auto max-w-7xl">
         <h2 className="flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
           <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />

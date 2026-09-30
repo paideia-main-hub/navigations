@@ -28,6 +28,6 @@ export async function adminListAnnouncements(admin: SupabaseClient): Promise<Ann
 
 export const createAnnouncement = repo.insertAnnouncement;
 export const updateAnnouncement = repo.updateAnnouncement;
-export const expireAnnouncement = repo.expireAnnouncement;
+export const setAnnouncementStatus = repo.setAnnouncementStatus;
 
 export type { AnnouncementInput } from "@/data/repositories/announcements.repository";
