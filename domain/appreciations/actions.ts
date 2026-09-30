@@ -26,7 +26,7 @@ function inputFromForm(formData: FormData): { error: string; input?: undefined }
 export async function createAppreciationAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdminSession();
   const parsed = inputFromForm(formData);
-  if (parsed.error) return { error: parsed.error };
+  if (parsed.error !== null) return { error: parsed.error };
   const { error } = await service.createAppreciation(createAdminClient(), parsed.input);
   if (error) return { error };
   revalidateAppreciations();
@@ -36,7 +36,7 @@ export async function createAppreciationAction(_prevState: ActionState, formData
 export async function updateAppreciationAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdminSession();
   const parsed = inputFromForm(formData);
-  if (parsed.error) return { error: parsed.error };
+  if (parsed.error !== null) return { error: parsed.error };
   const id = String(formData.get("appreciation_id"));
   const { error } = await service.updateAppreciation(createAdminClient(), id, parsed.input);
   if (error) return { error };

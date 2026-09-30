@@ -44,7 +44,7 @@ function publishDateFromForm(value: string): string | null {
 export async function createAnnouncementAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdminSession();
   const parsed = inputFromForm(formData);
-  if (parsed.error) return { error: parsed.error };
+  if (parsed.error !== null) return { error: parsed.error };
   const admin = createAdminClient();
   const { error } = await service.createAnnouncement(admin, parsed.input);
   if (error) return { error };
@@ -55,7 +55,7 @@ export async function createAnnouncementAction(_prevState: ActionState, formData
 export async function updateAnnouncementAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdminSession();
   const parsed = inputFromForm(formData);
-  if (parsed.error) return { error: parsed.error };
+  if (parsed.error !== null) return { error: parsed.error };
   const admin = createAdminClient();
   const id = String(formData.get("announcement_id"));
   const { error } = await service.updateAnnouncement(admin, id, parsed.input);
