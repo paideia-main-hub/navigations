@@ -14,6 +14,10 @@ type Shape = "wave" | "curve" | "arc" | "tilt" | "blob" | "dune";
 /** Each path is drawn on a 1440x100 box filling the TOP of it; a bottom
  * divider is the same path flipped vertically. preserveAspectRatio="none"
  * stretches them to whatever height the section asks for. */
+/** Shared with the Why-we-exist curve shadow so the shadow traces this edge. */
+export const BLOB_PATH =
+  "M0 0h1440v34c-96 34-183 18-268 2-118-22-214-34-320 12-88 38-166 64-262 52-84-10-140-46-222-52C289 40 214 66 137 74 89 79 44 72 0 56Z";
+
 const PATHS: Record<Shape, string> = {
   // Shallow S — the softest of the four.
   wave: "M0 0h1440v46c-206 40-379-16-585-4-206 12-412 66-618 44-79-8-158-24-237-44Z",
@@ -26,8 +30,7 @@ const PATHS: Record<Shape, string> = {
   // Lumpy and asymmetric. Meant to be run tall — at 8rem or more it stops
   // reading as a trimmed edge and becomes a mass of the neighbouring colour
   // pushing down into this band.
-  blob:
-    "M0 0h1440v34c-96 34-183 18-268 2-118-22-214-34-320 12-88 38-166 64-262 52-84-10-140-46-222-52C289 40 214 66 137 74 89 79 44 72 0 56Z",
+  blob: BLOB_PATH,
   // One long swell that crests left of centre, for a slower, calmer break.
   dune: "M0 0h1440v22c-170 76-356 88-536 52C716 36 560 4 392 20 248 34 122 62 0 96Z",
 };
@@ -64,9 +67,9 @@ export function BandDivider({
       className={`pointer-events-none absolute inset-x-0 z-10 ${side === "top" ? "top-0" : "bottom-0"} ${className} ${color}`}
     >
       <svg
-        viewBox="0 0 1440 100"
+        viewBox={shape === "blob" ? "0 0 1440 108" : "0 0 1440 100"}
         preserveAspectRatio="none"
-        className={`h-full w-full ${transform}`}
+        className={`h-full w-full overflow-visible ${transform}`}
         focusable="false"
       >
         <path d={PATHS[shape]} fill="currentColor" />

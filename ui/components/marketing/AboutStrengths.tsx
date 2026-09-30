@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
-import { BandTexture } from "./BandTexture";
+"use client";
+
+import { useEffect, useRef, type ReactNode } from "react";
 
 /** "What students can explore" — the six strengths, as cards.
  *
@@ -7,7 +8,7 @@ import { BandTexture } from "./BandTexture";
  * Three across over two rows gives every card a photograph you can actually
  * read and room for a line saying what the strength means in practice.
  *
- * Photos are Unsplash placeholders; swap the `src` values for real ones. */
+ * Photos live in public/about. The scenes stay as they were; the people are Pakistani. */
 
 const icons: Record<string, ReactNode> = {
   brush: <path d="M15.5 2.5a2.1 2.1 0 0 1 3 3L9 15l-4 1 1-4 9.5-9.5ZM5 16c-1.5 1.5-1 4-3 5 2.5.6 5.5 0 6-3" />,
@@ -20,57 +21,108 @@ const icons: Record<string, ReactNode> = {
   ),
 };
 
-const IMG = "?auto=format&fit=crop&w=760&h=570&q=72";
-
 const STRENGTHS = [
   {
     icon: "brush",
     label: "Creativity",
     note: "Design, make and perform — work that starts from a blank page.",
-    src: `https://images.unsplash.com/photo-1551401107-5d806c2909a6${IMG}`,
+    src: "/about/strength-creativity.jpg",
     alt: "A student painting",
   },
   {
     icon: "speech",
     label: "Communication",
     note: "Speak, write and present ideas so other people can act on them.",
-    src: `https://images.unsplash.com/photo-1693058483162-2e14e647fed7${IMG}`,
+    src: "/about/strength-communication.jpg",
     alt: "A student speaking into a microphone",
   },
   {
     icon: "gear",
     label: "Problem-solving",
     note: "Take an unfamiliar problem apart and build a way through it.",
-    src: `https://images.unsplash.com/photo-1573841154761-93a73710b126${IMG}`,
+    src: "/about/strength-problem.jpg",
     alt: "Students building a model together",
   },
   {
     icon: "laptop",
     label: "Technology",
     note: "Code, model and build with the tools the work actually uses.",
-    src: `https://images.unsplash.com/photo-1758685733633-a12889098460${IMG}`,
+    src: "/about/strength-technology.jpg",
     alt: "A student working at a laptop in a classroom",
   },
   {
     icon: "bulb",
     label: "Innovation",
     note: "Spot what could work better, then prototype it and try it out.",
-    src: `https://images.unsplash.com/photo-1583790716180-52195f248836${IMG}`,
+    src: "/about/strength-innovation.jpg",
     alt: "A student holding a drone they have built",
   },
   {
     icon: "people",
     label: "Leadership",
     note: "Organise a team, carry a plan and take responsibility for it.",
-    src: `https://images.unsplash.com/photo-1758270704787-615782711641${IMG}`,
+    src: "/about/strength-leadership.jpg",
     alt: "Students working together in a lecture hall",
   },
 ] as const;
 
+/** The four arcs, parked in the top-left and drifted by the page scroll. */
+function StrengthLines() {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const node = ref.current;
+    const section = node?.parentElement;
+    if (!node || !section) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let queued = false;
+    const apply = () => {
+      queued = false;
+      const rect = section.getBoundingClientRect();
+      const progress = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
+      const travel = (progress - 0.5) * 360;
+      node.style.translate = `${travel * -0.4}px ${travel}px`;
+    };
+    const onScroll = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(apply);
+    };
+
+    apply();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
+  return (
+    <div ref={ref} aria-hidden="true" className="pointer-events-none absolute top-0 left-0 h-[48%] w-[62%] text-accent/25">
+      <svg
+        viewBox="0 0 800 800"
+        fill="none"
+        stroke="currentColor"
+        preserveAspectRatio="xMidYMid slice"
+        className="h-full w-full origin-center -scale-y-100"
+      >
+        <g strokeWidth="1.4">
+          <path d="M-120 700C60 470 300 330 620 300" />
+          <path d="M-120 800C80 540 350 390 700 358" />
+          <path d="M-40 860C140 620 400 470 760 430" />
+          <path d="M40 920C220 700 480 550 820 510" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
 export function AboutStrengths() {
   return (
     <section className="relative overflow-hidden bg-background px-6 py-24">
-      <BandTexture pattern="rings" className="text-accent/[0.16]" position="inset-y-0 right-0 w-[55%]" />
+      <StrengthLines />
       <div className="relative mx-auto max-w-7xl">
         <div className="max-w-2xl">
           <p className="text-xs font-bold tracking-[0.22em] text-accent-strong uppercase">
