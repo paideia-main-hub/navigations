@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Unbounded } from "next/font/google";
 import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { CompetitionSummary } from "@/domain/competitions/types";
@@ -10,6 +10,12 @@ import { BandDivider } from "./BandDivider";
 const cardTitleFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["800"],
+});
+
+/** Stylish numerals for contest day and year. */
+const dateNumeralFont = Unbounded({
+  subsets: ["latin"],
+  weight: ["700", "800"],
 });
 
 /** The published 2026 programme, from ui/components/calendar/calendar2026.ts. */
@@ -116,51 +122,265 @@ function usePrefersReducedMotion(): boolean {
   );
 }
 
-function closingDateOf(item: CompetitionSummary): string | undefined {
-  return item.events.find((event) => event.type === "registration_close")?.eventDate;
+function competitionDateOf(item: CompetitionSummary): string | undefined {
+  // Competition day is stored as a round. Prefer the earliest round; fall back
+  // to the final event only when no live slot exists for this competition.
+  const rounds = item.events
+    .filter((event) => event.type === "round")
+    .map((event) => event.eventDate)
+    .sort();
+  if (rounds[0]) return rounds[0];
+  return item.events.find((event) => event.type === "final_event")?.eventDate;
 }
 
-function formatClosingDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+/** Midday local so a date-only ISO string does not slip to the previous day. */
+function formatCompetitionDate(iso: string): { day: string; month: string; year: string } {
+  const stamp = /^\d{4}-\d{2}-\d{2}/.test(iso) ? `${iso.slice(0, 10)}T12:00:00` : iso;
+  const date = new Date(stamp);
+  return {
+    day: String(date.getDate()).padStart(2, "0"),
+    month: date.toLocaleDateString("en-GB", { month: "long" }),
+    year: String(date.getFullYear()),
+  };
 }
 
+/** Same stroke family as the old Featuring Now corner marks. */
+const SLIDE_ICONS = {
+  search: (
+    <>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16.2 16.2 4.3 4.3" />
+    </>
+  ),
+  debate: (
+    <>
+      <path d="M5 5.5h9.5A2.5 2.5 0 0 1 17 8v4.5a2.5 2.5 0 0 1-2.5 2.5H9.5L5.5 18.5V5.5Z" />
+      <path d="M17 9.5h1.5A2.5 2.5 0 0 1 21 12v3.5a2.5 2.5 0 0 1-2.5 2.5H16l-2 2v-2" />
+    </>
+  ),
+  code: (
+    <>
+      <path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 6l-2 12" />
+    </>
+  ),
+  scroll: (
+    <>
+      <path d="M7 4.5h8.5A2.5 2.5 0 0 1 18 7v12.5H8.5A2.5 2.5 0 0 1 6 17V6.5A2 2 0 0 1 8 4.5" />
+      <path d="M9.5 9.5h6M9.5 13h6M9.5 16.5h3.5" />
+    </>
+  ),
+  compass: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="m15.8 8.2-1.7 5.2-5.2 1.7 1.7-5.2 5.2-1.7Z" />
+      <path d="M12 3.5v1.6M12 18.9v1.6M3.5 12h1.6M18.9 12h1.6" />
+    </>
+  ),
+  spark: (
+    <>
+      <path d="M12 3.2 13.6 8l4.9.4-3.8 3.2 1.2 4.8L12 13.8 8.1 16.4l1.2-4.8L5.5 8.4 10.4 8 12 3.2Z" />
+    </>
+  ),
+  inquiry: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M9.5 9.4a2.6 2.6 0 1 1 3.8 2.3c-.8.5-1.3 1-1.3 2v.5" />
+      <path d="M12 17.2h.01" />
+    </>
+  ),
+  summit: (
+    <>
+      <path d="m4 17.5 4-7 3 4 3.5-6.5 5.5 9.5" />
+      <path d="M3.5 19.5h17" />
+    </>
+  ),
+  heart: (
+    <>
+      <path d="M12 19.5s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 7.2a3.8 3.8 0 0 1 7 3.1c0 4.8-7 9.2-7 9.2Z" />
+    </>
+  ),
+  mic: (
+    <>
+      <rect x="9" y="3.5" width="6" height="10" rx="3" />
+      <path d="M6.5 11.5a5.5 5.5 0 0 0 11 0M12 17v3.5M9 20.5h6" />
+    </>
+  ),
+  pixels: (
+    <>
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+      <path d="M15 17h6M18 14v6" />
+    </>
+  ),
+  flask: (
+    <>
+      <path d="M10 3.5h4M11 3.5v5.2L6.8 18a2.4 2.4 0 0 0 2.1 3.5h6.2a2.4 2.4 0 0 0 2.1-3.5L13 8.7V3.5" />
+      <path d="M8.2 14.5h7.6" />
+    </>
+  ),
+  pen: (
+    <>
+      <path d="M13.5 5.5 18.5 10.5 9 20H4v-5L13.5 5.5Z" />
+      <path d="m12 7 5 5" />
+    </>
+  ),
+  rocket: (
+    <>
+      <path d="M12 3.5c3.5 2.2 5.5 5.8 5.8 10.2l-2.6 1.1-1.7-1.7-1.5 3.4-1.5-3.4-1.7 1.7-2.6-1.1C6.5 9.3 8.5 5.7 12 3.5Z" />
+      <path d="M9.2 17.2 8 20.5l2.2-1.1M14.8 17.2 16 20.5l-2.2-1.1" />
+    </>
+  ),
+  wave: (
+    <>
+      <path d="M3.5 14c2-3 3.5-3 5.5 0s3.5 3 5.5 0 3.5-3 5.5 0" />
+      <path d="M3.5 9c2-3 3.5-3 5.5 0s3.5 3 5.5 0 3.5-3 5.5 0" />
+    </>
+  ),
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M3.5 12h17M12 3.5c2.2 2.4 3.4 5.3 3.4 8.5s-1.2 6.1-3.4 8.5c-2.2-2.4-3.4-5.3-3.4-8.5s1.2-6.1 3.4-8.5Z" />
+    </>
+  ),
+  microscope: (
+    <>
+      <path d="M9 4.5h4.5M11.2 4.5v6.5" />
+      <path d="M7.5 14.5a4.5 4.5 0 1 0 8.2-2.5L18 9.5" />
+      <path d="M5 20.5h14" />
+    </>
+  ),
+  monitor: (
+    <>
+      <rect x="3.5" y="4.5" width="17" height="11" rx="1.5" />
+      <path d="M8 20.5h8M12 15.5v5" />
+    </>
+  ),
+  leaf: (
+    <>
+      <path d="M5 19.5s1.5-9 8.5-12.5C18 4.5 20 5 20 5s.2 2.5-2.8 6.5S8.5 19 5 19.5Z" />
+      <path d="M5 19.5c3-1 6-4 8.5-8" />
+    </>
+  ),
+  brain: (
+    <>
+      <path d="M9.2 5.5a3 3 0 0 0-3 4.2A3.2 3.2 0 0 0 5 13.2 3.3 3.3 0 0 0 8.2 17h1.4M14.8 5.5a3 3 0 0 1 3 4.2A3.2 3.2 0 0 1 19 13.2 3.3 3.3 0 0 1 15.8 17h-1.4" />
+      <path d="M12 5v12.5M9.5 9.5h5M9.5 13h5" />
+    </>
+  ),
+  chess: (
+    <>
+      <path d="M9 8.5h6l-1 4H10L9 8.5Z" />
+      <path d="M10.5 8.5V6.2a1.5 1.5 0 0 1 3 0v2.3" />
+      <path d="M8 16.5h8l1 3.5H7l1-3.5Z" />
+      <path d="M10 12.5h4v4H10v-4Z" />
+    </>
+  ),
+  book: (
+    <>
+      <path d="M5 5.5h5.5A2.5 2.5 0 0 1 13 8v12.5H7A2 2 0 0 1 5 18.5v-13Z" />
+      <path d="M19 5.5h-5.5A2.5 2.5 0 0 0 11 8v12.5h6a2 2 0 0 0 2-2v-13Z" />
+    </>
+  ),
+  numbers: (
+    <>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="2" />
+      <path d="M8 8h.01M12 8h.01M16 8h.01M8 12h.01M12 12h.01M16 12h.01M8 16h8" />
+    </>
+  ),
+} satisfies Record<string, ReactNode>;
+
+type SlideIcon = keyof typeof SLIDE_ICONS;
+
+function iconForTitle(title: string): SlideIcon {
+  const t = title.toLowerCase();
+  if (t.includes("picture") || t.includes("detective")) return "search";
+  if (t.includes("argument") || t.includes("debate")) return "debate";
+  if (t.includes("horizon") || t.includes("digital")) return "monitor";
+  if (t.includes("code") || t.includes("circuit")) return "code";
+  if (t.includes("culture") || t.includes("script") || t.includes("lexi")) return "scroll";
+  if (t.includes("ethos")) return "compass";
+  if (t.includes("imagin")) return "spark";
+  if (t.includes("inquiry")) return "inquiry";
+  if (t.includes("lead") || t.includes("summit")) return "summit";
+  if (t.includes("humanity") || t.includes("message")) return "heart";
+  if (t.includes("orator") || t.includes("oratoris")) return "mic";
+  if (t.includes("pixel")) return "pixels";
+  if (t.includes("observation") || t.includes("scientist")) return "microscope";
+  if (t.includes("sci")) return "flask";
+  if (t.includes("story")) return "pen";
+  if (t.includes("venture")) return "rocket";
+  if (t.includes("word") || t.includes("wave")) return "wave";
+  if (t.includes("world") || t.includes("view")) return "globe";
+  if (t.includes("eco")) return "leaf";
+  if (t.includes("mind") || t.includes("decathlon")) return "brain";
+  if (t.includes("think") || t.includes("master")) return "chess";
+  if (t.includes("quant")) return "numbers";
+  if (t.includes("spark")) return "spark";
+  return "spark";
+}
+
+/** Contest date + activity name. Icon is drawn by the parent so it can
+ * match that slide’s background family. */
 function SpotlightFace({ item }: { item: CompetitionSummary }) {
-  const closingDate = closingDateOf(item);
-  const notes = [item.datesCardOne, item.datesCardTwo].map((text) => text.trim()).filter((text) => text.length > 0);
+  const eventDate = competitionDateOf(item);
+  const parts = eventDate ? formatCompetitionDate(eventDate) : null;
 
   return (
-    <div className="relative flex h-full w-full flex-1 flex-col items-center text-center">
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-20 -right-16 h-64 w-64 animate-pulse rounded-full bg-accent/20 blur-[90px]"
-        style={{ animationDuration: "4s" }}
-      />
-      <div className="relative">
-        <p className="text-[0.7rem] font-semibold tracking-[0.16em] text-brand-deep-muted uppercase">Registration closes</p>
-        <p className="mt-1 text-xl font-black tracking-tight text-accent sm:text-2xl">
-          {closingDate ? formatClosingDate(closingDate) : "Date to be confirmed"}
-        </p>
-      </div>
-      <div className="flex w-full flex-1 items-center justify-center px-1">
-        <p className={`${cardTitleFont.className} line-clamp-3 text-2xl font-extrabold tracking-tight text-balance text-brand-deep-foreground sm:text-3xl`}>
-          {item.title}
-        </p>
-      </div>
-      {notes.length > 0 && (
-        <div className="flex w-full justify-center gap-2">
-          {notes.map((text, noteIndex) => (
-            <div
-              key={noteIndex}
-              className={`flex h-[72px] min-w-0 flex-1 items-center justify-center rounded-xl border border-white/15 bg-white/[0.08] px-2.5 text-center text-xs leading-snug font-semibold text-brand-deep-foreground sm:text-sm ${notes.length === 1 ? "max-w-[50%]" : ""}`}
-            >
-              <span className="line-clamp-3">{text}</span>
-            </div>
-          ))}
+    <div className="@container relative z-10 flex h-full w-full flex-1 flex-col items-center justify-center px-1 text-center">
+      <p className="text-[0.7rem] font-bold tracking-[0.22em] text-brand-deep-foreground/55 uppercase sm:text-xs">
+        Contest Date
+      </p>
+      {parts ? (
+        <div className="mt-3 inline-flex items-stretch justify-center gap-3 text-accent text-[length:min(1.62rem,10.5cqi)]">
+          <p
+            className={`${dateNumeralFont.className} flex items-center leading-none font-extrabold text-[2em]`}
+          >
+            {parts.day}
+          </p>
+          <div className="flex flex-col items-start justify-between text-left leading-none text-[0.88em]">
+            <p className={`${cardTitleFont.className} font-extrabold`}>{parts.month}</p>
+            <p className={`${dateNumeralFont.className} w-full text-left font-bold`}>{parts.year}</p>
+          </div>
         </div>
+      ) : (
+        <p className={`${cardTitleFont.className} mt-3 leading-tight text-accent text-[length:min(1.6rem,11cqi)]`}>
+          Date to be confirmed
+        </p>
       )}
+      <p
+        className={`${cardTitleFont.className} mt-6 line-clamp-3 leading-tight text-balance text-brand-deep-foreground text-[length:min(1.85rem,12cqi)]`}
+      >
+        {item.title}
+      </p>
     </div>
   );
 }
+
+function SlideGlyph({ name, ink, corner }: { name: SlideIcon; ink: string; corner: string }) {
+  return (
+    <span aria-hidden="true" className={`pointer-events-none absolute z-0 ${corner} ${ink}`}>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-16 w-16 sm:h-20 sm:w-20"
+      >
+        {SLIDE_ICONS[name]}
+      </svg>
+    </span>
+  );
+}
+
+/** Alternate top corners across cards so the mark does not sit in the
+ * same spot on every slide. */
+const SLIDE_CORNERS = [
+  "top-4 left-4 sm:top-5 sm:left-5",
+  "top-4 right-4 sm:top-5 sm:right-5",
+] as const;
 
 const STACK_CARD =
   "absolute top-2 right-3 bottom-1 left-12 flex flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/15 p-6 text-center shadow-[0_16px_36px_rgba(0,0,0,0.35)] sm:left-14 sm:p-8";
@@ -174,6 +394,17 @@ const STACK_SHADES = [
   ["#5b2f4e", "#3b1c32"],
   ["#364054", "#202837"],
   ["#22414f", "#142a33"],
+] as const;
+
+/** Lighter step of each slide wash — same family as the card fill, for the
+ * corner icon (Featuring Now pattern). */
+const STACK_INK = [
+  "text-[#9aa3e0]/55",
+  "text-[#c4a0e0]/55",
+  "text-[#8eb6e0]/55",
+  "text-[#e0a0c0]/55",
+  "text-[#a8b8cc]/55",
+  "text-[#7eb8c4]/55",
 ] as const;
 
 /** Every card in the deck keeps the same lean. Only position and size change,
@@ -302,7 +533,9 @@ function StackSpotlight({ competitions }: { competitions: CompetitionSummary[] }
         .reverse()
         .map((layer) => {
           const item = competitions[layer.itemIndex] ?? competitions[0]!;
-          const [from, to] = STACK_SHADES[layer.itemIndex % STACK_SHADES.length]!;
+          const shadeIndex = layer.itemIndex % STACK_SHADES.length;
+          const [from, to] = STACK_SHADES[shadeIndex]!;
+          const ink = STACK_INK[shadeIndex]!;
           const posed = layerMotion(layer.fromFront, move, animate);
           const clickable = layer.fromFront === 0 && move === "idle";
           const style = {
@@ -319,8 +552,13 @@ function StackSpotlight({ competitions }: { competitions: CompetitionSummary[] }
               className={`${STACK_CARD} ${clickable ? "" : "pointer-events-none"}`}
               style={style}
             >
+              <SlideGlyph
+                name={iconForTitle(item.title)}
+                ink={ink}
+                corner={SLIDE_CORNERS[layer.itemIndex % SLIDE_CORNERS.length]!}
+              />
               {clickable ? (
-                <Link href={`/competitions/${item.slug}`} aria-label={`View ${item.title}`} className="flex h-full w-full cursor-pointer">
+                <Link href={`/competitions/${item.slug}`} aria-label={`View ${item.title}`} className="relative z-10 flex h-full w-full cursor-pointer">
                   <SpotlightFace item={item} />
                 </Link>
               ) : (
@@ -347,22 +585,144 @@ function StackSpotlight({ competitions }: { competitions: CompetitionSummary[] }
   );
 }
 
-export function ImportantDates({ competitions }: { competitions: CompetitionSummary[] }) {
+const SLIDER_MS = 3000;
+const SLIDER_ARROW =
+  "border-white/45 bg-white/10 text-white hover:border-white hover:bg-white hover:text-brand-deep focus-visible:ring-white";
+const SLIDER_DOT = {
+  active: "bg-white",
+  idle: "bg-white/40 hover:bg-white/70",
+} as const;
+
+/** Same change style as Featuring Now: content fades in, arrows appear on
+ * hover, and dots sit under the face. */
+function SliderSpotlight({ competitions }: { competitions: CompetitionSummary[] }) {
+  const reduceMotion = usePrefersReducedMotion();
+  const length = competitions.length;
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (reduceMotion || length < 2 || paused) return;
+    const id = window.setInterval(() => {
+      setIndex((current) => (current + 1) % length);
+    }, SLIDER_MS);
+    return () => window.clearInterval(id);
+  }, [reduceMotion, length, paused]);
+
+  if (length === 0) return null;
+
+  const item = competitions[index]!;
+  const shadeIndex = index % STACK_SHADES.length;
+  const [from, to] = STACK_SHADES[shadeIndex]!;
+  const ink = STACK_INK[shadeIndex]!;
+
+  function go(next: number) {
+    setIndex(((next % length) + length) % length);
+  }
+
+  return (
+    <div
+      className="group relative h-full min-h-[300px]"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+      aria-roledescription="carousel"
+      aria-label="Competition dates"
+    >
+      <div
+        className="absolute inset-0 overflow-hidden rounded-[1.75rem] border border-white/15 shadow-[0_16px_36px_rgba(0,0,0,0.35)]"
+        style={{ backgroundImage: `linear-gradient(to right bottom, ${from}, ${to})` }}
+      >
+        <SlideGlyph
+          name={iconForTitle(item.title)}
+          ink={ink}
+          corner={SLIDE_CORNERS[index % SLIDE_CORNERS.length]!}
+        />
+        <Link
+          href={`/competitions/${item.slug}`}
+          aria-label={`View ${item.title}`}
+          className="absolute inset-0 z-0 flex cursor-pointer flex-col p-6 pb-14 sm:p-8 sm:pb-16"
+        >
+          <div key={item.slug} className="animate-spotlight-text-in flex h-full w-full">
+            <SpotlightFace item={item} />
+          </div>
+        </Link>
+
+        {length > 1 && (
+          <>
+            <button
+              type="button"
+              aria-label="Previous competition"
+              onClick={() => go(index - 1)}
+              className={`absolute top-1/2 left-3 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none ${SLIDER_ARROW}`}
+            >
+              <svg viewBox="5 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-3.5 w-2.5">
+                <path d="M15 5 7 12l8 7" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              aria-label="Next competition"
+              onClick={() => go(index + 1)}
+              className={`absolute top-1/2 right-3 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none ${SLIDER_ARROW}`}
+            >
+              <svg viewBox="7 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-3.5 w-2.5">
+                <path d="m9 5 8 7-8 7" />
+              </svg>
+            </button>
+
+            <div className="absolute bottom-5 z-10 flex w-full items-center justify-center gap-2">
+              {competitions.map((competition, dotIndex) => (
+                <button
+                  key={competition.slug}
+                  type="button"
+                  onClick={() => go(dotIndex)}
+                  aria-label={`Show ${competition.title}`}
+                  aria-current={dotIndex === index}
+                  className={`h-1.5 cursor-pointer rounded-full transition-all focus-visible:ring-2 focus-visible:ring-current focus-visible:outline-none ${
+                    dotIndex === index ? `w-4 ${SLIDER_DOT.active}` : `w-1.5 ${SLIDER_DOT.idle}`
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function ImportantDates({
+  competitions,
+  spotlight = "stack",
+}: {
+  competitions: CompetitionSummary[];
+  /** "stack" is the fanned deck. "slider" is one card at a time, moving right to left. */
+  spotlight?: "stack" | "slider";
+}) {
   const today = useSyncExternalStore(clock.subscribe, clock.getSnapshot, clock.getServerSnapshot);
   const live = today === null ? null : statusesAt(today * DAY);
 
   const statuses = live?.statuses ?? (MILESTONES.map(() => "later") as Status[]);
 
   return (
-    <section className="relative mx-4 overflow-hidden bg-[linear-gradient(100deg,#14152c_0%,#1f2041_50%,#3d4173_100%)] bg-[length:200%_200%] animate-gradient-travel px-6 pt-32 pb-36 sm:mx-6 lg:mx-10 lg:pt-36 lg:pb-40">
-      {/* Same travelling indigo fill as Ways to Participate. Both edges use
-          the same dome, which is a different curve from that section's wave. */}
+    <section className="relative mx-4 overflow-hidden bg-[#14152c] px-6 pt-32 pb-36 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] sm:mx-6 lg:mx-10 lg:pt-36 lg:pb-40">
+      {/* Same dome on both edges. The fill and dotted net match Ways to Participate. */}
       <BandDivider shape="curve" side="top" color="text-background" />
       <BandDivider shape="curve" side="bottom" color="text-background" flip />
 
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-28 left-1/4 h-80 w-80 rounded-full bg-accent/10 blur-[130px]" />
-        <div className="absolute right-0 -bottom-32 h-96 w-96 rounded-full bg-accent/[0.06] blur-[130px]" />
+        <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.1),transparent_70%)]" />
+        <svg className="absolute inset-0 h-full w-full">
+          <defs>
+            <pattern id="dates-net" width="45" height="45" patternUnits="userSpaceOnUse">
+              <line x1="0" y1="0.8" x2="45" y2="0.8" stroke="#2c2f4c" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 5" />
+              <line x1="0.8" y1="0" x2="0.8" y2="45" stroke="#2c2f4c" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 5" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#dates-net)" />
+        </svg>
       </div>
 
       <div className="relative mx-auto max-w-7xl">
@@ -374,19 +734,23 @@ export function ImportantDates({ competitions }: { competitions: CompetitionSumm
         {/* Spotlight (a rotating competition) beside the full schedule,
             instead of four equal boxes in a row. */}
         <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-stretch">
-          <StackSpotlight competitions={competitions} />
+          {spotlight === "slider" ? (
+            <SliderSpotlight competitions={competitions} />
+          ) : (
+            <StackSpotlight competitions={competitions} />
+          )}
 
           {/* Full schedule — a compact vertical stepper rather than the old
               four-across row, so it reads as a list to scan next to the
               spotlight rather than needing its own separate width budget. */}
-          <ol className="relative flex flex-col gap-1 rounded-[2rem] border border-white/10 bg-white/[0.03] p-3 sm:p-4">
+          <ol className="relative flex flex-col gap-3 rounded-[2rem] border border-white/10 bg-[#1f2041] p-3 sm:gap-4 sm:p-4">
             {MILESTONES.map((m, i) => {
               const status = statuses[i];
               const active = status === "now" || status === "next";
               return (
                 <li
                   key={m.label}
-                  className="group relative flex items-center gap-4 overflow-hidden rounded-2xl px-3 py-3.5 transition-colors duration-200 hover:bg-white/[0.06] sm:px-4"
+                  className="relative flex items-center gap-4 overflow-hidden rounded-2xl bg-white/[0.06] px-3 py-3.5 sm:px-4"
                 >
                   {/* Giant faint step number, same trick as the About page's
                       audience cards — a shape behind the words, not a second
@@ -399,7 +763,7 @@ export function ImportantDates({ competitions }: { competitions: CompetitionSumm
                   </span>
 
                   <span
-                    className={`relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-full ring-4 ring-brand-deep transition-all duration-300 sm:h-13 sm:w-13 ${
+                    className={`relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-full ring-4 ring-[#1f2041] transition-all duration-300 sm:h-13 sm:w-13 ${
                       status === "done"
                         ? "bg-accent/70 text-accent-foreground"
                         : active
@@ -433,9 +797,7 @@ export function ImportantDates({ competitions }: { competitions: CompetitionSumm
                         The shorter notes stay on one line. */}
                     <p
                       className={`mt-0.5 text-sm text-brand-deep-muted/80 ${
-                        i === MILESTONES.length - 1
-                          ? "line-clamp-2 pr-32"
-                          : "truncate group-hover:text-clip group-hover:whitespace-normal"
+                        i === MILESTONES.length - 1 ? "line-clamp-2 pr-32" : ""
                       }`}
                     >
                       {m.note}

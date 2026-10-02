@@ -12,7 +12,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "live_response",
-  image: "/competitions/ethosquest.webp",
+  image: null,
   manualVersion: "v1.0",
   manualFile: "EthosQuest_Values_Tree_Ethical_Decision_Challenge_Manual_v1_0.docx",
 

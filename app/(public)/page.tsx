@@ -8,12 +8,11 @@ import { LeagueSpotlight } from "@/ui/components/marketing/LeagueSpotlight";
 import { WaysToParticipate } from "@/ui/components/marketing/WaysToParticipate";
 import { ImportantDates } from "@/ui/components/marketing/ImportantDates";
 import { RecognitionStrip } from "@/ui/components/marketing/RecognitionStrip";
-import { WhyTheLeague } from "@/ui/components/marketing/WhyTheLeague";
 import { UpcomingEventsBoard } from "@/ui/components/marketing/UpcomingEventsBoard";
 import { ChampionsPodium } from "@/ui/components/marketing/ChampionsPodium";
 import { CheerConfetti } from "@/ui/components/marketing/CheerConfetti";
 import { AnnouncementsPress } from "@/ui/components/marketing/AnnouncementsPress";
-import { AppreciationsStrip } from "@/ui/components/marketing/AppreciationsStrip";
+import { AppreciationsLedger } from "@/ui/components/marketing/AppreciationsLedger";
 import { QuickLinksGrid } from "@/ui/components/marketing/QuickLinksGrid";
 import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
 import { HeroCollage } from "@/ui/components/marketing/HeroCollage";
@@ -67,7 +66,7 @@ export default async function HomePage() {
           BandDivider seams) still does, via its own `overflow-hidden`. */}
       <div className="relative z-10 -mt-[100dvh] rounded-t-[2.5rem] bg-background pt-24 shadow-[0_-25px_50px_-12px_rgba(0,0,0,0.25)] sm:rounded-t-[4rem] sm:pt-28">
         {/* 2. Featuring Now — static League billboard beside a rotating panel. */}
-        <LeagueSpotlight />
+        <LeagueSpotlight nominationsOpen={submittableAwards.length > 0} />
 
         {/* 3. Ways to participate */}
         <WaysToParticipate />
@@ -88,10 +87,9 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* 5. Important dates — the published 2026 programme, plus a
-            rotating pick from the same open/upcoming list Explore
-            Competitions already fetched below. */}
-        <ImportantDates competitions={featured} />
+        {/* 5. Important dates — the published 2026 programme, with a
+            one-card slider beside the schedule. */}
+        <ImportantDates competitions={featured} spotlight="slider" />
 
         {/* 6. 5 Layers Recognitions */}
         <RecognitionStrip />
@@ -106,18 +104,11 @@ export default async function HomePage() {
             not rendered. The press file uses that section's warm band. */}
         <AnnouncementsPress announcements={announcements} />
 
-        {/* 8. Appreciations */}
-        <AppreciationsStrip appreciations={appreciations} />
-
-        {/* 9. Champions podium — same light/dark-aware section shell as
-            everything around it (a permanent full-bleed dark band here read
-            as inconsistent with the rest of the page). The podium itself
-            (ChampionsPodium.tsx) already carries its own gold/silver/bronze
-            step treatment, so the wrapper just needs a heading to match. */}
+        {/* 8. Champions podium — above appreciations. */}
         <div className="relative overflow-hidden bg-background py-20 sm:py-24">
           <CheerConfetti />
           <div className="relative z-10 mx-auto max-w-7xl px-6">
-            <div className="mb-20 text-center">
+            <div className="mb-14 text-center sm:mb-16">
               <h2 className="flex items-center justify-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
                 <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
                 Results &amp; Winners
@@ -134,11 +125,11 @@ export default async function HomePage() {
           </div>
         </div>
 
+        {/* 9. Appreciations */}
+        <AppreciationsLedger appreciations={appreciations} />
+
         {/* 10. Explore the Platform */}
         <QuickLinksGrid />
-
-        {/* 11. Why the League */}
-        <WhyTheLeague />
 
         {/* Bottom CTA — sits after the last content section. */}
         <ClosingCta />

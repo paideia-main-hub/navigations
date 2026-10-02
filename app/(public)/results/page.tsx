@@ -1,5 +1,6 @@
 import { createClient } from "@/data/supabase/server";
 import { listCompetitions, listPublishedWinners, type PublishedWinner } from "@/domain/competitions/service";
+import { resolveCompetitionCardImage } from "@/domain/competitions/cardImage";
 import { competencyGroupsFor } from "@/domain/competitions/competencies";
 import { categoryLabels, type AgeCategory, type CompetitionSummary } from "@/domain/competitions/types";
 import { awardRank } from "@/domain/results/types";
@@ -10,8 +11,10 @@ export const metadata = { title: "Results & Recognition | Navigations" };
 /** The three competition distinctions a card shows, in order. */
 const PLACES = ["gold", "silver", "bronze"] as const;
 
-function artworkFor(c: CompetitionSummary): string {
-  return c.imageUrl || `/competitions/${c.slug}.webp`;
+/** Admin-uploaded card artwork, or null — the same rule as the competition
+ * cards (CompetitionCardArt), so a card never points at a missing file. */
+function artworkFor(c: CompetitionSummary): string | null {
+  return resolveCompetitionCardImage(c.imageUrl);
 }
 
 /** "Grades 6 – 8" for one grade category of a competition, or its whole range
@@ -83,9 +86,14 @@ export default async function ResultsPage() {
     winners,
   );
 
-  // Three artworks from competitions with results for the banner collage,
-  // falling back to any competition art when few results exist yet.
-  const bannerImages = [...new Set([...cards.map((c) => c.imageUrl), ...competitions.map(artworkFor)])].slice(0, 3);
+  // Up to three uploaded artworks for the banner collage — from competitions
+  // with results first, then any competition. None uploaded yet means no
+  // collage, just the decorative accent.
+  const bannerImages = [
+    ...new Set(
+      [...cards.map((c) => c.imageUrl), ...competitions.map(artworkFor)].filter((src): src is string => Boolean(src)),
+    ),
+  ].slice(0, 3);
 
   return (
     <div className="bg-background">

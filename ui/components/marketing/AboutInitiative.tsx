@@ -27,7 +27,7 @@ const DATES = [
 
 export function AboutInitiative() {
   return (
-    <section className="relative isolate flex min-h-[90vh] flex-col justify-center overflow-hidden bg-brand-deep">
+    <section className="relative isolate flex min-h-[72vh] flex-col overflow-hidden bg-brand-deep py-20 sm:py-24 lg:py-28">
       {/* eslint-disable-next-line @next/next/no-img-element -- remote placeholder host, not in next.config's image remotePatterns */}
       <img
         src={PHOTO.src}
@@ -43,7 +43,7 @@ export function AboutInitiative() {
       />
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 bottom-0 -z-10 h-64 bg-gradient-to-t from-brand-deep to-transparent"
+        className="absolute inset-x-0 bottom-0 -z-10 h-48 bg-gradient-to-t from-brand-deep to-transparent"
       />
       {/* Same dune as the top of Who it is for, filled with that band's colour
           so it spills onto the photograph. */}
@@ -51,8 +51,8 @@ export function AboutInitiative() {
       {/* Same dune along the floor, filled with the page colour below. */}
       <BandDivider shape="dune" side="bottom" color="text-background" className="h-14 sm:h-18 lg:h-22" />
 
-      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-6 py-24">
-        <div className="flex flex-wrap items-start justify-between gap-12">
+      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-6 py-6 sm:py-8">
+        <div className="flex flex-wrap items-start justify-between gap-10 sm:gap-12">
           <div className="max-w-2xl">
             <p className="text-xs font-bold tracking-[0.3em] text-accent uppercase">Our current initiative</p>
 
@@ -62,7 +62,7 @@ export function AboutInitiative() {
               League
             </h2>
 
-            <p className="mt-7 inline-flex items-center rounded-full bg-accent px-4 py-1.5 text-sm font-bold text-accent-foreground">
+            <p className="mt-7 inline-flex items-center rounded-full bg-accent/35 px-4 py-1.5 text-sm font-bold text-brand-deep-foreground">
               Lahore Edition 2026
             </p>
 
@@ -94,9 +94,8 @@ export function AboutInitiative() {
         </div>
       </div>
 
-      {/* Dates along the floor — the height this section asks for should pay
-          for itself with something worth reading. */}
-      <div className="relative mx-auto w-full max-w-7xl px-6 pb-24 sm:pb-28 lg:pb-32">
+      {/* Dates along the floor — kept close under the headline block. */}
+      <div className="relative mx-auto w-full max-w-7xl px-6 pt-4 pb-2 sm:pt-6">
         <dl className="grid gap-px overflow-hidden rounded-2xl bg-white/15 sm:grid-cols-3">
           {DATES.map((date) => (
             <div key={date.label} className="bg-brand-deep/80 px-6 py-5 backdrop-blur-sm">

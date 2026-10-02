@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createAdminClient } from "@/data/supabase/admin";
 import type { CompetitionPathway } from "@/domain/competitions/types";
 import { requireAdminSession } from "@/domain/admin-auth/guard";
-import { uploadFile } from "@/domain/storage/actions";
+import { deleteCompetitionCardImage, uploadCompetitionCardImage, uploadFile } from "@/domain/storage/actions";
 import { normalizeCompetencies } from "./competencies";
 import * as service from "./service";
 import type {
@@ -118,7 +118,8 @@ export async function updateCompetitionCoreAction(_prevState: ActionState, formD
     domain: String(formData.get("domain") ?? ""),
     pathway: (String(formData.get("pathway") ?? "") || null) as CompetitionPathway | null,
     competencies: readCompetencies(formData),
-    imageUrl: String(formData.get("image_url") ?? "").trim() || null,
+    // Card artwork is managed by uploadCompetitionImageAction / removeCompetitionImageAction.
+    imageUrl: existing.imageUrl,
     status: existing.status,
     supportsIndividual: formData.get("supports_individual") === "on",
     supportsTeam: formData.get("supports_team") === "on",
@@ -148,6 +149,50 @@ export async function updateCompetitionStatusAction(_prevState: ActionState, for
   return { error: null, success: true };
 }
 
+export async function uploadCompetitionImageAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdminSession();
+  const admin = createAdminClient();
+  const id = String(formData.get("competition_id"));
+  const file = formData.get("file") as File | null;
+  if (!file || file.size === 0) return { error: "Choose an image to upload." };
+
+  const existing = await service.adminGetCompetitionById(admin, id);
+  if (!existing) return { error: "Competition not found." };
+
+  const previousUrl = existing.imageUrl;
+
+  const { url, error: uploadError } = await uploadCompetitionCardImage(file, id);
+  if (uploadError || !url) return { error: uploadError ?? "Upload failed." };
+
+  const { error } = await service.setCompetitionImageUrl(admin, id, url);
+  if (error) {
+    await deleteCompetitionCardImage(url);
+    return { error };
+  }
+
+  if (previousUrl && previousUrl !== url) await deleteCompetitionCardImage(previousUrl);
+
+  revalidateCompetition(id, existing.slug);
+  return { error: null, success: true };
+}
+
+export async function removeCompetitionImageAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdminSession();
+  const admin = createAdminClient();
+  const id = String(formData.get("competition_id"));
+
+  const existing = await service.adminGetCompetitionById(admin, id);
+  if (!existing) return { error: "Competition not found." };
+
+  const { error } = await service.setCompetitionImageUrl(admin, id, null);
+  if (error) return { error };
+
+  if (existing.imageUrl) await deleteCompetitionCardImage(existing.imageUrl);
+
+  revalidateCompetition(id, existing.slug);
+  return { error: null, success: true };
+}
+
 export async function deleteCompetitionAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdminSession();
   const admin = createAdminClient();
@@ -163,6 +208,10 @@ export async function deleteCompetitionAction(_prevState: ActionState, formData:
 
   const { error } = await service.deleteCompetition(admin, id);
   if (error) return { error };
+
+  // The uploaded card artwork isn't a child row, so the cascade leaves it in
+  // storage; remove it the same way removeCompetitionImageAction does.
+  if (existing.imageUrl) await deleteCompetitionCardImage(existing.imageUrl);
 
   revalidateCompetition(id, existing.slug);
   revalidatePath("/");

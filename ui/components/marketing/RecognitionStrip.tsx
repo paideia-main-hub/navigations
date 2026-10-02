@@ -1,5 +1,11 @@
 import { type ReactNode } from "react";
+import { Unbounded } from "next/font/google";
 import { ScrollSplitCard, type ScrollSplitCardItem } from "@/ui/components/marketing/ScrollSplitCard";
+
+const markNumeral = Unbounded({
+  subsets: ["latin"],
+  weight: ["800"],
+});
 
 function Icon({ path }: { path: string }) {
   return (
@@ -73,13 +79,32 @@ const RECOGNITION_CARDS: ScrollSplitCardItem[] = [
 
 export function RecognitionStrip(): ReactNode {
   return (
-    <section className="bg-background">
-      <div className="mx-auto max-w-7xl px-6 pt-16">
-        <h2 className="flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
-          <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
-          5 Layers Recognitions
-        </h2>
+    <section className="relative bg-background">
+      <div className="relative mx-auto max-w-7xl px-6">
+        {/* Band height tracks the same vw scale as the watermark type. */}
+        <div className="relative flex h-[clamp(3.5rem,16vw,20rem)] items-end">
+          <h2 className="relative z-10 translate-y-3 flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
+            <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
+            5 Layers Recognitions
+          </h2>
+        </div>
       </div>
+
+      {/* Whole mark scales with viewport; centered horizontally in the section. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute top-0 left-1/2 z-0 flex h-[clamp(3.5rem,16vw,20rem)] -translate-x-1/2 items-center justify-center gap-[0.04em] text-[length:clamp(3.5rem,16vw,20rem)] text-foreground/[0.055] select-none"
+      >
+        <span
+          className={`${markNumeral.className} block shrink-0 leading-none font-extrabold tabular-nums text-[1em]`}
+        >
+          05
+        </span>
+        <span className="leading-none font-black tracking-wide uppercase text-[0.5em]">
+          <span className="block">layers</span>
+          <span className="block">recognitions</span>
+        </span>
+      </span>
 
       <ScrollSplitCard
         imageSrc={RECOGNITION_IMAGE}

@@ -18,7 +18,8 @@ export interface OrbitStackItem {
   eyebrow: string;
   description: string;
   stat: string;
-  image: string;
+  /** Public image URL, or null when the card should use the initials/name tile. */
+  image: string | null;
 }
 
 /** Cycled by position so any real list (competitions, award categories —
@@ -32,15 +33,14 @@ const CARD_PALETTE = [
   "bg-violet-50 dark:bg-violet-500/10",
 ];
 
-/** Falls back to a brand-deep tile with the item's name if the artwork 404s
- * (not every card — e.g. an award category with no supplied photo yet — has
- * real art), instead of a broken-image icon. */
+/** Falls back to a brand-deep tile with the item's name if artwork is missing
+ * or 404s, instead of a broken-image icon. */
 function OrbitPortrait({ item }: { item: OrbitStackItem }) {
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState(!item.image);
 
   return (
     <div className="relative flex aspect-[1.36] w-full overflow-hidden rounded-[1.45rem] border border-border bg-surface-muted">
-      {failed ? (
+      {failed || !item.image ? (
         <div className="flex h-full w-full items-center justify-center bg-brand-deep">
           <span className="px-6 text-center text-sm font-semibold text-brand-deep-foreground/70">{item.name}</span>
         </div>

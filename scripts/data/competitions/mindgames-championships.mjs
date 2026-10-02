@@ -17,7 +17,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "live_response",
-  image: "/competitions/mindgames-championships.webp",
+  image: null,
 
   overview: `MindGames Championships is a live puzzle-and-reasoning event run across three progressive levels — Discover, Connect and Master — with two games at each level. Every candidate attempts all three levels in sequence; there is no elimination between levels. Junior and Senior candidates compete on the same event day but are ranked separately, and MindGames keeps its own combined Senior bracket (Grades 6 through O Level) rather than splitting Middle and Secondary the way other League activities do.
 

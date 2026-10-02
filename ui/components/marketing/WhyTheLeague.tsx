@@ -1,12 +1,28 @@
 import type { ReactNode } from "react";
 
 const icons: Record<string, ReactNode> = {
-  chart: <path d="M4 20V10m6 10V4m6 16v-7m6 7V8M2 20h20" />,
-  gear: (
-    <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm8.4-2.1a7 7 0 0 0 0-2.8l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2.4-1.4L15.3 3H8.7l-.4 2.3A7 7 0 0 0 5.9 6.7l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.8l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2.4 1.4l.4 2.3h6.6l.4-2.3a7 7 0 0 0 2.4-1.4l2.3 1 2-3.4-2-1.5Z" />
+  /** Stacked layers — competence frameworks / adaptive curriculum. */
+  layers: (
+    <>
+      <path d="M12 2 2 7l10 5 10-5-10-5Z" />
+      <path d="m2 12 10 5 10-5" />
+      <path d="m2 17 10 5 10-5" />
+    </>
   ),
-  people: (
-    <path d="M17 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm12.5 10v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8" />
+  /** Globe — United Nations Sustainable Development Goals. */
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M2 12h20" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z" />
+    </>
+  ),
+  /** Certificate seal — ISO certified quality system. */
+  seal: (
+    <>
+      <path d="M12 2.8 14.2 7l4.8.7-3.5 3.3.8 4.7-4.3-2.3-4.3 2.3.8-4.7L5 7.7 9.8 7 12 2.8Z" />
+      <path d="M9 15.5v6l3-1.6 3 1.6v-6" />
+    </>
   ),
 };
 
@@ -45,24 +61,29 @@ const REASON_COLOR = {
 
 const REASONS = [
   {
-    line1: "Demonstrate learning",
-    line2: "beyond grades",
-    detail: "A published portfolio of real work, not just a transcript line.",
-    icon: "chart",
+    eyebrow: "Adaptive curriculum",
+    line1: "Future Competence",
+    line2: "Frameworks",
+    detail: "Our opportunities develop future competencies that enable students to apply and demonstrate essential skills.",
+    icon: "layers",
     color: "blue",
   },
   {
-    line1: "Apply skills in",
-    line2: "meaningful challenges",
-    detail: "Every task maps to a competence a school report can't capture.",
-    icon: "gear",
+    eyebrow: "Character through global values",
+    line1: "United Nations Sustainable",
+    line2: "Development Goals",
+    detail:
+      "Activities connect students with the United Nations Sustainable Development Goals through relevance and purposeful challenges.",
+    icon: "globe",
     color: "violet",
   },
   {
-    line1: "Gain visible recognition",
-    line2: "for competencies",
-    detail: "Certificates, badges and rankings a college or employer can check.",
-    icon: "people",
+    eyebrow: "Commitment to quality",
+    line1: "ISO Certified",
+    line2: "Quality System",
+    detail:
+      "Structured processes, supported by an ISO certified management system, promote transparency, accountability and continuous improvement.",
+    icon: "seal",
     color: "emerald",
   },
 ] as const;
@@ -73,8 +94,11 @@ export function WhyTheLeague({ className = "py-20 sm:py-24" }: { className?: str
       <div className="relative mx-auto max-w-7xl">
         <h2 className="flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
           <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
-          Why Future Ready League?
+          What Guides Navigations
         </h2>
+        <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
+          Our work is built on recognized frameworks, connected with global goals and guided by quality standards.
+        </p>
 
         <ul className="mt-10 grid gap-6 sm:grid-cols-3">
           {REASONS.map((r, i) => {
@@ -121,7 +145,8 @@ export function WhyTheLeague({ className = "py-20 sm:py-24" }: { className?: str
                     </svg>
                   </span>
 
-                  <p className="relative mt-6 text-xl leading-snug font-extrabold tracking-tight text-balance text-foreground">
+                  <p className="relative mt-6 text-[0.7rem] font-bold tracking-[0.18em] text-muted uppercase">{r.eyebrow}</p>
+                  <p className="relative mt-2 text-xl leading-snug font-extrabold tracking-tight text-balance text-foreground">
                     {r.line1}
                     <br />
                     {r.line2}

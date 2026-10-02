@@ -11,6 +11,7 @@ const initialState: ActionState = { error: null };
 export function LoginForm() {
   const searchParams = useSearchParams();
   const linkError = searchParams.get("error");
+  const next = searchParams.get("next");
   const [state, formAction, pending] = useActionState(login, initialState);
 
   return (
@@ -19,6 +20,7 @@ export function LoginForm() {
       <p className="mt-1 text-sm text-muted">Students, school coordinators and judges sign in here.</p>
 
       <form action={formAction} className="mt-6 space-y-4">
+        {next ? <input type="hidden" name="next" value={next} /> : null}
         <div>
           <label className="text-sm font-medium text-foreground">Email</label>
           <input
@@ -53,7 +55,10 @@ export function LoginForm() {
       </p>
 
       <p className="mt-3 text-center text-sm text-muted">
-        New here? <Link href="/register" className="font-semibold text-accent">Register</Link>
+        New here?{" "}
+        <Link href="/register" className="font-semibold text-accent">
+          Register
+        </Link>
       </p>
     </div>
   );

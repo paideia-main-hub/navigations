@@ -29,7 +29,8 @@ export interface ResultCard {
   groupKeys: string[];
   category: AgeCategory | null;
   gradeLabel: string;
-  imageUrl: string;
+  /** Uploaded card artwork; null shows a lettered placeholder tile. */
+  imageUrl: string | null;
   winners: ResultWinner[];
 }
 
@@ -172,8 +173,17 @@ function ResultCardView({ card }: { card: ResultCard }) {
           <h3 className="mt-2 text-xl font-bold leading-tight text-foreground">{card.title}</h3>
           {card.gradeLabel && <p className="mt-1 text-sm text-muted">{card.gradeLabel}</p>}
         </div>
-        {/* eslint-disable-next-line @next/next/no-img-element -- static competition artwork */}
-        <img src={card.imageUrl} alt="" className="h-24 w-24 shrink-0 rounded-xl object-cover" loading="lazy" />
+        {card.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded Supabase artwork
+          <img src={card.imageUrl} alt="" className="h-24 w-24 shrink-0 rounded-xl object-cover" loading="lazy" />
+        ) : (
+          <span
+            aria-hidden="true"
+            className="grid h-24 w-24 shrink-0 place-items-center rounded-xl bg-surface-muted text-3xl font-black text-muted"
+          >
+            {card.title.charAt(0)}
+          </span>
+        )}
       </div>
 
       <ol className="mt-5 space-y-4">

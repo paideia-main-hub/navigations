@@ -13,8 +13,8 @@ const PHOTO = {
   // h is set as well as w so the crop is taken portrait at the source; a
   // landscape frame squeezed into this tall panel crops to a face and loses
   // the room around it.
-  src: "/about/intro.jpg",
-  alt: "A school student looking up, thinking",
+  src: "/about/intro.jpg?v=2",
+  alt: "A student building a small wheeled robot in a classroom workshop",
 };
 
 const icons: Record<string, ReactNode> = {

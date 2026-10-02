@@ -7,8 +7,8 @@ import { useEffect, useRef, useState } from "react";
  * The brush line "Where opportunities lead." sits in the open centre.
  */
 
-const SCRIPT_W = 631;
-const SCRIPT_H = 421;
+const SCRIPT_W = 1600;
+const SCRIPT_H = 1169;
 
 type Frame = { left: number; top: number; width: number; height: number };
 
@@ -77,9 +77,9 @@ export function HeroCollage() {
           className="h-full max-h-full w-full object-contain"
         />
         <img
-          src="/hero-script.png"
+          src="/hero-script.png?v=4"
           alt="Where opportunities lead."
-          className="pointer-events-none absolute z-10"
+          className="pointer-events-none absolute z-10 object-contain"
           style={scriptStyle ?? { visibility: "hidden" }}
         />
       </div>

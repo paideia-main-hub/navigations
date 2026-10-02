@@ -286,6 +286,7 @@ export async function adminGetCompetitionById(admin: SupabaseClient, id: string)
 
 export const createCompetition = repo.insertCompetition;
 export const updateCompetitionCore = repo.updateCompetitionCore;
+export const setCompetitionImageUrl = repo.setCompetitionImageUrl;
 export const updateCompetitionStatus = repo.updateCompetitionStatus;
 export const countCompetitionRegistrations = repo.countCompetitionRegistrations;
 

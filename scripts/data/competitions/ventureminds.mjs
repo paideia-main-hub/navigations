@@ -12,7 +12,7 @@ export default {
   supportsTeam: true,
   status: "open",
   pathway: "applied_skills",
-  image: "/competitions/ventureminds.webp",
+  image: null,
   manualVersion: "v1.0",
   manualFile: "VentureMinds Manual.docx",
 

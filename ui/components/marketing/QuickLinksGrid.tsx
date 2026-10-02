@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { BandDivider } from "./BandDivider";
 import { SectionHeading } from "./SectionHeading";
 
 const icons: Record<string, ReactNode> = {
@@ -51,11 +50,7 @@ const PORTALS = [
 
 export function QuickLinksGrid() {
   return (
-    <section className="relative mx-4 overflow-hidden rounded-[2rem] bg-surface-alt px-6 pt-16 pb-20 sm:mx-6 sm:rounded-[2.5rem] sm:pt-20 sm:pb-24 lg:mx-10 lg:pt-28 lg:pb-32">
-      {/* Same dome on both edges, matching Announcements rather than the
-          wave on Ways to Participate. */}
-      <BandDivider shape="curve" side="top" color="text-background" />
-      <BandDivider shape="curve" side="bottom" color="text-background" flip />
+    <section className="relative px-6 py-16 sm:py-20 lg:py-24">
       <div className="relative mx-auto max-w-7xl">
         <SectionHeading eyebrow="Explore the Platform" title="Quick Links" />
 
@@ -82,16 +77,13 @@ export function QuickLinksGrid() {
                   {icons[p.icon]}
                 </svg>
               </span>
-
-              <p className="relative mt-5 font-extrabold text-foreground">{p.label}</p>
-              <p className="relative mt-1.5 text-sm leading-relaxed text-muted">{p.detail}</p>
-
-              <span
-                aria-hidden="true"
-                className="relative mt-4 flex items-center gap-1 text-sm font-bold text-accent-strong opacity-0 transition-all duration-300 group-hover:opacity-100"
-              >
+              <h3 className="mt-5 text-lg font-bold tracking-tight text-foreground">{p.label}</h3>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{p.detail}</p>
+              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-strong transition-colors group-hover:text-accent">
                 Open
-                <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
+                <span aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-0.5">
+                  →
+                </span>
               </span>
             </Link>
           ))}

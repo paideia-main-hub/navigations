@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["sharp"],
   experimental: {
     serverActions: {
       // Default is 1MB, far too small for the admin portal's manual/resource/
