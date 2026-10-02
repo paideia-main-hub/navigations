@@ -28,7 +28,7 @@ Financial contribution clarification: "financial contribution" means the team's 
 
 Competency alignment — C28 Collaboration & Teamwork and C29 Entrepreneurship are the core competencies, supported by C27 Planning & Organization. Competition marks record event performance; they do not automatically establish a competency proficiency level.
 
-Recommended registration: PKR 1,500 per team, subject to organizer approval.`,
+Registration: PKR 1,000 per team entry.`,
 
   eligibility: [
     {

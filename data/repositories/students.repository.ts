@@ -12,10 +12,14 @@ type Row = {
   guardian_email: string | null;
   guardian_mobile: string | null;
   photo_url: string | null;
+  frl_id?: string | null;
 };
 
-const STUDENT_COLUMNS =
-  "id, full_name, grade, date_of_birth, gender, guardian_name, guardian_relationship, guardian_email, guardian_mobile, photo_url";
+/** Every column, rather than a named list: frl_id arrives in migration 0024,
+ * and `*` returns it once it exists while still working on a database that
+ * hasn't had that migration yet — so no read (or an insert's read-back,
+ * where a retry could duplicate the row) can fail on the missing column. */
+const STUDENT_COLUMNS = "*";
 
 function toStudent(row: Row): StudentProfile {
   return {
@@ -29,14 +33,32 @@ function toStudent(row: Row): StudentProfile {
     guardianEmail: row.guardian_email,
     guardianMobile: row.guardian_mobile,
     photoUrl: row.photo_url,
+    frlId: row.frl_id ?? null,
   };
 }
 
 export async function findStudentByProfile(supabase: SupabaseClient, profileId: string): Promise<StudentProfile | null> {
-  const { data, error } = await supabase.from("students").select(STUDENT_COLUMNS).eq("profile_id", profileId).maybeSingle();
-
+  // The school the student belongs to (when matched) or typed at sign-up,
+  // shown on the registration checkout's "confirm your details" step.
+  const { data, error } = await supabase
+    .from("students")
+    .select(`${STUDENT_COLUMNS}, schools(official_name)`)
+    .eq("profile_id", profileId)
+    .maybeSingle();
   if (error || !data) return null;
-  return toStudent(data as Row);
+  const row = data as unknown as Row & {
+    school_id: string | null;
+    school_name_input: string | null;
+    schools: { official_name: string } | null;
+  };
+  return { ...toStudent(row), schoolId: row.school_id, schoolName: row.schools?.official_name ?? row.school_name_input ?? null };
+}
+
+/** Saves the grade a student confirms at registration checkout — the grade
+ * decides which category (Primary/Middle/Secondary) they compete in. */
+export async function updateStudentGrade(supabase: SupabaseClient, studentId: string, grade: string): Promise<{ error: string | null }> {
+  const { error } = await supabase.from("students").update({ grade }).eq("id", studentId);
+  return { error: error?.message ?? null };
 }
 
 /** Admin overview: every student across every school, unscoped, joined with
@@ -44,7 +66,7 @@ export async function findStudentByProfile(supabase: SupabaseClient, profileId: 
 export async function adminListAllStudents(admin: SupabaseClient): Promise<StudentProfile[]> {
   const { data, error } = await admin
     .from("students")
-    .select(`${STUDENT_COLUMNS}, school_id, schools(official_name)`)
+    .select(`${STUDENT_COLUMNS}, schools(official_name)`)
     .order("full_name");
 
   if (error || !data) return [];

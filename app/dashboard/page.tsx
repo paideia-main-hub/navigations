@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getCoordinatorSchool } from "@/domain/schools/service";
@@ -94,21 +93,6 @@ export default async function DashboardOverviewPage() {
             body={applications.length === 0 ? "Apply to judge a competition." : `${applications.length} application(s) on file.`}
           />
         </section>
-      </div>
-    );
-  }
-
-  if (user.role === "admin") {
-    return (
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Admin Console</h1>
-        <p className="mt-2 max-w-xl text-muted">
-          The admin CMS lives at{" "}
-          <Link href="/admin" className="font-semibold text-accent">
-            /admin
-          </Link>{" "}
-          (separate login).
-        </p>
       </div>
     );
   }

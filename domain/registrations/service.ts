@@ -23,10 +23,15 @@ export async function listAllRegistrations(
   return adminListAllRegistrations(admin, filters);
 }
 
+/** A registration's own reference, e.g. FRL-2026-R-482913 — Future Ready
+ * League, then "R" for registration so it can't be mistaken for a student's
+ * FRL ID (FRL-2026-00017), which identifies the person across all their
+ * registrations. Six random digits keep collisions with the unique
+ * registration_number column vanishingly rare. */
 export function generateRegistrationNumber(): string {
   const year = new Date().getFullYear();
-  const random = Math.floor(1000 + Math.random() * 9000);
-  return `FCS-${year}-${random}`;
+  const random = Math.floor(100000 + Math.random() * 900000);
+  return `FRL-${year}-R-${random}`;
 }
 
 /** Business rule: combine the registration's own status with the

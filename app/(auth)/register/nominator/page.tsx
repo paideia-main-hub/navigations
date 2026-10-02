@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { signUpNominator, type ActionState } from "@/domain/auth/actions";
 import { FormField } from "@/ui/components/FormField";
+import { StepForm } from "@/ui/components/StepForm";
 
 const initialState: ActionState = { error: null };
 
@@ -16,26 +17,36 @@ export default function NominatorRegisterPage() {
         For Idea of the Year, Story of the Year and Young Changemaker submissions with no school involved.
       </p>
 
-      <form action={formAction} className="mt-6 space-y-4">
-        <FormField label="Full name" name="full_name" required />
-        <FormField label="Email" name="email" type="email" required />
-        <FormField label="Password" name="password" type="password" required />
-
-        <label className="flex items-start gap-2 text-sm text-muted">
-          <input type="checkbox" required className="mt-0.5" />
-          I accept the award category rules and the site&apos;s privacy and data-consent terms.
-        </label>
-
-        {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
-
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-60"
-        >
-          {pending ? "Creating account…" : "Create nominator account"}
-        </button>
-      </form>
+      <StepForm
+        action={formAction}
+        pending={pending}
+        error={state.error}
+        submitLabel="Create nominator account"
+        pendingLabel="Creating account…"
+        steps={[
+          {
+            title: "Account",
+            description: "Your login for submitting and tracking nominations.",
+            content: (
+              <>
+                <FormField label="Full name" name="full_name" required />
+                <FormField label="Email" name="email" type="email" required />
+                <FormField label="Password" name="password" type="password" required />
+              </>
+            ),
+          },
+          {
+            title: "Consent",
+            description: "One last step before your account is created.",
+            content: (
+              <label className="flex items-start gap-2 text-sm text-muted">
+                <input type="checkbox" required className="mt-0.5" />
+                I accept the award category rules and the site&apos;s privacy and data-consent terms.
+              </label>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }

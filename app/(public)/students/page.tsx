@@ -121,7 +121,8 @@ const items: FaqCardItem[] = [
     question: "What happens after registration",
     answer: (
       <>
-        You&apos;ll get a registration number in the form FCS-2026-XXXX, and your dashboard becomes the place to
+        Your account comes with a League ID (FRL-2026-XXXXX) that you use for every competition, and each competition you
+        enter gets its own registration number (FRL-2026-R-XXXXXX). Your dashboard becomes the place to
         track status, see upcoming dates and pick up practice resources. From there it&apos;s on you to prepare —
         the League doesn&apos;t send anything further until the next stage or result date is due.
       </>

@@ -7,6 +7,7 @@ import {
   findStudentByProfile,
   updateStudentProfile,
   updateStudentPhoto,
+  updateStudentGrade,
 } from "@/data/repositories/students.repository";
 import type { AddStudentInput, StudentProfile } from "./types";
 
@@ -20,6 +21,10 @@ export async function listAllStudents(admin: SupabaseClient): Promise<StudentPro
 
 export async function getOwnStudentProfile(supabase: SupabaseClient, profileId: string): Promise<StudentProfile | null> {
   return findStudentByProfile(supabase, profileId);
+}
+
+export async function updateOwnStudentGrade(supabase: SupabaseClient, studentId: string, grade: string): Promise<{ error: string | null }> {
+  return updateStudentGrade(supabase, studentId, grade);
 }
 
 export async function updateOwnStudentProfile(

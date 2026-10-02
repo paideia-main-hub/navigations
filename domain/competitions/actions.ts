@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/data/supabase/admin";
-import type { CompetitionPathway } from "@/domain/competitions/types";
+import { DEFAULT_ENTRY_FEE, type CompetitionPathway } from "@/domain/competitions/types";
 import { requireAdminSession } from "@/domain/admin-auth/guard";
 import { deleteCompetitionCardImage, uploadCompetitionCardImage, uploadFile } from "@/domain/storage/actions";
 import { normalizeCompetencies } from "./competencies";
@@ -88,7 +88,7 @@ export async function createCompetitionAction(_prevState: ActionState, formData:
     supportsIndividual: true,
     supportsTeam: false,
     feeRequired: true,
-    feeAmount: null,
+    feeAmount: DEFAULT_ENTRY_FEE,
     season: null,
   });
 

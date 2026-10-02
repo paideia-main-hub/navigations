@@ -2,11 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/data/supabase/server";
+import { createAdminClient } from "@/data/supabase/admin";
 import { getCurrentUser } from "@/domain/auth/session";
+import { getPublicCompetitionBySlug, isGradeEligible } from "@/domain/competitions/service";
+import { categoryLabels, DEFAULT_ENTRY_FEE, type Competition } from "@/domain/competitions/types";
+import { insertPaymentAndLink } from "@/domain/payments/service";
+import { uploadReceiptFile } from "@/domain/storage/actions";
 import { createTeam } from "@/domain/teams/service";
-import { createAdHocTeammate } from "@/domain/students/service";
+import { createAdHocTeammate, getOwnStudentProfile, updateOwnStudentGrade } from "@/domain/students/service";
 import { insertRegistration, insertConsentRecords } from "@/data/repositories/registrations.repository";
-import { generateRegistrationNumber } from "./service";
+import type { BasketItemInput, BasketLine, BasketResult } from "./basket";
+import { generateRegistrationNumber, listMyRegistrations } from "./service";
 import type { Registration, SubmitRegistrationInput } from "./types";
 
 /** Orchestrates a full registration submission: creates a team (and any
@@ -89,4 +95,157 @@ export async function submitRegistrationAction(
     },
     error: null,
   };
+}
+
+/** The student's multi-competition checkout: registers the signed-in student
+ * for every competition they picked, under their one FRL student ID, and
+ * records a single fee payment (one receipt for the total) covering all of
+ * them.
+ *
+ * Everything the browser sends is re-checked here — competition status,
+ * grade eligibility, team size, duplicates and the fee amounts — so the total
+ * is always computed server-side from the competitions themselves. The
+ * receipt is uploaded before anything is created, and if any registration in
+ * the batch fails, the ones already created in this call are removed, so a
+ * retry starts clean instead of leaving half a checkout behind.
+ *
+ * Expects FormData fields: `items` (JSON BasketItemInput[]), `grade`,
+ * `consent` (JSON), `receipt` (File). */
+export async function submitCompetitionBasketAction(formData: FormData): Promise<BasketResult> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "You must be logged in to register." };
+  if (user.role !== "student") return { ok: false, error: "Only student accounts can use this checkout." };
+
+  let items: BasketItemInput[];
+  let consent: SubmitRegistrationInput["consent"];
+  try {
+    items = JSON.parse(String(formData.get("items") ?? "[]"));
+    consent = JSON.parse(String(formData.get("consent") ?? "{}"));
+  } catch {
+    return { ok: false, error: "Your selection couldn't be read — please try again." };
+  }
+  const grade = String(formData.get("grade") ?? "").trim();
+  const receipt = formData.get("receipt");
+
+  if (!Array.isArray(items) || items.length === 0) return { ok: false, error: "Choose at least one competition." };
+  if (new Set(items.map((i) => i.competitionSlug)).size !== items.length) {
+    return { ok: false, error: "A competition appears twice in your selection." };
+  }
+  if (!grade) return { ok: false, error: "Please confirm your grade." };
+  if (!(consent?.terms && consent.privacy && consent.results && consent.photo)) {
+    return { ok: false, error: "Please accept all four consent statements." };
+  }
+  if (!(receipt instanceof File) || receipt.size === 0) return { ok: false, error: "Please attach your fee payment receipt." };
+
+  const supabase = await createClient();
+  const student = await getOwnStudentProfile(supabase, user.id);
+  if (!student) return { ok: false, error: "No student profile found for this account." };
+
+  // --- Validate every pick before creating anything --------------------------
+  const existing = await listMyRegistrations(supabase, user.id);
+  const alreadyRegistered = new Set(existing.filter((r) => r.status !== "rejected").map((r) => r.competitionSlug));
+
+  const planned: { item: BasketItemInput; competition: Competition; rule: Competition["eligibility"][number]; fee: number }[] = [];
+  for (const item of items) {
+    const competition = await getPublicCompetitionBySlug(supabase, item.competitionSlug);
+    if (!competition || (competition.status !== "open" && competition.status !== "upcoming")) {
+      return { ok: false, error: `${competition?.title ?? item.competitionSlug} isn't open for registration.` };
+    }
+    if (alreadyRegistered.has(competition.slug)) {
+      return { ok: false, error: `You're already registered for ${competition.title} — remove it from your selection.` };
+    }
+    const rule = competition.eligibility.find((r) => isGradeEligible(r.minGrade, r.maxGrade, grade));
+    if (!rule) return { ok: false, error: `Grade ${grade} isn't eligible for ${competition.title} — remove it from your selection.` };
+
+    if (item.entryType === "team") {
+      if (!competition.supportsTeam) return { ok: false, error: `${competition.title} doesn't take team entries.` };
+      if (!item.teamName?.trim()) return { ok: false, error: `Enter a team name for ${competition.title}.` };
+      const size = 1 + (item.teammateNames ?? []).filter((n) => n.trim()).length;
+      const min = rule.teamMinSize ?? 2;
+      const max = rule.teamMaxSize ?? 10;
+      if (size < min || size > max) {
+        return { ok: false, error: `${competition.title} teams need ${min === max ? min : `${min}–${max}`} members including you (you have ${size}).` };
+      }
+    } else if (!competition.supportsIndividual) {
+      return { ok: false, error: `${competition.title} is a team competition — add your teammates.` };
+    }
+
+    planned.push({ item, competition, rule, fee: competition.feeAmount ?? DEFAULT_ENTRY_FEE });
+  }
+
+  // --- Receipt first: nothing is created if the upload fails ----------------
+  const { path: receiptPath, error: uploadError } = await uploadReceiptFile(receipt, user.id);
+  if (uploadError || !receiptPath) return { ok: false, error: uploadError ?? "Failed to upload the receipt." };
+
+  if (student.grade !== grade) await updateOwnStudentGrade(supabase, student.id, grade);
+
+  // --- Create the registrations ---------------------------------------------
+  const created: { id: string; line: BasketLine }[] = [];
+  const rollback = async () => {
+    if (created.length === 0) return;
+    // The student has no delete rights on registrations, so the cleanup of
+    // rows this very call just created runs with the service role.
+    await createAdminClient().from("registrations").delete().in("id", created.map((c) => c.id));
+  };
+
+  for (const { item, competition, rule, fee } of planned) {
+    const isTeam = item.entryType === "team";
+    const { registration, error } = await submitRegistrationAction({
+      competitionSlug: competition.slug,
+      competitionTitle: competition.title,
+      category: rule.category,
+      entryType: item.entryType,
+      schoolId: null,
+      studentId: isTeam ? undefined : student.id,
+      teamName: isTeam ? item.teamName?.trim() : undefined,
+      existingMemberIds: isTeam ? [student.id] : undefined,
+      newTeammateNames: isTeam ? (item.teammateNames ?? []).filter((n) => n.trim()) : undefined,
+      entrantNameForDisplay: isTeam ? (item.teamName ?? "") : student.fullName,
+      consent,
+    });
+    if (error || !registration) {
+      await rollback();
+      return { ok: false, error: `Registering for ${competition.title} failed: ${error ?? "unknown error"}. Nothing was saved — please try again.` };
+    }
+    created.push({
+      id: registration.id,
+      line: {
+        competitionTitle: competition.title,
+        registrationNumber: registration.registrationNumber,
+        categoryLabel: categoryLabels[rule.category],
+        entryType: item.entryType,
+        fee,
+      },
+    });
+  }
+
+  // --- One payment covering the whole selection ------------------------------
+  const lines = created.map((c) => c.line);
+  const total = lines.reduce((sum, l) => sum + l.fee, 0);
+  const titles = lines.map((l) => l.competitionTitle);
+  const { error: paymentError } = await insertPaymentAndLink(
+    supabase,
+    {
+      // A multi-competition payment isn't tied to one competition; the admin
+      // payments screen shows the title, which lists every competition paid for.
+      competitionSlug: planned.length === 1 ? planned[0].competition.slug : "multiple",
+      competitionTitle: titles.length === 1 ? titles[0] : `${titles.length} competitions: ${titles.join(", ")}`,
+      submittedBy: user.id,
+      submittedByName: student.frlId ? `${user.fullName} (${student.frlId})` : user.fullName,
+      schoolId: null,
+      schoolName: student.schoolName ?? null,
+      entryCount: lines.length,
+      amountExpected: total,
+      receiptPath,
+    },
+    created.map((c) => c.id),
+  );
+  if (paymentError) {
+    await rollback();
+    return { ok: false, error: `Recording your payment failed: ${paymentError}. Nothing was saved — please try again.` };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/competitions");
+  return { ok: true, frlId: student.frlId, lines, total };
 }

@@ -90,9 +90,9 @@ const items: FaqCardItem[] = [
     question: "Competition fees / payment policy, where applicable",
     answer: (
       <>
-        Most competitions in the League carry no entry fee. Where one does apply, the amount is shown on that
-        competition&apos;s page before you register, so there are no fees added at checkout that you have not
-        already seen — and payment instructions are given as part of the registration flow itself.
+        Every competition in the League has an entry fee of PKR 1,000 per entry — so registering three students
+        for a competition is PKR 3,000. The amount is shown before you submit, there are no extra charges at
+        checkout, and payment instructions are given as part of the registration flow itself.
       </>
     ),
   },

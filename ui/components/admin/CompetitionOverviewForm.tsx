@@ -108,16 +108,16 @@ function CompetitionImageUploader({ competition }: { competition: Competition })
       <div>
         <p className="text-sm font-medium text-foreground">Card image</p>
         <p className="mt-1 text-xs text-muted">
-          Uploaded images are compressed and converted to WebP before storage. Portrait images are
-          centre-cropped to 16:9 (card banner shape). Without an image, cards show a placeholder on the
-          public site.
+          Uploaded images are compressed and converted to WebP before storage. The whole image is kept — it
+          is never cropped in storage. Cards show it filling a 16:9 frame, centred, the same way the award cards
+          do. Without an image, cards show a placeholder on the public site.
         </p>
       </div>
 
       <div className="flex flex-wrap items-start gap-4">
         <div className="relative aspect-[16/9] w-64 shrink-0 overflow-hidden rounded-lg bg-surface-muted sm:w-72">
           {previewUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- admin preview of a Supabase public URL
+            // eslint-disable-next-line @next/next/no-img-element -- admin preview of a Supabase public URL, framed as on the public card
             <img src={previewUrl} alt="" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center px-3 text-center text-xs text-muted">

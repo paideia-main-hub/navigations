@@ -11,7 +11,7 @@ export default async function AdminAccountPage() {
 
       <div className="mt-6 max-w-md">
         <h2 className="mb-3 font-semibold text-foreground">Change password</h2>
-        <ChangePasswordForm />
+        <ChangePasswordForm scope="admin" />
       </div>
     </div>
   );

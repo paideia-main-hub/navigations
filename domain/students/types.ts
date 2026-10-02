@@ -13,7 +13,12 @@ export interface StudentProfile {
    * publication flow reads this instead of an admin uploading one per
    * result. Null until uploaded. */
   photoUrl: string | null;
-  /** Populated only by admin-overview reads (adminListAllStudents). */
+  /** Future Ready League student ID (e.g. FRL-2026-00001), assigned by the
+   * database when the student record is created — migration 0024. Null only
+   * on a database that hasn't had that migration applied yet. */
+  frlId: string | null;
+  /** Populated by admin-overview reads (adminListAllStudents) and the
+   * student's own profile read. */
   schoolId?: string | null;
   schoolName?: string | null;
 }

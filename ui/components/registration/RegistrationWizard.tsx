@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Competition } from "@/domain/competitions/types";
-import { categoryLabels } from "@/domain/competitions/types";
+import { categoryLabels, formatFee } from "@/domain/competitions/types";
 import { isGradeEligible } from "@/domain/competitions/service";
 import type { StudentProfile } from "@/domain/students/types";
 import type { Registration } from "@/domain/registrations/types";
@@ -317,8 +317,8 @@ export function RegistrationWizard({
               {selectedIndividualIds.length > 0 && competition.feeAmount != null && (
                 <p className="mt-2 text-sm text-muted">
                   {selectedIndividualIds.length} student{selectedIndividualIds.length === 1 ? "" : "s"} selected — fee
-                  due: <span className="font-semibold text-foreground">{competition.feeAmount * selectedIndividualIds.length}</span>{" "}
-                  ({competition.feeAmount} × {selectedIndividualIds.length}).
+                  due: <span className="font-semibold text-foreground">{formatFee(competition.feeAmount * selectedIndividualIds.length)}</span>{" "}
+                  ({formatFee(competition.feeAmount)} × {selectedIndividualIds.length}).
                 </p>
               )}
             </div>
@@ -481,8 +481,10 @@ export function RegistrationWizard({
             <p>
               <span className="text-muted">Fee due:</span>{" "}
               <span className="font-medium text-foreground">
-                {amountExpected != null ? amountExpected : "To be confirmed"}
-                {entryCount > 1 && amountExpected != null ? ` (${competition.feeAmount} × ${entryCount})` : ""}
+                {amountExpected != null ? formatFee(amountExpected) : "To be confirmed"}
+                {entryCount > 1 && amountExpected != null && competition.feeAmount != null
+                  ? ` (${formatFee(competition.feeAmount)} × ${entryCount})`
+                  : ""}
               </span>
             </p>
           </div>
@@ -520,10 +522,13 @@ export function RegistrationWizard({
             <p className="mt-1">
               <span className="text-muted">Amount due:</span>{" "}
               <span className="font-semibold text-foreground">
-                {amountExpected != null ? amountExpected : "See competition rules"}
+                {amountExpected != null ? formatFee(amountExpected) : "See competition rules"}
               </span>
-              {entryCount > 1 && amountExpected != null && (
-                <span className="text-muted"> ({competition.feeAmount} × {entryCount} students)</span>
+              {entryCount > 1 && amountExpected != null && competition.feeAmount != null && (
+                <span className="text-muted">
+                  {" "}
+                  ({formatFee(competition.feeAmount)} × {entryCount} students)
+                </span>
               )}
             </p>
           </div>

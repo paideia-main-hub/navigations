@@ -46,7 +46,7 @@ function OrbitPortrait({ item }: { item: OrbitStackItem }) {
         </div>
       ) : (
         // eslint-disable-next-line @next/next/no-img-element -- static asset in public/ or an already-public storage URL
-        <img src={item.image} alt="" aria-hidden="true" loading="lazy" onError={() => setFailed(true)} className="h-full w-full object-cover" />
+        <img src={item.image} alt="" aria-hidden="true" loading="lazy" onError={() => setFailed(true)} className="h-full w-full object-cover object-top" />
       )}
     </div>
   );

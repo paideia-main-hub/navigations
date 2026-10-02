@@ -1,60 +1,37 @@
 import Link from "next/link";
-import { registrationDeadlineOf } from "@/domain/competitions/service";
-import { categoryLabels, statusLabels, type CompetitionSummary } from "@/domain/competitions/types";
-import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
+import { pathwayLabels, type CompetitionSummary } from "@/domain/competitions/types";
 import { CompetitionCardArt } from "@/ui/components/CompetitionCardArt";
 
-function entryTypeLabel(competition: CompetitionSummary): string {
-  if (competition.supportsIndividual && competition.supportsTeam) return "Individual & Team";
-  if (competition.supportsTeam) return "Team";
-  return "Individual";
-}
-
-// Competitions often open to more than one category (e.g. a Junior and a
-// Senior rule), so the strapline spans every eligibility rule rather than
-// reading only the first one.
-function eligibilityLabel(competition: CompetitionSummary): string {
-  const rules = competition.eligibility;
-  if (rules.length === 0) return "Uncategorized";
-
-  const categories = [...new Set(rules.map((r) => categoryLabels[r.category]))].join(" & ");
-  const grades = rules.flatMap((r) => [r.minGrade, r.maxGrade]).filter((g): g is string => Boolean(g));
-  if (grades.length === 0) return categories;
-
-  const numeric = grades.map(Number).filter((n) => Number.isFinite(n));
-  if (numeric.length === 0) return `${categories} — Grades ${grades[0]}`;
-
-  const low = Math.min(...numeric);
-  const high = Math.max(...numeric);
-  return low === high ? `${categories} — Grade ${low}` : `${categories} — Grades ${low}–${high}`;
-}
-
+/** Same card as the award cards on /awards (AwardExpandGrid): image on top,
+ * then a small accent label, the title, a short description and a round "+"
+ * marker. The label is the competition's Route 1 category, playing the role
+ * the award cards give to how each award is decided. The whole card links to
+ * the competition's page. */
 export function CompetitionCard({ competition }: { competition: CompetitionSummary }) {
-  const deadline = registrationDeadlineOf(competition);
-
   return (
     <Link
       href={`/competitions/${competition.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-surface transition-colors hover:border-accent"
+      className="group block overflow-hidden rounded-2xl border border-border bg-surface transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_18px_40px_-28px_rgba(31,32,65,0.45)]"
     >
       <CompetitionCardArt imageUrl={competition.imageUrl} title={competition.title} />
 
-      <div className="flex flex-1 flex-col gap-3 p-6">
-        <p className="text-xs font-semibold tracking-wide text-muted uppercase">{eligibilityLabel(competition)}</p>
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-lg font-bold text-foreground group-hover:text-accent-strong">{competition.title}</h3>
-          <ArenaBadge tone={competition.status === "open" ? "success" : competition.status === "upcoming" ? "warning" : "neutral"}>
-            {statusLabels[competition.status]}
-          </ArenaBadge>
-        </div>
-        <p className="text-sm text-muted">{competition.shortDescription}</p>
-        <div className="mt-auto flex items-center justify-between border-t border-border pt-3 text-xs text-muted">
-          <span>{entryTypeLabel(competition)}</span>
-          <span className="font-semibold text-accent-strong group-hover:underline">View Details →</span>
-        </div>
-        <p className="text-xs font-medium text-muted">
-          {deadline ? `Registration closes ${new Date(deadline).toLocaleDateString("en-GB")}` : "Registration dates not yet scheduled"}
-        </p>
+      <div className="flex items-start gap-3 p-5">
+        <span className="flex-1">
+          {competition.pathway && (
+            <span className="text-[0.68rem] font-semibold tracking-[0.16em] text-accent-strong uppercase">
+              {pathwayLabels[competition.pathway]}
+            </span>
+          )}
+          <span className="mt-1 block leading-snug font-bold text-foreground">{competition.title}</span>
+          <span className="mt-1.5 line-clamp-3 block text-sm text-muted">{competition.shortDescription}</span>
+        </span>
+        <span
+          aria-hidden="true"
+          className="relative mt-1 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-border text-muted transition-colors duration-300 group-hover:border-accent group-hover:text-accent"
+        >
+          <span className="absolute h-2.5 w-px bg-current" />
+          <span className="absolute h-px w-2.5 bg-current" />
+        </span>
       </div>
     </Link>
   );

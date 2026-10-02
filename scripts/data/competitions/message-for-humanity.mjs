@@ -25,7 +25,7 @@ Three formats are accepted because students communicate differently, and all ent
 
 Competency signature — Empathy & Inclusion and Social-Emotional Intelligence are primary; Creative Communication and Perspective Taking are strong supporting; Citizenship & Responsibility supports throughout; and Digital Media Creation, Visual Expression or Written Communication support depending on the chosen format.
 
-Registration fee: PKR 500 per entry. Top award: Best Humanity Message — PKR 10,000 cash prize plus the official Winner Certificate. The winning message may be featured through League channels subject to permissions.`,
+Registration fee: PKR 1,000 per entry. Top award: Best Humanity Message — PKR 10,000 cash prize plus the official Winner Certificate. The winning message may be featured through League channels subject to permissions.`,
 
   eligibility: [
     {
@@ -33,14 +33,14 @@ Registration fee: PKR 500 per entry. Top award: Best Humanity Message — PKR 10
       minGrade: "6",
       maxGrade: "8",
       notes:
-        "Individual competition. Each student may submit one official entry under one selected theme (Empathy in Teaching or Empathy Among Peers) and one selected submission format (written, drawing or 30-second video). Grade or age categories, where applicable, are displayed on the registration portal. Registration fee: PKR 500 per entry.",
+        "Individual competition. Each student may submit one official entry under one selected theme (Empathy in Teaching or Empathy Among Peers) and one selected submission format (written, drawing or 30-second video). Grade or age categories, where applicable, are displayed on the registration portal. Registration fee: PKR 1,000 per entry.",
     },
     {
       category: "secondary",
       minGrade: "9",
       maxGrade: "10",
       notes:
-        "Individual competition. Each student may submit one official entry under one selected theme (Empathy in Teaching or Empathy Among Peers) and one selected submission format (written, drawing or 30-second video). Grade or age categories, where applicable, are displayed on the registration portal. Registration fee: PKR 500 per entry.",
+        "Individual competition. Each student may submit one official entry under one selected theme (Empathy in Teaching or Empathy Among Peers) and one selected submission format (written, drawing or 30-second video). Grade or age categories, where applicable, are displayed on the registration portal. Registration fee: PKR 1,000 per entry.",
     },
   ],
 
@@ -126,7 +126,7 @@ NOTICE → UNDERSTAND → CONNECT → EXPRESS → INFLUENCE. Sometimes changing 
     {
       type: "article",
       title: "Submission checklist",
-      content: `Registered through the portal • PKR 500 registration fee processed • selected Empathy in Teaching or Empathy Among Peers • selected only one submission format • the work substantially reflects your own contribution • the message clearly demonstrates empathy • content is respectful and appropriate • written message is concise where applicable • drawing is clearly visible where applicable • video is no longer than 30 seconds and is MP4 where applicable • the file naming requirement has been followed • any significant AI assistance has been disclosed • the uploaded file opens correctly • the portal status shows "Submission Confirmed."`,
+      content: `Registered through the portal • PKR 1,000 registration fee processed • selected Empathy in Teaching or Empathy Among Peers • selected only one submission format • the work substantially reflects your own contribution • the message clearly demonstrates empathy • content is respectful and appropriate • written message is concise where applicable • drawing is clearly visible where applicable • video is no longer than 30 seconds and is MP4 where applicable • the file naming requirement has been followed • any significant AI assistance has been disclosed • the uploaded file opens correctly • the portal status shows "Submission Confirmed."`,
     },
   ],
 
@@ -159,7 +159,7 @@ NOTICE → UNDERSTAND → CONNECT → EXPRESS → INFLUENCE. Sometimes changing 
     {
       question: "What is the fee and what can I win?",
       answer:
-        "Registration is PKR 500 per entry. The top award, Best Humanity Message, carries a PKR 10,000 cash prize and the official Winner Certificate, and the winning message may be featured through League channels subject to permissions.",
+        "Registration is PKR 1,000 per entry. The top award, Best Humanity Message, carries a PKR 10,000 cash prize and the official Winner Certificate, and the winning message may be featured through League channels subject to permissions.",
     },
     {
       question: "How are ties resolved?",
@@ -170,6 +170,6 @@ NOTICE → UNDERSTAND → CONNECT → EXPRESS → INFLUENCE. Sometimes changing 
 
   events: leagueDates(null, undefined, {
     workDeadline: true,
-    activityNote: "Submission-based competition run through the League portal; a PKR 500 entry fee applies. Selected entries screen during the 5–6 December finale.",
+    activityNote: "Submission-based competition run through the League portal; a PKR 1,000 entry fee applies. Selected entries screen on 11 December, the first day of the finale.",
   }),
 };

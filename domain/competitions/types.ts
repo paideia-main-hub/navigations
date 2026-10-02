@@ -172,6 +172,16 @@ export const categoryLabels: Record<AgeCategory, string> = {
   secondary: "Secondary",
 };
 
+/** Entry fee per registration, in Pakistani rupees — the same for every
+ * League competition. New competitions start with it; an admin can still
+ * change one competition's amount from its Overview tab. */
+export const DEFAULT_ENTRY_FEE = 1000;
+
+/** "PKR 1,000" */
+export function formatFee(amount: number): string {
+  return `PKR ${amount.toLocaleString("en-US")}`;
+}
+
 /** Statuses the public site shows. Draft (not ready yet) and Archived
  * (retired) competitions stay admin-only: they're left out of every public
  * listing and their public pages return 404. Signed-in dashboards still see

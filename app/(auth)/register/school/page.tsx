@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { signUpSchool, type ActionState } from "@/domain/auth/actions";
 import { FormField } from "@/ui/components/FormField";
+import { StepForm } from "@/ui/components/StepForm";
 
 const initialState: ActionState = { error: null };
 
@@ -16,41 +17,64 @@ export default function SchoolRegisterPage() {
         Register your school, then add students and teams from your school dashboard.
       </p>
 
-      <form action={formAction} className="mt-6 space-y-4">
-        <p className="text-xs font-semibold tracking-wide text-muted uppercase">School identity</p>
-        <FormField label="Official school name" name="school_name" required />
-        <FormField label="School type" name="school_type" />
-        <FormField label="City" name="city" />
-        <FormField label="Country" name="country" />
-
-        <p className="pt-2 text-xs font-semibold tracking-wide text-muted uppercase">School profile</p>
-        <FormField label="Principal / head name" name="principal_name" />
-        <FormField label="School phone" name="school_phone" type="tel" />
-        <FormField label="Website" name="website" type="url" />
-
-        <p className="pt-2 text-xs font-semibold tracking-wide text-muted uppercase">Coordinator account</p>
-        <FormField label="Coordinator name" name="coordinator_name" required />
-        <FormField label="Designation" name="designation" />
-        <FormField label="Mobile / WhatsApp" name="mobile" type="tel" />
-        <FormField label="Login email" name="email" type="email" required />
-        <FormField label="Password" name="password" type="password" required />
-
-        <label className="flex items-start gap-2 text-sm text-muted">
-          <input type="checkbox" required className="mt-0.5" />
-          I confirm this information is accurate and accept the competition rules and
-          result/media publication consent terms on behalf of the school.
-        </label>
-
-        {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
-
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-60"
-        >
-          {pending ? "Creating school account…" : "Register school"}
-        </button>
-      </form>
+      <StepForm
+        action={formAction}
+        pending={pending}
+        error={state.error}
+        submitLabel="Register school"
+        pendingLabel="Creating school account…"
+        steps={[
+          {
+            title: "School identity",
+            description: "How your school appears across the League.",
+            content: (
+              <>
+                <FormField label="Official school name" name="school_name" required />
+                <FormField label="School type" name="school_type" />
+                <FormField label="City" name="city" />
+                <FormField label="Country" name="country" />
+              </>
+            ),
+          },
+          {
+            title: "School profile",
+            description: "Contact details for the school itself.",
+            content: (
+              <>
+                <FormField label="Principal / head name" name="principal_name" />
+                <FormField label="School phone" name="school_phone" type="tel" />
+                <FormField label="Website" name="website" type="url" />
+              </>
+            ),
+          },
+          {
+            title: "Coordinator",
+            description: "The person who manages registrations for the school.",
+            content: (
+              <>
+                <FormField label="Coordinator name" name="coordinator_name" required />
+                <FormField label="Designation" name="designation" />
+                <FormField label="Mobile / WhatsApp" name="mobile" type="tel" />
+              </>
+            ),
+          },
+          {
+            title: "Login & consent",
+            description: "The coordinator signs in with these details.",
+            content: (
+              <>
+                <FormField label="Login email" name="email" type="email" required />
+                <FormField label="Password" name="password" type="password" required />
+                <label className="flex items-start gap-2 text-sm text-muted">
+                  <input type="checkbox" required className="mt-0.5" />
+                  I confirm this information is accurate and accept the competition rules and result/media publication
+                  consent terms on behalf of the school.
+                </label>
+              </>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }

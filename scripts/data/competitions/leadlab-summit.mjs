@@ -36,7 +36,7 @@ After scores are verified, the Chair selects one Best Delegate per ranked House 
       minGrade: "6",
       maxGrade: "8",
       notes:
-        "Junior category — individual delegate entry, school registration preferred. Bench allocation is roughly 50% Government / In Favour and 50% Opposition / Against within each House, assigned by the organizer. No specialist law or political-science syllabus is required. Recommended pilot maximum is 100 delegates across about 4 Houses of 20–25. A recommended pilot registration fee per delegate applies — confirm the current figure on the portal, as the manual quotes both PKR 1,000 and PKR 1,500 in different sections.",
+        "Junior category — individual delegate entry, school registration preferred. Bench allocation is roughly 50% Government / In Favour and 50% Opposition / Against within each House, assigned by the organizer. No specialist law or political-science syllabus is required. Recommended pilot maximum is 100 delegates across about 4 Houses of 20–25. The registration fee is PKR 1,000 per delegate.",
     },
     {
       category: "secondary",

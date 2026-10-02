@@ -1,16 +1,15 @@
 import sharp from "sharp";
 
-/** Max width for competition card artwork after conversion. */
-const MAX_WIDTH = 1600;
-/** Card aspect ratio used on CompetitionCard / homepage stacks. */
-const CARD_ASPECT = 16 / 9;
+/** Longest side for competition card artwork after conversion. */
+const MAX_SIDE = 1600;
 /** WebP quality — balances card clarity with upload size. */
 const WEBP_QUALITY = 80;
 
 /**
  * Compresses an admin-uploaded image and converts it to WebP before storage.
- * Portrait (taller than wide) images are centre-cropped to 16:9 landscape so
- * they match competition card banners; landscape images are only fitted.
+ * The whole image is kept — it's only scaled down to fit within MAX_SIDE,
+ * never cropped — because the cards display artwork at its own shape, and a
+ * crop here would permanently cut off the top and bottom of portrait art.
  */
 export async function compressToWebp(file: File): Promise<{ buffer: Buffer; error: string | null }> {
   if (!file.type.startsWith("image/")) {
@@ -19,29 +18,13 @@ export async function compressToWebp(file: File): Promise<{ buffer: Buffer; erro
 
   try {
     const input = Buffer.from(await file.arrayBuffer());
-    // Apply EXIF orientation before measuring — phones often store portrait
+    // rotate() applies EXIF orientation first — phones often store portrait
     // pixels sideways with a rotation flag.
-    const meta = await sharp(input).rotate().metadata();
-    const width = meta.width ?? 0;
-    const height = meta.height ?? 0;
-    const isPortrait = height > width && width > 0;
-
-    const pipeline = sharp(input).rotate();
-    const sized = isPortrait
-      ? pipeline.resize({
-          width: MAX_WIDTH,
-          height: Math.round(MAX_WIDTH / CARD_ASPECT),
-          fit: "cover",
-          position: "centre",
-        })
-      : pipeline.resize({
-          width: MAX_WIDTH,
-          height: MAX_WIDTH,
-          fit: "inside",
-          withoutEnlargement: true,
-        });
-
-    const buffer = await sized.webp({ quality: WEBP_QUALITY }).toBuffer();
+    const buffer = await sharp(input)
+      .rotate()
+      .resize({ width: MAX_SIDE, height: MAX_SIDE, fit: "inside", withoutEnlargement: true })
+      .webp({ quality: WEBP_QUALITY })
+      .toBuffer();
     return { buffer, error: null };
   } catch {
     return { buffer: Buffer.alloc(0), error: "Could not process that image. Try a different file." };

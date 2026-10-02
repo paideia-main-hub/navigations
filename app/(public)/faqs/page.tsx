@@ -10,7 +10,8 @@ const faqs = [
   },
   {
     question: "Is there a registration fee?",
-    answer: "It varies by competition — check the Eligibility & Registration Rules tab on each competition's page.",
+    answer:
+      "Yes. Every competition has an entry fee of PKR 1,000 per entry. You pay it during registration and upload the payment receipt; your registration is confirmed once an admin approves the payment.",
   },
   {
     question: "When are results published?",

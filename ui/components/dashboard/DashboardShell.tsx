@@ -18,6 +18,7 @@ const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
   student: [
     { href: "/dashboard", label: "Overview", icon: "🏠" },
     { href: "/dashboard/competitions", label: "My Competitions", icon: "🏆" },
+    { href: "/dashboard/submissions", label: "Work Submissions", icon: "📤" },
     { href: "/dashboard/history", label: "History & Results", icon: "📜" },
     { href: "/dashboard/register", label: "Register", icon: "➕" },
     { href: "/dashboard/nominations", label: "My Nominations", icon: "🎖️" },
