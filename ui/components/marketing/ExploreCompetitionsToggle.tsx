@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import { pathwayLabels, type CompetitionSummary } from "@/domain/competitions/types";
+import { resolveCompetitionCardImage } from "@/domain/competitions/cardImage";
 import { layerLabels, type AwardCategory } from "@/domain/awards/types";
 import { OrbitCardStack, type OrbitStackItem } from "@/ui/components/marketing/OrbitCardStack";
 import { SectionHeading } from "@/ui/components/marketing/SectionHeading";
@@ -14,8 +15,6 @@ function entryTypeLabel(competition: CompetitionSummary): string {
   return "Individual";
 }
 
-/** An admin-set image wins. Otherwise fall back to the real artwork shipped
- * at public/competitions/<slug>.webp — same convention as CompetitionCard.tsx. */
 function competitionToItem(competition: CompetitionSummary): OrbitStackItem {
   return {
     id: competition.id,
@@ -24,7 +23,7 @@ function competitionToItem(competition: CompetitionSummary): OrbitStackItem {
     eyebrow: competition.pathway ? pathwayLabels[competition.pathway] : competition.domain || "Competition",
     description: competition.shortDescription,
     stat: entryTypeLabel(competition),
-    image: competition.imageUrl || `/competitions/${competition.slug}.webp`,
+    image: resolveCompetitionCardImage(competition.imageUrl),
   };
 }
 

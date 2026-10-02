@@ -11,7 +11,7 @@ export default {
   supportsTeam: true,
   status: "open",
   pathway: "project_showcase",
-  image: "/competitions/scivanta.webp",
+  image: null,
   manualFile: "SciVanta_Environmental_Robotics_Competition_Manual.docx",
 
   overview: `SciVanta is a team environmental STEM innovation competition. Students identify a real environmental-pollution problem, investigate it scientifically, design and build a safe robotics- or technology-based working model, test its performance, improve it using evidence, and demonstrate and defend their solution before judges.

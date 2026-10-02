@@ -29,7 +29,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <ThemeInitScript />
       </head>
-      <body className="flex min-h-full flex-col bg-background text-foreground">{children}</body>
+      <body suppressHydrationWarning className="flex min-h-full flex-col bg-background text-foreground">
+        {children}
+      </body>
     </html>
   );
 }

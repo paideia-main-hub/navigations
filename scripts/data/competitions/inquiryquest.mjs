@@ -11,7 +11,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "independent_submission",
-  image: "/competitions/inquiryquest.webp",
+  image: null,
   manualVersion: "v1.0",
   manualFile: "InquiryQuest_Complete_Operations_Manual_v1_0.docx",
 

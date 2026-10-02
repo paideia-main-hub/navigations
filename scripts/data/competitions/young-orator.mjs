@@ -15,7 +15,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "applied_skills",
-  image: "/competitions/young-orator.webp",
+  image: null,
 
   overview: `Young Orator gives younger students their first structured public-speaking experience inside the League. After a brief preparation period, each candidate delivers a short speech of one to two minutes on a familiar, age-appropriate topic, then answers one simple question from a judge.
 

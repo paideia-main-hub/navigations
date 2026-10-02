@@ -519,6 +519,18 @@ export async function updateCompetitionCore(
   return { error: error?.message ?? null };
 }
 
+export async function setCompetitionImageUrl(
+  admin: SupabaseClient,
+  id: string,
+  imageUrl: string | null,
+): Promise<{ error: string | null }> {
+  const { error } = await admin
+    .from("competitions")
+    .update({ image_url: imageUrl, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  return { error: error?.message ?? null };
+}
+
 export async function updateCompetitionStatus(
   admin: SupabaseClient,
   id: string,

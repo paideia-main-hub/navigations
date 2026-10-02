@@ -14,9 +14,9 @@ import { BandDivider } from "./BandDivider";
 import { BandTexture } from "./BandTexture";
 
 const PHOTOS = {
-  study: {
-    src: "/about/hero-study.jpg?v=2",
-    alt: "Four students working through a task together at a shared table",
+  center: {
+    src: "/about/hero-center.jpg?v=1",
+    alt: "Students presenting a lit sustainable-city model they built together",
   },
   robot: {
     src: "/about/hero-robot.jpg?v=2",
@@ -141,8 +141,8 @@ export function AboutHero() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- remote placeholder host, not in next.config's image remotePatterns */}
             <img
-              src={PHOTOS.study.src}
-              alt={PHOTOS.study.alt}
+              src={PHOTOS.center.src}
+              alt={PHOTOS.center.alt}
               loading="lazy"
               className="h-full w-full object-cover"
             />

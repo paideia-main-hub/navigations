@@ -2,6 +2,7 @@ import Link from "next/link";
 import { registrationDeadlineOf } from "@/domain/competitions/service";
 import { categoryLabels, statusLabels, type CompetitionSummary } from "@/domain/competitions/types";
 import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
+import { CompetitionCardArt } from "@/ui/components/CompetitionCardArt";
 
 function entryTypeLabel(competition: CompetitionSummary): string {
   if (competition.supportsIndividual && competition.supportsTeam) return "Individual & Team";
@@ -28,12 +29,6 @@ function eligibilityLabel(competition: CompetitionSummary): string {
   return low === high ? `${categories} — Grade ${low}` : `${categories} — Grades ${low}–${high}`;
 }
 
-/** An admin-set image wins. Otherwise fall back to the real artwork shipped at
- * public/competitions/<slug>.webp. */
-function artworkFor(competition: CompetitionSummary): string {
-  return competition.imageUrl || `/competitions/${competition.slug}.webp`;
-}
-
 export function CompetitionCard({ competition }: { competition: CompetitionSummary }) {
   const deadline = registrationDeadlineOf(competition);
 
@@ -42,37 +37,24 @@ export function CompetitionCard({ competition }: { competition: CompetitionSumma
       href={`/competitions/${competition.slug}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-surface transition-colors hover:border-accent"
     >
-      <div className="relative aspect-[16/9] overflow-hidden bg-surface-muted">
-        {/* eslint-disable-next-line @next/next/no-img-element -- static asset in public/ or an already-public storage URL */}
-        <img
-          src={artworkFor(competition)}
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-        />
-      </div>
+      <CompetitionCardArt imageUrl={competition.imageUrl} title={competition.title} />
 
       <div className="flex flex-1 flex-col gap-3 p-6">
-      <p className="text-xs font-semibold tracking-wide text-muted uppercase">
-        {eligibilityLabel(competition)}
-      </p>
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-lg font-bold text-foreground group-hover:text-accent-strong">
-          {competition.title}
-        </h3>
-        <ArenaBadge tone={competition.status === "open" ? "success" : competition.status === "upcoming" ? "warning" : "neutral"}>
-          {statusLabels[competition.status]}
-        </ArenaBadge>
-      </div>
-      <p className="text-sm text-muted">{competition.shortDescription}</p>
-      <div className="mt-auto flex items-center justify-between border-t border-border pt-3 text-xs text-muted">
-        <span>{entryTypeLabel(competition)}</span>
-        <span className="font-semibold text-accent-strong group-hover:underline">View Details →</span>
-      </div>
-      <p className="text-xs font-medium text-muted">
-        {deadline ? `Registration closes ${new Date(deadline).toLocaleDateString("en-GB")}` : "Registration dates not yet scheduled"}
-      </p>
+        <p className="text-xs font-semibold tracking-wide text-muted uppercase">{eligibilityLabel(competition)}</p>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-lg font-bold text-foreground group-hover:text-accent-strong">{competition.title}</h3>
+          <ArenaBadge tone={competition.status === "open" ? "success" : competition.status === "upcoming" ? "warning" : "neutral"}>
+            {statusLabels[competition.status]}
+          </ArenaBadge>
+        </div>
+        <p className="text-sm text-muted">{competition.shortDescription}</p>
+        <div className="mt-auto flex items-center justify-between border-t border-border pt-3 text-xs text-muted">
+          <span>{entryTypeLabel(competition)}</span>
+          <span className="font-semibold text-accent-strong group-hover:underline">View Details →</span>
+        </div>
+        <p className="text-xs font-medium text-muted">
+          {deadline ? `Registration closes ${new Date(deadline).toLocaleDateString("en-GB")}` : "Registration dates not yet scheduled"}
+        </p>
       </div>
     </Link>
   );

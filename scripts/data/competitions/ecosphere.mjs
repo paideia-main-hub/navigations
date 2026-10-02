@@ -15,7 +15,7 @@ export default {
   supportsTeam: true,
   status: "open",
   pathway: "applied_skills",
-  image: "/competitions/ecosphere.webp",
+  image: null,
 
   overview: `EcoSphere is a live, one-day team challenge. Each team receives an issued problem and evidence pack describing a real school-improvement issue, then works within the session to produce a school improvement action plan — assigning responsibilities, allocating resources and setting measurable success indicators — before presenting it to the judging panel.
 

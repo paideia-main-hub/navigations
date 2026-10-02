@@ -11,7 +11,7 @@ export default {
   supportsTeam: false,
   status: "open",
   pathway: "independent_submission",
-  image: "/competitions/message-for-humanity.webp",
+  image: null,
   manualFile: "Humanity_Message_Future_Ready_League_Official_Manual.docx",
 
   overview: `Humanity Message is a social-emotional communication challenge that gives students a platform to communicate a powerful message about empathy, kindness, understanding and human connection in education.
