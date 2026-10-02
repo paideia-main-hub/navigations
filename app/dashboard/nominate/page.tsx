@@ -8,7 +8,7 @@ import { Badge } from "@/ui/components/Badge";
 
 export default async function NominateCategoryPickerPage() {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/login?next=/dashboard/nominate");
   if (user.role === "judge" || user.role === "admin") redirect("/dashboard");
 
   const supabase = await createClient();

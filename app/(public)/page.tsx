@@ -66,7 +66,7 @@ export default async function HomePage() {
           BandDivider seams) still does, via its own `overflow-hidden`. */}
       <div className="relative z-10 -mt-[100dvh] rounded-t-[2.5rem] bg-background pt-24 shadow-[0_-25px_50px_-12px_rgba(0,0,0,0.25)] sm:rounded-t-[4rem] sm:pt-28">
         {/* 2. Featuring Now — static League billboard beside a rotating panel. */}
-        <LeagueSpotlight />
+        <LeagueSpotlight nominationsOpen={submittableAwards.length > 0} />
 
         {/* 3. Ways to participate */}
         <WaysToParticipate />

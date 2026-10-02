@@ -37,7 +37,7 @@ const SEATS: Record<
 > = {
   left: {
     tier: "silver",
-    label: "Runner-up",
+    label: "Distinguished Finalist",
     glass: "linear-gradient(180deg, rgba(214,196,255,0.32) 0%, rgba(124,72,255,0.58) 40%, rgba(62,28,168,0.82) 100%)",
     glow: "inset 0 0 0 1.5px rgba(236,226,255,0.95), inset 10px 0 22px rgba(255,255,255,0.16), 0 0 18px rgba(150,110,255,0.75), 0 18px 40px rgba(40,20,90,0.28)",
     lean: "10deg",
@@ -49,7 +49,7 @@ const SEATS: Record<
   },
   center: {
     tier: "gold",
-    label: "Best Performer",
+    label: "Outstanding Performer",
     glass: "linear-gradient(180deg, rgba(170,220,255,0.34) 0%, rgba(30,120,255,0.55) 38%, rgba(8,48,140,0.84) 100%)",
     glow: "inset 0 0 0 1.5px rgba(220,245,255,1), inset 0 0 30px rgba(180,230,255,0.32), 0 0 22px rgba(120,210,255,0.95), 0 22px 48px rgba(20,60,140,0.3)",
     lean: "0deg",
@@ -61,7 +61,7 @@ const SEATS: Record<
   },
   right: {
     tier: "bronze",
-    label: "Special Distinction",
+    label: "Emerging Talent",
     glass: "linear-gradient(180deg, rgba(255,210,160,0.34) 0%, rgba(255,120,48,0.58) 40%, rgba(210,70,16,0.84) 100%)",
     glow: "inset 0 0 0 1.5px rgba(255,230,200,0.95), inset -10px 0 22px rgba(255,255,255,0.14), 0 0 18px rgba(255,140,60,0.75), 0 18px 40px rgba(120,40,10,0.25)",
     lean: "-10deg",
@@ -82,14 +82,36 @@ const FALLBACK_PHOTOS: Record<Seat, string> = {
   right: "/winner-fallback-3.jpg",
 };
 
+const FALLBACK_STUDENT_NAME = "Student Name";
+const FALLBACK_SCHOOL_NAME = "School Name";
+
 /** Real published photos only — empty, SVG placeholders and e2e fixtures
  * do not count, so the Pakistani fallback portraits can show. */
-function resolvedPhoto(photoUrl: string | null | undefined, fallbackSrc: string): string {
+function isPlaceholderPhoto(photoUrl: string | null | undefined): boolean {
   const url = photoUrl?.trim() ?? "";
-  if (!url) return fallbackSrc;
-  if (/\.svg($|\?)/i.test(url)) return fallbackSrc;
-  if (/test-e2e/i.test(url)) return fallbackSrc;
-  return url;
+  if (!url) return true;
+  if (/\.svg($|\?)/i.test(url)) return true;
+  if (/test-e2e/i.test(url)) return true;
+  return false;
+}
+
+function resolvedPhoto(photoUrl: string | null | undefined, fallbackSrc: string): string {
+  return isPlaceholderPhoto(photoUrl) ? fallbackSrc : (photoUrl?.trim() ?? fallbackSrc);
+}
+
+/** Placeholder copy until official results are announced / real names land. */
+function displayStudentName(winner: PublishedWinner): string {
+  if (isPlaceholderPhoto(winner.photoUrl)) return FALLBACK_STUDENT_NAME;
+  const name = winner.studentName?.trim() ?? "";
+  if (!name || name === "—" || /^student\s*name$/i.test(name)) return FALLBACK_STUDENT_NAME;
+  return name;
+}
+
+function displaySchoolName(winner: PublishedWinner): string {
+  if (isPlaceholderPhoto(winner.photoUrl)) return FALLBACK_SCHOOL_NAME;
+  const name = winner.schoolName?.trim() ?? "";
+  if (!name || name === "—" || /^school\s*name$/i.test(name)) return FALLBACK_SCHOOL_NAME;
+  return name;
 }
 
 function NavButton({ direction, onClick }: { direction: "prev" | "next"; onClick: () => void }) {
@@ -165,6 +187,12 @@ function GlassCard({
 }) {
   const theme = SEATS[seat];
   const featured = Boolean(theme.featured);
+  const studentName = displayStudentName(winner);
+  const schoolName = displaySchoolName(winner);
+  const showTeam =
+    !isPlaceholderPhoto(winner.photoUrl) &&
+    winner.entryType === "team" &&
+    Boolean(winner.teamMembers && winner.teamMembers.length > 0);
 
   return (
     <div
@@ -191,7 +219,7 @@ function GlassCard({
 
         <div className="relative z-10 flex h-full flex-col">
           <PhotoFrame
-            name={winner.studentName}
+            name={studentName}
             photoUrl={winner.photoUrl}
             featured={featured}
             tall={seat === "left"}
@@ -218,11 +246,11 @@ function GlassCard({
                   featured ? "text-[1.45rem] leading-tight sm:text-[1.55rem]" : "text-[1.2rem] leading-tight"
                 }`}
               >
-                {winner.studentName}
+                {studentName}
               </p>
-              <p className="mt-1.5 text-[0.8rem] font-semibold tracking-wide text-white/80">{winner.schoolName}</p>
-              {winner.entryType === "team" && winner.teamMembers && winner.teamMembers.length > 0 && (
-                <p className="mt-1 line-clamp-2 text-[11px] font-medium text-white/65">{winner.teamMembers.join(" · ")}</p>
+              <p className="mt-1.5 text-[0.8rem] font-semibold tracking-wide text-white/80">{schoolName}</p>
+              {showTeam && (
+                <p className="mt-1 line-clamp-2 text-[11px] font-medium text-white/65">{winner.teamMembers!.join(" · ")}</p>
               )}
             </div>
           </div>

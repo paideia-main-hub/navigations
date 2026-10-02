@@ -43,7 +43,10 @@ export async function login(_prevState: ActionState, formData: FormData): Promis
     return { error: "Admin accounts sign in at /admin/login, not here." };
   }
 
-  redirect("/dashboard");
+  const next = String(formData.get("next") ?? "").trim();
+  // Only same-origin relative paths — never protocol-relative or absolute URLs.
+  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+  redirect(safeNext);
 }
 
 export async function logout() {

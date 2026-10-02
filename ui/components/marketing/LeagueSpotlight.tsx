@@ -94,10 +94,15 @@ function SlideTitle({ title }: { title: string }) {
 
 const INTERVAL_MS = 3000;
 
-export function LeagueSpotlight() {
+const CTA =
+  "inline-flex items-center justify-center gap-2 rounded-lg px-7 py-3.5 text-sm font-bold transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none";
+
+export function LeagueSpotlight({ nominationsOpen }: { nominationsOpen: boolean }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [showNominationsClosed, setShowNominationsClosed] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   const go = useCallback((next: number) => {
     setIndex(((next % SLIDES.length) + SLIDES.length) % SLIDES.length);
@@ -114,6 +119,16 @@ export function LeagueSpotlight() {
       if (timer.current) clearInterval(timer.current);
     };
   }, [paused]);
+
+  useEffect(() => {
+    if (!showNominationsClosed) return;
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowNominationsClosed(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showNominationsClosed]);
 
   const slide = SLIDES[index];
 
@@ -197,16 +212,76 @@ export function LeagueSpotlight() {
           </div>
         </div>
 
-        <div className="mt-14 flex justify-center">
+        <div className="mt-14 flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/register"
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-3.5 text-sm font-bold text-accent-foreground transition-colors duration-300 hover:bg-brand-deep hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+            className={`${CTA} bg-accent text-accent-foreground hover:bg-brand-deep hover:text-accent`}
           >
-            Register for the League
+            Register Now
+            <span aria-hidden="true">→</span>
+          </Link>
+
+          {nominationsOpen ? (
+            <Link
+              href="/dashboard/nominate"
+              className={`${CTA} border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
+            >
+              Nominate Now
+              <span aria-hidden="true">→</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowNominationsClosed(true)}
+              className={`${CTA} cursor-pointer border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
+            >
+              Nominate Now
+              <span aria-hidden="true">→</span>
+            </button>
+          )}
+
+          <Link
+            href="/"
+            className={`${CTA} border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
+          >
+            Submit Now
             <span aria-hidden="true">→</span>
           </Link>
         </div>
       </div>
+
+      {showNominationsClosed ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="nominations-closed-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-brand-deep/55 p-6 backdrop-blur-[2px]"
+          onClick={() => setShowNominationsClosed(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl border border-border bg-background p-6 shadow-[0_28px_60px_-28px_rgba(31,32,65,0.55)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="nominations-closed-title" className="text-lg font-bold text-foreground">
+              Nominations not open yet
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-muted">
+              Nominations date has not come up yet. Please check back when award categories are opened for
+              nominations.
+            </p>
+            <div className="mt-6 flex justify-end">
+              <button
+                ref={closeRef}
+                type="button"
+                onClick={() => setShowNominationsClosed(false)}
+                className="rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-accent-foreground hover:opacity-90"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

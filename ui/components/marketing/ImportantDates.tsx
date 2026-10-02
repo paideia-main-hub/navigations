@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Unbounded } from "next/font/google";
 import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { CompetitionSummary } from "@/domain/competitions/types";
@@ -10,6 +10,12 @@ import { BandDivider } from "./BandDivider";
 const cardTitleFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["800"],
+});
+
+/** Stylish numerals for contest day and year. */
+const dateNumeralFont = Unbounded({
+  subsets: ["latin"],
+  weight: ["700", "800"],
 });
 
 /** The published 2026 programme, from ui/components/calendar/calendar2026.ts. */
@@ -132,8 +138,8 @@ function formatCompetitionDate(iso: string): { day: string; month: string; year:
   const stamp = /^\d{4}-\d{2}-\d{2}/.test(iso) ? `${iso.slice(0, 10)}T12:00:00` : iso;
   const date = new Date(stamp);
   return {
-    day: String(date.getDate()),
-    month: date.toLocaleDateString("en-GB", { month: "short" }),
+    day: String(date.getDate()).padStart(2, "0"),
+    month: date.toLocaleDateString("en-GB", { month: "long" }),
     year: String(date.getFullYear()),
   };
 }
@@ -326,11 +332,16 @@ function SpotlightFace({ item }: { item: CompetitionSummary }) {
         Contest Date
       </p>
       {parts ? (
-        <div className={`${cardTitleFont.className} mt-3 leading-none text-accent`}>
-          <p className="text-[length:min(2.15rem,14cqi)]">
-            {parts.day} {parts.month}
+        <div className="mt-3 inline-flex items-stretch justify-center gap-3 text-accent text-[length:min(1.62rem,10.5cqi)]">
+          <p
+            className={`${dateNumeralFont.className} flex items-center leading-none font-extrabold text-[2em]`}
+          >
+            {parts.day}
           </p>
-          <p className="mt-1.5 text-[length:min(1.55rem,10cqi)]">{parts.year}</p>
+          <div className="flex flex-col items-start justify-between text-left leading-none text-[0.88em]">
+            <p className={`${cardTitleFont.className} font-extrabold`}>{parts.month}</p>
+            <p className={`${dateNumeralFont.className} w-full text-left font-bold`}>{parts.year}</p>
+          </div>
         </div>
       ) : (
         <p className={`${cardTitleFont.className} mt-3 leading-tight text-accent text-[length:min(1.6rem,11cqi)]`}>

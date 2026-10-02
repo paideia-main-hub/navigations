@@ -12,21 +12,21 @@ type Place = "runner" | "best" | "distinction";
 
 const PLACES: Record<Place, { title: string; award: AwardType; glass: string; glow: string; lean: string }> = {
   runner: {
-    title: "Runner-up",
+    title: "Distinguished Finalist",
     award: "silver",
     glass: "linear-gradient(180deg, rgba(214,196,255,0.32) 0%, rgba(124,72,255,0.58) 40%, rgba(62,28,168,0.82) 100%)",
     glow: "inset 0 0 0 1.5px rgba(236,226,255,0.95), inset 10px 0 22px rgba(255,255,255,0.16), 0 0 18px rgba(150,110,255,0.75), 0 18px 40px rgba(40,20,90,0.28)",
     lean: "perspective(1200px) rotateY(18deg)",
   },
   best: {
-    title: "Best Performer",
+    title: "Outstanding Performer",
     award: "gold",
     glass: "linear-gradient(180deg, rgba(170,220,255,0.34) 0%, rgba(30,120,255,0.55) 38%, rgba(8,48,140,0.84) 100%)",
     glow: "inset 0 0 0 1.5px rgba(220,245,255,1), inset 0 0 30px rgba(180,230,255,0.32), 0 0 22px rgba(120,210,255,0.95), 0 22px 48px rgba(20,60,140,0.3)",
     lean: "none",
   },
   distinction: {
-    title: "Special Distinction",
+    title: "Emerging Talent",
     award: "bronze",
     glass: "linear-gradient(180deg, rgba(255,210,160,0.34) 0%, rgba(255,120,48,0.58) 40%, rgba(210,70,16,0.84) 100%)",
     glow: "inset 0 0 0 1.5px rgba(255,230,200,0.95), inset -10px 0 22px rgba(255,255,255,0.14), 0 0 18px rgba(255,140,60,0.75), 0 18px 40px rgba(120,40,10,0.25)",
