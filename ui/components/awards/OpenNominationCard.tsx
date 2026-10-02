@@ -19,7 +19,7 @@ export function OpenNominationCard({ category }: { category: AwardCategory }) {
   return (
     <Link
       href={`/awards/${category.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm transition-colors hover:border-accent/60"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-brand-deep transition-colors hover:border-accent/60"
     >
       <div className="relative aspect-[16/9] overflow-hidden bg-black/20">
         {!imageFailed && (
