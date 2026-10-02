@@ -120,10 +120,15 @@ function AwardCard({
   /** After collapse, skip hover lift/shadow until the pointer leaves — avoids a flash while still over the card. */
   const [hoverLift, setHoverLift] = useState(true);
   const [hovered, setHovered] = useState(false);
+  /** Row height captured when close starts — floor so the shell eases down without snapping or dipping. */
+  const [closeMinHeight, setCloseMinHeight] = useState<number | null>(null);
+  const itemRef = useRef<HTMLLIElement>(null);
   const wasOpenRef = useRef(false);
   const overlaying = phase !== "closed";
   const fullyOpen = phase === "open";
-  const showHoverMotion = hovered && hoverLift && !overlaying;
+  const closing = phase === "closing";
+  const equalizeBody = phase === "closed" || closing;
+  const showHoverMotion = hovered && hoverLift && phase === "closed";
 
   useEffect(() => {
     if (wasOpenRef.current && !isOpen) setHoverLift(false);
@@ -132,6 +137,7 @@ function AwardCard({
 
   useEffect(() => {
     if (isOpen) {
+      setCloseMinHeight(null);
       setPhase("opening");
       let second = 0;
       const first = requestAnimationFrame(() => {
@@ -142,21 +148,27 @@ function AwardCard({
         cancelAnimationFrame(second);
       };
     }
+    const rowHeight = itemRef.current?.getBoundingClientRect().height ?? 0;
+    setCloseMinHeight(rowHeight > 0 ? rowHeight : null);
     setPhase((current) => (current === "closed" ? "closed" : "closing"));
   }, [isOpen]);
 
   function handleTransitionEnd(event: TransitionEvent<HTMLDivElement>) {
     if (event.propertyName !== "grid-template-rows") return;
-    if (phase === "closing") setPhase("closed");
+    if (phase === "closing") {
+      setPhase("closed");
+      setCloseMinHeight(null);
+    }
   }
 
   const hoverCard =
-    hoverLift && !overlaying
+    hoverLift && phase === "closed"
       ? "hover:border-accent/40"
       : "";
 
   return (
     <li
+      ref={itemRef}
       className="relative flex h-full min-h-0 flex-col"
       onMouseLeave={() => {
         setHoverLift(true);
@@ -184,7 +196,7 @@ function AwardCard({
       <div
         className={`rounded-2xl border bg-surface ${
           overlaying
-            ? `absolute inset-x-0 top-0 z-50 transition-[border-color,box-shadow] ${EASE} ${
+            ? `absolute inset-x-0 top-0 z-50 flex min-h-0 flex-col transition-[border-color,box-shadow] ${EASE} ${
                 fullyOpen
                   ? "border-accent/60 shadow-[0_28px_60px_-24px_rgba(31,32,65,0.55)]"
                   : "border-accent/40 shadow-[0_20px_45px_-28px_rgba(31,32,65,0.4)]"
@@ -195,7 +207,9 @@ function AwardCard({
         onMouseLeave={() => setHovered(false)}
         style={
           overlaying
-            ? undefined
+            ? closing && closeMinHeight
+              ? { minHeight: closeMinHeight }
+              : undefined
             : {
                 transform: showHoverMotion ? "translateY(-4px)" : "translateY(0)",
                 boxShadow: showHoverMotion
@@ -207,7 +221,7 @@ function AwardCard({
       >
         <div
           className={`overflow-hidden rounded-2xl ${
-            overlaying ? "" : "flex h-full min-h-0 flex-1 flex-col"
+            equalizeBody ? "flex h-full min-h-0 flex-1 flex-col" : ""
           }`}
         >
           <button
@@ -216,7 +230,7 @@ function AwardCard({
             aria-expanded={isOpen || fullyOpen}
             aria-controls={panelId}
             className={`w-full cursor-pointer text-left ${
-              overlaying ? "block" : "flex min-h-0 flex-1 flex-col"
+              equalizeBody ? "flex min-h-0 flex-1 flex-col" : "block"
             }`}
           >
             <CardFace
@@ -224,7 +238,7 @@ function AwardCard({
               imageFailed={imageFailed}
               onImageError={() => setImageFailed(true)}
               expanded={fullyOpen || isOpen}
-              equalizeBody={!overlaying}
+              equalizeBody={equalizeBody}
             />
           </button>
 
