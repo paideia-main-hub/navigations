@@ -22,6 +22,7 @@ type Row = {
   evidence_period_end: string | null;
   closing_at: string | null;
   status: AwardCategoryStatus;
+  image_url?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -43,6 +44,7 @@ function toCategory(row: Row): AwardCategory {
     evidencePeriodEnd: row.evidence_period_end,
     closingAt: row.closing_at,
     status: row.status,
+    imageUrl: row.image_url ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -116,5 +118,17 @@ export async function updateCategory(admin: SupabaseClient, id: string, input: A
 
 export async function updateCategoryStatus(admin: SupabaseClient, id: string, status: AwardCategoryStatus): Promise<{ error: string | null }> {
   const { error } = await admin.from("award_categories").update({ status }).eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+export async function setAwardCategoryImageUrl(
+  admin: SupabaseClient,
+  id: string,
+  imageUrl: string | null,
+): Promise<{ error: string | null }> {
+  const { error } = await admin
+    .from("award_categories")
+    .update({ image_url: imageUrl, updated_at: new Date().toISOString() })
+    .eq("id", id);
   return { error: error?.message ?? null };
 }

@@ -49,4 +49,6 @@ export async function updateCategoryStatus(admin: SupabaseClient, id: string, st
   return repo.updateCategoryStatus(admin, id, status);
 }
 
+export const setAwardCategoryImageUrl = repo.setAwardCategoryImageUrl;
+
 export type { AwardCategoryInput } from "@/data/repositories/awards.repository";

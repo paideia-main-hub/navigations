@@ -1,11 +1,6 @@
 import { type ReactNode } from "react";
-import { Unbounded } from "next/font/google";
+import { LayersRecognitionMark } from "@/ui/components/marketing/LayersRecognitionMark";
 import { ScrollSplitCard, type ScrollSplitCardItem } from "@/ui/components/marketing/ScrollSplitCard";
-
-const markNumeral = Unbounded({
-  subsets: ["latin"],
-  weight: ["800"],
-});
 
 function Icon({ path }: { path: string }) {
   return (
@@ -91,20 +86,7 @@ export function RecognitionStrip(): ReactNode {
       </div>
 
       {/* Whole mark scales with viewport; centered horizontally in the section. */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute top-0 left-1/2 z-0 flex h-[clamp(3.5rem,16vw,20rem)] -translate-x-1/2 items-center justify-center gap-[0.04em] text-[length:clamp(3.5rem,16vw,20rem)] text-foreground/[0.055] select-none"
-      >
-        <span
-          className={`${markNumeral.className} block shrink-0 leading-none font-extrabold tabular-nums text-[1em]`}
-        >
-          05
-        </span>
-        <span className="leading-none font-black tracking-wide uppercase text-[0.5em]">
-          <span className="block">layers</span>
-          <span className="block">recognitions</span>
-        </span>
-      </span>
+      <LayersRecognitionMark variant="band" />
 
       <ScrollSplitCard
         imageSrc={RECOGNITION_IMAGE}

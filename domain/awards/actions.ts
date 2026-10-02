@@ -6,6 +6,7 @@ import { createAdminClient } from "@/data/supabase/admin";
 import { requireAdminSession } from "@/domain/admin-auth/guard";
 import * as service from "./service";
 import type { AwardCategoryStatus, AwardLayer, RubricCriterion } from "./types";
+import { deleteAwardCardImage, uploadAwardCardImage } from "@/domain/storage/actions";
 
 export type ActionState = { error: string | null; success?: boolean };
 
@@ -132,5 +133,49 @@ export async function updateCategoryStatusAction(_prevState: ActionState, formDa
   if (error) return { error };
 
   revalidateCategory(id);
+  return { error: null, success: true };
+}
+
+export async function uploadAwardImageAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdminSession();
+  const admin = createAdminClient();
+  const id = String(formData.get("category_id"));
+  const file = formData.get("file") as File | null;
+  if (!file || file.size === 0) return { error: "Choose an image to upload." };
+
+  const existing = await service.adminGetCategoryById(admin, id);
+  if (!existing) return { error: "Award category not found." };
+
+  const previousUrl = existing.imageUrl;
+
+  const { url, error: uploadError } = await uploadAwardCardImage(file, id);
+  if (uploadError || !url) return { error: uploadError ?? "Upload failed." };
+
+  const { error } = await service.setAwardCategoryImageUrl(admin, id, url);
+  if (error) {
+    await deleteAwardCardImage(url);
+    return { error };
+  }
+
+  if (previousUrl && previousUrl !== url) await deleteAwardCardImage(previousUrl);
+
+  revalidateCategory(id, existing.slug);
+  return { error: null, success: true };
+}
+
+export async function removeAwardImageAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdminSession();
+  const admin = createAdminClient();
+  const id = String(formData.get("category_id"));
+
+  const existing = await service.adminGetCategoryById(admin, id);
+  if (!existing) return { error: "Award category not found." };
+
+  const { error } = await service.setAwardCategoryImageUrl(admin, id, null);
+  if (error) return { error };
+
+  if (existing.imageUrl) await deleteAwardCardImage(existing.imageUrl);
+
+  revalidateCategory(id, existing.slug);
   return { error: null, success: true };
 }

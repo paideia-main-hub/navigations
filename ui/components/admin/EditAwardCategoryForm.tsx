@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { updateCategoryAction, type ActionState } from "@/domain/awards/actions";
 import type { AwardCategory, RubricCriterion } from "@/domain/awards/types";
 import { isJudgedLayer } from "@/domain/awards/types";
+import { AwardCategoryImageUploader } from "@/ui/components/admin/AwardCategoryImageUploader";
 
 const initialState: ActionState = { error: null };
 
@@ -19,7 +20,10 @@ export function EditAwardCategoryForm({ category }: { category: AwardCategory })
   }
 
   return (
-    <form action={formAction} className="max-w-2xl space-y-6">
+    <div className="max-w-2xl space-y-6">
+      <AwardCategoryImageUploader category={category} />
+
+      <form action={formAction} className="space-y-6">
       <input type="hidden" name="category_id" value={category.id} />
       <input type="hidden" name="layer" value={category.layer} />
 
@@ -179,5 +183,6 @@ export function EditAwardCategoryForm({ category }: { category: AwardCategory })
         {pending ? "Saving…" : "Save changes"}
       </button>
     </form>
+    </div>
   );
 }

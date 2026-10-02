@@ -14,6 +14,8 @@ export interface AwardDetail {
   awardedTo: string;
   description: string;
   criteria?: { label: string; weight: string }[];
+  /** Admin-uploaded card image; when unset the static /awards/{slug}.webp is used. */
+  imageUrl?: string | null;
 }
 
 export const AWARD_DETAILS: AwardDetail[] = [

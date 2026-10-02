@@ -18,9 +18,13 @@ type Shape = "wave" | "curve" | "arc" | "tilt" | "blob" | "dune";
 export const BLOB_PATH =
   "M0 0h1440v34c-96 34-183 18-268 2-118-22-214-34-320 12-88 38-166 64-262 52-84-10-140-46-222-52C289 40 214 66 137 74 89 79 44 72 0 56Z";
 
+/** Shallow S — used on awards hero bottom + curve shadow. */
+export const WAVE_PATH =
+  "M0 0h1440v46c-206 40-379-16-585-4-206 12-412 66-618 44-79-8-158-24-237-44Z";
+
 const PATHS: Record<Shape, string> = {
   // Shallow S — the softest of the four.
-  wave: "M0 0h1440v46c-206 40-379-16-585-4-206 12-412 66-618 44-79-8-158-24-237-44Z",
+  wave: WAVE_PATH,
   // Single dome bulging down through the middle.
   curve: "M0 0h1440v30c-338 62-1102 62-1440 0Z",
   // Scoop — the neighbour sweeps down at both edges.

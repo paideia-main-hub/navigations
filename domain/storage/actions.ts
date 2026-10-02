@@ -6,8 +6,9 @@ import { requireAdminSession } from "@/domain/admin-auth/guard";
 import { getCurrentUser } from "@/domain/auth/session";
 import { compressToWebp } from "@/domain/storage/processImage";
 import { competitionImageStoragePath } from "@/domain/storage/competitionImagePath";
+import { awardImageStoragePath } from "@/domain/storage/awardImagePath";
 
-export type StorageBucket = "manuals" | "resources" | "winner-photos" | "competition-images";
+export type StorageBucket = "manuals" | "resources" | "winner-photos" | "competition-images" | "award-images";
 
 /** Uploads an admin-supplied file to Supabase Storage and returns its public
  * URL. Buckets are public (see supabase/migrations/0011_storage_buckets.sql),
@@ -61,6 +62,32 @@ export async function uploadCompetitionCardImage(
   return { url: data.publicUrl, error: null };
 }
 
+/** Compresses to WebP and uploads to the public `award-images` bucket
+ * (migration 0023). Returns the public URL for award_categories.image_url. */
+export async function uploadAwardCardImage(
+  file: File,
+  categoryId: string,
+): Promise<{ url: string | null; error: string | null }> {
+  await requireAdminSession();
+
+  if (!file || file.size === 0) return { url: null, error: "Choose an image to upload." };
+
+  const { buffer, error: processError } = await compressToWebp(file);
+  if (processError) return { url: null, error: processError };
+
+  const admin = createAdminClient();
+  const path = `${categoryId}/${crypto.randomUUID()}.webp`;
+
+  const { error } = await admin.storage.from("award-images").upload(path, buffer, {
+    contentType: "image/webp",
+    upsert: false,
+  });
+  if (error) return { url: null, error: error.message };
+
+  const { data } = admin.storage.from("award-images").getPublicUrl(path);
+  return { url: data.publicUrl, error: null };
+}
+
 /** Removes a competition-images object when its public URL is known.
  * Non-fatal if the path cannot be parsed or the object is already gone. */
 export async function deleteCompetitionCardImage(publicUrl: string): Promise<{ deleted: boolean; error: string | null }> {
@@ -69,6 +96,17 @@ export async function deleteCompetitionCardImage(publicUrl: string): Promise<{ d
 
   const admin = createAdminClient();
   const { error } = await admin.storage.from("competition-images").remove([path]);
+  if (error) return { deleted: false, error: error.message };
+  return { deleted: true, error: null };
+}
+
+/** Removes an award-images object when its public URL is known. */
+export async function deleteAwardCardImage(publicUrl: string): Promise<{ deleted: boolean; error: string | null }> {
+  const path = awardImageStoragePath(publicUrl);
+  if (!path) return { deleted: false, error: null };
+
+  const admin = createAdminClient();
+  const { error } = await admin.storage.from("award-images").remove([path]);
   if (error) return { deleted: false, error: error.message };
   return { deleted: true, error: null };
 }
