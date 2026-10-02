@@ -107,6 +107,30 @@ body {
   }
 }
 
+/* Card-face flip when the podium advances. --podium-lean is the seat's
+   resting yaw; --podium-flip-from spins in from the travel direction. */
+@keyframes podium-card-flip {
+  from {
+    opacity: 0.15;
+    transform: perspective(1200px) rotateY(var(--podium-flip-from, 95deg));
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1200px) rotateY(var(--podium-lean, 0deg));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes podium-card-flip {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
 /* Replay-on-key-change entrance for the League Spotlight's heading/body
    (ui/components/marketing/LeagueSpotlight.tsx) — text starts blurred,
    scaled down and shifted, sharpens to full focus early (60%), then keeps
@@ -132,6 +156,7 @@ body {
 
 @theme inline {
   --animate-podium-in: podium-in 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-podium-card-flip: podium-card-flip 0.65s cubic-bezier(0.22, 0.8, 0.24, 1) both;
   --animate-spotlight-text-in: spotlight-text-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-place-drift: place-drift 4.5s ease-in-out infinite;
 }
@@ -253,37 +278,6 @@ body {
   --animate-gradient-travel: gradient-travel 12s ease-in-out infinite;
 }
 
-/* League Spotlight corner marks. The wrapper fades and grows in when the
-   slide changes; the icon itself keeps a slow drift on `translate`/`rotate`
-   so the entrance scale is not overwritten. */
-@keyframes spotlight-mark-in {
-  from {
-    opacity: 0;
-    scale: 0.72;
-  }
-  to {
-    opacity: 1;
-    scale: 1;
-  }
-}
-
-@keyframes spotlight-mark-float {
-  0%,
-  100% {
-    translate: 0 0;
-    rotate: -8deg;
-  }
-  50% {
-    translate: 0 -4px;
-    rotate: 5deg;
-  }
-}
-
-@theme inline {
-  --animate-spotlight-mark-in: spotlight-mark-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-spotlight-mark-float: spotlight-mark-float 7s ease-in-out infinite;
-}
-
 /* None of these stop on their own, so they stop when the viewer has asked
    for less motion. The hero chart is a video, so reduced motion swaps it
    for a single still frame. */
@@ -295,8 +289,6 @@ body {
   .animate-orbit-reverse,
   .animate-wave-float,
   .animate-gradient-travel,
-  .animate-spotlight-mark-in,
-  .animate-spotlight-mark-float,
   .animate-spotlight-text-in,
   .animate-place-drift,
   .cheer-lane,

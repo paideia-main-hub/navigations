@@ -164,7 +164,7 @@ function CardFace({
 export function ScrollSplitCard({
   imageSrc,
   cards,
-  startLabel = "Scroll down",
+  startLabel,
   endLabel,
   containerRef: externalContainerRef,
 }: ScrollSplitCardProps) {
@@ -286,12 +286,14 @@ export function ScrollSplitCard({
       {!reduceMotion && (
         <div ref={sectionRef} className="relative hidden h-[200vh] w-full sm:block">
           <div className="sticky top-0 flex h-screen w-full flex-col items-center justify-center overflow-hidden px-6 [perspective:1200px] sm:px-10">
-            <p
-              ref={startTextRef}
-              className="absolute top-[7%] right-0 left-0 text-center text-sm font-medium tracking-widest text-foreground/50 uppercase"
-            >
-              {startLabel}
-            </p>
+            {startLabel ? (
+              <p
+                ref={startTextRef}
+                className="absolute top-[7%] right-0 left-0 text-center text-sm font-medium tracking-widest text-foreground/50 uppercase"
+              >
+                {startLabel}
+              </p>
+            ) : null}
 
             <div
               ref={groupRef}

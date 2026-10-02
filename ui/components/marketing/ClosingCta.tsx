@@ -1,17 +1,14 @@
 import Link from "next/link";
-import { BandDivider } from "./BandDivider";
 import { BandTexture } from "./BandTexture";
 
 export function ClosingCta() {
   return (
-    <section className="relative mx-4 overflow-hidden rounded-tl-[4rem] rounded-tr-[4rem] bg-brand-deep px-6 pt-28 pb-20 text-center sm:mx-6 sm:rounded-tl-[6rem] sm:rounded-tr-[6rem] lg:mx-10 lg:pt-32 lg:pb-24">
-      <BandDivider shape="curve" side="top" color="text-background" flip />
+    <section className="relative overflow-hidden rounded-tl-[4rem] rounded-tr-[4rem] bg-[#2a2c54] px-6 pt-20 pb-20 text-center sm:rounded-tl-[6rem] sm:rounded-tr-[6rem] sm:pt-24 lg:pt-28 lg:pb-24">
       <BandTexture pattern="grid" className="text-brand-deep-foreground/[0.05]" />
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute top-1/2 left-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.08] blur-[130px]" />
       </div>
 
-      {/* Positioned, so the seam above cannot paint over the copy. */}
       <div className="relative">
         <h2 className="text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">READY TO REGISTER?</h2>
         <p className="mx-auto mt-4 max-w-xl text-brand-deep-muted">

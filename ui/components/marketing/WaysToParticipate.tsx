@@ -20,6 +20,7 @@ const icons: Record<string, ReactNode> = {
   medal: (
     <path d="M12 21a6 6 0 1 0 0-12 6 6 0 0 0 0 12Zm0 0v-2m-4.5-8.5L5 3h5l2 4m2.5 3.5L19 3h-5l-2 4" />
   ),
+  heart: <path d="M12 21s-7-4.6-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.4-9.5 9-9.5 9Z" />,
 };
 
 function Icon({ name }: { name: keyof typeof icons }) {
@@ -90,8 +91,8 @@ const ROUTES = [
     number: 2,
     title: "Apply/Nominate for Special Recognition",
     blurb: "Put forward an individual, submission, school or sporting achievement for a League award.",
-    // Track 5 is the rule, so this group starts at 6.
-    headerClass: "lg:col-start-6 lg:col-span-3 lg:row-start-1",
+    // Track 5 is the rule, so this group starts at 6 and runs four cards.
+    headerClass: "lg:col-start-6 lg:col-span-4 lg:row-start-1",
     cards: [
       {
         label: "Spotlight Awards",
@@ -117,6 +118,14 @@ const ROUTES = [
         bg: "bg-accent-soft",
         bubble: "bg-accent/30",
       },
+      {
+        label: "Teacher & Parent Recognition",
+        icon: "heart",
+        href: "/awards#teacher_parent",
+        col: "lg:col-start-9",
+        bg: "bg-fuchsia-50 dark:bg-fuchsia-500/10",
+        bubble: "bg-fuchsia-200 dark:bg-fuchsia-400/40",
+      },
     ],
   },
 ] as const;
@@ -124,24 +133,25 @@ const ROUTES = [
 export function WaysToParticipate() {
   return (
     <section
-      // Same-family gradient instead of a flat fill — three shades of the
-      // Space Indigo brand colour, darkest on the left rising to a clearly
-      // lighter shade on the right. Fixed (no dark: variant) to match
-      // bg-brand-deep's own "stays dark in both themes" behaviour, which
-      // this replaces. background-size 200% 200% + animate-gradient-travel
-      // (app/globals.css) slides that gradient back and forth so the light
-      // slowly travels across the band instead of sitting static.
-      className="relative mx-4 overflow-hidden rounded-[2rem] bg-[linear-gradient(100deg,#14152c_0%,#1f2041_50%,#3d4173_100%)] bg-[length:200%_200%] animate-gradient-travel px-6 pt-[calc(7rem+30px)] pb-[calc(7rem+50px)] sm:mx-6 sm:pt-[calc(8rem+30px)] lg:mx-10 lg:pt-[calc(10rem+30px)] lg:pb-[calc(8rem+50px)] sm:rounded-[2.5rem]"
+      // One dark fill. The dotted net sits on top of it.
+      className="relative mx-4 overflow-hidden rounded-[2rem] bg-[#14152c] px-6 pt-[calc(7rem+30px)] pb-[calc(7rem+50px)] shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] sm:mx-6 sm:pt-[calc(8rem+30px)] sm:rounded-[2.5rem] lg:mx-10 lg:pt-[calc(10rem+30px)] lg:pb-[calc(8rem+50px)]"
     >
       {/* Same wave on both edges, so the page colour spills in at the top
           the way it already does along the bottom. */}
       <BandDivider shape="wave" side="top" color="text-background" />
       <BandDivider shape="wave" side="bottom" color="text-background" flip />
 
-      {/* Depth behind the cards, so the band reads as lit rather than flat. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-24 -left-20 h-80 w-80 rounded-full bg-accent/10 blur-[120px]" />
-        <div className="absolute -right-24 -bottom-28 h-96 w-96 rounded-full bg-accent/[0.07] blur-[130px]" />
+        <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.1),transparent_70%)]" />
+        <svg className="absolute inset-0 h-full w-full">
+          <defs>
+            <pattern id="ways-net" width="45" height="45" patternUnits="userSpaceOnUse">
+              <line x1="0" y1="0.8" x2="45" y2="0.8" stroke="#2c2f4c" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 5" />
+              <line x1="0.8" y1="0" x2="0.8" y2="45" stroke="#2c2f4c" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 5" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#ways-net)" />
+        </svg>
       </div>
 
       <div className="relative mx-auto max-w-7xl">
@@ -150,13 +160,13 @@ export function WaysToParticipate() {
           Ways to Participate
         </h2>
 
-        {/* One grid for everything. Tracks 1-4 and 6-8 are equal 1fr columns
+        {/* One grid for everything. Tracks 1-4 and 6-9 are equal 1fr columns
             with the rule in the auto track between them, and every card is
-            pinned to row 2 — so all seven come out the same width, and the row
+            pinned to row 2 — so all eight come out the same width, and the row
             stretches them all to the tallest. DOM order still reads
             header, cards, header, cards, which is the order small screens
             stack in once the explicit placement stops applying. */}
-        <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto_repeat(3,minmax(0,1fr))] lg:grid-rows-[auto_1fr] lg:gap-x-5 lg:gap-y-14">
+        <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto_repeat(4,minmax(0,1fr))] lg:grid-rows-[auto_1fr] lg:gap-x-5 lg:gap-y-14">
           {ROUTES.map((route) => (
             <Fragment key={route.number}>
               <div className={`sm:col-span-2 ${route.headerClass} ${route.number === 2 ? "mt-6 lg:mt-0" : ""}`}>
