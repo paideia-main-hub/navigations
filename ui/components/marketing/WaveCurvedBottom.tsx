@@ -1,4 +1,5 @@
 import { BandDivider, WAVE_PATH } from "@/ui/components/marketing/BandDivider";
+import { AWARDS_WARM_ANGULAR_NET_STYLE } from "@/ui/components/marketing/SectionNet";
 
 const DIVIDER_H = "h-10 sm:h-14 lg:h-20";
 
@@ -12,67 +13,38 @@ export function WaveCurvedBottom({
   showShadow = false,
   /** When the next band has a warm net, continue that lattice through this wave. */
   spillWarmNet = false,
-  /** Match SectionNet lattice when spilling (awards uses angular). */
-  spillLattice = "ortho",
 }: {
   id: string;
   nextColor: string;
   fill?: string;
   showShadow?: boolean;
   spillWarmNet?: boolean;
-  spillLattice?: "ortho" | "angular";
 }) {
   const maskId = `${id}-wave-above`;
   const filterId = `${id}-wave-shadow`;
   const clipId = `${id}-wave-below`;
-  const spillMaskId = `${id}-spill-wave`;
-  const spillPatternId = `${id}-spill-net`;
 
   return (
     <>
       <BandDivider shape="wave" side="bottom" color={nextColor} className={DIVIDER_H} />
       {spillWarmNet ? (
-        <svg
+        <div
           aria-hidden="true"
-          viewBox="0 0 1440 100"
-          preserveAspectRatio="none"
-          className={`pointer-events-none absolute inset-x-0 bottom-0 z-[11] w-full overflow-visible opacity-55 ${DIVIDER_H}`}
-        >
-          <defs>
-            <pattern
-              id={spillPatternId}
-              width="45"
-              height="45"
-              patternUnits="userSpaceOnUse"
-              patternTransform={spillLattice === "angular" ? "rotate(32)" : undefined}
-            >
-              <line
-                x1="0"
-                y1="0.8"
-                x2="45"
-                y2="0.8"
-                stroke="#e8d5c4"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeDasharray="4 5"
-              />
-              <line
-                x1="0.8"
-                y1="0"
-                x2="0.8"
-                y2="45"
-                stroke="#e8d5c4"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeDasharray="4 5"
-              />
-            </pattern>
-            <mask id={spillMaskId} maskUnits="userSpaceOnUse">
-              <path d={WAVE_PATH} transform="translate(0 100) scale(1 -1)" fill="white" />
-            </mask>
-          </defs>
-          <rect width="1440" height="100" fill={`url(#${spillPatternId})`} mask={`url(#${spillMaskId})`} />
-        </svg>
+          className={`pointer-events-none absolute inset-x-0 bottom-0 z-[11] w-full opacity-30 ${DIVIDER_H}`}
+          style={{
+            ...AWARDS_WARM_ANGULAR_NET_STYLE,
+            WebkitMaskImage: `url("data:image/svg+xml,${encodeURIComponent(
+              `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 100' preserveAspectRatio='none'><path d='${WAVE_PATH}' transform='translate(0 100) scale(1 -1)' fill='white'/></svg>`,
+            )}")`,
+            maskImage: `url("data:image/svg+xml,${encodeURIComponent(
+              `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 100' preserveAspectRatio='none'><path d='${WAVE_PATH}' transform='translate(0 100) scale(1 -1)' fill='white'/></svg>`,
+            )}")`,
+            WebkitMaskSize: "100% 100%",
+            maskSize: "100% 100%",
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+          }}
+        />
       ) : null}
       {showShadow ? (
         <svg

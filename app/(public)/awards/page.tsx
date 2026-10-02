@@ -7,13 +7,13 @@ import { OpenNominationCard } from "@/ui/components/awards/OpenNominationCard";
 import { AWARD_DETAILS } from "@/ui/components/awards/awardDetails";
 import type { AwardLayer } from "@/domain/awards/types";
 import { layerLabels } from "@/domain/awards/types";
-import { listSubmittableCategories } from "@/domain/awards/service";
+import { listSubmittableCategories, listCategories } from "@/domain/awards/service";
 import { createClient } from "@/data/supabase/server";
 import Link from "next/link";
 
 export const metadata = { title: "Awards | Navigations" };
 
-const LAYER_ORDER: AwardLayer[] = ["competition_distinction", "school_award", "spotlight", "teacher_parent", "sports", "principal"];
+const LAYER_ORDER: AwardLayer[] = ["competition_distinction", "school_award", "spotlight", "teacher_parent", "sports"];
 
 const JUMP_SECTIONS = [
   ...LAYER_ORDER.map((layer) => ({ id: layer, label: layerLabels[layer] })),
@@ -24,26 +24,25 @@ const LAYER_INTRO: Record<AwardLayer, string> = {
   competition_distinction: "Awarded automatically from each competition's own results — nobody submits anything for these.",
   school_award: "Computed from League-wide participation and results, or (Collaboration & Integrity) scored directly by the organizer. Schools never nominate themselves.",
   spotlight: "School-nominated or fully independent — you don't have to win a League competition to submit.",
-  teacher_parent: "Nomination-based acknowledgements with no competitive scoring. Every complete, valid school nomination receives the award.",
+  teacher_parent:
+    "Nomination-based acknowledgements with no competitive scoring — teachers, parents, and principals. Every complete, valid school nomination receives the teacher and parent awards; principal recognition follows the criteria on that card.",
   sports: "School-nominated, evidence-based recognition of sustained achievement over the last two years.",
   principal: "Up to 50 principals recognised for enabling participation and supporting League coordination.",
 };
 
 /**
- * Netted bands follow AnnouncementsPress: fill + net cover the whole section,
- * then a top BandDivider cuts the previous colour into the edge — so the
- * lattice is one continuous texture, not a second layer under the wave.
+ * Every band uses the same bottom wave as the awards hero (WaveCurvedBottom).
+ * Warm netted sections keep showNet; the previous band spills a viewport-locked
+ * angular lattice through that curve so the seam stays continuous.
  */
 const LAYER_BAND: Record<
   AwardLayer,
   {
     bg: string;
     nextColor: string;
+    /** Content shell vertical padding — tuned per band. */
+    pad: string;
     showNet?: boolean;
-    /** Top wave owned by this section (previous colour cuts in). */
-    topSeamFrom?: string;
-    /** Skip bottom wave when the next section owns the top seam instead. */
-    skipBottomWave?: boolean;
     /** Continue the warm net through this section’s bottom wave. */
     spillWarmNet?: boolean;
   }
@@ -51,30 +50,53 @@ const LAYER_BAND: Record<
   competition_distinction: {
     bg: "bg-background",
     nextColor: "text-surface-warm",
-    skipBottomWave: true,
+    spillWarmNet: true,
+    pad: "pt-10 pb-[10.5rem] sm:pt-12 sm:pb-48 lg:pt-14 lg:pb-[13.5rem]",
   },
   school_award: {
     bg: "bg-surface-warm",
     nextColor: "text-surface-alt",
     showNet: true,
-    topSeamFrom: "text-background",
+    pad: "pt-16 pb-44 sm:pt-20 sm:pb-48 lg:pt-24 lg:pb-52",
   },
-  spotlight: { bg: "bg-surface-alt", nextColor: "text-background" },
-  // Same handoff as Competition → School: Sports owns the top seam + net body
-  // so the lattice runs continuously under the curve (not only on a spill wave).
-  teacher_parent: {
-    bg: "bg-background",
+  spotlight: {
+    bg: "bg-surface-alt",
     nextColor: "text-surface-warm",
-    skipBottomWave: true,
+    spillWarmNet: true,
+    pad: "pt-14 pb-40 sm:pt-16 sm:pb-44 lg:pt-20 lg:pb-48",
+  },
+  teacher_parent: {
+    bg: "bg-surface-warm",
+    nextColor: "text-background",
+    showNet: true,
+    pad: "pt-14 pb-40 sm:pt-16 sm:pb-44 lg:pt-20 lg:pb-48",
   },
   sports: {
-    bg: "bg-surface-warm",
-    nextColor: "text-surface-alt",
-    showNet: true,
-    topSeamFrom: "text-background",
+    bg: "bg-background",
+    nextColor: "text-[#2a2c54]",
+    pad: "pt-16 pb-40 sm:pt-20 sm:pb-44 lg:pt-24 lg:pb-48",
   },
-  principal: { bg: "bg-surface-alt", nextColor: "text-[#2a2c54]" },
+  principal: {
+    bg: "bg-surface-alt",
+    nextColor: "text-[#2a2c54]",
+    pad: "pt-20 pb-28 sm:pt-24 sm:pb-32 lg:pt-28 lg:pb-36",
+  },
 };
+
+function awardsForLayer(layer: AwardLayer, imageBySlug: Map<string, string | null>) {
+  const base =
+    layer === "teacher_parent"
+      ? [
+          ...AWARD_DETAILS.filter((a) => a.layer === "teacher_parent"),
+          ...AWARD_DETAILS.filter((a) => a.layer === "principal"),
+        ]
+      : AWARD_DETAILS.filter((a) => a.layer === layer);
+
+  return base.map((award) => ({
+    ...award,
+    imageUrl: imageBySlug.get(award.slug) ?? null,
+  }));
+}
 
 export default async function AwardsLandingPage() {
   const supabase = await createClient();
@@ -83,6 +105,8 @@ export default async function AwardsLandingPage() {
   // when their category row happens to carry status "open".
   const openNow = await listSubmittableCategories(supabase);
   const openSlugs = new Set(openNow.map((c) => c.slug));
+  const allCategories = await listCategories(supabase);
+  const imageBySlug = new Map(allCategories.map((c) => [c.slug, c.imageUrl]));
 
   return (
     <div className="bg-background">
@@ -117,8 +141,8 @@ export default async function AwardsLandingPage() {
       </PageBanner>
 
       <AwardsExpandProvider>
-        {LAYER_ORDER.map((layer, i) => {
-          const awards = AWARD_DETAILS.filter((a) => a.layer === layer);
+        {LAYER_ORDER.map((layer) => {
+          const awards = awardsForLayer(layer, imageBySlug);
           const band = LAYER_BAND[layer];
           return (
             <AwardsLayerBand
@@ -127,11 +151,9 @@ export default async function AwardsLandingPage() {
               intro={LAYER_INTRO[layer]}
               bg={band.bg}
               nextColor={band.nextColor}
+              pad={band.pad}
               showNet={band.showNet}
-              topSeamFrom={band.topSeamFrom}
-              skipBottomWave={band.skipBottomWave}
               spillWarmNet={band.spillWarmNet}
-              isFirst={i === 0}
               awards={awards}
               openSlugs={[...openSlugs]}
             />
@@ -141,7 +163,7 @@ export default async function AwardsLandingPage() {
 
       {/* Open for nominations now — closing band, dark like the site's other
           bottom CTAs, so the page ends on the same note as every other one.
-          Top edge is cut by the principal section’s wave above. */}
+          Top edge is cut by the sports section’s wave above. */}
       <div id="open-nominations" className="relative scroll-mt-24 overflow-hidden bg-[#2a2c54] pt-24 pb-20 sm:pt-28">
         <div className="relative mx-auto max-w-5xl px-6">
           <div className="text-center">

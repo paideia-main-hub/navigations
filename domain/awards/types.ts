@@ -28,6 +28,8 @@ export interface AwardCategory {
   evidencePeriodEnd: string | null;
   closingAt: string | null;
   status: AwardCategoryStatus;
+  /** Public card artwork URL from the award-images bucket; null = use static /awards/{slug}.webp. */
+  imageUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }

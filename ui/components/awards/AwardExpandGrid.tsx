@@ -14,6 +14,7 @@ import {
   type TransitionEvent,
 } from "react";
 import type { AwardDetail } from "@/ui/components/awards/awardDetails";
+import { resolveAwardCardImage } from "@/domain/awards/cardImage";
 
 type ExpandContextValue = {
   openSlug: string | null;
@@ -34,10 +35,6 @@ export function AwardsExpandProvider({ children }: { children: ReactNode }) {
 
 export function useAwardsExpand() {
   return useContext(AwardsExpandContext);
-}
-
-function artworkFor(slug: string): string {
-  return `/awards/${slug}.webp`;
 }
 
 function mechanismLabel(award: AwardDetail): string {
@@ -72,9 +69,9 @@ function CardFace({
             {award.title}
           </span>
         ) : (
-          // eslint-disable-next-line @next/next/no-img-element -- static asset in public/
+          // eslint-disable-next-line @next/next/no-img-element -- static asset or Supabase public URL
           <img
-            src={artworkFor(award.slug)}
+            src={resolveAwardCardImage(award.imageUrl, award.slug)}
             alt=""
             aria-hidden
             loading="lazy"
@@ -122,9 +119,11 @@ function AwardCard({
   const [phase, setPhase] = useState<Phase>("closed");
   /** After collapse, skip hover lift/shadow until the pointer leaves — avoids a flash while still over the card. */
   const [hoverLift, setHoverLift] = useState(true);
+  const [hovered, setHovered] = useState(false);
   const wasOpenRef = useRef(false);
   const overlaying = phase !== "closed";
   const fullyOpen = phase === "open";
+  const showHoverMotion = hovered && hoverLift && !overlaying;
 
   useEffect(() => {
     if (wasOpenRef.current && !isOpen) setHoverLift(false);
@@ -153,13 +152,16 @@ function AwardCard({
 
   const hoverCard =
     hoverLift && !overlaying
-      ? "hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_18px_40px_-28px_rgba(31,32,65,0.45)]"
+      ? "hover:border-accent/40"
       : "";
 
   return (
     <li
       className="relative flex h-full min-h-0 flex-col"
-      onMouseLeave={() => setHoverLift(true)}
+      onMouseLeave={() => {
+        setHoverLift(true);
+        setHovered(false);
+      }}
     >
       {/* Collapsed footprint stays in the grid — expansion overlays content below. */}
       {overlaying ? (
@@ -176,73 +178,95 @@ function AwardCard({
         </div>
       ) : null}
 
+      {/* Outer shell: no overflow clip so box-shadow can ease in/out.
+          Lift/shadow use inline transform + boxShadow so Tailwind v4 `translate`
+          utilities can’t skip the 0.3s transition. */}
       <div
-        className={`overflow-hidden rounded-2xl border bg-surface transition-[border-color,box-shadow] ${EASE} ${
+        className={`rounded-2xl border bg-surface ${
           overlaying
-            ? `absolute inset-x-0 top-0 z-50 ${
+            ? `absolute inset-x-0 top-0 z-50 transition-[border-color,box-shadow] ${EASE} ${
                 fullyOpen
                   ? "border-accent/60 shadow-[0_28px_60px_-24px_rgba(31,32,65,0.55)]"
                   : "border-accent/40 shadow-[0_20px_45px_-28px_rgba(31,32,65,0.4)]"
               }`
-            : `relative z-0 flex h-full min-h-0 flex-1 flex-col border-border transition-[transform,box-shadow,border-color] ${EASE} ${hoverCard}`
+            : `relative z-0 flex h-full min-h-0 flex-1 flex-col border-border ${hoverCard}`
         }`}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={
+          overlaying
+            ? undefined
+            : {
+                transform: showHoverMotion ? "translateY(-4px)" : "translateY(0)",
+                boxShadow: showHoverMotion
+                  ? "0 18px 40px -28px rgba(31,32,65,0.45)"
+                  : "0 18px 40px -28px rgba(31,32,65,0)",
+                transition: "transform 0.3s ease-out, box-shadow 0.3s ease-out, border-color 0.3s ease-out",
+              }
+        }
       >
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={isOpen || fullyOpen}
-          aria-controls={panelId}
-          className={`w-full cursor-pointer text-left ${
-            overlaying ? "block" : "flex min-h-0 flex-1 flex-col"
+        <div
+          className={`overflow-hidden rounded-2xl ${
+            overlaying ? "" : "flex h-full min-h-0 flex-1 flex-col"
           }`}
         >
-          <CardFace
-            award={award}
-            imageFailed={imageFailed}
-            onImageError={() => setImageFailed(true)}
-            expanded={fullyOpen || isOpen}
-            equalizeBody={!overlaying}
-          />
-        </button>
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={isOpen || fullyOpen}
+            aria-controls={panelId}
+            className={`w-full cursor-pointer text-left ${
+              overlaying ? "block" : "flex min-h-0 flex-1 flex-col"
+            }`}
+          >
+            <CardFace
+              award={award}
+              imageFailed={imageFailed}
+              onImageError={() => setImageFailed(true)}
+              expanded={fullyOpen || isOpen}
+              equalizeBody={!overlaying}
+            />
+          </button>
 
-        <div
-          id={panelId}
-          onTransitionEnd={handleTransitionEnd}
-          className={`grid transition-[grid-template-rows] ${EASE}`}
-          style={{ gridTemplateRows: fullyOpen ? "1fr" : "0fr" }}
-        >
-          <div className="min-h-0 overflow-hidden">
-            <div className="space-y-4 border-t border-border px-5 py-5">
-              <p className="text-sm leading-relaxed text-muted">{award.description}</p>
+          <div
+            id={panelId}
+            onTransitionEnd={handleTransitionEnd}
+            className={`grid transition-[grid-template-rows] ${EASE}`}
+            style={{ gridTemplateRows: fullyOpen ? "1fr" : "0fr" }}
+          >
+            <div className="min-h-0 overflow-hidden">
+              <div className="space-y-4 border-t border-border px-5 py-5">
+                <p className="text-sm leading-relaxed text-muted">{award.description}</p>
 
-              {award.criteria && (
-                <div className="flex flex-wrap gap-2">
-                  {award.criteria.map((c) => (
-                    <span
-                      key={c.label}
-                      className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs"
-                    >
-                      <span className="text-foreground">{c.label}</span>
-                      <span className="font-bold text-accent-strong">{c.weight}</span>
-                    </span>
-                  ))}
-                </div>
-              )}
+                {award.criteria && (
+                  <div className="flex flex-wrap gap-2">
+                    {award.criteria.map((c) => (
+                      <span
+                        key={c.label}
+                        className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs"
+                      >
+                        <span className="text-foreground">{c.label}</span>
+                        <span className="font-bold text-accent-strong">{c.weight}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
 
-              {isOpenForSubmission ? (
-                <Link
-                  href={`/awards/${award.slug}`}
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-strong hover:underline"
-                >
-                  View eligibility &amp; submit →
-                </Link>
-              ) : (
-                <p className="text-xs font-medium text-muted italic">
-                  {award.layer === "competition_distinction" || award.layer === "school_award"
-                    ? "No submission needed — published with the season's results."
-                    : "Not currently open for nomination."}
-                </p>
-              )}
+                {isOpenForSubmission ? (
+                  <Link
+                    href={`/awards/${award.slug}`}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-strong hover:underline"
+                  >
+                    View eligibility &amp; submit →
+                  </Link>
+                ) : (
+                  <p className="text-xs font-medium text-muted italic">
+                    {award.layer === "competition_distinction" || award.layer === "school_award"
+                      ? "No submission needed — published with the season's results."
+                      : "Not currently open for nomination."}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>

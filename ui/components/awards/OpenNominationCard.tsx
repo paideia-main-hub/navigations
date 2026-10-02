@@ -4,10 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { layerLabels } from "@/domain/awards/types";
 import type { AwardCategory } from "@/domain/awards/types";
-
-function artworkFor(slug: string): string {
-  return `/awards/${slug}.webp`;
-}
+import { resolveAwardCardImage } from "@/domain/awards/cardImage";
 
 /** Extracted from the (server) awards page because an <img onError> handler
  * needs a Client Component boundary — not every open category has real
@@ -23,9 +20,9 @@ export function OpenNominationCard({ category }: { category: AwardCategory }) {
     >
       <div className="relative aspect-[16/9] overflow-hidden bg-black/20">
         {!imageFailed && (
-          // eslint-disable-next-line @next/next/no-img-element -- static asset in public/
+          // eslint-disable-next-line @next/next/no-img-element -- static asset or Supabase public URL
           <img
-            src={artworkFor(category.slug)}
+            src={resolveAwardCardImage(category.imageUrl, category.slug)}
             alt=""
             aria-hidden="true"
             loading="lazy"

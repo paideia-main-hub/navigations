@@ -36,39 +36,46 @@ export function PageBanner({
       {showNet ? (
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
           <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.1),transparent_70%)]" />
-          <svg className="absolute inset-0 h-full w-full">
-            <defs>
-              <pattern
-                id="page-banner-net"
-                width="45"
-                height="45"
-                patternUnits="userSpaceOnUse"
-                patternTransform={netLattice === "angular" ? "rotate(32)" : undefined}
-              >
-                <line
-                  x1="0"
-                  y1="0.8"
-                  x2="45"
-                  y2="0.8"
-                  stroke="#2c2f4c"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeDasharray="4 5"
-                />
-                <line
-                  x1="0.8"
-                  y1="0"
-                  x2="0.8"
-                  y2="45"
-                  stroke="#2c2f4c"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeDasharray="4 5"
-                />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#page-banner-net)" />
-          </svg>
+          {netLattice === "angular" ? (
+            <div
+              className="absolute inset-0 opacity-40"
+              style={{
+                backgroundImage: [
+                  "repeating-linear-gradient(32deg, transparent 0 20px, #2c2f4c 20px 21.5px)",
+                  "repeating-linear-gradient(122deg, transparent 0 20px, #2c2f4c 20px 21.5px)",
+                ].join(", "),
+                backgroundAttachment: "fixed",
+              }}
+            />
+          ) : (
+            <svg className="absolute inset-0 h-full w-full">
+              <defs>
+                <pattern id="page-banner-net" width="45" height="45" patternUnits="userSpaceOnUse">
+                  <line
+                    x1="0"
+                    y1="0.8"
+                    x2="45"
+                    y2="0.8"
+                    stroke="#2c2f4c"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeDasharray="4 5"
+                  />
+                  <line
+                    x1="0.8"
+                    y1="0"
+                    x2="0.8"
+                    y2="45"
+                    stroke="#2c2f4c"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeDasharray="4 5"
+                  />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#page-banner-net)" />
+            </svg>
+          )}
         </div>
       ) : null}
       {/* Above the net (z-0), below hero copy (z-10). */}
