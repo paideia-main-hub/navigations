@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
-import { FaqExpandGrid, type FaqCardItem } from "@/ui/components/marketing/FaqExpandGrid";
+import { FaqAccordion } from "@/ui/components/marketing/FaqAccordion";
+import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
+import type { FaqCardItem } from "@/ui/components/marketing/FaqExpandGrid";
 import { FaqIcon } from "@/ui/components/marketing/faqIcons";
 
 export const metadata = { title: "For Students | Navigations" };
@@ -173,19 +174,27 @@ export default function ForStudentsPage() {
         eyebrow="Competitor Tier"
         title="For Students"
         subtitle="What you need to know before signing up and competing in Navigations."
+        className="-mt-24 pt-28 pb-28 sm:-mt-28 sm:pt-32 sm:pb-32 lg:pt-36 lg:pb-36"
+        showNet
+        netLattice="angular"
+        curvedBottom
       />
-      <div className="mx-auto max-w-6xl px-6 py-14">
-        <FaqExpandGrid items={items} />
-
-        <div className="mt-12">
-          <Link
-            href="/register/student"
-            className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
-          >
-            Create your student account
-          </Link>
-        </div>
+      <div className="mx-auto max-w-7xl px-6 py-14">
+        <FaqAccordion
+          variant="students"
+          items={items}
+          searchPlaceholder="Search questions…"
+          stuckHref="/contact"
+          stuckLabel="Contact us"
+          stuckDescription="Ask us directly and we will give you a clear answer about student registration and participation."
+        />
       </div>
+
+      <ClosingCta
+        primaryHref="/register/student"
+        primaryLabel="Create your student account"
+        showSecondary={false}
+      />
     </div>
   );
 }

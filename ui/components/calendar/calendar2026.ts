@@ -27,7 +27,11 @@ export type ActivityFormat =
 export const CALENDAR_INTRO =
   "Join the Future Ready League for reasoning challenges, live performances, creative activities and project showcases.";
 
-export const CALENDAR_STRAPLINE = ["Registration 8 October – 10 November", "Submissions close 22 November", "League begins 23 November"];
+export const CALENDAR_STRAPLINE = [
+  { label: "Registration", detail: "8 October – 10 November" },
+  { label: "Submissions close", detail: "22 November" },
+  { label: "League begins", detail: "23 November" },
+] as const;
 
 export interface KeyDate {
   milestone: string;

@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { layerLabels, routeTwoLayers, type AwardLayer } from "@/domain/awards/types";
-import { competencyLabel, sortCompetencies } from "@/domain/competitions/competencies";
+import { competencyName, sortCompetencies } from "@/domain/competitions/competencies";
 import { filterCompetitionsClientSide } from "@/domain/competitions/service";
 import {
   categoryLabels,
@@ -16,6 +16,7 @@ import {
   type CompetitionSummary,
 } from "@/domain/competitions/types";
 import { CompetitionCard } from "@/ui/components/CompetitionCard";
+import { FilterSelect, filterInputClass } from "@/ui/components/FilterSelect";
 import { AwardExpandGrid } from "@/ui/components/awards/AwardExpandGrid";
 import type { AwardDetail } from "@/ui/components/awards/awardDetails";
 
@@ -31,15 +32,50 @@ function applicantsFor(layer: AwardLayer): Applicant[] {
   return layer === "spotlight" ? ["independent", "school"] : ["school"];
 }
 
-const selectClass = "rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground";
-
 function RouteToggle({ route, onChange }: { route: Route; onChange: (route: Route) => void }) {
   const options: { value: Route; label: string; hint: string }[] = [
     { value: "1", label: "Route 1", hint: "Competitions" },
     { value: "2", label: "Route 2", hint: "Special recognition awards" },
   ];
+  const tabListRef = useRef<HTMLDivElement>(null);
+  const [pill, setPill] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const list = tabListRef.current;
+    if (!list) return;
+
+    const place = () => {
+      const selected = list.querySelector<HTMLElement>('[aria-selected="true"]');
+      if (!selected) return;
+      setPill({
+        x: selected.offsetLeft,
+        y: selected.offsetTop,
+        width: selected.offsetWidth,
+        height: selected.offsetHeight,
+      });
+    };
+
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [route]);
+
   return (
-    <div role="tablist" aria-label="Participation route" className="mb-6 inline-flex rounded-full border border-border bg-surface p-1 shadow-sm">
+    <div
+      ref={tabListRef}
+      role="tablist"
+      aria-label="Participation route"
+      className="relative mb-6 inline-flex items-center rounded-full border border-border bg-surface p-1.5 shadow-sm"
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute top-0 left-0 rounded-full bg-accent transition-[transform,width,height] duration-300 ease-out motion-reduce:transition-none"
+        style={
+          pill
+            ? { width: pill.width, height: pill.height, transform: `translate(${pill.x}px, ${pill.y}px)` }
+            : { opacity: 0 }
+        }
+      />
       {options.map((o) => {
         const active = route === o.value;
         return (
@@ -49,8 +85,9 @@ function RouteToggle({ route, onChange }: { route: Route; onChange: (route: Rout
             role="tab"
             aria-selected={active}
             onClick={() => onChange(o.value)}
-            className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
-              active ? "bg-accent text-accent-foreground" : "text-muted hover:text-foreground"
+            style={{ cursor: "pointer" }}
+            className={`relative z-10 cursor-pointer rounded-full px-5 py-2.5 text-sm font-semibold transition-colors duration-300 ${
+              active ? "text-accent-foreground" : "text-muted hover:text-foreground"
             }`}
           >
             {o.label}
@@ -81,46 +118,47 @@ function AwardsDirectory({ awards, openSlugs }: { awards: AwardDetail[]; openSlu
 
   return (
     <div>
-      <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="mb-8 space-y-3 rounded-2xl border border-border bg-surface p-4 shadow-sm">
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by award name…"
-          className="flex-1 rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground outline-none focus:border-accent"
+          className={`w-full ${filterInputClass}`}
         />
-        <select
-          value={layer}
-          onChange={(e) => setLayer(e.target.value as AwardLayer | "all")}
-          aria-label="Filter by award category"
-          className={selectClass}
-        >
-          <option value="all">All award categories</option>
-          {routeTwoLayers.map((l) => (
-            <option key={l} value={l}>
-              {layerLabels[l]}
-            </option>
-          ))}
-        </select>
-        <select
-          value={applicant}
-          onChange={(e) => setApplicant(e.target.value as Applicant | "all")}
-          aria-label="Filter by who can apply"
-          className={selectClass}
-        >
-          <option value="all">Anyone who can apply</option>
-          <option value="independent">Open to independent applicants</option>
-          <option value="school">School nomination</option>
-        </select>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value as NominationStatus)}
-          aria-label="Filter by nomination status"
-          className={selectClass}
-        >
-          <option value="all">Any nomination status</option>
-          <option value="open">Open for nomination now</option>
-        </select>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <FilterSelect
+            value={layer}
+            onChange={(next) => setLayer(next as AwardLayer | "all")}
+            aria-label="Filter by award category"
+            className="w-full"
+            options={[
+              { value: "all", label: "All award categories" },
+              ...routeTwoLayers.map((l) => ({ value: l, label: layerLabels[l] })),
+            ]}
+          />
+          <FilterSelect
+            value={applicant}
+            onChange={(next) => setApplicant(next as Applicant | "all")}
+            aria-label="Filter by who can apply"
+            className="w-full"
+            options={[
+              { value: "all", label: "Anyone who can apply" },
+              { value: "independent", label: "Open to independent applicants" },
+              { value: "school", label: "School nomination" },
+            ]}
+          />
+          <FilterSelect
+            value={status}
+            onChange={(next) => setStatus(next as NominationStatus)}
+            aria-label="Filter by nomination status"
+            className="w-full"
+            options={[
+              { value: "all", label: "Any nomination status" },
+              { value: "open", label: "Open for nomination now" },
+            ]}
+          />
+        </div>
       </div>
 
       <p className="mb-4 text-sm text-muted">
@@ -220,76 +258,71 @@ function CompetitionsGrid({
 
   return (
     <div>
-      <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="mb-8 space-y-3 rounded-2xl border border-border bg-surface p-4 shadow-sm">
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by competition name…"
-          className="flex-1 rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground outline-none focus:border-accent"
+          className={`w-full ${filterInputClass}`}
         />
-        <select
-          value={pathway}
-          onChange={(e) => setPathway(e.target.value as CompetitionPathway | "all")}
-          aria-label="Filter by Route 1 category"
-          className="rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground"
-        >
-          <option value="all">All Route 1 categories</option>
-          {pathwayOrder.map((p) => (
-            <option key={p} value={p}>
-              {pathwayLabels[p]}
-            </option>
-          ))}
-        </select>
-        {competencyOptions.length > 0 && (
-          <select
-            value={competency}
-            onChange={(e) => setCompetency(e.target.value)}
-            aria-label="Filter by competency"
-            className={selectClass}
-          >
-            <option value="all">All competencies</option>
-            {competencyOptions.map((v) => (
-              <option key={v} value={v}>
-                {competencyLabel(v)}
-              </option>
-            ))}
-          </select>
-        )}
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value as AgeCategory | "all")}
-          aria-label="Filter by grade category"
-          className="rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground"
-        >
-          <option value="all">All grade categories</option>
-          {Object.entries(categoryLabels).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value as CompetitionStatus | "all")}
-          className="rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground"
-        >
-          <option value="all">Any status</option>
-          {publicStatuses.map((value) => (
-            <option key={value} value={value}>
-              {statusLabels[value]}
-            </option>
-          ))}
-        </select>
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value as SortOption)}
-          className="rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground"
-        >
-          <option value="deadline">Registration closing soon</option>
-          <option value="event-date">Event date</option>
-          <option value="alphabetical">Alphabetical</option>
-        </select>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <FilterSelect
+            value={pathway}
+            onChange={(next) => setPathway(next as CompetitionPathway | "all")}
+            aria-label="Filter by Route 1 category"
+            className="w-full"
+            options={[
+              { value: "all", label: "All Route 1 categories" },
+              ...pathwayOrder.map((p) => ({ value: p, label: pathwayLabels[p] })),
+            ]}
+          />
+          {competencyOptions.length > 0 && (
+            <FilterSelect
+              value={competency}
+              onChange={setCompetency}
+              aria-label="Filter by competency"
+              className="w-full"
+              searchable
+              searchPlaceholder="Search competencies…"
+              options={[
+                { value: "all", label: "All competencies" },
+                ...competencyOptions.map((v) => ({ value: v, label: competencyName(v) })),
+              ]}
+            />
+          )}
+          <FilterSelect
+            value={category}
+            onChange={(next) => setCategory(next as AgeCategory | "all")}
+            aria-label="Filter by grade category"
+            className="w-full"
+            options={[
+              { value: "all", label: "All grade categories" },
+              ...Object.entries(categoryLabels).map(([value, label]) => ({ value, label })),
+            ]}
+          />
+          <FilterSelect
+            value={status}
+            onChange={(next) => setStatus(next as CompetitionStatus | "all")}
+            aria-label="Filter by status"
+            className="w-full"
+            options={[
+              { value: "all", label: "Any status" },
+              ...publicStatuses.map((value) => ({ value, label: statusLabels[value] })),
+            ]}
+          />
+          <FilterSelect
+            value={sort}
+            onChange={(next) => setSort(next as SortOption)}
+            aria-label="Sort competitions"
+            className="w-full"
+            options={[
+              { value: "deadline", label: "Registration closing soon" },
+              { value: "event-date", label: "Event date" },
+              { value: "alphabetical", label: "Alphabetical" },
+            ]}
+          />
+        </div>
       </div>
 
       <p className="mb-4 text-sm text-muted">

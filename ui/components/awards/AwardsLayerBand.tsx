@@ -45,7 +45,7 @@ export function AwardsLayerBand({
         <SectionNet id={`awards-net-${layer}`} lattice="angular" fixedAlign />
       ) : null}
       {/* z-20: above bottom wave (z-10) so open cards aren’t sliced by the seam. */}
-      <div className={`relative z-20 mx-auto max-w-5xl px-6 ${pad}`}>
+      <div className={`relative z-20 mx-auto max-w-7xl px-6 ${pad}`}>
         <div className="flex items-start gap-4">
           <span className="mt-[5px] grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground shadow-[0_10px_22px_-12px_rgba(255,105,31,0.65)] ring-1 ring-accent/30">
             <AwardLayerIcon layer={layer} className="h-6 w-6" />

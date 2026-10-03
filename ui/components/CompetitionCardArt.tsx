@@ -18,7 +18,7 @@ export function CompetitionCardArt({ imageUrl, title }: { imageUrl: string | nul
           aria-hidden="true"
           loading="lazy"
           onError={() => setFailed(true)}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]"
         />
       ) : (
         <div className="flex h-full w-full items-center justify-center bg-brand-deep px-6">

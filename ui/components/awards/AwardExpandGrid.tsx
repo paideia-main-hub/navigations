@@ -76,7 +76,7 @@ function CardFace({
             aria-hidden
             loading="lazy"
             onError={onImageError}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]"
           />
         )}
       </div>
@@ -194,7 +194,7 @@ function AwardCard({
           Lift/shadow use inline transform + boxShadow so Tailwind v4 `translate`
           utilities can’t skip the 0.3s transition. */}
       <div
-        className={`rounded-2xl border bg-surface ${
+        className={`group rounded-2xl border bg-surface ${
           overlaying
             ? `absolute inset-x-0 top-0 z-50 flex min-h-0 flex-col transition-[border-color,box-shadow] ${EASE} ${
                 fullyOpen

@@ -71,6 +71,8 @@ export async function POST(request: Request) {
   revalidatePath(`/admin/awards/${categoryId}`);
   revalidatePath("/awards");
   revalidatePath(`/awards/${existing.slug}`);
+  revalidatePath("/competitions");
+  revalidatePath("/");
 
   return NextResponse.json({ success: true, url });
 }
