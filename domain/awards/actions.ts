@@ -61,6 +61,8 @@ function revalidateCategory(id: string, slug?: string) {
   revalidatePath("/admin/awards");
   revalidatePath(`/admin/awards/${id}`);
   revalidatePath("/awards");
+  revalidatePath("/competitions");
+  revalidatePath("/");
   if (slug) revalidatePath(`/awards/${slug}`);
 }
 

@@ -1,7 +1,19 @@
 import Link from "next/link";
 import { BandTexture } from "./BandTexture";
 
-export function ClosingCta() {
+export function ClosingCta({
+  primaryHref = "/register",
+  primaryLabel = "Register Now",
+  secondaryHref = "/competitions",
+  secondaryLabel = "Browse Competitions",
+  showSecondary = true,
+}: {
+  primaryHref?: string;
+  primaryLabel?: string;
+  secondaryHref?: string;
+  secondaryLabel?: string;
+  showSecondary?: boolean;
+} = {}) {
   return (
     <section className="relative overflow-hidden rounded-tl-[4rem] rounded-tr-[4rem] bg-[#2a2c54] px-6 pt-20 pb-20 text-center sm:rounded-tl-[6rem] sm:rounded-tr-[6rem] sm:pt-24 lg:pt-28 lg:pb-24">
       <BandTexture pattern="grid" className="text-brand-deep-foreground/[0.05]" />
@@ -15,22 +27,24 @@ export function ClosingCta() {
           Join students across the country already registered for this season&apos;s competitions.
         </p>
 
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-6 sm:gap-y-4">
           <Link
-            href="/register"
+            href={primaryHref}
             className="group inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 text-sm font-bold text-accent-foreground shadow-[0_0_0_0_rgba(255,105,31,0)] transition-all duration-300 hover:scale-105 hover:bg-accent/90 hover:shadow-[0_0_0_10px_rgba(255,105,31,0.16)]"
           >
-            Register Now
+            {primaryLabel}
             <span aria-hidden="true" className="inline-block transition-transform duration-300 group-hover:translate-x-1">
               →
             </span>
           </Link>
-          <Link
-            href="/competitions"
-            className="rounded-full border border-white/20 px-7 py-3.5 text-sm font-bold text-white transition-colors hover:border-white/40 hover:bg-white/5"
-          >
-            Browse Competitions
-          </Link>
+          {showSecondary ? (
+            <Link
+              href={secondaryHref}
+              className="rounded-full border border-white/20 px-7 py-3.5 text-sm font-bold text-white transition-colors hover:border-white/40 hover:bg-white/5"
+            >
+              {secondaryLabel}
+            </Link>
+          ) : null}
         </div>
       </div>
     </section>

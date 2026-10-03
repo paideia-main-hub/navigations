@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { COMPETENCY_GROUPS } from "@/domain/competitions/competencies";
+import { FilterSelect, filterInputClass } from "@/ui/components/FilterSelect";
 import {
   awardLabels,
   categoryLabels,
@@ -124,9 +125,13 @@ function SelectorCard({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`group flex items-center gap-3 rounded-xl border p-4 text-left transition-colors ${
-        active ? "border-accent bg-accent-soft" : "border-border bg-surface hover:border-accent"
-      }`}
+      disabled={empty}
+      style={{ cursor: empty ? "not-allowed" : "pointer" }}
+      className={`group flex cursor-pointer items-center gap-3 rounded-xl border p-4 text-left transition-colors duration-300 ${
+        active
+          ? "border-accent bg-accent-soft"
+          : "border-border bg-surface hover:border-accent"
+      } ${empty ? "cursor-not-allowed opacity-60" : ""}`}
     >
       <span className={`shrink-0 ${active ? "text-accent-strong" : "text-foreground"}`}>
         <Icon d={icon} />
@@ -144,14 +149,24 @@ function SelectorCard({
   );
 }
 
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function Chip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
-        active ? "border-accent bg-accent text-accent-foreground" : "border-border bg-surface text-foreground hover:border-accent"
+      data-sliding-active={active ? "true" : undefined}
+      style={{ cursor: "pointer" }}
+      className={`relative z-10 cursor-pointer rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-300 ${
+        active ? "text-accent-foreground" : "text-foreground hover:text-foreground"
       }`}
     >
       {children}
@@ -159,34 +174,98 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
   );
 }
 
+/** Orange selection pill that tracks the active child (tabs, chips, cards). */
+function SlidingActivePill({
+  activeKey,
+  className,
+  pillClassName = "rounded-full bg-accent",
+  children,
+}: {
+  activeKey: string;
+  className?: string;
+  pillClassName?: string;
+  children: React.ReactNode;
+}) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [pill, setPill] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    const place = () => {
+      const selected = root.querySelector<HTMLElement>('[data-sliding-active="true"]');
+      if (!selected) {
+        setPill(null);
+        return;
+      }
+      setPill({
+        x: selected.offsetLeft,
+        y: selected.offsetTop,
+        width: selected.offsetWidth,
+        height: selected.offsetHeight,
+      });
+    };
+
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [activeKey]);
+
+  return (
+    <div ref={rootRef} className={`relative ${className ?? ""}`}>
+      <span
+        aria-hidden="true"
+        className={`pointer-events-none absolute top-0 left-0 z-0 transition-[transform,width,height] duration-300 ease-out motion-reduce:transition-none ${pillClassName}`}
+        style={
+          pill
+            ? { width: pill.width, height: pill.height, transform: `translate(${pill.x}px, ${pill.y}px)`, opacity: 1 }
+            : { opacity: 0 }
+        }
+      />
+      {children}
+    </div>
+  );
+}
+
 function ResultCardView({ card }: { card: ResultCard }) {
   const lead = card.groupKeys[0];
   return (
-    <article className="flex flex-col rounded-2xl border border-border bg-surface p-5 shadow-sm">
-      <div className="flex items-start gap-3">
-        <div className="min-w-0 flex-1">
-          {lead && (
-            <span className={`inline-block rounded-md px-2 py-0.5 text-[11px] font-bold tracking-wide uppercase ${GROUP_TONES[lead]}`}>
-              {groupLabel.get(lead)}
+    <article className="flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+      <div className="relative px-4 pt-4">
+        <div className="relative aspect-[16/9] overflow-hidden rounded-xl">
+          {card.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded Supabase artwork
+            <img src={card.imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+          ) : (
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 grid place-items-center bg-brand-deep text-5xl font-black text-brand-deep-foreground/35"
+            >
+              {card.title.charAt(0)}
             </span>
           )}
-          <h3 className="mt-2 text-xl font-bold leading-tight text-foreground">{card.title}</h3>
-          {card.gradeLabel && <p className="mt-1 text-sm text-muted">{card.gradeLabel}</p>}
-        </div>
-        {card.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded Supabase artwork
-          <img src={card.imageUrl} alt="" className="h-24 w-24 shrink-0 rounded-xl object-cover" loading="lazy" />
-        ) : (
-          <span
+          <div
             aria-hidden="true"
-            className="grid h-24 w-24 shrink-0 place-items-center rounded-xl bg-surface-muted text-3xl font-black text-muted"
-          >
-            {card.title.charAt(0)}
-          </span>
-        )}
+            className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/45 to-black/15"
+          />
+          <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+            {lead && (
+              <span className="inline-block rounded-md bg-white/95 px-2 py-0.5 text-[11px] font-bold tracking-wide text-brand-deep uppercase shadow-sm">
+                {groupLabel.get(lead)}
+              </span>
+            )}
+            <h3 className="mt-2 text-xl font-bold leading-tight text-white drop-shadow-sm sm:text-2xl">
+              {card.title}
+            </h3>
+            {card.gradeLabel && (
+              <p className="mt-1 text-sm font-medium text-white/90">{card.gradeLabel}</p>
+            )}
+          </div>
+        </div>
       </div>
 
-      <ol className="mt-5 space-y-4">
+      <ol className="mt-5 space-y-4 px-5 pb-5">
         {card.winners.map((w, i) => (
           <li key={`${w.place}-${i}`} className="flex items-center gap-3">
             <Avatar name={w.name} photoUrl={w.photoUrl} />
@@ -293,6 +372,29 @@ export function ResultsExplorer({ cards }: { cards: ResultCard[] }) {
   const heading =
     mode === "route" ? (route === "all" ? "All routes" : pathwayLabels[route]) : group === "all" ? "All categories" : groupLabel.get(group);
 
+  const tabListRef = useRef<HTMLDivElement>(null);
+  const [pill, setPill] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const list = tabListRef.current;
+    if (!list) return;
+
+    const place = () => {
+      const selected = list.querySelector<HTMLElement>('[aria-selected="true"]');
+      if (!selected) return;
+      setPill({
+        x: selected.offsetLeft,
+        y: selected.offsetTop,
+        width: selected.offsetWidth,
+        height: selected.offsetHeight,
+      });
+    };
+
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [mode]);
+
   if (cards.length === 0) {
     return (
       <p className="rounded-2xl border border-border bg-surface p-10 text-center text-sm text-muted">
@@ -305,25 +407,43 @@ export function ResultsExplorer({ cards }: { cards: ResultCard[] }) {
     <div>
       {/* Browse by route / category */}
       <div className="flex justify-center">
-        <div role="tablist" aria-label="Browse results" className="inline-flex rounded-full border border-border bg-surface p-1 shadow-sm">
-          {(["route", "category"] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              role="tab"
-              aria-selected={mode === m}
-              onClick={() => switchMode(m)}
-              className={`rounded-full px-6 py-2 text-xs font-bold tracking-wider uppercase transition-colors sm:px-10 ${
-                mode === m ? "bg-accent text-accent-foreground" : "text-muted hover:text-foreground"
-              }`}
-            >
-              Browse by {m}
-            </button>
-          ))}
+        <div
+          ref={tabListRef}
+          role="tablist"
+          aria-label="Browse results"
+          className="relative inline-flex items-center rounded-full border border-border bg-surface p-1.5 shadow-sm"
+        >
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute top-0 left-0 rounded-full bg-accent transition-[transform,width,height] duration-300 ease-out motion-reduce:transition-none"
+            style={
+              pill
+                ? { width: pill.width, height: pill.height, transform: `translate(${pill.x}px, ${pill.y}px)` }
+                : { opacity: 0 }
+            }
+          />
+          {(["route", "category"] as const).map((m) => {
+            const active = mode === m;
+            return (
+              <button
+                key={m}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => switchMode(m)}
+                style={{ cursor: "pointer" }}
+                className={`relative z-10 cursor-pointer rounded-full px-6 py-2.5 text-sm font-semibold transition-colors duration-300 sm:px-10 ${
+                  active ? "text-accent-foreground" : "text-muted hover:text-foreground"
+                }`}
+              >
+                Browse by {m}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Selector cards */}
+      {/* Selector cards — selected = accent border + soft fill, not solid orange */}
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {mode === "route"
           ? pathwayOrder.map((p) => (
@@ -359,31 +479,37 @@ export function ResultsExplorer({ cards }: { cards: ResultCard[] }) {
       </div>
 
       {/* Chips: the other dimension */}
-      <div className="mt-5 flex flex-wrap items-center gap-2">
-        <span className="mr-1 text-xs font-bold tracking-wider text-muted uppercase">{mode === "route" ? "Category" : "Route"}</span>
-        {mode === "route" ? (
-          <>
-            <Chip active={group === "all"} onClick={() => update(() => setGroup("all"))}>
-              All
-            </Chip>
-            {COMPETENCY_GROUPS.map((g) => (
-              <Chip key={g.key} active={group === g.key} onClick={() => update(() => setGroup(g.key))}>
-                {g.label}
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <span className="text-xs font-bold tracking-wider text-muted uppercase">{mode === "route" ? "Category" : "Route"}</span>
+        <SlidingActivePill
+          activeKey={mode === "route" ? `chip-group:${group}` : `chip-route:${route}`}
+          className="inline-flex flex-wrap items-center gap-1 rounded-full border border-border bg-surface p-1.5 shadow-sm"
+          pillClassName="rounded-full bg-accent"
+        >
+          {mode === "route" ? (
+            <>
+              <Chip active={group === "all"} onClick={() => update(() => setGroup("all"))}>
+                All
               </Chip>
-            ))}
-          </>
-        ) : (
-          <>
-            <Chip active={route === "all"} onClick={() => update(() => setRoute("all"))}>
-              All
-            </Chip>
-            {pathwayOrder.map((p) => (
+              {COMPETENCY_GROUPS.map((g) => (
+                <Chip key={g.key} active={group === g.key} onClick={() => update(() => setGroup(g.key))}>
+                  {g.label}
+                </Chip>
+              ))}
+            </>
+          ) : (
+            <>
+              <Chip active={route === "all"} onClick={() => update(() => setRoute("all"))}>
+                All
+              </Chip>
+              {pathwayOrder.map((p) => (
                 <Chip key={p} active={route === p} onClick={() => update(() => setRoute(p))}>
                   {pathwayLabels[p]}
                 </Chip>
               ))}
-          </>
-        )}
+            </>
+          )}
+        </SlidingActivePill>
       </div>
 
       {/* Heading, search and grade */}
@@ -400,21 +526,21 @@ export function ResultsExplorer({ cards }: { cards: ResultCard[] }) {
           onChange={(e) => update(() => setQuery(e.target.value))}
           placeholder="Search competitions, students or schools…"
           aria-label="Search results"
-          className="rounded-lg border border-border bg-surface px-4 py-2 text-sm text-foreground outline-none focus:border-accent sm:w-72"
+          className={`${filterInputClass} sm:w-72`}
         />
-        <select
+        <FilterSelect
           value={grade}
-          onChange={(e) => update(() => setGrade(e.target.value as AgeCategory | "all"))}
+          onChange={(next) => update(() => setGrade(next as AgeCategory | "all"))}
           aria-label="Filter by grade category"
-          className="rounded-lg border border-border bg-surface px-4 py-2 text-sm text-foreground"
-        >
-          <option value="all">All grades</option>
-          {(Object.keys(categoryLabels) as AgeCategory[]).map((c) => (
-            <option key={c} value={c}>
-              {categoryLabels[c]}
-            </option>
-          ))}
-        </select>
+          className="w-full sm:w-44"
+          options={[
+            { value: "all", label: "All grades" },
+            ...(Object.keys(categoryLabels) as AgeCategory[]).map((c) => ({
+              value: c,
+              label: categoryLabels[c],
+            })),
+          ]}
+        />
       </div>
 
       {/* Cards */}

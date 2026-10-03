@@ -22,7 +22,7 @@ export function CompetitionCardArt({ imageUrl, title }: { imageUrl: string | nul
           aria-hidden="true"
           loading="lazy"
           onError={() => setFailed(true)}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]"
         />
       ) : (
         <span className="px-6 text-center text-sm font-semibold text-brand-deep-foreground/70">{title}</span>

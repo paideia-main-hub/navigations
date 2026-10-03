@@ -154,11 +154,24 @@ body {
   }
 }
 
+/* Schools FAQ right panel — soft fade/slide when the selected answer changes. */
+@keyframes faq-answer-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @theme inline {
   --animate-podium-in: podium-in 0.55s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-podium-card-flip: podium-card-flip 0.65s cubic-bezier(0.22, 0.8, 0.24, 1) both;
   --animate-spotlight-text-in: spotlight-text-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-place-drift: place-drift 4.5s ease-in-out infinite;
+  --animate-faq-answer-in: faq-answer-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Confetti and streamers behind the Winners Showcase
@@ -291,6 +304,7 @@ body {
   .animate-gradient-travel,
   .animate-spotlight-text-in,
   .animate-place-drift,
+  .animate-faq-answer-in,
   .cheer-lane,
   .cheer-spin {
     animation: none;
@@ -308,6 +322,32 @@ body {
 ::selection {
   background: var(--accent-soft);
   color: var(--foreground);
+}
+
+/* Thin rounded scrollbar for custom filter dropdowns. */
+.filter-dropdown-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--muted) 55%, transparent) transparent;
+}
+
+.filter-dropdown-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.filter-dropdown-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  margin-block: 6px;
+}
+
+.filter-dropdown-scroll::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--muted) 40%, transparent);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.filter-dropdown-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--muted) 65%, transparent);
 }
 
 /* The header floats fixed above everything, so any anchor jump (#id links,

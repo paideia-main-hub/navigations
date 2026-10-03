@@ -1,5 +1,6 @@
 import { createClient } from "@/data/supabase/server";
-import { listSubmittableCategories } from "@/domain/awards/service";
+import { withAwardCardImages } from "@/domain/awards/cardImage";
+import { listCategories, listSubmittableCategories } from "@/domain/awards/service";
 import { routeTwoLayers } from "@/domain/awards/types";
 import { listPublicCompetitions } from "@/domain/competitions/service";
 import {
@@ -10,6 +11,7 @@ import {
   type CompetitionStatus,
 } from "@/domain/competitions/types";
 import { AWARD_DETAILS } from "@/ui/components/awards/awardDetails";
+import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { CompetitionsDirectory } from "./CompetitionsDirectory";
 
@@ -26,8 +28,15 @@ export default async function CompetitionsPage({
 }) {
   const { route, q, category, pathway, status } = await searchParams;
   const supabase = await createClient();
-  const [competitions, openCategories] = await Promise.all([listPublicCompetitions(supabase), listSubmittableCategories(supabase)]);
-  const routeTwoAwards = AWARD_DETAILS.filter((a) => routeTwoLayers.includes(a.layer));
+  const [competitions, openCategories, allCategories] = await Promise.all([
+    listPublicCompetitions(supabase),
+    listSubmittableCategories(supabase),
+    listCategories(supabase),
+  ]);
+  const routeTwoAwards = withAwardCardImages(
+    AWARD_DETAILS.filter((a) => routeTwoLayers.includes(a.layer)),
+    allCategories,
+  );
 
   const initialCategory = AGE_CATEGORIES.includes(category as AgeCategory) ? (category as AgeCategory) : "all";
   const initialPathway = pathwayOrder.includes(pathway as CompetitionPathway) ? (pathway as CompetitionPathway) : "all";
@@ -39,6 +48,10 @@ export default async function CompetitionsPage({
         eyebrow="Competition Directory"
         title="Competitions"
         subtitle="Browse Route 1 competitions and Route 2 special recognition awards. Switch routes, then filter by category or status, or search by name."
+        className="-mt-24 pt-28 pb-28 sm:-mt-28 sm:pt-32 sm:pb-32 lg:pt-36 lg:pb-36"
+        showNet
+        netLattice="angular"
+        curvedBottom
       />
       <div className="mx-auto max-w-7xl px-6 py-12">
         <CompetitionsDirectory
@@ -52,6 +65,7 @@ export default async function CompetitionsPage({
           competitions={competitions}
         />
       </div>
+      <ClosingCta secondaryHref="/awards" secondaryLabel="Browse Awards" />
     </div>
   );
 }

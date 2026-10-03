@@ -4,6 +4,7 @@ import { resolveCompetitionCardImage } from "@/domain/competitions/cardImage";
 import { competencyGroupsFor } from "@/domain/competitions/competencies";
 import { categoryLabels, type AgeCategory, type CompetitionSummary } from "@/domain/competitions/types";
 import { awardRank } from "@/domain/results/types";
+import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { ResultsExplorer, type ResultCard, type ResultWinner } from "./ResultsExplorer";
 
 export const metadata = { title: "Results & Recognition | Navigations" };
@@ -86,40 +87,19 @@ export default async function ResultsPage() {
     winners,
   );
 
-  // Up to three uploaded artworks for the banner collage — from competitions
-  // with results first, then any competition. None uploaded yet means no
-  // collage, just the decorative accent.
-  const bannerImages = [
-    ...new Set(
-      [...cards.map((c) => c.imageUrl), ...competitions.map(artworkFor)].filter((src): src is string => Boolean(src)),
-    ),
-  ].slice(0, 3);
-
   return (
     <div className="bg-background">
-      <div className="relative overflow-hidden bg-brand-deep">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 px-6 py-12 md:grid-cols-[1fr_auto] md:py-14">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight text-white uppercase sm:text-5xl">Results &amp; Recognition</h1>
-            <p className="mt-3 text-lg text-brand-deep-muted">Explore outcomes across every pathway.</p>
-          </div>
-          <div aria-hidden="true" className="relative hidden h-44 w-[26rem] md:block">
-            {bannerImages.map((src, i) => (
-              // eslint-disable-next-line @next/next/no-img-element -- static competition artwork in public/
-              <img
-                key={src}
-                src={src}
-                alt=""
-                className="absolute top-1/2 h-40 w-32 rounded-2xl border-4 border-brand-deep object-cover shadow-xl"
-                style={{ left: `${i * 7.5}rem`, transform: `translateY(-50%) rotate(${(i - 1) * 5}deg)`, zIndex: i === 1 ? 2 : 1 }}
-              />
-            ))}
-            <span className="absolute -right-2 bottom-0 h-16 w-16 rounded-full bg-accent opacity-90" />
-          </div>
-        </div>
-      </div>
+      <PageBanner
+        eyebrow="Outcomes"
+        title="Results & Recognition"
+        subtitle="Explore outcomes across every pathway."
+        className="-mt-24 pt-28 pb-28 sm:-mt-28 sm:pt-32 sm:pb-32 lg:pt-36 lg:pb-36"
+        showNet
+        netLattice="angular"
+        curvedBottom
+      />
 
-      <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-6 pt-6 pb-10 sm:pt-8">
         <ResultsExplorer cards={cards} />
       </div>
     </div>

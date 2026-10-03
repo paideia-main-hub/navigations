@@ -7,6 +7,7 @@ import { OpenNominationCard } from "@/ui/components/awards/OpenNominationCard";
 import { AWARD_DETAILS } from "@/ui/components/awards/awardDetails";
 import type { AwardLayer } from "@/domain/awards/types";
 import { layerLabels } from "@/domain/awards/types";
+import { withAwardCardImages } from "@/domain/awards/cardImage";
 import { listSubmittableCategories, listCategories } from "@/domain/awards/service";
 import { createClient } from "@/data/supabase/server";
 import Link from "next/link";
@@ -83,7 +84,7 @@ const LAYER_BAND: Record<
   },
 };
 
-function awardsForLayer(layer: AwardLayer, imageBySlug: Map<string, string | null>) {
+function awardsForLayer(layer: AwardLayer, categories: { slug: string; imageUrl: string | null }[]) {
   const base =
     layer === "teacher_parent"
       ? [
@@ -92,10 +93,7 @@ function awardsForLayer(layer: AwardLayer, imageBySlug: Map<string, string | nul
         ]
       : AWARD_DETAILS.filter((a) => a.layer === layer);
 
-  return base.map((award) => ({
-    ...award,
-    imageUrl: imageBySlug.get(award.slug) ?? null,
-  }));
+  return withAwardCardImages(base, categories);
 }
 
 export default async function AwardsLandingPage() {
@@ -106,7 +104,6 @@ export default async function AwardsLandingPage() {
   const openNow = await listSubmittableCategories(supabase);
   const openSlugs = new Set(openNow.map((c) => c.slug));
   const allCategories = await listCategories(supabase);
-  const imageBySlug = new Map(allCategories.map((c) => [c.slug, c.imageUrl]));
 
   return (
     <div className="bg-background">
@@ -142,7 +139,7 @@ export default async function AwardsLandingPage() {
 
       <AwardsExpandProvider>
         {LAYER_ORDER.map((layer) => {
-          const awards = awardsForLayer(layer, imageBySlug);
+          const awards = awardsForLayer(layer, allCategories);
           const band = LAYER_BAND[layer];
           return (
             <AwardsLayerBand
@@ -164,8 +161,8 @@ export default async function AwardsLandingPage() {
       {/* Open for nominations now — closing band, dark like the site's other
           bottom CTAs, so the page ends on the same note as every other one.
           Top edge is cut by the sports section’s wave above. */}
-      <div id="open-nominations" className="relative scroll-mt-24 overflow-hidden bg-[#2a2c54] pt-24 pb-20 sm:pt-28">
-        <div className="relative mx-auto max-w-5xl px-6">
+      <div id="open-nominations" className="relative scroll-mt-24 overflow-hidden bg-[#2a2c54] pt-16 pb-20 sm:pt-20">
+        <div className="relative mx-auto max-w-7xl px-6">
           <div className="text-center">
             <p className="text-xs font-semibold tracking-wider text-accent uppercase">Right now</p>
             <h2 className="mt-1 text-2xl font-bold text-white sm:text-3xl">Open for nominations</h2>

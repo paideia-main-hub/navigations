@@ -88,10 +88,15 @@ export function competencyGroupsFor(competencies: string[]): CompetencyGroup[] {
 }
 
 /** "C01 Critical Thinking" for a framework code; a custom entry is shown as
- * typed. */
+ * typed. Used in admin where the code helps pick the right competency. */
 export function competencyLabel(value: string): string {
   const known = byCode.get(value);
   return known ? `${known.code} ${known.name}` : value;
+}
+
+/** Public-facing name only — "Critical Thinking" — without the C01 prefix. */
+export function competencyName(value: string): string {
+  return byCode.get(value)?.name ?? value;
 }
 
 /** Trims, drops blanks and removes duplicates (case-insensitively), keeping

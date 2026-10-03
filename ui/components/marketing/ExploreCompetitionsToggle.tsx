@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { pathwayLabels, type CompetitionSummary } from "@/domain/competitions/types";
 import { resolveCompetitionCardImage } from "@/domain/competitions/cardImage";
+import { resolveAwardCardImage } from "@/domain/awards/cardImage";
 import { layerLabels, type AwardCategory } from "@/domain/awards/types";
 import { OrbitCardStack, type OrbitStackItem } from "@/ui/components/marketing/OrbitCardStack";
 import { SectionHeading } from "@/ui/components/marketing/SectionHeading";
@@ -27,9 +28,6 @@ function competitionToItem(competition: CompetitionSummary): OrbitStackItem {
   };
 }
 
-/** Real artwork shipped at public/awards/<slug>.webp — not every category has
- * one yet (see Competition_Card_Artwork_Index.docx), so OrbitCardStack falls
- * back to an initials tile when the image 404s. */
 function awardToItem(category: AwardCategory): OrbitStackItem {
   return {
     id: category.id,
@@ -38,7 +36,7 @@ function awardToItem(category: AwardCategory): OrbitStackItem {
     eyebrow: layerLabels[category.layer],
     description: category.description,
     stat: category.allowsIndependent ? "School & Independent" : "School Only",
-    image: `/awards/${category.slug}.webp`,
+    image: resolveAwardCardImage(category.imageUrl, category.slug),
   };
 }
 
@@ -89,7 +87,7 @@ export function ExploreCompetitionsToggle({
             type="button"
             aria-selected={route === r}
             onClick={() => setRoute(r)}
-            className={`relative z-10 rounded-md px-4 py-2 text-sm font-semibold transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
+            className={`relative z-10 cursor-pointer rounded-md px-4 py-2 text-sm font-semibold transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
               route === r ? "text-accent-foreground" : "text-muted hover:text-foreground"
             }`}
           >

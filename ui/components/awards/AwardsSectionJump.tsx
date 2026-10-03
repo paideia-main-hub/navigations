@@ -56,7 +56,7 @@ export function AwardsSectionJump({ sections }: { sections: AwardsJumpSection[] 
   const panelWidth = "w-[min(17.5rem,calc(100vw-1.5rem))]";
 
   return (
-    <nav aria-label="Awards sections" className="pointer-events-none fixed inset-y-0 left-0 z-50">
+    <nav aria-label="On this page" className="pointer-events-none fixed inset-y-0 left-0 z-50">
       <button
         type="button"
         aria-expanded={open}
