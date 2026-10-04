@@ -337,7 +337,7 @@ export function AppreciationsLedger({ appreciations }: { appreciations: Apprecia
               {String(active + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
             </p>
             <div className="hidden items-center gap-3 sm:flex">
-              <span aria-hidden="true" className="h-px w-10 bg-[#d7d2c8]" />
+              <span aria-hidden="true" className="h-px w-10 bg-[#8a8174] dark:bg-[#6a6478]" />
               <div className="flex items-center gap-2">
                 {appreciations.map((item, dotIndex) => (
                   <button
@@ -349,11 +349,13 @@ export function AppreciationsLedger({ appreciations }: { appreciations: Apprecia
                       if (moving) return;
                       begin(lead + dotIndex);
                     }}
-                    className={`h-2 rounded-full transition-all ${dotIndex === active ? "w-2 bg-accent" : "w-2 bg-[#d7d2c8]"}`}
+                    className={`h-2 rounded-full transition-all ${
+                      dotIndex === active ? "w-2 bg-accent" : "w-2 bg-[#6f675c] dark:bg-[#8a8498]"
+                    }`}
                   />
                 ))}
               </div>
-              <span aria-hidden="true" className="h-px w-10 bg-[#d7d2c8]" />
+              <span aria-hidden="true" className="h-px w-10 bg-[#8a8174] dark:bg-[#6a6478]" />
             </div>
             <div className="absolute right-0 hidden gap-2 sm:flex">
               <button
