@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import Link from "next/link";
 import type { CompetitionWinnerGroup, PublishedWinner } from "@/domain/competitions/service";
+import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
 
 const cardFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -121,7 +122,7 @@ function NavButton({ direction, onClick }: { direction: "prev" | "next"; onClick
       type="button"
       onClick={onClick}
       aria-label={prev ? "Previous competition" : "Next competition"}
-      className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-[background-color,border-color,color,scale] duration-300 hover:scale-110 hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+      className="hidden h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-[background-color,border-color,color,scale] duration-300 hover:scale-110 hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:grid"
     >
       <svg
         viewBox={prev ? "5 3 12 18" : "7 3 12 18"}
@@ -176,6 +177,80 @@ function PhotoFrame({
   );
 }
 
+function winnerCopy(winner: PublishedWinner) {
+  const studentName = displayStudentName(winner);
+  const schoolName = displaySchoolName(winner);
+  const showTeam =
+    !isPlaceholderPhoto(winner.photoUrl) &&
+    winner.entryType === "team" &&
+    Boolean(winner.teamMembers && winner.teamMembers.length > 0);
+  return { studentName, schoolName, showTeam };
+}
+
+/** Mobile: full-width horizontal slice — photo left, copy right. */
+function RowCard({
+  winner,
+  seat,
+  flipFrom,
+}: {
+  winner: PublishedWinner;
+  seat: Seat;
+  flipFrom: string;
+}) {
+  const theme = SEATS[seat];
+  const featured = Boolean(theme.featured);
+  const { studentName, schoolName, showTeam } = winnerCopy(winner);
+
+  return (
+    <article
+      className={`${cardFont.className} relative flex w-full animate-podium-card-flip-x items-stretch gap-3.5 overflow-hidden rounded-2xl p-3 text-left text-white [transform-style:preserve-3d]`}
+      style={
+        {
+          background: theme.glass,
+          boxShadow: theme.glow,
+          animationDelay: theme.delay,
+          // Vertical flip: next comes from below, previous from above.
+          ["--podium-flip-from" as string]: flipFrom.startsWith("-") ? "85deg" : "-85deg",
+        } as CSSProperties
+      }
+    >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(118deg,rgba(255,255,255,0.48)_0%,rgba(255,255,255,0.1)_22%,transparent_40%,transparent_72%,rgba(255,255,255,0.12)_100%)]"
+      />
+      <div className="relative z-10 w-[7.25rem] shrink-0 self-center">
+        <PhotoFrame
+          name={studentName}
+          photoUrl={winner.photoUrl}
+          featured
+          fallbackSrc={FALLBACK_PHOTOS[seat]}
+        />
+      </div>
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col items-start justify-center py-0.5 text-left">
+        <p
+          className={`font-extrabold tracking-[0.16em] uppercase ${
+            featured ? "text-[0.65rem]" : "text-[0.6rem]"
+          } ${theme.labelBadge} !mx-0`}
+        >
+          {theme.label}
+        </p>
+        <span
+          aria-hidden="true"
+          className={`mt-2 block h-[2px] self-start rounded-full ${featured ? "w-10" : "w-8"} ${theme.dividerClass}`}
+        />
+        <p className={`mt-2 w-full font-extrabold tracking-tight text-white ${featured ? "text-lg" : "text-base"} leading-tight`}>
+          {studentName}
+        </p>
+        <p className="mt-1 w-full text-[0.75rem] font-semibold tracking-wide text-white/80">{schoolName}</p>
+        {showTeam && (
+          <p className="mt-1 w-full line-clamp-2 text-[10px] font-medium text-white/65">{winner.teamMembers!.join(" · ")}</p>
+        )}
+      </div>
+    </article>
+  );
+}
+
+/** Desktop: tall glass podium cards with a 3D lean. */
 function GlassCard({
   winner,
   seat,
@@ -187,12 +262,7 @@ function GlassCard({
 }) {
   const theme = SEATS[seat];
   const featured = Boolean(theme.featured);
-  const studentName = displayStudentName(winner);
-  const schoolName = displaySchoolName(winner);
-  const showTeam =
-    !isPlaceholderPhoto(winner.photoUrl) &&
-    winner.entryType === "team" &&
-    Boolean(winner.teamMembers && winner.teamMembers.length > 0);
+  const { studentName, schoolName, showTeam } = winnerCopy(winner);
 
   return (
     <div
@@ -260,6 +330,9 @@ function GlassCard({
   );
 }
 
+/** Mobile stack order: top performer first, then the two side seats. */
+const MOBILE_SEAT_ORDER: Seat[] = ["center", "left", "right"];
+
 const AUTOPLAY_MS = 5500;
 
 export function ChampionsPodium({ groups }: { groups: CompetitionWinnerGroup[] }) {
@@ -277,6 +350,18 @@ export function ChampionsPodium({ groups }: { groups: CompetitionWinnerGroup[] }
     }, AUTOPLAY_MS);
     return () => window.clearInterval(id);
   }, [groups.length, paused]);
+
+  const swipe = useSwipeNavigation(
+    useCallback(
+      (next) => {
+        if (groups.length < 2) return;
+        setDirection(next);
+        setIndex((i) => (i + next + groups.length) % groups.length);
+      },
+      [groups.length],
+    ),
+    { enabled: groups.length > 1 },
+  );
 
   if (groups.length === 0) {
     return <p className="text-center text-sm text-muted">Winners will appear here once results are published.</p>;
@@ -297,7 +382,13 @@ export function ChampionsPodium({ groups }: { groups: CompetitionWinnerGroup[] }
   const flipFrom = direction >= 0 ? "95deg" : "-95deg";
 
   return (
-    <div className="relative" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+    <div
+      className="relative touch-pan-y"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onTouchStart={swipe.onTouchStart}
+      onTouchEnd={swipe.onTouchEnd}
+    >
       <div key={current.competitionSlug} className="relative flex flex-col gap-10">
         <div className="mx-auto flex w-full max-w-[48rem] flex-col items-center text-center">
           <p className="text-[11px] font-semibold tracking-[0.2em] text-amber-600/80 uppercase dark:text-amber-300/70">
@@ -305,13 +396,29 @@ export function ChampionsPodium({ groups }: { groups: CompetitionWinnerGroup[] }
           </p>
           <Link
             href={`/competitions/${current.competitionSlug}`}
-            className={`${titleFont.className} animate-podium-in mt-3 block w-full text-5xl leading-none font-extrabold tracking-tight text-balance text-foreground/45 transition hover:text-foreground/70 sm:text-6xl lg:text-7xl dark:text-foreground/50 dark:hover:text-foreground/75`}
+            className={`${titleFont.className} animate-podium-in mt-3 block w-full bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-5xl leading-none font-extrabold tracking-tight text-balance text-transparent transition hover:from-amber-600 hover:to-orange-600 sm:text-6xl lg:text-7xl dark:from-amber-300 dark:to-yellow-200 dark:hover:from-amber-200 dark:hover:to-yellow-100`}
           >
             {current.competitionTitle}
           </Link>
         </div>
 
-        <div className="relative flex min-w-0 flex-1 items-end justify-center gap-2 [perspective:1400px] sm:gap-3">
+        {/* Mobile: three horizontal slices (photo left, copy right). Desktop: podium. */}
+        <div className="flex flex-col gap-3 px-1 [perspective:1200px] sm:hidden">
+          {MOBILE_SEAT_ORDER.map((seat) => {
+            const winner = byTier.get(SEATS[seat].tier);
+            if (!winner) return null;
+            return (
+              <RowCard
+                key={`${current.competitionSlug}-${seat}-row`}
+                winner={winner}
+                seat={seat}
+                flipFrom={flipFrom}
+              />
+            );
+          })}
+        </div>
+
+        <div className="relative hidden min-w-0 flex-1 items-end justify-center gap-3 [perspective:1400px] sm:flex">
           {SEAT_ORDER.map((seat) => {
             const winner = byTier.get(SEATS[seat].tier);
             if (!winner) return null;
@@ -326,7 +433,39 @@ export function ChampionsPodium({ groups }: { groups: CompetitionWinnerGroup[] }
           })}
         </div>
 
-        <div className="mx-auto grid w-full max-w-[48rem] grid-cols-[auto_1fr_auto] items-center gap-4">
+        {/* Mobile: bare arrows flanking a centered counter. Desktop: circled arrows + dots. */}
+        {groups.length > 1 && (
+          <div className="mx-auto flex items-center justify-center gap-5 sm:hidden">
+            <button
+              type="button"
+              onClick={() => step(-1)}
+              aria-label="Previous competition"
+              className="cursor-pointer text-foreground/70 transition-colors hover:text-foreground"
+            >
+              <svg viewBox="5 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-3">
+                <path d="M15 5 7 12l8 7" />
+              </svg>
+            </button>
+            <p
+              aria-live="polite"
+              className="min-w-14 rounded-full bg-foreground/8 px-3 py-1 text-center text-[11px] font-bold tracking-wide text-foreground tabular-nums"
+            >
+              {String(index + 1).padStart(2, "0")} / {String(groups.length).padStart(2, "0")}
+            </p>
+            <button
+              type="button"
+              onClick={() => step(1)}
+              aria-label="Next competition"
+              className="cursor-pointer text-foreground/70 transition-colors hover:text-foreground"
+            >
+              <svg viewBox="7 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-3">
+                <path d="m9 5 8 7-8 7" />
+              </svg>
+            </button>
+          </div>
+        )}
+
+        <div className="mx-auto hidden w-full max-w-[48rem] grid-cols-[auto_1fr_auto] items-center gap-4 sm:grid">
           <NavButton direction="prev" onClick={() => step(-1)} />
           {groups.length > 1 ? (
             <div className="flex items-center justify-center gap-1.5">

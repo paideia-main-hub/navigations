@@ -1,8 +1,9 @@
 "use client";
 
 import { Source_Serif_4 } from "next/font/google";
-import { useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import type { Appreciation } from "@/domain/appreciations/types";
+import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
 import { BandDivider } from "./BandDivider";
 
 const serif = Source_Serif_4({
@@ -180,6 +181,20 @@ export function AppreciationsLedger({ appreciations }: { appreciations: Apprecia
     return () => cancelAnimationFrame(id);
   }, [animate]);
 
+  const swipe = useSwipeNavigation(
+    useCallback(
+      (direction) => {
+        if (moving || count === 0) return;
+        setFrom(index);
+        setMoving(true);
+        setAnimate(true);
+        setIndex(index + direction);
+      },
+      [moving, count, index],
+    ),
+    { enabled: count > 1 },
+  );
+
   if (count === 0) return null;
 
   function begin(next: number) {
@@ -197,7 +212,7 @@ export function AppreciationsLedger({ appreciations }: { appreciations: Apprecia
   const active = ((index - lead) % count + count) % count;
 
   return (
-    <section className="relative mx-4 overflow-x-clip rounded-[2rem] bg-[#f0e0d2] px-6 pt-16 pb-20 sm:mx-6 sm:rounded-[2.5rem] sm:pt-20 sm:pb-24 lg:mx-10 lg:pt-28 lg:pb-32 dark:bg-[#181428]">
+    <section className="relative mx-4 overflow-x-clip rounded-[2rem] bg-[#f0e0d2] px-6 pt-16 pb-20 touch-pan-y sm:mx-6 sm:rounded-[2.5rem] sm:pt-20 sm:pb-24 lg:mx-10 lg:pt-28 lg:pb-32 dark:bg-[#181428]">
       <BandDivider shape="curve" side="top" color="text-background" />
       <BandDivider shape="curve" side="bottom" color="text-background" flip />
 
@@ -277,7 +292,9 @@ export function AppreciationsLedger({ appreciations }: { appreciations: Apprecia
               outer box, taken from those already-clipped cards, so it can
               fade past the clip the way the Explore Competitions fan does. */}
           <div
-            className="mt-10 pb-16"
+            className="mt-10 touch-pan-y pb-16 max-sm:-mx-4 max-sm:pb-4"
+            onTouchStart={swipe.onTouchStart}
+            onTouchEnd={swipe.onTouchEnd}
             style={{
               filter:
                 "drop-shadow(18px 14px 16px rgba(40, 28, 12, 0.2)) drop-shadow(6px 20px 12px rgba(40, 28, 12, 0.16))",
@@ -300,7 +317,7 @@ export function AppreciationsLedger({ appreciations }: { appreciations: Apprecia
                     <div
                       key={`${item.id}-${slideIndex}`}
                       aria-hidden={onStage ? undefined : true}
-                      className={`flex pt-8 pr-2 pl-4 ${onStage ? "" : "invisible"}`}
+                      className={`flex pt-8 max-sm:px-0 sm:pr-2 sm:pl-4 ${onStage ? "" : "invisible"}`}
                       style={{ width: `${100 / slides.length}%` }}
                     >
                       <LedgerCard item={item} index={slideIndex % count} />
@@ -311,8 +328,15 @@ export function AppreciationsLedger({ appreciations }: { appreciations: Apprecia
             </div>
           </div>
 
-          <div className="relative mt-4 flex items-center justify-center">
-            <div className="flex items-center gap-3">
+          <div className="relative mt-2 flex items-center justify-center sm:mt-4">
+            {/* Mobile: slide counter. Desktop: dots. */}
+            <p
+              aria-live="polite"
+              className="rounded-full bg-foreground/8 px-3 py-1 text-center text-[11px] font-bold tracking-wide text-foreground tabular-nums sm:hidden"
+            >
+              {String(active + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
+            </p>
+            <div className="hidden items-center gap-3 sm:flex">
               <span aria-hidden="true" className="h-px w-10 bg-[#d7d2c8]" />
               <div className="flex items-center gap-2">
                 {appreciations.map((item, dotIndex) => (
@@ -331,7 +355,7 @@ export function AppreciationsLedger({ appreciations }: { appreciations: Apprecia
               </div>
               <span aria-hidden="true" className="h-px w-10 bg-[#d7d2c8]" />
             </div>
-            <div className="absolute right-0 flex gap-2">
+            <div className="absolute right-0 hidden gap-2 sm:flex">
               <button
                 type="button"
                 aria-label="Previous appreciation"

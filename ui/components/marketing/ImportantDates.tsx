@@ -2,8 +2,9 @@
 
 import { Plus_Jakarta_Sans, Unbounded } from "next/font/google";
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { CompetitionSummary } from "@/domain/competitions/types";
+import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
 import { BandDivider } from "./BandDivider";
 
 /** Same face as the Featuring Now slide titles. */
@@ -440,7 +441,7 @@ function cardsBehind(front: number, length: number): number[] {
 }
 
 const ARROW_BUTTON =
-  "grid h-7 w-7 cursor-pointer place-items-center rounded-full border border-white/30 bg-[#14152c]/80 text-brand-deep-foreground shadow-md transition-[background-color,border-color,color,scale] duration-300 hover:scale-110 hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none";
+  "hidden h-7 w-7 cursor-pointer place-items-center rounded-full border border-white/30 bg-[#14152c]/80 text-brand-deep-foreground shadow-md transition-[background-color,border-color,color,scale] duration-300 hover:scale-110 hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:grid";
 
 type Move = "idle" | "up" | "down";
 
@@ -502,6 +503,18 @@ function StackSpotlight({ competitions }: { competitions: CompetitionSummary[] }
     };
   }, [animate]);
 
+  const swipe = useSwipeNavigation(
+    useCallback(
+      (direction) => {
+        if (length < 2 || move !== "idle") return;
+        if (direction < 0) setAnimate(false);
+        setMove(direction > 0 ? "up" : "down");
+      },
+      [length, move],
+    ),
+    { enabled: length > 1 },
+  );
+
   if (length === 0) return null;
 
   const previous = (index - 1 + length) % length;
@@ -522,11 +535,13 @@ function StackSpotlight({ competitions }: { competitions: CompetitionSummary[] }
 
   return (
     <div
-      className="relative h-full min-h-[300px]"
+      className="relative h-full min-h-[300px] touch-pan-y"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
+      onTouchStart={swipe.onTouchStart}
+      onTouchEnd={swipe.onTouchEnd}
     >
       {layers
         .slice()
@@ -609,6 +624,17 @@ function SliderSpotlight({ competitions }: { competitions: CompetitionSummary[] 
     return () => window.clearInterval(id);
   }, [reduceMotion, length, paused]);
 
+  const swipe = useSwipeNavigation(
+    useCallback(
+      (direction) => {
+        if (length < 1) return;
+        setIndex((current) => ((current + direction) % length + length) % length);
+      },
+      [length],
+    ),
+    { enabled: length > 1 },
+  );
+
   if (length === 0) return null;
 
   const item = competitions[index]!;
@@ -622,11 +648,13 @@ function SliderSpotlight({ competitions }: { competitions: CompetitionSummary[] 
 
   return (
     <div
-      className="group relative h-full min-h-[300px]"
+      className="group relative h-full min-h-[300px] touch-pan-y"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
+      onTouchStart={swipe.onTouchStart}
+      onTouchEnd={swipe.onTouchEnd}
       aria-roledescription="carousel"
       aria-label="Competition dates"
     >
@@ -655,7 +683,7 @@ function SliderSpotlight({ competitions }: { competitions: CompetitionSummary[] 
               type="button"
               aria-label="Previous competition"
               onClick={() => go(index - 1)}
-              className={`absolute top-1/2 left-3 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none ${SLIDER_ARROW}`}
+              className={`absolute top-1/2 left-3 z-10 hidden h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border opacity-0 transition-opacity duration-300 sm:grid sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none ${SLIDER_ARROW}`}
             >
               <svg viewBox="5 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-3.5 w-2.5">
                 <path d="M15 5 7 12l8 7" />
@@ -665,26 +693,37 @@ function SliderSpotlight({ competitions }: { competitions: CompetitionSummary[] 
               type="button"
               aria-label="Next competition"
               onClick={() => go(index + 1)}
-              className={`absolute top-1/2 right-3 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none ${SLIDER_ARROW}`}
+              className={`absolute top-1/2 right-3 z-10 hidden h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border opacity-0 transition-opacity duration-300 sm:grid sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none ${SLIDER_ARROW}`}
             >
               <svg viewBox="7 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-3.5 w-2.5">
                 <path d="m9 5 8 7-8 7" />
               </svg>
             </button>
 
-            <div className="absolute bottom-5 z-10 flex w-full items-center justify-center gap-2">
-              {competitions.map((competition, dotIndex) => (
-                <button
-                  key={competition.slug}
-                  type="button"
-                  onClick={() => go(dotIndex)}
-                  aria-label={`Show ${competition.title}`}
-                  aria-current={dotIndex === index}
-                  className={`h-1.5 cursor-pointer rounded-full transition-all focus-visible:ring-2 focus-visible:ring-current focus-visible:outline-none ${
-                    dotIndex === index ? `w-4 ${SLIDER_DOT.active}` : `w-1.5 ${SLIDER_DOT.idle}`
-                  }`}
-                />
-              ))}
+            {/* Desktop keeps dots. Mobile uses a counter when the row would overflow. */}
+            <div className="absolute bottom-5 z-10 flex w-full items-center justify-center px-4">
+              <div className={`items-center gap-2 ${length > 7 ? "hidden sm:flex" : "flex"}`}>
+                {competitions.map((competition, dotIndex) => (
+                  <button
+                    key={competition.slug}
+                    type="button"
+                    onClick={() => go(dotIndex)}
+                    aria-label={`Show ${competition.title}`}
+                    aria-current={dotIndex === index}
+                    className={`h-1.5 cursor-pointer rounded-full transition-all focus-visible:ring-2 focus-visible:ring-current focus-visible:outline-none ${
+                      dotIndex === index ? `w-4 ${SLIDER_DOT.active}` : `w-1.5 ${SLIDER_DOT.idle}`
+                    }`}
+                  />
+                ))}
+              </div>
+              {length > 7 && (
+                <p
+                  aria-live="polite"
+                  className="rounded-full bg-black/25 px-3 py-1 text-[11px] font-bold tracking-wide text-white tabular-nums sm:hidden"
+                >
+                  {String(index + 1).padStart(2, "0")} / {String(length).padStart(2, "0")}
+                </p>
+              )}
             </div>
           </>
         )}
@@ -792,12 +831,10 @@ export function ImportantDates({
                       </p>
                       <p className="text-base font-semibold text-brand-deep-muted">{m.label}</p>
                     </div>
-                    {/* The finals note is long enough to cover the step number,
-                        so it wraps onto two lines and stops short of that digit.
-                        The shorter notes stay on one line. */}
+                    {/* Mobile uses full width; desktop keeps clearance for the step numeral. */}
                     <p
                       className={`mt-0.5 text-sm text-brand-deep-muted/80 ${
-                        i === MILESTONES.length - 1 ? "line-clamp-2 pr-32" : ""
+                        i === MILESTONES.length - 1 ? "sm:line-clamp-2 sm:pr-32" : ""
                       }`}
                     >
                       {m.note}

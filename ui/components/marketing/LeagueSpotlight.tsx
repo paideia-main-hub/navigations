@@ -3,6 +3,7 @@
 import { Plus_Jakarta_Sans } from "next/font/google";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
 
 const slideTitleFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -131,9 +132,14 @@ export function LeagueSpotlight({ nominationsOpen }: { nominationsOpen: boolean 
   }, [showNominationsClosed]);
 
   const slide = SLIDES[index];
+  const swipe = useSwipeNavigation(
+    useCallback((direction) => {
+      setIndex((current) => ((current + direction) % SLIDES.length + SLIDES.length) % SLIDES.length);
+    }, []),
+  );
 
   return (
-    <section className="bg-background px-6 py-16">
+    <section className="bg-background px-6 pt-8 pb-16 sm:py-16">
       <div className="mx-auto max-w-7xl">
         <p className="flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
           <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
@@ -152,11 +158,13 @@ export function LeagueSpotlight({ nominationsOpen }: { nominationsOpen: boolean 
 
           {/* Rotating half. */}
           <div
-            className={`group relative flex min-h-[320px] flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/10 px-14 py-10 text-center shadow-[0_28px_64px_-18px_rgba(0,0,0,0.72),0_10px_28px_-8px_rgba(0,0,0,0.4)] sm:min-h-[420px] ${CARD}`}
+            className={`group relative flex min-h-[320px] flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/10 px-14 py-10 text-center shadow-[0_28px_64px_-18px_rgba(0,0,0,0.72),0_10px_28px_-8px_rgba(0,0,0,0.4)] touch-pan-y sm:min-h-[420px] ${CARD}`}
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
             onFocusCapture={() => setPaused(true)}
             onBlurCapture={() => setPaused(false)}
+            onTouchStart={swipe.onTouchStart}
+            onTouchEnd={swipe.onTouchEnd}
             aria-roledescription="carousel"
             aria-label="League highlights"
           >
@@ -166,7 +174,7 @@ export function LeagueSpotlight({ nominationsOpen }: { nominationsOpen: boolean 
               type="button"
               onClick={() => go(index - 1)}
               aria-label="Previous highlight"
-              className={`absolute top-1/2 left-3 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none ${ARROW}`}
+              className={`absolute top-1/2 left-3 z-10 hidden h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border opacity-0 transition-opacity duration-300 sm:grid sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none ${ARROW}`}
             >
               <svg viewBox="5 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-3.5 w-2.5">
                 <path d="M15 5 7 12l8 7" />
@@ -188,7 +196,7 @@ export function LeagueSpotlight({ nominationsOpen }: { nominationsOpen: boolean 
               type="button"
               onClick={() => go(index + 1)}
               aria-label="Next highlight"
-              className={`absolute top-1/2 right-3 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none ${ARROW}`}
+              className={`absolute top-1/2 right-3 z-10 hidden h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border opacity-0 transition-opacity duration-300 sm:grid sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none ${ARROW}`}
             >
               <svg viewBox="7 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-3.5 w-2.5">
                 <path d="m9 5 8 7-8 7" />

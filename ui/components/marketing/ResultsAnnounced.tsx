@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { CompetitionWinnerGroup, PublishedWinner } from "@/domain/competitions/service";
 import { awardLabels, type AwardType } from "@/domain/competitions/types";
 import { ResultsStage } from "@/ui/components/marketing/ResultsStage";
+import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
 
 const AUTOPLAY_MS = 5500;
 
@@ -145,6 +146,17 @@ export function ResultsAnnounced({ groups }: { groups: CompetitionWinnerGroup[] 
     return () => window.clearInterval(id);
   }, [groups.length, paused]);
 
+  const swipe = useSwipeNavigation(
+    useCallback(
+      (direction) => {
+        if (groups.length < 2) return;
+        setIndex((currentIndex) => (currentIndex + direction + groups.length) % groups.length);
+      },
+      [groups.length],
+    ),
+    { enabled: groups.length > 1 },
+  );
+
   if (groups.length === 0) return null;
 
   const current = groups[Math.min(index, groups.length - 1)]!;
@@ -152,9 +164,11 @@ export function ResultsAnnounced({ groups }: { groups: CompetitionWinnerGroup[] 
 
   return (
     <section
-      className="relative isolate overflow-hidden px-4 py-12 sm:px-6 sm:py-16"
+      className="relative isolate overflow-hidden touch-pan-y px-4 py-12 sm:px-6 sm:py-16"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onTouchStart={swipe.onTouchStart}
+      onTouchEnd={swipe.onTouchEnd}
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <ResultsStage />
@@ -185,7 +199,7 @@ export function ResultsAnnounced({ groups }: { groups: CompetitionWinnerGroup[] 
                 type="button"
                 onClick={() => step(-1)}
                 aria-label="Previous competition"
-                className="grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-white/80 bg-white text-[#1f2041] shadow-[0_6px_16px_rgba(40,70,120,0.12)]"
+                className="hidden h-9 w-9 cursor-pointer place-items-center rounded-full border border-white/80 bg-white text-[#1f2041] shadow-[0_6px_16px_rgba(40,70,120,0.12)] sm:grid"
               >
                 <svg viewBox="0 0 20 20" aria-hidden="true" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 5 7 10l5 5" strokeLinecap="round" strokeLinejoin="round" />
@@ -198,7 +212,7 @@ export function ResultsAnnounced({ groups }: { groups: CompetitionWinnerGroup[] 
                 type="button"
                 onClick={() => step(1)}
                 aria-label="Next competition"
-                className="grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-white/80 bg-white text-[#1f2041] shadow-[0_6px_16px_rgba(40,70,120,0.12)]"
+                className="hidden h-9 w-9 cursor-pointer place-items-center rounded-full border border-white/80 bg-white text-[#1f2041] shadow-[0_6px_16px_rgba(40,70,120,0.12)] sm:grid"
               >
                 <svg viewBox="0 0 20 20" aria-hidden="true" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="m8 5 5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />

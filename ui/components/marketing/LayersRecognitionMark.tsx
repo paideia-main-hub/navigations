@@ -29,7 +29,7 @@ export function LayersRecognitionMark({
     return (
       <span
         aria-hidden="true"
-        className={`pointer-events-none absolute top-0 z-0 flex h-[clamp(3.5rem,16vw,20rem)] items-center justify-center gap-[0.04em] text-[length:clamp(3.5rem,16vw,20rem)] select-none ${ink} ${horizontal}`}
+        className={`pointer-events-none absolute top-0 z-0 flex h-[clamp(3.5rem,16vw,20rem)] items-center justify-center gap-[0.04em] text-[length:clamp(3.5rem,16vw,20rem)] select-none max-sm:top-6 max-sm:translate-y-4 ${ink} ${horizontal}`}
       >
         <span className={`${markNumeral.className} block shrink-0 leading-none font-extrabold tabular-nums text-[1em]`}>
           05

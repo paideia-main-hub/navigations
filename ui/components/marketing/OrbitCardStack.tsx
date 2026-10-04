@@ -4,12 +4,14 @@ import Link from "next/link";
 import {
   type CSSProperties,
   type KeyboardEvent,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
   useSyncExternalStore,
 } from "react";
+import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
 
 export interface OrbitStackItem {
   id: string;
@@ -52,8 +54,7 @@ function OrbitPortrait({ item }: { item: OrbitStackItem }) {
   );
 }
 
-/** The card's visual content, shared between the fanned desktop stage and
- * the flat mobile carousel so the two layouts never drift apart. Purely
+/** The card's visual content for the fanned orbit stage. Purely
  * presentational — no link of its own; the whole card is one click target,
  * wrapped by the caller. */
 function CardBody({ item }: { item: OrbitStackItem }) {
@@ -62,10 +63,16 @@ function CardBody({ item }: { item: OrbitStackItem }) {
       <div className="relative">
         <OrbitPortrait item={item} />
       </div>
-      <div className="px-2 pt-6 pb-2">
-        <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-muted uppercase">{item.eyebrow}</p>
-        <h3 className="mt-2 text-[1.75rem] leading-none font-semibold tracking-[-0.04em] text-foreground">{item.name}</h3>
-        <p className="mt-4 line-clamp-3 max-w-[17rem] text-[0.98rem] leading-[1.42] font-medium tracking-[-0.01em] text-muted">{item.description}</p>
+      <div className="px-1.5 pt-4 pb-1.5 sm:px-2 sm:pt-6 sm:pb-2">
+        <p className="text-[0.65rem] font-semibold tracking-[0.18em] text-muted uppercase sm:text-[0.72rem]">
+          {item.eyebrow}
+        </p>
+        <h3 className="mt-1.5 text-[1.35rem] leading-none font-semibold tracking-[-0.04em] text-foreground sm:mt-2 sm:text-[1.75rem]">
+          {item.name}
+        </h3>
+        <p className="mt-3 line-clamp-3 max-w-[17rem] text-[0.88rem] leading-[1.42] font-medium tracking-[-0.01em] text-muted sm:mt-4 sm:text-[0.98rem]">
+          {item.description}
+        </p>
         <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
           <span className="text-[0.68rem] font-bold tracking-[0.2em] text-muted uppercase">{item.stat}</span>
           <span aria-hidden="true" className="text-accent opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 group-focus-visible:opacity-100">
@@ -112,11 +119,16 @@ function usePrefersReducedMotion(): boolean {
 
 /** The fan's horizontal spread only makes sense as a raw pixel number (it
  * feeds a JS transform, not a class), so the responsive step has to happen
- * in JS too — narrower on tablets so the fan doesn't run off-screen.
- * (Phones don't use this at all — see the carousel branch below.) */
-function useResponsiveSpread(): number {
+ * in JS too. On phones the centre card is ~50% wide with neighbours peeping
+ * from each side, so spread tracks the stage width. */
+function useResponsiveSpread(stageWidth: number | null): number {
+  const isPhone = useMediaQuery("(max-width: 639px)");
   const isTablet = useMediaQuery("(max-width: 1023px)");
-  return isTablet ? 100 : 168;
+  // Centre card is ~90% wide; neighbours sit just off-stage so only a thin
+  // sliver peeks on each side.
+  if (isPhone) return stageWidth ? Math.round(stageWidth * 0.48) : 180;
+  if (isTablet) return 100;
+  return 168;
 }
 
 /** How far up the fanned layout is shifted from the stage's vertical centre,
@@ -152,37 +164,10 @@ function useHasScrolledIntoView<T extends HTMLElement>(ref: React.RefObject<T | 
   return seen;
 }
 
-/** A plain horizontal, swipe-to-scroll row of cards — the fan-out physics
- * don't translate to a touchscreen with no hover, so phones get a simple
- * carousel instead of a shrunk-down version of the desktop stage. Not
- * auto-rotated (auto-advancing a list someone might be mid-swipe on is bad
- * practice) — just every item, natively lazy-loaded as the visitor scrolls. */
-function MobileCardCarousel({ items, ariaLabel }: { items: OrbitStackItem[]; ariaLabel: string }) {
-  return (
-    <ul
-      role="list"
-      aria-label={ariaLabel}
-      className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:hidden"
-    >
-      {items.map((item, index) => (
-        <li key={item.id} className="w-[78vw] shrink-0 snap-center">
-          <Link
-            href={item.href}
-            aria-label={`View ${item.name}`}
-            className={`group block rounded-[1.9rem] border border-border p-4 text-foreground ${CARD_PALETTE[index % CARD_PALETTE.length]}`}
-          >
-            <CardBody item={item} />
-          </Link>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-/** Visible slots either side of centre (5 cards fanned out in total) — the
- * geometry below (FAN_VERTICAL_SHIFT, the stage's own fixed height) was
- * tuned and verified empirically for exactly this many. */
+/** Visible slots either side of centre on tablet/desktop (5 cards fanned).
+ * Phones use MOBILE_VISIBLE_RADIUS so one card leads with peeks beside it. */
 const VISIBLE_RADIUS = 2;
+const MOBILE_VISIBLE_RADIUS = 1;
 /** Slots actually mounted either side of centre — one more than is ever
  * visible, purely so a card already has somewhere to animate from/to when
  * it crosses into or out of the visible range, instead of popping in place.
@@ -225,13 +210,17 @@ function DesktopOrbitStage({
   viewAllLabel?: string;
 }) {
   const reduceMotion = usePrefersReducedMotion();
-  const spread = useResponsiveSpread();
+  const isPhone = useMediaQuery("(max-width: 639px)");
   const total = items.length;
   const [centerIndex, setCenterIndex] = useState(() => ((defaultActiveIndex % Math.max(total, 1)) + total) % Math.max(total, 1));
   const [paused, setPaused] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const inView = useHasScrolledIntoView(stageRef);
+  const [stageWidth, setStageWidth] = useState<number | null>(null);
   const [arrowBox, setArrowBox] = useState<{ left: number; right: number } | null>(null);
+  const spread = useResponsiveSpread(stageWidth);
+  const visibleRadius = isPhone ? MOBILE_VISIBLE_RADIUS : VISIBLE_RADIUS;
+  const renderRadius = visibleRadius + 1;
 
   // Reset to the front of the list whenever the item SET changes identity
   // (e.g. switching Route 1 <-> Route 2), rather than keeping a stale index
@@ -253,8 +242,9 @@ function DesktopOrbitStage({
     if (!stage) return;
 
     const place = () => {
+      setStageWidth(stage.clientWidth);
       const cards = [...stage.querySelectorAll<HTMLElement>("article[data-offset]")].filter(
-        (el) => Math.abs(Number(el.dataset.offset)) <= VISIBLE_RADIUS,
+        (el) => Math.abs(Number(el.dataset.offset)) <= visibleRadius,
       );
       if (cards.length === 0) return;
       const leftEl = cards.reduce((a, b) => (Number(a.dataset.offset) < Number(b.dataset.offset) ? a : b));
@@ -270,7 +260,18 @@ function DesktopOrbitStage({
     place();
     window.addEventListener("resize", place);
     return () => window.removeEventListener("resize", place);
-  }, [spread]);
+  }, [spread, visibleRadius, centerIndex]);
+
+  const swipe = useSwipeNavigation(
+    useCallback(
+      (direction) => {
+        if (total < 2) return;
+        setCenterIndex((i) => ((i + direction) % total + total) % total);
+      },
+      [total],
+    ),
+    { enabled: total > 1 },
+  );
 
   if (total === 0) return null;
 
@@ -280,23 +281,36 @@ function DesktopOrbitStage({
   // mounted, each mapped circularly back onto the real, full list — the
   // "lazy load" the carousel needs to stay light with dozens of entries.
   const slots: { offset: number; item: OrbitStackItem; itemIndex: number }[] = [];
-  const radius = Math.min(RENDER_RADIUS, Math.floor((total - 1) / 2));
+  const radius = Math.min(isPhone ? renderRadius : RENDER_RADIUS, Math.floor((total - 1) / 2));
   for (let offset = -radius; offset <= radius; offset++) {
     const itemIndex = ((centerIndex - offset) % total + total) % total;
     slots.push({ offset, item: items[itemIndex]!, itemIndex });
   }
 
+  // Phone keeps the same fan formula, with a slightly tighter vertical step
+  // so the ~50%-wide centre card and side peeks fit the shorter stage.
+  const yStep = isPhone ? 22 : 30;
+  const yExtra = isPhone ? 6 : 10;
+  const rotationStep = isPhone ? 7 : 8.5;
+  const fanShift = isPhone ? 36 : FAN_VERTICAL_SHIFT;
+  const activeLift = isPhone ? Math.round(lift * 0.55) : lift;
+
+  const viewAllClassName =
+    "rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none";
+
   return (
     <div
-      className="relative hidden w-full items-center justify-center py-8 sm:flex"
+      className="relative flex w-full touch-pan-y flex-col items-center py-6 sm:py-8"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
+      onTouchStart={swipe.onTouchStart}
+      onTouchEnd={swipe.onTouchEnd}
     >
       <div
         ref={stageRef}
-        className="relative h-[640px] w-full max-w-[980px] sm:h-[620px]"
+        className="relative h-[480px] w-full max-w-[980px] overflow-x-clip sm:h-[620px] sm:overflow-visible lg:h-[640px]"
         onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
           if (event.key === "ArrowRight" || event.key === "ArrowDown") {
             event.preventDefault();
@@ -312,18 +326,15 @@ function DesktopOrbitStage({
       >
         {slots.map(({ offset, item, itemIndex }) => {
           const active = offset === 0;
-          const visible = Math.abs(offset) <= VISIBLE_RADIUS;
-          // Same fan geometry the old hover-triggered "open" layout used —
-          // unchanged so the 5 visible cards still land exactly where the
-          // stage's height/clipping was tuned for.
-          const y = Math.abs(offset) * 30 + Math.max(0, Math.abs(offset) - 1) * 10 - FAN_VERTICAL_SHIFT;
-          const rotation = offset * 8.5;
+          const visible = Math.abs(offset) <= visibleRadius;
+          const y = Math.abs(offset) * yStep + Math.max(0, Math.abs(offset) - 1) * yExtra - fanShift;
+          const rotation = offset * rotationStep;
           const style: CSSProperties = {
             zIndex: active ? 80 : 50 - Math.abs(offset),
             opacity: visible ? 1 : 0,
             pointerEvents: visible ? "auto" : "none",
             transform: `translate(calc(-50% + ${offset * spread}px), calc(-50% + ${
-              y - (active ? lift : 0)
+              y - (active ? activeLift : 0)
             }px)) rotate(${rotation}deg) scale(0.985)`,
             transitionProperty: "transform, opacity",
             transitionDuration: reduceMotion ? "0ms" : "900ms",
@@ -336,14 +347,14 @@ function DesktopOrbitStage({
               role="listitem"
               aria-current={active ? "true" : undefined}
               aria-hidden={visible ? undefined : true}
-              className="absolute top-1/2 left-1/2 w-64 origin-bottom transition-[transform,opacity] ease-[cubic-bezier(.2,.8,.2,1)] lg:w-[21rem]"
+              className="absolute top-1/2 left-1/2 w-[90%] origin-bottom transition-[transform,opacity] ease-[cubic-bezier(.2,.8,.2,1)] sm:w-64 lg:w-[21rem]"
               style={style}
             >
               <Link
                 href={item.href}
                 aria-label={`View ${item.name}`}
                 tabIndex={visible ? 0 : -1}
-                className={`group block w-full rounded-[1.9rem] border border-border p-4 text-foreground outline-none transition-[box-shadow] duration-[420ms] ease-[cubic-bezier(.2,.8,.2,1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                className={`group block w-full rounded-[1.9rem] border border-border p-3 text-foreground outline-none transition-[box-shadow] duration-[420ms] ease-[cubic-bezier(.2,.8,.2,1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:p-4 ${
                   CARD_PALETTE[itemIndex % CARD_PALETTE.length]
                 } ${active ? "shadow-[0_0_40px_10px_rgba(31,32,65,0.42)] dark:shadow-[0_0_40px_10px_rgba(0,0,0,0.65)]" : "shadow-[0_0_26px_6px_rgba(31,32,65,0.3)] dark:shadow-[0_0_26px_6px_rgba(0,0,0,0.5)]"}`}
               >
@@ -353,17 +364,9 @@ function DesktopOrbitStage({
           );
         })}
 
-        {/* Sits in the gap the fan itself leaves behind — the centre card
-            is lifted clear above the side cards (see `lift`/FAN_VERTICAL_SHIFT
-            above), so directly beneath it, inside its own footprint, is
-            empty stage all the way down to the side cards' lower edges. A
-            negative margin isn't needed: positioning it here, inside the
-            stage's own coordinate space, puts it in that hollow directly. */}
+        {/* Desktop: View-all stays in the fan hollow. Mobile uses the block below. */}
         {viewAllHref && viewAllLabel && (
-          <Link
-            href={viewAllHref}
-            className="absolute -bottom-6 left-1/2 z-[70] -translate-x-1/2 rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-          >
+          <Link href={viewAllHref} className={`absolute -bottom-6 left-1/2 z-[70] hidden -translate-x-1/2 sm:inline-flex ${viewAllClassName}`}>
             {viewAllLabel} →
           </Link>
         )}
@@ -375,7 +378,7 @@ function DesktopOrbitStage({
           type="button"
           onClick={() => advance(-1)}
           aria-label="Show previous card"
-          className="absolute z-[90] grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-[background-color,border-color,color,scale] duration-300 hover:scale-110 hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+          className="absolute z-[90] hidden h-10 w-10 cursor-pointer place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-[background-color,border-color,color,scale] duration-300 hover:scale-110 hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:grid"
           style={arrowBox ? { left: arrowBox.left, bottom: ARROW_BOTTOM } : { left: 0, bottom: ARROW_BOTTOM }}
         >
           <svg viewBox="5 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-3.5 w-2.5">
@@ -386,13 +389,30 @@ function DesktopOrbitStage({
           type="button"
           onClick={() => advance(1)}
           aria-label="Show next card"
-          className="absolute z-[90] grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-[background-color,border-color,color,scale] duration-300 hover:scale-110 hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+          className="absolute z-[90] hidden h-10 w-10 cursor-pointer place-items-center rounded-full border border-border bg-surface text-foreground shadow-md transition-[background-color,border-color,color,scale] duration-300 hover:scale-110 hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:grid"
           style={arrowBox ? { left: arrowBox.right, bottom: ARROW_BOTTOM } : { right: 0, bottom: ARROW_BOTTOM }}
         >
           <svg viewBox="7 3 12 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-3.5 w-2.5">
             <path d="m9 5 8 7-8 7" />
           </svg>
         </button>
+      </div>
+
+      {/* Mobile: slide counter under the stage; View-all sits further below. */}
+      <div className="flex w-full max-w-[980px] flex-col items-center sm:hidden">
+        {total > 1 && (
+          <p
+            aria-live="polite"
+            className="mt-2 rounded-full bg-foreground/8 px-3 py-1 text-[11px] font-bold tracking-wide text-foreground tabular-nums"
+          >
+            {String(centerIndex + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+          </p>
+        )}
+        {viewAllHref && viewAllLabel && (
+          <Link href={viewAllHref} className={`mt-8 ${viewAllClassName}`}>
+            {viewAllLabel} →
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -410,35 +430,20 @@ export function OrbitCardStack({
   ariaLabel: string;
   defaultActiveIndex?: number;
   lift?: number;
-  /** Rendered as a "view all" link tucked into the fan's own hollow on
-   * desktop; falls back to a plain centred link below the list on mobile,
-   * where there's no fan (and so no hollow to tuck it into). */
+  /** Rendered as a "view all" link tucked into the fan's own hollow. */
   viewAllHref?: string;
   viewAllLabel?: string;
 }) {
   if (items.length === 0) return null;
 
   return (
-    <>
-      <MobileCardCarousel items={items} ariaLabel={ariaLabel} />
-      {viewAllHref && viewAllLabel && (
-        <div className="mt-4 text-center sm:hidden">
-          <Link
-            href={viewAllHref}
-            className="inline-block rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-          >
-            {viewAllLabel} →
-          </Link>
-        </div>
-      )}
-      <DesktopOrbitStage
-        items={items}
-        ariaLabel={ariaLabel}
-        defaultActiveIndex={defaultActiveIndex}
-        lift={lift}
-        viewAllHref={viewAllHref}
-        viewAllLabel={viewAllLabel}
-      />
-    </>
+    <DesktopOrbitStage
+      items={items}
+      ariaLabel={ariaLabel}
+      defaultActiveIndex={defaultActiveIndex}
+      lift={lift}
+      viewAllHref={viewAllHref}
+      viewAllLabel={viewAllLabel}
+    />
   );
 }

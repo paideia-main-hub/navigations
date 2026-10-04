@@ -80,7 +80,7 @@ export function AnnouncementsPress({ announcements }: { announcements: Announcem
             </div>
 
             <ol className="relative flex flex-col gap-3">
-              <span aria-hidden="true" className="absolute top-6 bottom-6 left-[3.5rem] w-px bg-border" />
+              <span aria-hidden="true" className="absolute top-6 bottom-6 left-[3.5rem] hidden w-px bg-border sm:block" />
               {shown.map((item) => {
                 const open = openId === item.id;
                 const panelId = `press-${item.id}`;
@@ -89,10 +89,14 @@ export function AnnouncementsPress({ announcements }: { announcements: Announcem
                   ? "border-accent/40 bg-surface shadow-[0_16px_40px_rgba(31,32,65,0.08)]"
                   : "border-border bg-surface hover:border-foreground/15";
                 return (
-                  <li key={item.id} className="relative grid grid-cols-[7rem_minmax(0,1fr)] items-stretch gap-x-3">
+                  <li
+                    key={item.id}
+                    className="relative grid grid-cols-1 items-stretch gap-x-3 sm:grid-cols-[7rem_minmax(0,1fr)]"
+                  >
+                    {/* Desktop: date sits on the timeline. Mobile: date moves into the card. */}
                     <time
                       dateTime={item.publishDate}
-                      className={`relative z-10 row-start-1 flex h-full flex-col items-center justify-center rounded-2xl border px-2 text-center ${
+                      className={`relative z-10 row-start-1 hidden h-full flex-col items-center justify-center rounded-2xl border px-2 text-center sm:flex ${
                         open
                           ? "border-accent bg-accent text-accent-foreground"
                           : "border-border bg-surface text-foreground"
@@ -108,12 +112,13 @@ export function AnnouncementsPress({ announcements }: { announcements: Announcem
                       aria-expanded={open}
                       aria-controls={panelId}
                       onClick={() => setOpenId(open ? null : item.id)}
-                      className={`col-start-2 row-start-1 flex w-full cursor-pointer items-center gap-3 border px-4 py-3 text-left transition-colors ${shell} ${
+                      className={`col-start-1 row-start-1 flex w-full cursor-pointer items-center gap-3 border px-4 py-3 text-left transition-colors sm:col-start-2 ${shell} ${
                         open ? "rounded-t-2xl border-b-0" : "rounded-2xl"
                       }`}
                     >
-                        <span className="min-w-0 flex-1">
-                          <span className="flex flex-wrap items-center gap-2 text-[0.65rem] font-semibold tracking-[0.16em] text-accent-strong uppercase">
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-[0.16em] text-accent-strong uppercase">
+                          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                             {announcementCategoryLabels[item.category]}
                             {item.isImportant && (
                               <span className="rounded-full bg-accent px-2 py-0.5 tracking-[0.12em] text-accent-foreground">
@@ -121,39 +126,46 @@ export function AnnouncementsPress({ announcements }: { announcements: Announcem
                               </span>
                             )}
                           </span>
-                          <span className="mt-1 block text-base font-bold tracking-tight text-foreground">{item.title}</span>
-                        </span>
-                        <span
-                          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                            open ? "bg-accent text-accent-foreground" : "bg-surface-muted text-muted"
-                          }`}
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            aria-hidden="true"
-                            className={`h-3.5 w-3.5 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                          <time
+                            dateTime={item.publishDate}
+                            className="shrink-0 tracking-[0.12em] text-muted sm:hidden"
                           >
-                            <path d="m6 9 6 6 6-6" />
-                          </svg>
+                            {date.day} {date.month} {date.year}
+                          </time>
                         </span>
-                      </button>
-                      <div
-                        id={panelId}
-                        role="region"
-                        className={`col-start-2 grid transition-[grid-template-rows] duration-300 ease-out ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+                        <span className="mt-1 block text-base font-bold tracking-tight text-foreground">{item.title}</span>
+                      </span>
+                      <span
+                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                          open ? "bg-accent text-accent-foreground" : "bg-surface-muted text-muted"
+                        }`}
                       >
-                        <div className={`overflow-hidden ${open ? `rounded-b-2xl border border-t-0 ${shell}` : ""}`}>
-                          <div className="px-4 pb-4">
-                            {item.competitionTitle && <p className="mb-1.5 text-xs text-muted">{item.competitionTitle}</p>}
-                            {item.body && <p className="text-sm leading-6 text-foreground">{item.body}</p>}
-                          </div>
+                        <svg
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                          className={`h-3.5 w-3.5 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </span>
+                    </button>
+                    <div
+                      id={panelId}
+                      role="region"
+                      className={`col-start-1 grid transition-[grid-template-rows] duration-300 ease-out sm:col-start-2 ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+                    >
+                      <div className={`overflow-hidden ${open ? `rounded-b-2xl border border-t-0 ${shell}` : ""}`}>
+                        <div className="px-4 pb-4">
+                          {item.competitionTitle && <p className="mb-1.5 text-xs text-muted">{item.competitionTitle}</p>}
+                          {item.body && <p className="text-sm leading-6 text-foreground">{item.body}</p>}
                         </div>
                       </div>
+                    </div>
                   </li>
                 );
               })}

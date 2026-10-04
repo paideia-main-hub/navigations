@@ -32,6 +32,10 @@ export default async function HomePage() {
 
   return (
     <div>
+      {/* Kick off hero LCP assets before the client collage hydrates. */}
+      <link rel="preload" as="image" href="/hero-collage.png?v=3" fetchPriority="high" />
+      <link rel="preload" as="image" href="/hero-script.png?v=4" fetchPriority="high" />
+
       {/* Hero collage — the very first thing on the page, filling the full
           viewport behind the floating header (the -mt cancels out <main>'s
           top padding, which every other page needs to clear the fixed
@@ -64,7 +68,7 @@ export default async function HomePage() {
           so nothing actually bleeds past the corner. Every section below
           that DOES need to clip its own decorative bleed (glow blobs,
           BandDivider seams) still does, via its own `overflow-hidden`. */}
-      <div className="relative z-10 -mt-[100dvh] rounded-t-[2.5rem] bg-background pt-24 shadow-[0_-25px_50px_-12px_rgba(0,0,0,0.25)] sm:rounded-t-[4rem] sm:pt-28">
+      <div className="relative z-10 -mt-[100dvh] rounded-t-[2.5rem] bg-background pt-14 shadow-[0_-25px_50px_-12px_rgba(0,0,0,0.25)] sm:rounded-t-[4rem] sm:pt-28">
         {/* 2. Featuring Now — static League billboard beside a rotating panel. */}
         <LeagueSpotlight nominationsOpen={submittableAwards.length > 0} />
 
@@ -115,10 +119,7 @@ export default async function HomePage() {
                 <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
               </h2>
               <p className="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-                Winners{" "}
-                <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent dark:from-amber-300 dark:to-yellow-200">
-                  Showcase
-                </span>
+                Winners Showcase
               </p>
             </div>
             <ChampionsPodium groups={winnerGroups} />

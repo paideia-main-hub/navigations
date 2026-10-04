@@ -166,10 +166,10 @@ export function WaysToParticipate() {
             stretches them all to the tallest. DOM order still reads
             header, cards, header, cards, which is the order small screens
             stack in once the explicit placement stops applying. */}
-        <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto_repeat(4,minmax(0,1fr))] lg:grid-rows-[auto_1fr] lg:gap-x-5 lg:gap-y-14">
+        <div className="mt-16 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto_repeat(4,minmax(0,1fr))] lg:grid-rows-[auto_1fr] lg:gap-x-5 lg:gap-y-14">
           {ROUTES.map((route) => (
             <Fragment key={route.number}>
-              <div className={`sm:col-span-2 ${route.headerClass} ${route.number === 2 ? "mt-6 lg:mt-0" : ""}`}>
+              <div className={`col-span-2 ${route.headerClass} ${route.number === 2 ? "mt-6 lg:mt-0" : ""}`}>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                   <span className="grid h-8 w-8 place-items-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
                     {route.number}
@@ -191,7 +191,7 @@ export function WaysToParticipate() {
                   number={cardIndex + 1}
                   bgClassName={card.bg}
                   bubbleClassName={card.bubble}
-                  className={`${card.col} max-lg:mt-4 lg:row-start-2`}
+                  className={`${card.col} ${cardIndex < 2 ? "mt-4" : ""} lg:mt-0 lg:row-start-2`}
                   // Route 2 continues the wave rather than restarting it, so
                   // the whole row reads as one motion, not two groups.
                   floatDelay={(route.number === 1 ? cardIndex : 4 + cardIndex) * 0.12}

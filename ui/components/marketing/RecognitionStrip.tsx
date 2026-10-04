@@ -75,18 +75,26 @@ const RECOGNITION_CARDS: ScrollSplitCardItem[] = [
 export function RecognitionStrip(): ReactNode {
   return (
     <section className="relative bg-background">
-      <div className="relative mx-auto max-w-7xl px-6">
-        {/* Band height tracks the same vw scale as the watermark type. */}
-        <div className="relative flex h-[clamp(3.5rem,16vw,20rem)] items-end">
-          <h2 className="relative z-10 translate-y-3 flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
-            <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
-            5 Layers Recognitions
-          </h2>
-        </div>
+      {/* Mobile-only: heading above the watermark band. */}
+      <div className="relative z-10 mx-auto max-w-7xl px-6 pt-10 sm:hidden">
+        <h2 className="flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
+          <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
+          5 Layers Recognitions
+        </h2>
       </div>
 
-      {/* Whole mark scales with viewport; centered horizontally in the section. */}
-      <LayersRecognitionMark variant="band" />
+      {/* Band height tracks the watermark type. Desktop heading sits at the bottom. */}
+      <div className="relative">
+        <div className="relative mx-auto max-w-7xl px-6">
+          <div className="relative flex h-[clamp(3.5rem,16vw,20rem)] items-end">
+            <h2 className="relative z-10 hidden translate-y-3 items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase sm:flex">
+              <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
+              5 Layers Recognitions
+            </h2>
+          </div>
+        </div>
+        <LayersRecognitionMark variant="band" />
+      </div>
 
       <ScrollSplitCard
         imageSrc={RECOGNITION_IMAGE}

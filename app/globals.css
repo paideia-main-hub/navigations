@@ -120,8 +120,29 @@ body {
   }
 }
 
+/* Mobile winners row cards: same advance cue, but a vertical flip. */
+@keyframes podium-card-flip-x {
+  from {
+    opacity: 0.15;
+    transform: perspective(1200px) rotateX(var(--podium-flip-from, -85deg));
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1200px) rotateX(0deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   @keyframes podium-card-flip {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes podium-card-flip-x {
     from {
       opacity: 0;
     }
@@ -181,6 +202,7 @@ body {
 @theme inline {
   --animate-podium-in: podium-in 0.55s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-podium-card-flip: podium-card-flip 0.65s cubic-bezier(0.22, 0.8, 0.24, 1) both;
+  --animate-podium-card-flip-x: podium-card-flip-x 0.65s cubic-bezier(0.22, 0.8, 0.24, 1) both;
   --animate-spotlight-text-in: spotlight-text-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-place-drift: place-drift 4.5s ease-in-out infinite;
   --animate-faq-answer-in: faq-answer-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;

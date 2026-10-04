@@ -252,8 +252,9 @@ export function ScrollSplitCard({
           anyone who's asked for less motion both get the plain content
           grid instead of the split below. */}
       <div className={`mx-auto grid max-w-6xl gap-4 px-6 py-16 sm:grid-cols-2 lg:grid-cols-3 ${reduceMotion ? "" : "sm:hidden"}`}>
-        {cards.map((card) => {
+        {cards.map((card, index) => {
           const className = `relative min-h-72 overflow-hidden rounded-2xl p-6 ${card.bgClassName} ${card.textClassName}`;
+          const layerNumber = String(index + 1).padStart(2, "0");
           const body = (
             <>
               {card.icon && (
@@ -265,7 +266,11 @@ export function ScrollSplitCard({
                 </div>
               )}
               <div className="relative z-10 flex h-full flex-col justify-center">
-                {card.icon && <div className="mb-3 w-fit opacity-90 [&_svg]:h-9 [&_svg]:w-9">{card.icon}</div>}
+                {/* Layer numbers are mobile-only; desktop flip cards stay unchanged. */}
+                <div className="mb-3 flex items-start justify-between gap-3 sm:block">
+                  {card.icon && <div className="w-fit opacity-90 [&_svg]:h-9 [&_svg]:w-9 sm:mb-3">{card.icon}</div>}
+                  <p className="text-sm font-bold tracking-[0.2em] opacity-70 tabular-nums sm:hidden">{layerNumber}</p>
+                </div>
                 <h3 className="text-2xl font-semibold leading-tight">{card.title}</h3>
                 <p className="mt-3 text-lg leading-snug opacity-80">{card.description}</p>
               </div>

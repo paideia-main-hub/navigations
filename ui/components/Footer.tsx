@@ -36,7 +36,7 @@ export function Footer() {
     <footer className="bg-brand-deep text-brand-deep-muted">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 py-16 sm:grid-cols-4">
         <div className="col-span-2 sm:col-span-1">
-          <Logo className="h-7 w-auto" onDark />
+          <Logo className="h-11 w-auto" onDark />
           <p className="mt-3 max-w-xs text-sm text-brand-deep-muted">
             Navigations — competitions that build real-world skills for Primary,
             Middle and Secondary students.
