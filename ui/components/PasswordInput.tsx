@@ -31,6 +31,7 @@ export function PasswordInput({
   required = false,
   defaultValue,
   autoComplete = "current-password",
+  minLength,
 }: {
   name: string;
   required?: boolean;
@@ -39,6 +40,7 @@ export function PasswordInput({
    * registration/change-password — lets the browser tell the two apart
    * instead of offering to autofill a saved password into a signup form. */
   autoComplete?: "current-password" | "new-password";
+  minLength?: number;
 }) {
   const [visible, setVisible] = useState(false);
   const id = useId();
@@ -52,6 +54,7 @@ export function PasswordInput({
         required={required}
         defaultValue={defaultValue}
         autoComplete={autoComplete}
+        minLength={minLength}
         className="w-full rounded-lg border border-border bg-background px-3 py-2 pr-10 text-sm text-foreground outline-none focus:border-accent"
       />
       <button

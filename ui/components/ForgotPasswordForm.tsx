@@ -26,12 +26,20 @@ export function ForgotPasswordForm() {
 
   return (
     <form action={formAction} className="space-y-4">
-      <FormField label="Email" name="email" type="email" required />
+      <FormField
+        label="Email"
+        name="email"
+        type="email"
+        required
+        inputMode="email"
+        autoComplete="email"
+        placeholder="name@example.com"
+      />
       {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-60"
+        className="w-full cursor-pointer rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-60"
       >
         {pending ? "Sending…" : "Send reset link"}
       </button>

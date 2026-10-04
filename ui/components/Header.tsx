@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
+import { useLoginModal } from "@/ui/components/LoginModalContext";
 
 const navLinks = [
   { href: "/about-us", label: "About Us" },
@@ -17,6 +18,7 @@ const navLinks = [
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { openLogin } = useLoginModal();
 
   return (
     <header className="fixed inset-x-0 top-4 z-50 px-4 sm:top-6 sm:px-6">
@@ -36,12 +38,16 @@ export function Header() {
 
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <ThemeToggle />
-            <Link
-              href="/login"
-              className="hidden rounded-full px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-muted sm:inline-block"
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                openLogin();
+              }}
+              className="hidden cursor-pointer rounded-full px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-muted sm:inline-block"
             >
               Login
-            </Link>
+            </button>
             <Link
               href="/register"
               className="rounded-full bg-accent px-3 py-2 text-xs font-semibold whitespace-nowrap text-accent-foreground hover:bg-accent/90 sm:px-4 sm:text-sm"
@@ -88,13 +94,16 @@ export function Header() {
                 </Link>
               ))}
               <div className="my-1 border-t border-border" />
-              <Link
-                href="/login"
-                onClick={() => setMobileOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-surface-muted"
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileOpen(false);
+                  openLogin();
+                }}
+                className="cursor-pointer rounded-lg px-3 py-2.5 text-left text-sm font-medium text-foreground hover:bg-surface-muted"
               >
                 Login
-              </Link>
+              </button>
             </nav>
           </div>
         </div>

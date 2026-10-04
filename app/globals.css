@@ -166,12 +166,25 @@ body {
   }
 }
 
+/* Login modal view swap (login ↔ forgot password). */
+@keyframes modal-swap-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @theme inline {
   --animate-podium-in: podium-in 0.55s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-podium-card-flip: podium-card-flip 0.65s cubic-bezier(0.22, 0.8, 0.24, 1) both;
   --animate-spotlight-text-in: spotlight-text-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-place-drift: place-drift 4.5s ease-in-out infinite;
   --animate-faq-answer-in: faq-answer-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-modal-swap-in: modal-swap-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Confetti and streamers behind the Winners Showcase
@@ -305,6 +318,7 @@ body {
   .animate-spotlight-text-in,
   .animate-place-drift,
   .animate-faq-answer-in,
+  .animate-modal-swap-in,
   .cheer-lane,
   .cheer-spin {
     animation: none;
