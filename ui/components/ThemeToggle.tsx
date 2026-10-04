@@ -1,5 +1,7 @@
 "use client";
 
+import { THEME_TOGGLE_ENABLED } from "@/ui/theme/config";
+
 function toggle() {
   const next = !document.documentElement.classList.contains("dark");
   document.documentElement.classList.toggle("dark", next);
@@ -15,6 +17,10 @@ function toggle() {
 // That avoids tracking "is dark mode on" in React state, which would only
 // know the real answer after mount and cause a hydration mismatch.
 export function ThemeToggle() {
+  // Hidden everywhere (header, dashboard and admin sidebars) while the dark
+  // theme is being fixed — see ui/theme/config.ts.
+  if (!THEME_TOGGLE_ENABLED) return null;
+
   return (
     <button
       type="button"
