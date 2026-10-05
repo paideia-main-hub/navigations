@@ -9,6 +9,8 @@ import { listAllAnnouncements } from "@/domain/announcements/service";
 import type { Announcement } from "@/domain/announcements/types";
 import { getPublishedResultsFor } from "@/domain/results/service";
 import { HistoryTable } from "@/ui/components/dashboard/HistoryTable";
+import { DashboardHero, dashboardHeroCtaClass } from "@/ui/components/dashboard/DashboardHero";
+import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
 function groupAnnouncementsByCompetition(announcements: Announcement[]): Map<string, Announcement[]> {
   const map = new Map<string, Announcement[]>();
@@ -28,7 +30,13 @@ export default async function RegistrationsPage() {
 
   const supabase = await createClient();
   const school = await getCoordinatorSchool(supabase, user.id);
-  if (!school) return <p className="text-muted">No school found for this coordinator account.</p>;
+  if (!school) {
+    return (
+      <DashboardPage>
+        <p className="text-muted">No school found for this coordinator account.</p>
+      </DashboardPage>
+    );
+  }
 
   const [allRegistrations, allCompetitions, allAnnouncements] = await Promise.all([
     listSchoolRegistrations(supabase, school.id),
@@ -46,25 +54,23 @@ export default async function RegistrationsPage() {
   const announcementsByCompetition = groupAnnouncementsByCompetition(allAnnouncements);
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-foreground">Registrations</h1>
-        <Link
-          href="/dashboard/register"
-          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90"
-        >
+    <>
+      <DashboardHero
+        eyebrow="School"
+        title="Registrations"
+        subtitle={
+          <>
+            Every student and team still active. Concluded competitions move to{" "}
+            <Link href="/dashboard/history">History &amp; Results</Link>.
+          </>
+        }
+      >
+        <Link href="/dashboard/register" className={dashboardHeroCtaClass}>
           Register a student or team
         </Link>
-      </div>
-      <p className="mt-2 max-w-2xl text-muted">
-        Every student and team still active in a competition. Once a competition concludes, it moves to{" "}
-        <Link href="/dashboard/history" className="font-semibold text-accent">
-          History &amp; Results
-        </Link>
-        .
-      </p>
-
-      <div className="mt-6">
+      </DashboardHero>
+      <DashboardPage>
+      <div>
         <HistoryTable
           registrations={registrations}
           results={allResults}
@@ -103,6 +109,7 @@ export default async function RegistrationsPage() {
           </div>
         </section>
       )}
-    </div>
+      </DashboardPage>
+    </>
   );
 }

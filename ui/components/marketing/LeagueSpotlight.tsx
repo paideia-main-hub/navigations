@@ -1,14 +1,9 @@
 "use client";
 
-import { Plus_Jakarta_Sans } from "next/font/google";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLoginModal } from "@/ui/components/LoginModalContext";
 import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
-
-const slideTitleFont = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["700", "800"],
-});
 
 /** Wordmark blue from the Navigations logo. Same fill on every slide. */
 const CARD = "bg-brand-deep";
@@ -98,12 +93,19 @@ const INTERVAL_MS = 3000;
 const CTA =
   "inline-flex items-center justify-center gap-2 rounded-lg px-7 py-3.5 text-sm font-bold transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none";
 
-export function LeagueSpotlight({ nominationsOpen }: { nominationsOpen: boolean }) {
+export function LeagueSpotlight({
+  nominationsOpen,
+  isLoggedIn = false,
+}: {
+  nominationsOpen: boolean;
+  isLoggedIn?: boolean;
+}) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [showNominationsClosed, setShowNominationsClosed] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const { openLogin } = useLoginModal();
 
   const go = useCallback((next: number) => {
     setIndex(((next % SLIDES.length) + SLIDES.length) % SLIDES.length);
@@ -141,7 +143,7 @@ export function LeagueSpotlight({ nominationsOpen }: { nominationsOpen: boolean 
   return (
     <section className="bg-background px-6 pt-8 pb-16 sm:py-16">
       <div className="mx-auto max-w-7xl">
-        <p className="flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
+        <p className="font-heading flex items-center gap-3 text-sm font-extrabold tracking-wider text-foreground uppercase">
           <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
           Featuring Now
         </p>
@@ -183,7 +185,7 @@ export function LeagueSpotlight({ nominationsOpen }: { nominationsOpen: boolean 
 
             <div aria-live="polite" aria-atomic="true" className="@container relative z-10 mx-auto w-full">
               <div key={index}>
-                <p className={`${slideTitleFont.className} animate-spotlight-text-in text-3xl font-extrabold tracking-tight text-brand-deep-foreground sm:text-4xl`}>
+                <p className="font-heading animate-spotlight-text-in text-3xl font-extrabold tracking-tight text-brand-deep-foreground sm:text-4xl">
                   <SlideTitle title={slide.title} />
                 </p>
               </div>
@@ -230,13 +232,24 @@ export function LeagueSpotlight({ nominationsOpen }: { nominationsOpen: boolean 
           </Link>
 
           {nominationsOpen ? (
-            <Link
-              href="/dashboard/nominate"
-              className={`${CTA} border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
-            >
-              Nominate Now
-              <span aria-hidden="true">→</span>
-            </Link>
+            isLoggedIn ? (
+              <Link
+                href="/dashboard/nominate"
+                className={`${CTA} border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
+              >
+                Nominate Now
+                <span aria-hidden="true">→</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => openLogin({ next: "/dashboard/nominate" })}
+                className={`${CTA} cursor-pointer border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
+              >
+                Nominate Now
+                <span aria-hidden="true">→</span>
+              </button>
+            )
           ) : (
             <button
               type="button"

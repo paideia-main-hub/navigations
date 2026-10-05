@@ -274,11 +274,11 @@ export function AppreciationsLedger({ appreciations }: { appreciations: Apprecia
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="max-w-3xl">
-              <h2 className={`${serif.className} text-3xl font-semibold tracking-tight text-[#1a2744] sm:text-4xl lg:text-5xl`}>
+              <h2 className="font-heading text-3xl font-extrabold tracking-tight text-[#1a2744] sm:text-4xl lg:text-5xl">
                 Appreciating Our School Partners
               </h2>
               <p className="mt-2 max-w-2xl text-sm text-[#5c6570] sm:text-base">
-                Recognising the commitment, coordination and positive spirit schools bring to every shared experience.
+                Recognising the commitment and collaboration of schools in creating opportunities for learners to develop and demonstrate future competencies.
               </p>
             </div>
             <p className="inline-flex items-center gap-2 rounded-full border border-accent px-4 py-2 text-sm font-semibold text-accent">

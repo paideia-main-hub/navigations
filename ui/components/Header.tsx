@@ -4,7 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
+import { HeaderAccountMenu } from "@/ui/components/HeaderAccountMenu";
 import { useLoginModal } from "@/ui/components/LoginModalContext";
+import type { UserRole } from "@/domain/auth/session";
 
 const navLinks = [
   { href: "/about-us", label: "About Us" },
@@ -16,7 +18,12 @@ const navLinks = [
   { href: "/students", label: "For Students" },
 ];
 
-export function Header() {
+export type HeaderUser = {
+  fullName: string;
+  role: UserRole;
+};
+
+export function Header({ user = null }: { user?: HeaderUser | null }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { openLogin } = useLoginModal();
 
@@ -38,22 +45,32 @@ export function Header() {
 
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <ThemeToggle />
-            <button
-              type="button"
-              onClick={() => {
-                setMobileOpen(false);
-                openLogin();
-              }}
-              className="hidden cursor-pointer rounded-full px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-muted sm:inline-block"
-            >
-              Login
-            </button>
-            <Link
-              href="/register"
-              className="rounded-full bg-accent px-3 py-2 text-xs font-semibold whitespace-nowrap text-accent-foreground hover:bg-accent/90 sm:px-4 sm:text-sm"
-            >
-              Register Now
-            </Link>
+            {user ? (
+              <HeaderAccountMenu
+                fullName={user.fullName}
+                role={user.role}
+                onNavigate={() => setMobileOpen(false)}
+              />
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    openLogin();
+                  }}
+                  className="hidden cursor-pointer rounded-full px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-muted sm:inline-block"
+                >
+                  Login
+                </button>
+                <Link
+                  href="/register"
+                  className="rounded-full bg-accent px-3 py-2 text-xs font-semibold whitespace-nowrap text-accent-foreground hover:bg-accent/90 sm:px-4 sm:text-sm"
+                >
+                  Register Now
+                </Link>
+              </>
+            )}
             <button
               type="button"
               onClick={() => setMobileOpen((v) => !v)}
@@ -74,9 +91,6 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile/tablet nav — a dropdown off the floating pill rather than a
-            full-screen drawer, so it stays consistent with the header's own
-            compact, floating look instead of a heavier overlay. */}
         <div
           className="grid transition-[grid-template-rows] duration-200 ease-out lg:hidden"
           style={{ gridTemplateRows: mobileOpen ? "1fr" : "0fr" }}
@@ -93,17 +107,21 @@ export function Header() {
                   {link.label}
                 </Link>
               ))}
-              <div className="my-1 border-t border-border" />
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileOpen(false);
-                  openLogin();
-                }}
-                className="cursor-pointer rounded-lg px-3 py-2.5 text-left text-sm font-medium text-foreground hover:bg-surface-muted"
-              >
-                Login
-              </button>
+              {!user ? (
+                <>
+                  <div className="my-1 border-t border-border" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      openLogin();
+                    }}
+                    className="cursor-pointer rounded-lg px-3 py-2.5 text-left text-sm font-medium text-foreground hover:bg-surface-muted"
+                  >
+                    Login
+                  </button>
+                </>
+              ) : null}
             </nav>
           </div>
         </div>

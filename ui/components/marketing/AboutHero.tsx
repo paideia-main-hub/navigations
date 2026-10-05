@@ -47,10 +47,10 @@ const PHOTOS = {
 const WORDS = ["Explore", "Learn", "Create", "Grow"];
 
 /** Centre to satellite centre, and the side of a satellite — both percentages
- * of the box. 35 + 22/2 = 46 keeps every square inside the box, and the gap
- * between neighbours on the ring works out at 13 points, so they never touch. */
-const ORBIT_RADIUS = 35;
-const SATELLITE_SIZE = 22;
+ * of the box. 37 + 20/2 = 47 keeps every square inside the box with a modest
+ * gap between the centre disc and the ring. */
+const ORBIT_RADIUS = 37;
+const SATELLITE_SIZE = 20;
 
 /** Six evenly spaced points on the circle, starting at twelve o'clock. */
 const SATELLITES = [
@@ -82,7 +82,7 @@ export function AboutHero() {
       <div className="relative mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
         {/* Copy column */}
         <div>
-          <p className="text-xs font-bold tracking-[0.25em] text-accent-strong uppercase">More than a classroom</p>
+          <p className="text-xs font-bold tracking-[0.25em] text-accent-strong uppercase">Beyond the classroom</p>
 
           <h1 className="mt-5 text-5xl leading-[0.95] font-black tracking-tight text-foreground sm:text-6xl lg:text-7xl">
             About
@@ -120,7 +120,7 @@ export function AboutHero() {
                 {/* Same duration, opposite direction: the square travels the
                     circle without turning with it. */}
                 <div className="animate-orbit-reverse group-hover:[animation-play-state:paused]">
-                  <div className="aspect-square overflow-hidden rounded-2xl border-[5px] border-background shadow-[0_18px_40px_-22px_rgba(31,32,65,0.65)]">
+                  <div className="aspect-square overflow-hidden rounded-2xl shadow-[0_18px_40px_-22px_rgba(31,32,65,0.65)]">
                     {/* eslint-disable-next-line @next/next/no-img-element -- remote placeholder host, not in next.config's image remotePatterns */}
                     <img
                       src={satellite.photo.src}
@@ -137,7 +137,7 @@ export function AboutHero() {
           {/* The still centre. */}
           <div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-[7px] border-background shadow-[0_28px_60px_-28px_rgba(31,32,65,0.7)]"
-            style={{ width: "40%", aspectRatio: "1 / 1" }}
+            style={{ width: "38%", aspectRatio: "1 / 1" }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- remote placeholder host, not in next.config's image remotePatterns */}
             <img

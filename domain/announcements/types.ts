@@ -1,17 +1,12 @@
-export type AnnouncementCategory =
-  | "registration"
-  | "schedule"
-  | "venue"
-  | "manual_update"
-  | "results"
-  | "final_round"
-  | "general";
+/** Kept for the DB column only — categories are no longer a product concept. */
+export type AnnouncementCategory = "general";
 
 export interface Announcement {
   id: string;
   competitionSlug?: string; // undefined = site-wide
   competitionTitle?: string;
-  category: AnnouncementCategory;
+  /** Legacy DB field; always treated as unused in the UI. */
+  category: AnnouncementCategory | string;
   title: string;
   body: string;
   publishDate: string;
@@ -19,13 +14,3 @@ export interface Announcement {
   expiryDate: string | null;
   isImportant?: boolean;
 }
-
-export const announcementCategoryLabels: Record<AnnouncementCategory, string> = {
-  registration: "Registration",
-  schedule: "Schedule",
-  venue: "Venue",
-  manual_update: "Manual Update",
-  results: "Results",
-  final_round: "Final Round",
-  general: "General Notice",
-};

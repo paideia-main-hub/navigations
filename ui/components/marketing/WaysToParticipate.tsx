@@ -62,7 +62,7 @@ const ROUTES = [
         bubble: "bg-blue-200 dark:bg-blue-400/40",
       },
       {
-        label: "Independent Submission",
+        label: "Independent Submissions",
         icon: "document",
         href: "/competitions?pathway=independent_submission",
         col: "lg:col-start-2",
@@ -155,7 +155,7 @@ export function WaysToParticipate() {
       </div>
 
       <div className="relative mx-auto max-w-7xl">
-        <h2 className="flex items-center gap-3 text-sm font-bold tracking-wider text-brand-deep-foreground uppercase">
+        <h2 className="font-heading flex items-center gap-3 text-sm font-extrabold tracking-wider text-brand-deep-foreground uppercase">
           <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
           Ways to Participate
         </h2>

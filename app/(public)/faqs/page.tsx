@@ -1,44 +1,75 @@
+import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
+import { FaqsPageAccordion } from "@/ui/components/marketing/FaqsPageAccordion";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 
 export const metadata = { title: "FAQs | Navigations" };
 
 const faqs = [
   {
-    question: "Who can register — students or schools?",
+    question: "How will students prepare?",
     answer:
-      "Both. Students can create their own account and register individually, and schools can register on behalf of many students or teams through a School Coordinator account.",
+      "Students should use the competition’s published manual, practice resources and assessment criteria. Preparation should build understanding and independent work.",
   },
   {
-    question: "Is there a registration fee?",
+    question: "Why should my child or school join FRL?",
     answer:
-      "Yes. Every competition has an entry fee of PKR 1,000 per entry. You pay it during registration and upload the payment receipt; your registration is confirmed once an admin approves the payment.",
+      "FRL gives students opportunities to practise useful skills, demonstrate their strengths and identify areas where they need improvement.",
   },
   {
-    question: "When are results published?",
+    question: "How is FRL different from other competitions?",
     answer:
-      "Results remain private until an authorized administrator approves them, then appear on the Results & Winners page and the relevant competition page.",
+      "FRL’s focus is on how students think, create, explain and improve. Activities use competency-based criteria to assess these skills alongside the final performance or submission.",
   },
   {
-    question: "Will my child's photo be published?",
+    question: "Is FRL another academic examination?",
     answer:
-      "Only where the required photo and result publication consent has been captured during registration.",
+      "No. Activities include real-life situations, creative tasks, live challenges and projects. Students demonstrate what they can do with what they know.",
+  },
+  {
+    question: "What does “competency-based” mean?",
+    answer:
+      "A competency is the ability to use knowledge and skills effectively. For example, students demonstrate reasoning when they explain why their solution makes sense.",
+  },
+  {
+    question: "How does FRL connect with classroom learning?",
+    answer:
+      "Students apply classroom learning to unfamiliar tasks—for example, using mathematics to solve a practical problem or language skills to explain an idea.",
+  },
+  {
+    question: "Is FRL only for high-achieving or confident students?",
+    answer:
+      "No. Different activities offer opportunities for different strengths. Students should choose a competition that matches their interests and eligible grade range.",
+  },
+  {
+    question: "What benefits does a school receive?",
+    answer:
+      "Schools gain structured enrichment activities, opportunities to recognize student strengths and examples of applied learning. Participation and results can also contribute to school recognition under FRL’s award rules.",
+  },
+  {
+    question: "Is FRL only about winning awards?",
+    answer:
+      "No. Awards recognize achievement, while the wider purpose is meaningful participation and skill practice. Students who complete their competition receive recognition according to the published participation policy.",
   },
 ];
 
 export default function FAQsPage() {
   return (
     <div className="bg-background">
-      <PageBanner eyebrow="Support Center" title="FAQs" />
-      <div className="mx-auto max-w-3xl px-6 py-12">
-        <div className="space-y-4">
-          {faqs.map((f) => (
-            <details key={f.question} className="rounded-xl border border-border bg-surface p-4">
-              <summary className="cursor-pointer font-medium text-foreground">{f.question}</summary>
-              <p className="mt-2 text-sm text-muted">{f.answer}</p>
-            </details>
-          ))}
-        </div>
+      <PageBanner
+        eyebrow="Support"
+        title="FAQs"
+        subtitle="Clear answers about Future Ready League — preparation, participation, competencies and how schools and families take part."
+        className="-mt-24 pt-28 pb-28 sm:-mt-28 sm:pt-32 sm:pb-32 lg:pt-36 lg:pb-36"
+        showNet
+        netLattice="angular"
+        curvedBottom
+      />
+
+      <div className="mx-auto max-w-3xl px-6 py-14 sm:py-16 lg:py-20">
+        <FaqsPageAccordion items={faqs} />
       </div>
+
+      <ClosingCta />
     </div>
   );
 }

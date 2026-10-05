@@ -15,7 +15,7 @@ export function PageBanner({
 }: {
   eyebrow?: string;
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   /** Optional dim background mark (e.g. awards “05 layers”). */
   watermark?: ReactNode;
   /** Extra content under the subtitle (CTAs, notes). */
@@ -84,8 +84,12 @@ export function PageBanner({
         {eyebrow ? (
           <p className="text-xs font-semibold tracking-wider text-accent uppercase">{eyebrow}</p>
         ) : null}
-        <h1 className="mt-1 text-3xl font-extrabold text-white sm:text-4xl">{title}</h1>
-        {subtitle && <p className="mt-3 max-w-2xl text-brand-deep-muted">{subtitle}</p>}
+        <h1 className="font-heading mt-1 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">{title}</h1>
+        {subtitle ? (
+          <p className="mt-3 max-w-2xl text-brand-deep-muted [&_a]:font-semibold [&_a]:text-accent [&_a]:hover:opacity-90">
+            {subtitle}
+          </p>
+        ) : null}
         {children}
       </div>
       {curvedBottom ? (

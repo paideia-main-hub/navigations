@@ -3,19 +3,22 @@ import { createClient } from "@/data/supabase/server";
 import { listOpenAndUpcoming } from "@/domain/competitions/service";
 import { categoryLabels, statusLabels } from "@/domain/competitions/types";
 import { Badge } from "@/ui/components/Badge";
+import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
+import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
 export default async function DashboardRegisterPage() {
   const supabase = await createClient();
   const competitions = await listOpenAndUpcoming(supabase);
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-foreground">Register for a competition</h1>
-      <p className="mt-2 max-w-xl text-muted">
-        Choose a competition that&apos;s open or upcoming for registration.
-      </p>
-
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+    <>
+      <DashboardHero
+        eyebrow="Competitions"
+        title="Register"
+        subtitle="Open and upcoming competitions you can enter now."
+      />
+      <DashboardPage>
+      <div className="grid gap-4 sm:grid-cols-2">
         {competitions.map((c) => (
           <div key={c.slug} className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-4">
             <div className="flex items-center justify-between">
@@ -40,6 +43,7 @@ export default async function DashboardRegisterPage() {
         ))}
         {competitions.length === 0 && <p className="text-muted">No competitions are open for registration right now.</p>}
       </div>
-    </div>
+      </DashboardPage>
+    </>
   );
 }

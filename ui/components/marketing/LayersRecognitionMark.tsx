@@ -5,7 +5,7 @@ const markNumeral = Unbounded({
   weight: ["800"],
 });
 
-/** Dim “05 layers recognitions” background mark — same composition as the homepage strip. */
+/** Dim “05 layer recognition” background mark — same composition as the homepage strip. */
 export function LayersRecognitionMark({
   align = "center",
   tone = "light",
@@ -35,14 +35,14 @@ export function LayersRecognitionMark({
           05
         </span>
         <span className="leading-none font-black tracking-wide uppercase text-[0.5em]">
-          <span className="block">layers</span>
-          <span className="block">recognitions</span>
+          <span className="block">layer</span>
+          <span className="block">recognition</span>
         </span>
       </span>
     );
   }
 
-  // Hero: “05” sits above “layers”; stack flush-right when docked right.
+  // Hero: “05” sits above “layer”; stack flush-right when docked right.
   const stackAlign =
     align === "right" ? "items-end text-right" : align === "left" ? "items-start text-left" : "items-center text-center";
 
@@ -57,8 +57,8 @@ export function LayersRecognitionMark({
         05
       </span>
       <span className="-mt-[0.02em] font-black tracking-wide uppercase text-[0.5em]">
-        <span className="block">layers</span>
-        <span className="block">recognitions</span>
+        <span className="block">layer</span>
+        <span className="block">recognition</span>
       </span>
     </span>
   );

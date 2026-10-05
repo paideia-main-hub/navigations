@@ -12,10 +12,12 @@ export function CsvDownloadButton({
   label,
   filename,
   rows,
+  className = "rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground hover:border-accent disabled:opacity-50",
 }: {
   label: string;
   filename: string;
   rows: Record<string, string>[];
+  className?: string;
 }) {
   function download() {
     const csv = toCsv(rows);
@@ -30,9 +32,10 @@ export function CsvDownloadButton({
 
   return (
     <button
+      type="button"
       onClick={download}
       disabled={rows.length === 0}
-      className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground hover:border-accent disabled:opacity-50"
+      className={className}
     >
       {label}
     </button>

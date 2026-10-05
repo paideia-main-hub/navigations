@@ -5,16 +5,23 @@ import {
   Suspense,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AnimatedModal, useAnimatedModalClose } from "@/ui/components/AnimatedModal";
 import { LoginForm } from "@/ui/components/LoginForm";
 import { ForgotPasswordForm } from "@/ui/components/ForgotPasswordForm";
 
+export type OpenLoginOptions = {
+  /** After login, redirect here (same-origin relative path). */
+  next?: string;
+};
+
 type LoginModalContextValue = {
-  openLogin: () => void;
+  openLogin: (options?: OpenLoginOptions) => void;
   closeLogin: () => void;
 };
 
@@ -30,21 +37,83 @@ export function useLoginModal() {
 
 export function LoginModalProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const openLogin = useCallback(() => setOpen(true), []);
-  const closeLogin = useCallback(() => setOpen(false), []);
+  const [nextPath, setNextPath] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
+
+  const openLogin = useCallback((options?: OpenLoginOptions) => {
+    setNextPath(options?.next ?? null);
+    setLinkError(null);
+    setOpen(true);
+  }, []);
+
+  const closeLogin = useCallback(() => {
+    setOpen(false);
+    setNextPath(null);
+    setLinkError(null);
+  }, []);
+
+  const openFromQuery = useCallback((next?: string | null, error?: string | null) => {
+    setNextPath(next ?? null);
+    setLinkError(error ?? null);
+    setOpen(true);
+  }, []);
+
   const value = useMemo(() => ({ openLogin, closeLogin }), [openLogin, closeLogin]);
 
   return (
     <LoginModalContext.Provider value={value}>
       {children}
-      {open ? <LoginModal key="login-modal" onClose={closeLogin} /> : null}
+      <Suspense fallback={null}>
+        <LoginQueryBridge onOpen={openFromQuery} />
+      </Suspense>
+      {open ? (
+        <LoginModal
+          key="login-modal"
+          onClose={closeLogin}
+          nextPath={nextPath}
+          linkError={linkError}
+        />
+      ) : null}
     </LoginModalContext.Provider>
   );
 }
 
+/** Opens the login modal when landing on ?login=1 (used by /login redirects). */
+function LoginQueryBridge({
+  onOpen,
+}: {
+  onOpen: (next?: string | null, error?: string | null) => void;
+}) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (searchParams.get("login") !== "1") return;
+    onOpen(searchParams.get("next"), searchParams.get("error"));
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("login");
+    params.delete("next");
+    params.delete("error");
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [searchParams, pathname, router, onOpen]);
+
+  return null;
+}
+
 type ModalView = "login" | "forgot";
 
-function LoginModal({ onClose }: { onClose: () => void }) {
+function LoginModal({
+  onClose,
+  nextPath,
+  linkError,
+}: {
+  onClose: () => void;
+  nextPath: string | null;
+  linkError: string | null;
+}) {
   const [view, setView] = useState<ModalView>("login");
 
   return (
@@ -53,7 +122,12 @@ function LoginModal({ onClose }: { onClose: () => void }) {
       labelledBy="login-modal-title"
       panelClassName="max-h-[min(92vh,40rem)] max-w-md"
     >
-      <LoginModalBody isForgot={view === "forgot"} onViewChange={setView} />
+      <LoginModalBody
+        isForgot={view === "forgot"}
+        onViewChange={setView}
+        nextPath={nextPath}
+        linkError={linkError}
+      />
     </AnimatedModal>
   );
 }
@@ -61,9 +135,13 @@ function LoginModal({ onClose }: { onClose: () => void }) {
 function LoginModalBody({
   isForgot,
   onViewChange,
+  nextPath,
+  linkError,
 }: {
   isForgot: boolean;
   onViewChange: (view: ModalView) => void;
+  nextPath: string | null;
+  linkError: string | null;
 }) {
   const requestClose = useAnimatedModalClose();
 
@@ -113,6 +191,8 @@ function LoginModalBody({
             <Suspense fallback={<p className="text-sm text-muted">Loading…</p>}>
               <LoginForm
                 hideIntro
+                nextPath={nextPath}
+                linkError={linkError}
                 onRegisterClick={requestClose}
                 onForgotPasswordClick={() => onViewChange("forgot")}
               />

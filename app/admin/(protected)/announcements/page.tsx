@@ -12,8 +12,7 @@ export default async function AdminAnnouncementsPage() {
       <h1 className="text-2xl font-bold text-foreground">Announcements</h1>
       <p className="mt-2 max-w-xl text-muted">
         Publish site-wide or competition-specific notices. Published notices appear on the site.
-        Expired ones stay in this list and can be published again. The date on the notice is the
-        one entered here.
+        Expired ones stay in this list and can be published again.
       </p>
       <div className="mt-6">
         <AdminAnnouncementsList announcements={announcements} competitions={competitions} />

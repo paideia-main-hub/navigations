@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { createAnnouncementAction, updateAnnouncementAction, type ActionState } from "@/domain/announcements/actions";
-import { announcementCategoryLabels, type Announcement, type AnnouncementCategory } from "@/domain/announcements/types";
+import type { Announcement } from "@/domain/announcements/types";
 import type { Competition } from "@/domain/competitions/types";
 import { FormField } from "@/ui/components/FormField";
 
@@ -60,29 +60,9 @@ export function AnnouncementForm({
         </select>
       </div>
 
-      <div>
-        <label className="text-sm font-medium text-foreground">Category</label>
-        <select
-          name="category"
-          defaultValue={editing?.category ?? ("general" as AnnouncementCategory)}
-          className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-        >
-          {Object.entries(announcementCategoryLabels).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </div>
-
       <FormField label="Title" name="title" required defaultValue={editing?.title} />
-      <FormField
-        label="Date shown on the site"
-        name="publish_date"
-        type="date"
-        required
-        defaultValue={toDateInputValue(editing?.publishDate)}
-      />
+      {/* Stored for ordering only — not shown on the public site or in this form. */}
+      <input type="hidden" name="publish_date" value={toDateInputValue(editing?.publishDate)} />
       <div>
         <label className="text-sm font-medium text-foreground">Body</label>
         <textarea

@@ -7,6 +7,8 @@ import { listOpenAndUpcoming } from "@/domain/competitions/service";
 import { categoryLabels, statusLabels } from "@/domain/competitions/types";
 import { ApplyToJudgeButton } from "@/ui/components/dashboard/ApplyToJudgeButton";
 import { Badge } from "@/ui/components/Badge";
+import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
+import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
 const applicationStatusTone: Record<string, "success" | "warning" | "neutral" | "accent"> = {
   pending: "warning",
@@ -25,10 +27,13 @@ export default async function ApplicationsPage() {
   const appliedSlugs = new Set(applications.map((a) => a.competitionSlug));
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-foreground">Applications</h1>
-      <p className="mt-2 max-w-xl text-muted">Apply to judge a competition, then score assigned entrants once an administrator approves your application.</p>
-
+    <>
+      <DashboardHero
+        eyebrow="Judging"
+        title="Applications"
+        subtitle="Apply to judge a competition, then score assigned entrants once approved."
+      />
+      <DashboardPage>
       <section className="mt-8">
         <h2 className="mb-3 text-lg font-semibold text-foreground">My Applications</h2>
         <div className="space-y-3">
@@ -80,6 +85,7 @@ export default async function ApplicationsPage() {
           )}
         </div>
       </section>
-    </div>
+      </DashboardPage>
+    </>
   );
 }

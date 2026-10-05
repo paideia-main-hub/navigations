@@ -1,17 +1,11 @@
 "use client";
 
-import { Plus_Jakarta_Sans, Unbounded } from "next/font/google";
+import { Unbounded } from "next/font/google";
 import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { CompetitionSummary } from "@/domain/competitions/types";
 import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
 import { BandDivider } from "./BandDivider";
-
-/** Same face as the Featuring Now slide titles. */
-const cardTitleFont = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["800"],
-});
 
 /** Stylish numerals for contest day and year. */
 const dateNumeralFont = Unbounded({
@@ -340,17 +334,17 @@ function SpotlightFace({ item }: { item: CompetitionSummary }) {
             {parts.day}
           </p>
           <div className="flex flex-col items-start justify-between text-left leading-none text-[0.88em]">
-            <p className={`${cardTitleFont.className} font-extrabold`}>{parts.month}</p>
+            <p className="font-heading font-extrabold">{parts.month}</p>
             <p className={`${dateNumeralFont.className} w-full text-left font-bold`}>{parts.year}</p>
           </div>
         </div>
       ) : (
-        <p className={`${cardTitleFont.className} mt-3 leading-tight text-accent text-[length:min(1.6rem,11cqi)]`}>
+        <p className="font-heading mt-3 leading-tight text-accent text-[length:min(1.6rem,11cqi)]">
           Date to be confirmed
         </p>
       )}
       <p
-        className={`${cardTitleFont.className} mt-6 line-clamp-3 leading-tight text-balance text-brand-deep-foreground text-[length:min(1.85rem,12cqi)]`}
+        className="font-heading mt-6 line-clamp-3 leading-tight text-balance text-brand-deep-foreground text-[length:min(1.85rem,12cqi)]"
       >
         {item.title}
       </p>
@@ -765,7 +759,7 @@ export function ImportantDates({
       </div>
 
       <div className="relative mx-auto max-w-7xl">
-        <h2 className="flex items-center gap-3 text-sm font-bold tracking-wider text-brand-deep-foreground uppercase">
+        <h2 className="font-heading flex items-center gap-3 text-sm font-extrabold tracking-wider text-brand-deep-foreground uppercase">
           <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
           Important Dates
         </h2>

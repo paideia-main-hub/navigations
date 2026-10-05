@@ -5,6 +5,8 @@ import { getCoordinatorSchool } from "@/domain/schools/service";
 import { listSchoolRoster } from "@/domain/students/service";
 import { AddStudentForm } from "@/ui/components/dashboard/AddStudentForm";
 import { CsvDownloadButton } from "@/ui/components/dashboard/CsvDownloadButton";
+import { DashboardHero, dashboardHeroGhostCtaClass } from "@/ui/components/dashboard/DashboardHero";
+import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
 export default async function StudentsPage() {
   const user = await getCurrentUser();
@@ -13,17 +15,23 @@ export default async function StudentsPage() {
 
   const supabase = await createClient();
   const school = await getCoordinatorSchool(supabase, user.id);
-  if (!school) return <p className="text-muted">No school found for this coordinator account.</p>;
+  if (!school) {
+    return (
+      <DashboardPage>
+        <p className="text-muted">No school found for this coordinator account.</p>
+      </DashboardPage>
+    );
+  }
 
   const roster = await listSchoolRoster(supabase, school.id);
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-foreground">Students</h1>
+    <>
+      <DashboardHero eyebrow="School" title="Students" subtitle="Your school roster — add students and export the list.">
         <CsvDownloadButton
           label="Download participant list (CSV)"
           filename={`${school.officialName}-students.csv`}
+          className={dashboardHeroGhostCtaClass}
           rows={roster.map((s) => ({
             Name: s.fullName,
             Grade: s.grade ?? "",
@@ -31,9 +39,9 @@ export default async function StudentsPage() {
             "Guardian contact": s.guardianMobile ?? s.guardianEmail ?? "",
           }))}
         />
-      </div>
-
-      <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
+      </DashboardHero>
+      <DashboardPage>
+      <div className="overflow-x-auto rounded-xl border border-border bg-surface">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-border text-muted">
@@ -63,6 +71,7 @@ export default async function StudentsPage() {
       <div className="mt-4">
         <AddStudentForm />
       </div>
-    </div>
+      </DashboardPage>
+    </>
   );
 }

@@ -5,6 +5,8 @@ import { getCurrentUser } from "@/domain/auth/session";
 import { getOwnStudentProfile } from "@/domain/students/service";
 import { listOwnRegistrationsIn, listSubmissionsForRegistrations } from "@/data/repositories/submissions.repository";
 import { SUBMISSION_COMPETITIONS, SUBMISSION_SLUGS, submissionStatusLabels } from "@/domain/submissions/config";
+import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
+import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
 export default async function WorkSubmissionsPage() {
   const user = await getCurrentUser();
@@ -18,13 +20,13 @@ export default async function WorkSubmissionsPage() {
   const byRegistration = new Map(submissions.map((s) => [s.registrationId, s]));
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-foreground">Work Submissions</h1>
-      <p className="mt-2 max-w-2xl text-muted">
-        {SUBMISSION_COMPETITIONS.map((c) => c.title).join(", ")} are Independent Submission competitions — you hand in your work here
-        and it&apos;s reviewed and scored by the League team. Open a competition you&apos;re registered in to submit your entry.
-      </p>
-
+    <>
+      <DashboardHero
+        eyebrow="Competitions"
+        title="Work Submissions"
+        subtitle={`${SUBMISSION_COMPETITIONS.map((c) => c.title).join(", ")} — hand in your work for review.`}
+      />
+      <DashboardPage>
       {registrations.length === 0 ? (
         <div className="mt-6 rounded-xl border border-border bg-surface p-8 text-center">
           <p className="text-muted">You aren&apos;t registered in any Independent Submission competition yet.</p>
@@ -68,6 +70,7 @@ export default async function WorkSubmissionsPage() {
           })}
         </ul>
       )}
-    </div>
+      </DashboardPage>
+    </>
   );
 }
