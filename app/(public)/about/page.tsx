@@ -1,20 +1,6 @@
-import { PageBanner } from "@/ui/components/marketing/PageBanner";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "About | Navigations" };
-
+/** Legacy URL — Competency Vision now lives at /competency-vision. */
 export default function AboutPage() {
-  return (
-    <div className="bg-background">
-      <PageBanner eyebrow="Competency Vision" title="About / Competency Vision" />
-      <div className="mx-auto max-w-3xl px-6 py-12">
-        <p className="text-muted">
-          Navigations is both a public information website and an operational
-          competition platform, supporting 23 competitions across four pathways for Primary, Middle and Secondary
-          students. It exists to give students a structured way to develop and demonstrate real
-          competencies — not just to collect certificates — through registration, preparation,
-          practice resources, transparent judging and published results.
-        </p>
-      </div>
-    </div>
-  );
+  redirect("/competency-vision");
 }

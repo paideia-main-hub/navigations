@@ -175,6 +175,35 @@ body {
   }
 }
 
+/* Hero Two brush script — materialises after the ceremony photo is up. */
+@keyframes hero-script-in {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.92);
+    filter: blur(8px);
+  }
+  55% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes hero-script-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
 /* Schools FAQ right panel — soft fade/slide when the selected answer changes. */
 @keyframes faq-answer-in {
   from {
