@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { geistMono, geistSans, plusJakarta } from "@/app/fonts";
+import { OverlayScrollbar } from "@/ui/components/OverlayScrollbar";
 import { ThemeInitScript } from "@/ui/theme/ThemeInitScript";
 import "./globals.css";
 
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body suppressHydrationWarning className="flex min-h-full flex-col bg-background text-foreground">
         {children}
+        <OverlayScrollbar />
       </body>
     </html>
   );
