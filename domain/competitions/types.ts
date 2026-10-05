@@ -234,3 +234,22 @@ export const eventTypeLabels: Record<EventType, string> = {
   final_event: "Final event",
   other: "Other",
 };
+
+/** Admin select labels — clearer than public eventTypeLabels. */
+export const eventTypeAdminLabels: Record<EventType, string> = {
+  registration_close: "Registration closes",
+  round: "Round / competition day",
+  result_date: "Result date",
+  final_event: "Final event / ceremony",
+  other: "Other",
+};
+
+/** Short admin hints — what each Type is for on this competition. */
+export const eventTypeHints: Record<EventType, string> = {
+  registration_close:
+    "Last day/time to register for this competition. Used for “registration closes” on cards and sorting by deadline.",
+  round: "A competition day, heat, or live session for this competition (you can add more than one).",
+  result_date: "When results for this competition are published.",
+  final_event: "Showcase, finale, or awards moment tied to this competition.",
+  other: "Any other milestone that should appear in Important Dates on the competition page.",
+};

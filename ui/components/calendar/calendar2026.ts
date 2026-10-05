@@ -12,7 +12,7 @@
 // Monday 23 November 2026. Applied Skills Challenges run weekdays only,
 // 23 November – 4 December. Independent Submissions are held on Monday 30
 // November. Final showcases, live competitions and screenings conclude on
-// Friday 11 December 2026; the closing and awards ceremony is Saturday 12
+// Saturday 12 December 2026; the closing and awards ceremony is Sunday 13
 // December 2026.
 
 export type ActivityFormat =
@@ -48,8 +48,8 @@ export const KEY_DATES: KeyDate[] = [
     note: "Upload all required advance work, project records and Route 2 nomination evidence.",
   },
   { milestone: "League opens", date: "Monday 23 November 2026", note: "Applied Skills Challenges begin — weekdays only, through 4 December." },
-  { milestone: "Final celebrations day one", date: "Friday 11 December 2026", note: "Live arenas, project showcases and selected screenings." },
-  { milestone: "Final celebrations day two", date: "Saturday 12 December 2026", note: "Closing and awards ceremony." },
+  { milestone: "Final celebrations day one", date: "Saturday 12 December 2026", note: "Live performances, project showcases and selected screenings." },
+  { milestone: "Final celebrations day two", date: "Sunday 13 December 2026", note: "Closing and awards ceremony." },
 ];
 
 export interface ScheduledActivity {
@@ -88,7 +88,7 @@ export const INDEPENDENT_SUBMISSIONS: ScheduledActivity[] = [
   },
 ];
 
-export const WEEKEND_GAP_NOTE = "28 and 29 November: no regular League activities scheduled. The final celebrations on 11–12 December are the planned exception.";
+export const WEEKEND_GAP_NOTE = "28 and 29 November: no regular League activities scheduled. The final celebrations on 12–13 December are the planned exception.";
 
 export const ON_THE_DAY_NOTE =
   "For on-the-day competitions, the assessed work is produced during the scheduled event. The 22 November deadline applies to advance materials only where the competition rules require them; it does not require contestants to submit unseen live tasks early.";

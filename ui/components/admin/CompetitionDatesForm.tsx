@@ -2,7 +2,13 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { saveEventsAction, type ActionState } from "@/domain/competitions/actions";
-import { eventTypeLabels, type Competition, type CompetitionEvent, type EventType } from "@/domain/competitions/types";
+import {
+  eventTypeAdminLabels,
+  eventTypeHints,
+  type Competition,
+  type CompetitionEvent,
+  type EventType,
+} from "@/domain/competitions/types";
 
 const initialState: ActionState = { error: null };
 
@@ -34,59 +40,86 @@ export function CompetitionDatesForm({ competition }: { competition: Competition
     <form action={formAction} className="max-w-2xl space-y-4">
       <input type="hidden" name="competition_id" value={competition.id} />
 
-      {rows.map((row, i) => (
-        <div key={i} className="grid gap-3 rounded-xl border border-border bg-surface p-4 sm:grid-cols-2">
-          <div>
-            <label className="text-sm font-medium text-foreground">Type</label>
-            <select
-              name={`events[${i}][type]`}
-              value={row.type ?? "other"}
-              onChange={(e) => updateRow(i, { type: e.target.value as EventType })}
-              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+      <div className="rounded-xl border border-border bg-surface-muted/60 px-4 py-3 text-sm text-muted">
+        <p className="font-medium text-foreground">Each card is one date for this competition only.</p>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>
+            <span className="font-medium text-foreground">Type</span> — what kind of date it is (drives deadlines and labels in the system).
+          </li>
+          <li>
+            <span className="font-medium text-foreground">Title</span> — wording shown on the public competition page.
+          </li>
+          <li>
+            <span className="font-medium text-foreground">Date &amp; time</span> — when that milestone happens.
+          </li>
+          <li>
+            <span className="font-medium text-foreground">Description</span> — optional short note under the title on the public page.
+          </li>
+        </ul>
+      </div>
+
+      {rows.map((row, i) => {
+        const type = (row.type ?? "other") as EventType;
+        return (
+          <div key={i} className="grid gap-3 rounded-xl border border-border bg-surface p-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <p className="text-xs font-semibold tracking-wide text-accent-strong uppercase">Date {i + 1}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Type (what this date is for)</label>
+              <select
+                name={`events[${i}][type]`}
+                value={type}
+                onChange={(e) => updateRow(i, { type: e.target.value as EventType })}
+                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+              >
+                {Object.entries(eventTypeAdminLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-muted">{eventTypeHints[type]}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Title (shown on the competition page)</label>
+              <input
+                name={`events[${i}][title]`}
+                value={row.title ?? ""}
+                onChange={(e) => updateRow(i, { title: e.target.value })}
+                placeholder="e.g. Registration closes"
+                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Date &amp; time</label>
+              <input
+                name={`events[${i}][eventDate]`}
+                type="datetime-local"
+                defaultValue={toLocalInputValue(row.eventDate)}
+                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Description (optional note)</label>
+              <input
+                name={`events[${i}][description]`}
+                value={row.description ?? ""}
+                onChange={(e) => updateRow(i, { description: e.target.value })}
+                placeholder="Short note under the title"
+                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setRows((prev) => prev.filter((_, idx) => idx !== i))}
+              className="col-span-full justify-self-start text-sm font-medium text-red-600 dark:text-red-400"
             >
-              {Object.entries(eventTypeLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
+              Remove date
+            </button>
           </div>
-          <div>
-            <label className="text-sm font-medium text-foreground">Title</label>
-            <input
-              name={`events[${i}][title]`}
-              value={row.title ?? ""}
-              onChange={(e) => updateRow(i, { title: e.target.value })}
-              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground">Date &amp; time</label>
-            <input
-              name={`events[${i}][eventDate]`}
-              type="datetime-local"
-              defaultValue={toLocalInputValue(row.eventDate)}
-              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground">Description</label>
-            <input
-              name={`events[${i}][description]`}
-              value={row.description ?? ""}
-              onChange={(e) => updateRow(i, { description: e.target.value })}
-              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => setRows((prev) => prev.filter((_, idx) => idx !== i))}
-            className="col-span-full justify-self-start text-sm font-medium text-red-600 dark:text-red-400"
-          >
-            Remove date
-          </button>
-        </div>
-      ))}
+        );
+      })}
 
       <button
         type="button"
@@ -97,7 +130,7 @@ export function CompetitionDatesForm({ competition }: { competition: Competition
       </button>
 
       {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
-      {state.success && <p className="text-sm text-emerald-600 dark:text-emerald-400">Saved.</p>}
+      {state.success && <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">Saved.</p>}
       <div>
         <button
           type="submit"
