@@ -3,11 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Homepage hero. The five photographs stay in front of a dim chart reel.
+ * Homepage hero option 1 (current / preserved).
+ * The five photographs stay in front of a dim chart reel.
  * The brush line "Where opportunities lead." sits in the open centre.
  *
  * Collage + script are preloaded/prioritized and revealed together so the
  * script never pops in after the photos.
+ *
+ * Exported as HeroOne for side-by-side comparison with HeroTwo.
  */
 
 const COLLAGE_W = 1024;
@@ -36,6 +39,10 @@ function computeFrame(img: HTMLImageElement, wrap: HTMLElement): Frame | null {
 }
 
 export function HeroCollage() {
+  return <HeroOne />;
+}
+
+export function HeroOne() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const photoRef = useRef<HTMLImageElement>(null);
   const [frame, setFrame] = useState<Frame | null>(null);

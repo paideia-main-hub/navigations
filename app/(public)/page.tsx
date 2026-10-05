@@ -15,7 +15,11 @@ import { AnnouncementsPress } from "@/ui/components/marketing/AnnouncementsPress
 import { AppreciationsLedger } from "@/ui/components/marketing/AppreciationsLedger";
 import { QuickLinksGrid } from "@/ui/components/marketing/QuickLinksGrid";
 import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
-import { HeroCollage } from "@/ui/components/marketing/HeroCollage";
+import { HeroOne } from "@/ui/components/marketing/HeroCollage";
+import { HeroTwo } from "@/ui/components/marketing/HeroTwo";
+
+/** Flip between 1 (current collage) and 2 (ceremony photo + centered script). */
+const HERO_VARIANT: 1 | 2 = 2;
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -33,18 +37,20 @@ export default async function HomePage() {
   return (
     <div>
       {/* Kick off hero LCP assets before the client collage hydrates. */}
-      <link rel="preload" as="image" href="/hero-collage.png?v=3" fetchPriority="high" />
       <link rel="preload" as="image" href="/hero-script.png?v=4" fetchPriority="high" />
+      {HERO_VARIANT === 1 ? (
+        <link rel="preload" as="image" href="/hero-collage.png?v=3" fetchPriority="high" />
+      ) : (
+        <link rel="preload" as="image" href="/hero-two-bg.jpg" fetchPriority="high" />
+      )}
 
-      {/* Hero collage — the very first thing on the page, filling the full
-          viewport behind the floating header (the -mt cancels out <main>'s
-          top padding, which every other page needs to clear the fixed
-          header). Pinned via `sticky` inside a taller runway, so it holds
-          still while the next section rises over it below — a deliberate
-          reveal instead of the default "everything scrolls together". */}
+      {/* Hero — pinned via `sticky` inside a taller runway, so it holds
+          still while the next section rises over it below. */}
       <div className="relative -mt-24 h-[200dvh] sm:-mt-28">
-        <section className="sticky top-0 h-dvh w-full overflow-hidden bg-[#fefffa]">
-          <HeroCollage />
+        <section
+          className={`sticky top-0 h-dvh w-full overflow-hidden ${HERO_VARIANT === 1 ? "bg-[#fefffa]" : "bg-[#f7f4ee]"}`}
+        >
+          {HERO_VARIANT === 1 ? <HeroOne /> : <HeroTwo />}
         </section>
       </div>
 

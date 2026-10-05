@@ -24,7 +24,7 @@ const columns = [
     title: "More Navigations",
     links: [
       { href: "/about-us", label: "About Us" },
-      { href: "/about", label: "Competency Vision" },
+      { href: "/competency-vision", label: "Competency Vision" },
       { href: "/faqs", label: "FAQs" },
       { href: "/contact", label: "Contact" },
     ],
