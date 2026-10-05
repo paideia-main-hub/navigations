@@ -12,6 +12,7 @@ type Row = {
   title: string;
   layer: AwardLayer;
   description: string | null;
+  details: string | null;
   requires_school: boolean;
   allows_independent: boolean;
   rubric_criteria: RubricCriterion[];
@@ -34,6 +35,7 @@ function toCategory(row: Row): AwardCategory {
     title: row.title,
     layer: row.layer,
     description: row.description ?? "",
+    details: row.details ?? "",
     requiresSchool: row.requires_school,
     allowsIndependent: row.allows_independent,
     rubricCriteria: row.rubric_criteria ?? [],
@@ -77,6 +79,7 @@ export interface AwardCategoryInput {
   title: string;
   layer: AwardLayer;
   description: string;
+  details: string;
   requiresSchool: boolean;
   allowsIndependent: boolean;
   rubricCriteria: RubricCriterion[];
@@ -94,6 +97,7 @@ function toRow(input: AwardCategoryInput) {
     title: input.title,
     layer: input.layer,
     description: input.description || null,
+    details: input.details || null,
     requires_school: input.requiresSchool,
     allows_independent: input.allowsIndependent,
     rubric_criteria: input.rubricCriteria,

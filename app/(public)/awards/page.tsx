@@ -4,10 +4,9 @@ import { AwardsLayerBand } from "@/ui/components/awards/AwardsLayerBand";
 import { AwardsExpandProvider } from "@/ui/components/awards/AwardExpandGrid";
 import { AwardsSectionJump } from "@/ui/components/awards/AwardsSectionJump";
 import { OpenNominationCard } from "@/ui/components/awards/OpenNominationCard";
-import { AWARD_DETAILS } from "@/ui/components/awards/awardDetails";
 import type { AwardLayer } from "@/domain/awards/types";
 import { layerLabels } from "@/domain/awards/types";
-import { withAwardCardImages } from "@/domain/awards/cardImage";
+import { publicAwardsForLayer } from "@/ui/components/awards/publicCards";
 import { listSubmittableCategories, listCategories } from "@/domain/awards/service";
 import { createClient } from "@/data/supabase/server";
 import Link from "next/link";
@@ -85,18 +84,6 @@ const LAYER_BAND: Record<
   },
 };
 
-function awardsForLayer(layer: AwardLayer, categories: { slug: string; imageUrl: string | null }[]) {
-  const base =
-    layer === "teacher_parent"
-      ? [
-          ...AWARD_DETAILS.filter((a) => a.layer === "teacher_parent"),
-          ...AWARD_DETAILS.filter((a) => a.layer === "principal"),
-        ]
-      : AWARD_DETAILS.filter((a) => a.layer === layer);
-
-  return withAwardCardImages(base, categories);
-}
-
 export default async function AwardsLandingPage() {
   const supabase = await createClient();
   // Submittable, not just "open" — competition distinctions and school
@@ -140,7 +127,7 @@ export default async function AwardsLandingPage() {
 
       <AwardsExpandProvider>
         {LAYER_ORDER.map((layer) => {
-          const awards = awardsForLayer(layer, allCategories);
+          const awards = publicAwardsForLayer(layer, allCategories);
           const band = LAYER_BAND[layer];
           return (
             <AwardsLayerBand
