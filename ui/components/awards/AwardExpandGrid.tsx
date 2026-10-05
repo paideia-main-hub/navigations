@@ -57,7 +57,7 @@ function CardFace({
 }) {
   return (
     <div className={equalizeBody ? "flex h-full min-h-0 flex-1 flex-col" : undefined}>
-      <div className="relative h-44 w-full shrink-0 overflow-hidden bg-brand-deep">
+      <div className="relative h-[186px] w-full shrink-0 overflow-hidden bg-brand-deep">
         {imageFailed ? (
           <span className="flex h-full items-center justify-center px-6 text-center text-sm font-semibold text-brand-deep-foreground/70">
             {award.title}
@@ -70,7 +70,7 @@ function CardFace({
             aria-hidden
             loading="lazy"
             onError={onImageError}
-            className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]"
+            className="h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.04]"
           />
         )}
       </div>
