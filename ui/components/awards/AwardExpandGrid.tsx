@@ -87,6 +87,11 @@ function CardFace({
           </span>
           <span className="mt-1 block leading-snug font-bold text-foreground">{award.title}</span>
           <span className="mt-1.5 block text-sm text-muted">{award.awardedTo}</span>
+          {award.layer === "competition_distinction" || award.layer === "school_award" ? (
+            <span className="mt-2 block text-xs font-medium text-muted italic">
+              No submission needed — published with the season&apos;s results.
+            </span>
+          ) : null}
         </span>
         <span
           aria-hidden="true"
@@ -266,7 +271,7 @@ function AwardCard({
                   </div>
                 )}
 
-                {isOpenForSubmission ? (
+                {award.layer === "competition_distinction" || award.layer === "school_award" ? null : isOpenForSubmission ? (
                   <Link
                     href={`/awards/${award.slug}`}
                     className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-strong hover:underline"
@@ -274,11 +279,7 @@ function AwardCard({
                     View eligibility &amp; submit →
                   </Link>
                 ) : (
-                  <p className="text-xs font-medium text-muted italic">
-                    {award.layer === "competition_distinction" || award.layer === "school_award"
-                      ? "No submission needed — published with the season's results."
-                      : "Not currently open for nomination."}
-                  </p>
+                  <p className="text-xs font-medium text-muted italic">Not currently open for nomination.</p>
                 )}
               </div>
             </div>

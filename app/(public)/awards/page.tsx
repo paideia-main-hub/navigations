@@ -22,7 +22,8 @@ const JUMP_SECTIONS = [
 ];
 
 const LAYER_INTRO: Record<AwardLayer, string> = {
-  competition_distinction: "Awarded automatically from each competition's own results — nobody submits anything for these.",
+  competition_distinction:
+    "Awarded automatically from each competition's own results and completion records — nobody submits anything for these.",
   school_award: "Computed from League-wide participation and results, or (Collaboration & Integrity) scored directly by the organizer. Schools never nominate themselves.",
   spotlight: "School-nominated or fully independent — you don't have to win a League competition to submit.",
   teacher_parent:

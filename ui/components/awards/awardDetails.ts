@@ -21,11 +21,35 @@ export interface AwardDetail {
 export const AWARD_DETAILS: AwardDetail[] = [
   {
     slug: "outstanding-performer",
-    title: "Outstanding Performer, Distinguished Finalist & Emerging Talent",
+    title: "Outstanding Performer",
     layer: "competition_distinction",
-    awardedTo: "The three top-ranked entries in each Route 1 competition",
+    awardedTo: "The first-ranked entry in each Route 1 competition",
     description:
-      "Each of the 23 Route 1 competitions recognises three leading entries. Outstanding Performer is awarded to the first-ranked entry, Distinguished Finalist to the second, and Emerging Talent to the third. Rankings follow the competition's published assessment rules. A pair or team receives one entry distinction, with certificates for its verified members. An entry can receive only one distinction in the same competition award pool.",
+      "Each of the 23 Route 1 competitions recognises three leading entries. Outstanding Performer is awarded to the first-ranked entry. Rankings follow the competition's published assessment rules. A pair or team receives one entry distinction, with certificates for its verified members. An entry can receive only one distinction in the same competition award pool.",
+  },
+  {
+    slug: "distinguished-finalist",
+    title: "Distinguished Finalist",
+    layer: "competition_distinction",
+    awardedTo: "The second-ranked entry in each Route 1 competition",
+    description:
+      "Each of the 23 Route 1 competitions recognises three leading entries. Distinguished Finalist is awarded to the second-ranked entry. Rankings follow the competition's published assessment rules. A pair or team receives one entry distinction, with certificates for its verified members. An entry can receive only one distinction in the same competition award pool.",
+  },
+  {
+    slug: "emerging-talent",
+    title: "Emerging Talent",
+    layer: "competition_distinction",
+    awardedTo: "The third-ranked entry in each Route 1 competition",
+    description:
+      "Each of the 23 Route 1 competitions recognises three leading entries. Emerging Talent is awarded to the third-ranked entry. Rankings follow the competition's published assessment rules. A pair or team receives one entry distinction, with certificates for its verified members. An entry can receive only one distinction in the same competition award pool.",
+  },
+  {
+    slug: "future-ready-participant",
+    title: "Future Ready Participant",
+    layer: "competition_distinction",
+    awardedTo: "Students who complete their Route 1 competition",
+    description:
+      "Future Ready Participant recognises meaningful participation. Students who complete their competition receive recognition according to the published participation policy. This distinction celebrates skill practice and finishing the challenge — not only podium results.",
   },
   {
     slug: "champion-school",
