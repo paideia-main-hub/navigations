@@ -446,7 +446,9 @@ async function main() {
         tie_break_order: c.tieBreakOrder,
         max_winners: c.maxWinners,
         closing_at: c.closingAt,
-        status: "open",
+        // Best Principal is announced separately — keep it out of “Open for
+        // nominations” unless an admin deliberately opens it later.
+        status: c.slug === "best-principal" ? "closed" : "open",
       },
       { onConflict: "slug" },
     );
