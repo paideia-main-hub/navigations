@@ -1,9 +1,4 @@
-import { Unbounded } from "next/font/google";
-
-const markNumeral = Unbounded({
-  subsets: ["latin"],
-  weight: ["800"],
-});
+import { unbounded as markNumeral } from "@/app/fonts";
 
 /** Dim “05 layer recognition” background mark — same composition as the homepage strip. */
 export function LayersRecognitionMark({

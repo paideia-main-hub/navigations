@@ -1,17 +1,11 @@
 "use client";
 
-import { Unbounded } from "next/font/google";
 import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { unbounded as dateNumeralFont } from "@/app/fonts";
 import type { CompetitionSummary } from "@/domain/competitions/types";
 import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
 import { BandDivider } from "./BandDivider";
-
-/** Stylish numerals for contest day and year. */
-const dateNumeralFont = Unbounded({
-  subsets: ["latin"],
-  weight: ["700", "800"],
-});
 
 /** The published 2026 programme, from ui/components/calendar/calendar2026.ts. */
 const MILESTONES = [

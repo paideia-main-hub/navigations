@@ -1,24 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { geistMono, geistSans, plusJakarta } from "@/app/fonts";
 import { ThemeInitScript } from "@/ui/theme/ThemeInitScript";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-/** Same face as Featuring Now slide titles — site-wide heading font. */
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-});
 
 export const metadata: Metadata = {
   title: "Navigations",
