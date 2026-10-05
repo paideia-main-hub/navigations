@@ -48,30 +48,20 @@ export function AnimatedModal({
   }, [phase, onClose]);
 
   useEffect(() => {
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    const prevOverflow = document.body.style.overflow;
-    const prevPadding = document.body.style.paddingRight;
-    const header = document.querySelector("header");
-    const prevHeaderRight = header instanceof HTMLElement ? header.style.right : "";
-
-    document.body.style.overflow = "hidden";
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-      if (header instanceof HTMLElement) {
-        header.style.right = `${scrollbarWidth}px`;
-      }
-    }
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setPhase("leave");
     };
     window.addEventListener("keydown", onKey);
     return () => {
-      document.body.style.overflow = prevOverflow;
-      document.body.style.paddingRight = prevPadding;
-      if (header instanceof HTMLElement) {
-        header.style.right = prevHeaderRight;
-      }
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
       window.removeEventListener("keydown", onKey);
     };
   }, []);

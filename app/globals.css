@@ -90,9 +90,17 @@
 }
 
 html {
-  /* Prevent horizontal/vertical chrome jump when a tall page shows a
-     scrollbar and a short page does not. */
-  scrollbar-gutter: stable;
+  /* Overlay scrollbar: native bar takes no layout space (avoids modal
+     shift / white gutter). A fixed thumb is shown while scrolling —
+     see OverlayScrollbar. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 body {

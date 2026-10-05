@@ -261,13 +261,24 @@ export function LeagueSpotlight({
             </button>
           )}
 
-          <Link
-            href="/"
-            className={`${CTA} border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
-          >
-            Submit Now
-            <span aria-hidden="true">→</span>
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/dashboard/submissions"
+              className={`${CTA} border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
+            >
+              Submit Now
+              <span aria-hidden="true">→</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openLogin({ next: "/dashboard/submissions" })}
+              className={`${CTA} cursor-pointer border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
+            >
+              Submit Now
+              <span aria-hidden="true">→</span>
+            </button>
+          )}
         </div>
       </div>
 
