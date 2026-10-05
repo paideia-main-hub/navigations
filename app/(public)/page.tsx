@@ -18,7 +18,7 @@ import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
 import { HeroOne } from "@/ui/components/marketing/HeroCollage";
 import { HeroTwo } from "@/ui/components/marketing/HeroTwo";
 
-/** Flip between 1 (current collage) and 2 (ceremony photo + centered script). */
+/** Flip between 1 (preserved collage) and 2 (ceremony + collage layered hero). */
 const HERO_VARIANT: 1 | 2 = 2;
 
 export default async function HomePage() {
@@ -39,11 +39,11 @@ export default async function HomePage() {
       {/* Kick off hero LCP assets before the client collage hydrates. */}
       <link rel="preload" as="image" href="/hero-script.png?v=4" fetchPriority="high" />
       {HERO_VARIANT === 1 ? (
-        <link rel="preload" as="image" href="/hero-collage.png?v=3" fetchPriority="high" />
+        <link rel="preload" as="image" href="/hero-collage.png?v=5" fetchPriority="high" />
       ) : (
         <>
           <link rel="preload" as="image" href="/hero-two-bg.jpg" fetchPriority="high" />
-          <link rel="preload" as="image" href="/hero-collage.png?v=3" fetchPriority="high" />
+          <link rel="preload" as="image" href="/hero-collage.png?v=5" fetchPriority="high" />
         </>
       )}
 
@@ -51,7 +51,7 @@ export default async function HomePage() {
           still while the next section rises over it below. */}
       <div className="relative -mt-24 h-[200dvh] sm:-mt-28">
         <section
-          className={`sticky top-0 h-dvh w-full overflow-hidden ${HERO_VARIANT === 1 ? "bg-[#fefffa]" : "bg-[#f7f4ee]"}`}
+          className="sticky top-0 h-dvh w-full overflow-hidden bg-[#fefffa]"
         >
           {HERO_VARIANT === 1 ? <HeroOne /> : <HeroTwo />}
         </section>
