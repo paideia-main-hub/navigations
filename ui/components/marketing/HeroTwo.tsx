@@ -39,7 +39,7 @@ export function HeroTwo() {
       {/* Left half — full hero height; soft fade on the inner (right) edge */}
       <div
         aria-hidden="true"
-        className="absolute left-0 top-0 h-full overflow-hidden"
+        className="absolute left-0 top-0 z-0 h-full overflow-hidden"
         style={{
           width: halfWidth,
           WebkitMaskImage:
@@ -58,12 +58,17 @@ export function HeroTwo() {
           className="h-full max-w-none"
           style={{ width: fullWidth }}
         />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{ backgroundColor: "rgba(31, 32, 65, 0.55)" }}
+        />
       </div>
 
       {/* Right half — full hero height; soft fade on the inner (left) edge */}
       <div
         aria-hidden="true"
-        className="absolute right-0 top-0 h-full overflow-hidden"
+        className="absolute right-0 top-0 z-0 h-full overflow-hidden"
         style={{
           width: halfWidth,
           WebkitMaskImage:
@@ -82,15 +87,20 @@ export function HeroTwo() {
           className="absolute right-0 h-full max-w-none"
           style={{ width: fullWidth }}
         />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{ backgroundColor: "rgba(31, 32, 65, 0.55)" }}
+        />
       </div>
 
-      {/* Soft centre wash for script readability */}
+      {/* Soft centre wash for script readability — kept narrow so blue stays visible on the photos */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(247,244,238,0.92)_0%,rgba(247,244,238,0.55)_35%,transparent_65%)]"
+        className="absolute inset-0 z-[1] bg-[radial-gradient(ellipse_at_center,rgba(247,244,238,0.88)_0%,rgba(247,244,238,0.4)_28%,transparent_52%)]"
       />
 
-      <div className="absolute inset-0 flex items-center justify-center px-6">
+      <div className="absolute inset-0 z-10 flex items-center justify-center px-6">
         <img
           src={SCRIPT_SRC}
           alt="Where opportunities lead."
@@ -98,7 +108,7 @@ export function HeroTwo() {
           height={SCRIPT_H}
           fetchPriority="high"
           decoding="async"
-          className="relative z-10 h-auto w-[min(88vw,36rem)] object-contain sm:w-[min(70vw,42rem)]"
+          className="relative h-auto w-[min(88vw,36rem)] object-contain sm:w-[min(70vw,42rem)]"
           style={
             scriptReady
               ? {
