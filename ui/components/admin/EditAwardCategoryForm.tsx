@@ -14,6 +14,9 @@ export function EditAwardCategoryForm({ category }: { category: AwardCategory })
 
   const totalWeight = criteria.reduce((sum, c) => sum + (Number(c.weight) || 0), 0);
   const judged = isJudgedLayer(category.layer);
+  /** Always editable — school awards like Collaboration & Integrity also use rubric weights. */
+  const showRubric = true;
+  const showJudgingControls = judged || category.rubricCriteria.length > 0;
 
   function updateCriterion(i: number, patch: Partial<RubricCriterion>) {
     setCriteria((prev) => prev.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
@@ -26,6 +29,7 @@ export function EditAwardCategoryForm({ category }: { category: AwardCategory })
       <form action={formAction} className="space-y-6">
       <input type="hidden" name="category_id" value={category.id} />
       <input type="hidden" name="layer" value={category.layer} />
+      <input type="hidden" name="rubric_fields_present" value="1" />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
@@ -81,9 +85,10 @@ export function EditAwardCategoryForm({ category }: { category: AwardCategory })
         </label>
       </div>
 
-      {judged && (
+      {showRubric ? (
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Rubric criteria (weights should total 100%)</label>
+          <label className="text-sm font-medium text-foreground">Rubric criteria (shown as pills on the public card)</label>
+          <p className="text-xs text-muted">Leave empty if this award has no weighted criteria. Weights should total 100% when used.</p>
           {criteria.map((c, i) => (
             <div key={i} className="flex gap-2">
               <input
@@ -117,12 +122,14 @@ export function EditAwardCategoryForm({ category }: { category: AwardCategory })
             <button type="button" onClick={() => setCriteria((prev) => [...prev, { key: "", label: "", weight: 0 }])} className="text-sm font-semibold text-accent">
               + Add criterion
             </button>
-            <p className={`text-xs ${totalWeight === 100 ? "text-muted" : "text-amber-600 dark:text-amber-400"}`}>Total: {totalWeight}%</p>
+            <p className={`text-xs ${totalWeight === 100 || totalWeight === 0 ? "text-muted" : "text-amber-600 dark:text-amber-400"}`}>
+              Total: {totalWeight}%
+            </p>
           </div>
         </div>
-      )}
+      ) : null}
 
-      {judged && (
+      {showJudgingControls ? (
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="text-sm font-medium text-foreground">Pass threshold (%)</label>
@@ -143,7 +150,7 @@ export function EditAwardCategoryForm({ category }: { category: AwardCategory })
             />
           </div>
         </div>
-      )}
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div>
