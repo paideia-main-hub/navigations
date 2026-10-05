@@ -23,7 +23,7 @@ export const AWARD_DETAILS: AwardDetail[] = [
     slug: "outstanding-performer",
     title: "Outstanding Performer",
     layer: "competition_distinction",
-    awardedTo: "The first-ranked entry in each Route 1 competition",
+    awardedTo: "Setting the standard through exceptional skill and performance.",
     description:
       "Each of the 23 Route 1 competitions recognises three leading entries. Outstanding Performer is awarded to the first-ranked entry. Rankings follow the competition's published assessment rules. A pair or team receives one entry distinction, with certificates for its verified members. An entry can receive only one distinction in the same competition award pool.",
   },
@@ -31,7 +31,7 @@ export const AWARD_DETAILS: AwardDetail[] = [
     slug: "distinguished-finalist",
     title: "Distinguished Finalist",
     layer: "competition_distinction",
-    awardedTo: "The second-ranked entry in each Route 1 competition",
+    awardedTo: "Standing out through strong skills and thoughtful execution.",
     description:
       "Each of the 23 Route 1 competitions recognises three leading entries. Distinguished Finalist is awarded to the second-ranked entry. Rankings follow the competition's published assessment rules. A pair or team receives one entry distinction, with certificates for its verified members. An entry can receive only one distinction in the same competition award pool.",
   },
@@ -39,7 +39,7 @@ export const AWARD_DETAILS: AwardDetail[] = [
     slug: "emerging-talent",
     title: "Emerging Talent",
     layer: "competition_distinction",
-    awardedTo: "The third-ranked entry in each Route 1 competition",
+    awardedTo: "Showing promise today, inspiring possibilities for tomorrow.",
     description:
       "Each of the 23 Route 1 competitions recognises three leading entries. Emerging Talent is awarded to the third-ranked entry. Rankings follow the competition's published assessment rules. A pair or team receives one entry distinction, with certificates for its verified members. An entry can receive only one distinction in the same competition award pool.",
   },
@@ -47,7 +47,7 @@ export const AWARD_DETAILS: AwardDetail[] = [
     slug: "future-ready-participant",
     title: "Future Ready Participant",
     layer: "competition_distinction",
-    awardedTo: "Students who complete their Route 1 competition",
+    awardedTo: "Taking on challenges, building skills, preparing for tomorrow.",
     description:
       "Future Ready Participant recognises meaningful participation. Students who complete their competition receive recognition according to the published participation policy. This distinction celebrates skill practice and finishing the challenge — not only podium results.",
   },

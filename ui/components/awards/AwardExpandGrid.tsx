@@ -37,12 +37,6 @@ export function useAwardsExpand() {
   return useContext(AwardsExpandContext);
 }
 
-function mechanismLabel(award: AwardDetail): string {
-  if (award.layer === "competition_distinction") return "Automatic — from results";
-  if (award.layer === "school_award") return award.criteria ? "Organizer-scored" : "Computed automatically";
-  return award.criteria ? "Nominate — judged" : "Nominate — no scoring";
-}
-
 const EASE = "duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]";
 
 type Phase = "closed" | "opening" | "open" | "closing";
@@ -82,10 +76,7 @@ function CardFace({
       </div>
       <div className={`flex items-start gap-3 p-5 ${equalizeBody ? "min-h-0 flex-1" : ""}`}>
         <span className="flex-1">
-          <span className="text-[0.68rem] font-semibold tracking-[0.16em] text-accent-strong uppercase">
-            {mechanismLabel(award)}
-          </span>
-          <span className="mt-1 block leading-snug font-bold text-foreground">{award.title}</span>
+          <span className="block leading-snug font-bold text-foreground">{award.title}</span>
           <span className="mt-1.5 block text-sm text-muted">{award.awardedTo}</span>
           {award.layer === "competition_distinction" || award.layer === "school_award" ? (
             <span className="mt-2 block text-xs font-medium text-muted italic">
