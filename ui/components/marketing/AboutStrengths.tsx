@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 
-/** "What students can explore" — the six strengths, as cards.
+/** "What we offer" — the six strengths, as cards.
  *
  * The reference packs all six into one row, which leaves each one a sliver.
  * Three across over two rows gives every card a photograph you can actually
@@ -126,15 +126,21 @@ export function AboutStrengths() {
       <div className="relative mx-auto max-w-7xl">
         <div className="max-w-2xl">
           <p className="text-xs font-bold tracking-[0.22em] text-accent-strong uppercase">
-            What students can explore
+            What we offer
           </p>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-balance text-foreground sm:text-4xl">
-            Opportunities for different strengths.
+            Opportunities to Develop and Demonstrate Future Competencies
           </h2>
-          <p className="mt-4 text-base leading-relaxed text-muted">
-            No two students arrive good at the same things. Every competition in the League leans on one of these, so
-            there is somewhere worth starting whatever a student is already strong at.
-          </p>
+          <div className="mt-4 space-y-4 text-base leading-relaxed text-muted">
+            <p>
+              Navigations offers varied challenges and experiences that enable learners to explore their
+              interests and apply their knowledge.
+            </p>
+            <p>
+              Through purposeful participation, learners develop and demonstrate skills and competencies for
+              the future.
+            </p>
+          </div>
         </div>
 
         <ul className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">
