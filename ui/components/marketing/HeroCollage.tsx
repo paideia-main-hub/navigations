@@ -18,7 +18,7 @@ const COLLAGE_H = 768;
 const SCRIPT_W = 1600;
 const SCRIPT_H = 1169;
 
-const COLLAGE_SRC = "/hero-collage.png?v=3";
+const COLLAGE_SRC = "/hero-collage.png?v=5";
 const SCRIPT_SRC = "/hero-script.png?v=4";
 
 type Frame = { left: number; top: number; width: number; height: number };
