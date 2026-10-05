@@ -103,6 +103,11 @@ export async function updateCategoryAction(_prevState: ActionState, formData: Fo
 
   const newSlug = slugify(String(formData.get("slug") ?? existing.slug)) || existing.slug;
   const maxWinnersRaw = String(formData.get("max_winners") ?? "").trim();
+  const rubricFieldsPresent = formData.get("rubric_fields_present") === "1";
+  const parsedCriteria = parseCriteria(formData);
+  // Never wipe existing rubric rows when the edit form omitted the criteria
+  // fields (older UI hid them for school awards).
+  const rubricCriteria = rubricFieldsPresent ? parsedCriteria : existing.rubricCriteria;
 
   const { error } = await service.updateCategory(admin, id, {
     slug: newSlug,
@@ -112,9 +117,9 @@ export async function updateCategoryAction(_prevState: ActionState, formData: Fo
     details: String(formData.get("details") ?? ""),
     requiresSchool: formData.get("requires_school") === "on",
     allowsIndependent: formData.get("allows_independent") === "on",
-    rubricCriteria: parseCriteria(formData),
-    passThreshold: Number(formData.get("pass_threshold")) || 70,
-    tieBreakOrder: parseTieBreakOrder(formData),
+    rubricCriteria,
+    passThreshold: Number(formData.get("pass_threshold")) || existing.passThreshold || 70,
+    tieBreakOrder: formData.has("tie_break_order") ? parseTieBreakOrder(formData) : existing.tieBreakOrder,
     maxWinners: maxWinnersRaw ? Number(maxWinnersRaw) : null,
     evidencePeriodStart: String(formData.get("evidence_period_start") ?? "") || null,
     evidencePeriodEnd: String(formData.get("evidence_period_end") ?? "") || null,
