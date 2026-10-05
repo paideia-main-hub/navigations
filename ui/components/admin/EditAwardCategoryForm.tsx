@@ -210,11 +210,11 @@ export function EditAwardCategoryForm({ category }: { category: AwardCategory })
       </div>
 
       <div>
-        <label className="text-sm font-medium text-foreground">Nomination closing date/time</label>
+        <label className="text-sm font-medium text-foreground">Nomination closing date</label>
         <input
           name="closing_at"
-          type="datetime-local"
-          defaultValue={category.closingAt ? category.closingAt.slice(0, 16) : ""}
+          type="date"
+          defaultValue={category.closingAt ? category.closingAt.slice(0, 10) : ""}
           className="mt-1 w-full max-w-xs rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
         />
       </div>

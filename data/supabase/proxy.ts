@@ -39,10 +39,10 @@ export async function updateSession(request: NextRequest) {
     await supabase.auth.getUser();
   };
 
-  await refresh();
-  if (request.cookies.getAll().some((c) => c.name.startsWith(ADMIN_SESSION_COOKIE))) {
-    await refresh(ADMIN_SESSION_COOKIE);
-  }
+  const hasAdminCookie = request.cookies.getAll().some((c) => c.name.startsWith(ADMIN_SESSION_COOKIE));
+  // Refresh both sessions in parallel — serial round-trips made every admin
+  // navigation wait on two Supabase auth calls back-to-back.
+  await Promise.all([refresh(), hasAdminCookie ? refresh(ADMIN_SESSION_COOKIE) : Promise.resolve()]);
 
   const response = NextResponse.next({ request });
   toSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));

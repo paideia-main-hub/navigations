@@ -50,5 +50,6 @@ export async function updateCategoryStatus(admin: SupabaseClient, id: string, st
 }
 
 export const setAwardCategoryImageUrl = repo.setAwardCategoryImageUrl;
+export const setClosingAtForCategories = repo.setClosingAtForCategories;
 
 export type { AwardCategoryInput } from "@/data/repositories/awards.repository";

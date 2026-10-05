@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import type { Competition } from "@/domain/competitions/types";
+import type { CompetitionSummary } from "@/domain/competitions/types";
 import { statusLabels } from "@/domain/competitions/types";
 import { CompetitionStatusControl } from "@/ui/components/admin/CompetitionStatusControl";
 import { DataTable } from "@/ui/components/DataTable";
 
-export function CompetitionsTable({ competitions }: { competitions: Competition[] }) {
+export function CompetitionsTable({ competitions }: { competitions: CompetitionSummary[] }) {
   return (
     <DataTable
       rows={competitions}
