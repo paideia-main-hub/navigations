@@ -41,7 +41,10 @@ export default async function HomePage() {
       {HERO_VARIANT === 1 ? (
         <link rel="preload" as="image" href="/hero-collage.png?v=3" fetchPriority="high" />
       ) : (
-        <link rel="preload" as="image" href="/hero-two-bg.jpg" fetchPriority="high" />
+        <>
+          <link rel="preload" as="image" href="/hero-two-bg.jpg" fetchPriority="high" />
+          <link rel="preload" as="image" href="/hero-collage.png?v=3" fetchPriority="high" />
+        </>
       )}
 
       {/* Hero — pinned via `sticky` inside a taller runway, so it holds
