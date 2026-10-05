@@ -460,10 +460,31 @@ export const getCompetitionBySlug = cache(
 // data/supabase/admin.ts and domain/admin-auth/guard.ts for the real gate)
 // ---------------------------------------------------------------------------
 
-export async function adminListCompetitions(admin: SupabaseClient): Promise<Competition[]> {
-  const { data, error } = await admin.from("competitions").select(FULL_SELECT).order("updated_at", { ascending: false });
-  if (error || !data) return [];
-  return (data as unknown as Row[]).map(toCompetitionAdmin);
+/** Admin listings / pickers / bulk-dates — summary shape only. Full child
+ * tables stay on `adminGetCompetitionById` for the single-competition editor. */
+export async function adminListCompetitions(admin: SupabaseClient): Promise<CompetitionSummary[]> {
+  for (const select of [
+    SUMMARY_SELECT,
+    SUMMARY_SELECT_PRE_0022,
+    SUMMARY_SELECT_PRE_0020_WITH_COMPETENCIES,
+    SUMMARY_SELECT_PRE_0020,
+    SUMMARY_SELECT_PRE_0018,
+  ]) {
+    const { data, error } = await admin
+      .from("competitions")
+      .select(select)
+      .order("updated_at", { ascending: false });
+    if (!error && data) return (data as unknown as Row[]).map(toSummary);
+    if (error?.code !== UNDEFINED_COLUMN) return [];
+  }
+  return [];
+}
+
+/** Row counts for the admin dashboard — no payloads. */
+export async function adminCountCompetitions(admin: SupabaseClient): Promise<number> {
+  const { count, error } = await admin.from("competitions").select("id", { count: "exact", head: true });
+  if (error) return 0;
+  return count ?? 0;
 }
 
 export async function adminGetCompetitionById(admin: SupabaseClient, id: string): Promise<Competition | null> {
@@ -936,3 +957,62 @@ export async function replaceEvents(
   );
   return { error: error?.message ?? null };
 }
+
+/** Sets one date of `event.type` on each competition, replacing any existing
+ * rows of that type only — other important dates on those competitions stay. */
+export async function upsertEventTypeForCompetitions(
+  admin: SupabaseClient,
+  competitionIds: string[],
+  event: EventInput,
+): Promise<{ updated: number; error: string | null }> {
+  if (competitionIds.length === 0) return { updated: 0, error: "Select at least one competition." };
+
+  const { error: deleteError } = await admin
+    .from("events")
+    .delete()
+    .in("competition_id", competitionIds)
+    .eq("type", event.type);
+  if (deleteError) return { updated: 0, error: deleteError.message };
+
+  const { error } = await admin.from("events").insert(
+    competitionIds.map((competitionId) => ({
+      competition_id: competitionId,
+      type: event.type,
+      title: event.title,
+      event_date: event.eventDate,
+      description: event.description,
+    })),
+  );
+  if (error) return { updated: 0, error: error.message };
+  return { updated: competitionIds.length, error: null };
+}
+
+/** Sets the same event type on many competitions, each with its own date. */
+export async function upsertEventTypePerCompetition(
+  admin: SupabaseClient,
+  event: Omit<EventInput, "eventDate">,
+  rows: { competitionId: string; eventDate: string }[],
+): Promise<{ updated: number; error: string | null }> {
+  if (rows.length === 0) return { updated: 0, error: "Select at least one competition." };
+
+  const competitionIds = rows.map((r) => r.competitionId);
+  const { error: deleteError } = await admin
+    .from("events")
+    .delete()
+    .in("competition_id", competitionIds)
+    .eq("type", event.type);
+  if (deleteError) return { updated: 0, error: deleteError.message };
+
+  const { error } = await admin.from("events").insert(
+    rows.map((row) => ({
+      competition_id: row.competitionId,
+      type: event.type,
+      title: event.title,
+      event_date: row.eventDate,
+      description: event.description,
+    })),
+  );
+  if (error) return { updated: 0, error: error.message };
+  return { updated: rows.length, error: null };
+}
+

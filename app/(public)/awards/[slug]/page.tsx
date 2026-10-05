@@ -47,7 +47,9 @@ export default async function AwardCategoryPage({ params }: { params: Promise<{ 
                   {new Date(category.evidencePeriodEnd).toLocaleDateString("en-GB")}
                 </li>
               )}
-              {category.closingAt && <li>Nomination deadline: {new Date(category.closingAt).toLocaleString()}</li>}
+              {category.closingAt && (
+                <li>Nomination deadline: {new Date(category.closingAt).toLocaleDateString("en-GB")}</li>
+              )}
             </ul>
           </div>
         )}

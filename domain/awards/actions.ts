@@ -8,7 +8,7 @@ import * as service from "./service";
 import type { AwardCategoryStatus, AwardLayer, RubricCriterion } from "./types";
 import { deleteAwardCardImage, uploadAwardCardImage } from "@/domain/storage/actions";
 
-export type ActionState = { error: string | null; success?: boolean };
+export type ActionState = { error: string | null; success?: boolean; message?: string };
 
 /** Parses repeatable-row fields submitted as name="prefix[0][field]" — same
  * approach as domain/competitions/actions.ts's collectIndexed, kept as its
@@ -38,6 +38,14 @@ function slugify(input: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+/** Date-only admin input → timestamptz noon UTC (stable calendar day). */
+function normalizeClosingDate(raw: string): string | null {
+  const value = raw.trim();
+  if (!value) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return `${value}T12:00:00.000Z`;
+  return value;
 }
 
 function parseCriteria(formData: FormData): RubricCriterion[] {
@@ -123,7 +131,7 @@ export async function updateCategoryAction(_prevState: ActionState, formData: Fo
     maxWinners: maxWinnersRaw ? Number(maxWinnersRaw) : null,
     evidencePeriodStart: String(formData.get("evidence_period_start") ?? "") || null,
     evidencePeriodEnd: String(formData.get("evidence_period_end") ?? "") || null,
-    closingAt: String(formData.get("closing_at") ?? "") || null,
+    closingAt: normalizeClosingDate(String(formData.get("closing_at") ?? "")),
   });
 
   if (error) return { error };
@@ -187,4 +195,35 @@ export async function removeAwardImageAction(_prevState: ActionState, formData: 
 
   revalidateCategory(id, existing.slug);
   return { error: null, success: true };
+}
+
+export async function bulkSaveAwardClosingDatesAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireAdminSession();
+  const admin = createAdminClient();
+
+  const categoryIds = formData.getAll("category_id").map(String).filter(Boolean);
+  const closingAt = normalizeClosingDate(String(formData.get("closing_at") ?? ""));
+
+  if (!closingAt) return { error: "Date is required." };
+  if (categoryIds.length === 0) return { error: "Select at least one award category." };
+
+  const { updated, error } = await service.setClosingAtForCategories(admin, categoryIds, closingAt);
+  if (error) return { error };
+
+  revalidatePath("/admin/bulk-dates-awards");
+  revalidatePath("/admin/awards");
+  revalidatePath("/awards");
+  revalidatePath("/");
+  for (const id of categoryIds) {
+    revalidatePath(`/admin/awards/${id}`);
+  }
+
+  return {
+    error: null,
+    success: true,
+    message: `Set nomination closing date on ${updated} award categor${updated === 1 ? "y" : "ies"}.`,
+  };
 }

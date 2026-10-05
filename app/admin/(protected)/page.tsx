@@ -1,18 +1,23 @@
 import { createAdminClient } from "@/data/supabase/admin";
-import { adminListCompetitions } from "@/domain/competitions/service";
-import { listAllSchools } from "@/domain/schools/service";
-import { listAllStudents } from "@/domain/students/service";
-import { listAllRegistrations } from "@/domain/registrations/service";
 import { StatCard } from "@/ui/components/dashboard/StatCard";
 import { QuickLink } from "@/ui/components/dashboard/QuickLink";
+
+async function countRows(
+  admin: ReturnType<typeof createAdminClient>,
+  table: "competitions" | "schools" | "students" | "registrations",
+): Promise<number> {
+  const { count, error } = await admin.from(table).select("id", { count: "exact", head: true });
+  if (error) return 0;
+  return count ?? 0;
+}
 
 export default async function AdminDashboardPage() {
   const admin = createAdminClient();
   const [competitions, schools, students, registrations] = await Promise.all([
-    adminListCompetitions(admin),
-    listAllSchools(admin),
-    listAllStudents(admin),
-    listAllRegistrations(admin),
+    countRows(admin, "competitions"),
+    countRows(admin, "schools"),
+    countRows(admin, "students"),
+    countRows(admin, "registrations"),
   ]);
 
   return (
@@ -22,10 +27,10 @@ export default async function AdminDashboardPage() {
         Manage competitions, announcements, and see who&apos;s registered across every school.
       </p>
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard label="Competitions" value={competitions.length} />
-        <StatCard label="Schools" value={schools.length} />
-        <StatCard label="Students" value={students.length} />
-        <StatCard label="Registrations" value={registrations.length} />
+        <StatCard label="Competitions" value={competitions} />
+        <StatCard label="Schools" value={schools} />
+        <StatCard label="Students" value={students} />
+        <StatCard label="Registrations" value={registrations} />
       </div>
 
       <section className="mt-8">

@@ -17,7 +17,7 @@ import type {
   ResourceType,
 } from "./types";
 
-export type ActionState = { error: string | null; success?: boolean; warning?: string };
+export type ActionState = { error: string | null; success?: boolean; warning?: string; message?: string };
 
 /** The competency picker submits one `competencies` field per selection. */
 function readCompetencies(formData: FormData): string[] {
@@ -490,4 +490,94 @@ export async function saveEventsAction(_prevState: ActionState, formData: FormDa
   if (error) return { error };
   revalidateCompetition(competitionId);
   return { error: null, success: true };
+}
+
+export async function bulkSaveEventsAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdminSession();
+  const admin = createAdminClient();
+
+  const competitionIds = formData.getAll("competition_id").map(String).filter(Boolean);
+  const type = String(formData.get("type") ?? "") as EventType;
+  const title = String(formData.get("title") ?? "").trim();
+  const dateOnly = String(formData.get("eventDate") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim() || null;
+
+  const allowed: EventType[] = ["registration_close", "round", "result_date", "final_event", "other"];
+  if (!allowed.includes(type)) return { error: "Choose a date type." };
+  if (!title) return { error: "Title is required." };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) return { error: "Date is required." };
+  if (competitionIds.length === 0) return { error: "Select at least one competition." };
+
+  // Store noon UTC so the calendar day stays stable across timezones.
+  const eventDate = `${dateOnly}T12:00:00.000Z`;
+
+  const { updated, error } = await service.upsertEventTypeForCompetitions(admin, competitionIds, {
+    type,
+    title,
+    eventDate,
+    description,
+  });
+  if (error) return { error };
+
+  revalidatePath("/admin/bulk-dates");
+  revalidatePath("/admin/competitions");
+  revalidatePath("/competitions");
+  revalidatePath("/");
+  for (const id of competitionIds) {
+    revalidatePath(`/admin/competitions/${id}`);
+  }
+
+  return {
+    error: null,
+    success: true,
+    message: `Set ${type.replaceAll("_", " ")} on ${updated} competition${updated === 1 ? "" : "s"}.`,
+  };
+}
+
+export async function bulkSaveIndividualEventsAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireAdminSession();
+  const admin = createAdminClient();
+
+  const type = String(formData.get("type") ?? "") as EventType;
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim() || null;
+  const competitionIds = formData.getAll("competition_id").map(String).filter(Boolean);
+
+  const allowed: EventType[] = ["registration_close", "round", "result_date", "final_event", "other"];
+  if (!allowed.includes(type)) return { error: "Choose a date type." };
+  if (!title) return { error: "Title is required." };
+  if (competitionIds.length === 0) return { error: "Select at least one competition." };
+
+  const rows: { competitionId: string; eventDate: string }[] = [];
+  for (const competitionId of competitionIds) {
+    const dateOnly = String(formData.get(`eventDate[${competitionId}]`) ?? "").trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+      return { error: "Every selected competition needs a date." };
+    }
+    rows.push({ competitionId, eventDate: `${dateOnly}T12:00:00.000Z` });
+  }
+
+  const { updated, error } = await service.upsertEventTypePerCompetition(
+    admin,
+    { type, title, description },
+    rows,
+  );
+  if (error) return { error };
+
+  revalidatePath("/admin/bulk-dates");
+  revalidatePath("/admin/competitions");
+  revalidatePath("/competitions");
+  revalidatePath("/");
+  for (const id of competitionIds) {
+    revalidatePath(`/admin/competitions/${id}`);
+  }
+
+  return {
+    error: null,
+    success: true,
+    message: `Set individual ${type.replaceAll("_", " ")} dates on ${updated} competition${updated === 1 ? "" : "s"}.`,
+  };
 }

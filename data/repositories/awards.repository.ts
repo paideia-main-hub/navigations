@@ -136,3 +136,19 @@ export async function setAwardCategoryImageUrl(
     .eq("id", id);
   return { error: error?.message ?? null };
 }
+
+/** Sets the same nomination closing date on many award categories. */
+export async function setClosingAtForCategories(
+  admin: SupabaseClient,
+  categoryIds: string[],
+  closingAt: string,
+): Promise<{ updated: number; error: string | null }> {
+  if (categoryIds.length === 0) return { updated: 0, error: "Select at least one award category." };
+
+  const { error } = await admin
+    .from("award_categories")
+    .update({ closing_at: closingAt, updated_at: new Date().toISOString() })
+    .in("id", categoryIds);
+  if (error) return { updated: 0, error: error.message };
+  return { updated: categoryIds.length, error: null };
+}

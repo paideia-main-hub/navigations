@@ -16,6 +16,8 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: "🏠" },
   { href: "/admin/competitions", label: "Competitions", icon: "🏆" },
+  { href: "/admin/bulk-dates", label: "Set bulk dates for competitions", icon: "📅" },
+  { href: "/admin/bulk-dates-awards", label: "Set bulk dates for awards", icon: "🗓️" },
   { href: "/admin/announcements", label: "Announcements", icon: "📣" },
   { href: "/admin/appreciations", label: "Appreciations", icon: "✨" },
   { href: "/admin/judge-applications", label: "Judge Applications", icon: "📝" },
@@ -37,7 +39,12 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
   return (
     <nav className="space-y-1">
       {NAV_ITEMS.map((item) => {
-        const active = item.href === "/admin" ? pathname === item.href : pathname.startsWith(item.href);
+        // Exact match or nested path (`href/…`) — not a bare prefix, so
+        // `/admin/bulk-dates` does not also highlight `/admin/bulk-dates-awards`.
+        const active =
+          item.href === "/admin"
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(`${item.href}/`);
         return (
           <Link
             key={item.href}

@@ -276,8 +276,12 @@ export function isGradeEligible(minGrade: string, maxGrade: string, grade: strin
 // are responsible for the admin session check before calling any of these.
 // ---------------------------------------------------------------------------
 
-export async function adminListCompetitions(admin: SupabaseClient): Promise<Competition[]> {
+export async function adminListCompetitions(admin: SupabaseClient): Promise<CompetitionSummary[]> {
   return repo.adminListCompetitions(admin);
+}
+
+export async function adminCountCompetitions(admin: SupabaseClient): Promise<number> {
+  return repo.adminCountCompetitions(admin);
 }
 
 export async function adminGetCompetitionById(admin: SupabaseClient, id: string): Promise<Competition | null> {
@@ -317,6 +321,8 @@ export const addWinner = repo.insertWinner;
 export const editWinner = repo.updateWinner;
 export const removeWinner = repo.deleteWinner;
 export const saveEvents = repo.replaceEvents;
+export const upsertEventTypeForCompetitions = repo.upsertEventTypeForCompetitions;
+export const upsertEventTypePerCompetition = repo.upsertEventTypePerCompetition;
 
 export type {
   CompetitionCoreInput,
