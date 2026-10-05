@@ -1,4 +1,5 @@
 import { createClient } from "@/data/supabase/server";
+import { getCurrentUser } from "@/domain/auth/session";
 import { listOpenAndUpcoming, listPublishedWinners, groupWinnersByCompetition, upcomingDates } from "@/domain/competitions/service";
 import { listAllAnnouncements } from "@/domain/announcements/service";
 import { listAppreciations } from "@/domain/appreciations/service";
@@ -23,7 +24,8 @@ const HERO_VARIANT: 1 | 2 = 2;
 
 export default async function HomePage() {
   const supabase = await createClient();
-  const [featured, winners, dates, announcements, appreciations, submittableAwards] = await Promise.all([
+  const [user, featured, winners, dates, announcements, appreciations, submittableAwards] = await Promise.all([
+    getCurrentUser(),
     listOpenAndUpcoming(supabase),
     listPublishedWinners(supabase),
     upcomingDates(supabase),
@@ -79,7 +81,10 @@ export default async function HomePage() {
           BandDivider seams) still does, via its own `overflow-hidden`. */}
       <div className="relative z-10 -mt-[100dvh] rounded-t-[2.5rem] bg-background pt-14 shadow-[0_-25px_50px_-12px_rgba(0,0,0,0.25)] sm:rounded-t-[4rem] sm:pt-28">
         {/* 2. Featuring Now — static League billboard beside a rotating panel. */}
-        <LeagueSpotlight nominationsOpen={submittableAwards.length > 0} />
+        <LeagueSpotlight
+          nominationsOpen={submittableAwards.length > 0}
+          isLoggedIn={Boolean(user)}
+        />
 
         {/* 3. Ways to participate */}
         <WaysToParticipate />
@@ -104,7 +109,7 @@ export default async function HomePage() {
             one-card slider beside the schedule. */}
         <ImportantDates competitions={featured} spotlight="slider" />
 
-        {/* 6. 5 Layers Recognitions */}
+        {/* 6. 5 Layer Recognition */}
         <RecognitionStrip />
 
         {/* Competition Calendar — hidden on the home page. The board and
@@ -122,12 +127,12 @@ export default async function HomePage() {
           <CheerConfetti />
           <div className="relative z-10 mx-auto max-w-7xl px-6">
             <div className="mb-14 text-center sm:mb-16">
-              <h2 className="flex items-center justify-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
+              <h2 className="font-heading flex items-center justify-center gap-3 text-sm font-extrabold tracking-wider text-foreground uppercase">
                 <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
                 Results &amp; Winners
                 <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
               </h2>
-              <p className="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+              <p className="font-heading mt-3 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
                 Winners Showcase
               </p>
             </div>

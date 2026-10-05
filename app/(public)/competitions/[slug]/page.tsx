@@ -4,7 +4,6 @@ import { createClient } from "@/data/supabase/server";
 import { getPublicCompetitionBySlug, registrationDeadlineOf } from "@/domain/competitions/service";
 import { categoryLabels, statusLabels, awardLabels, eventTypeLabels } from "@/domain/competitions/types";
 import { announcementsForCompetition } from "@/domain/announcements/service";
-import { announcementCategoryLabels } from "@/domain/announcements/types";
 import { listPublishedComputedWinners } from "@/domain/results/service";
 import { awardRank } from "@/domain/results/types";
 import { ArenaTabs } from "@/ui/components/marketing/ArenaTabs";
@@ -243,8 +242,8 @@ export default async function CompetitionPage({
           <div className="max-w-2xl space-y-3">
             {competitionAnnouncements.map((a) => (
               <div key={a.id} className={card}>
-                <ArenaBadge tone="blue">{announcementCategoryLabels[a.category]}</ArenaBadge>
-                <p className="mt-1 font-semibold text-foreground">{a.title}</p>
+                {a.isImportant ? <ArenaBadge tone="blue">Pinned</ArenaBadge> : null}
+                <p className={`${a.isImportant ? "mt-1" : ""} font-semibold text-foreground`}>{a.title}</p>
                 <p className={`mt-1 text-sm ${muted}`}>{a.body}</p>
               </div>
             ))}

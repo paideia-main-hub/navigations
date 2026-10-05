@@ -1,18 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as repo from "@/data/repositories/announcements.repository";
-import type { Announcement, AnnouncementCategory } from "./types";
+import type { Announcement } from "./types";
 
 export async function listAllAnnouncements(supabase: SupabaseClient): Promise<Announcement[]> {
   return repo.listAnnouncements(supabase);
-}
-
-export async function filterAnnouncements(
-  supabase: SupabaseClient,
-  category: AnnouncementCategory | "all",
-): Promise<Announcement[]> {
-  const all = await repo.listAnnouncements(supabase);
-  if (category === "all") return all;
-  return all.filter((a) => a.category === category);
 }
 
 export async function announcementsForCompetition(supabase: SupabaseClient, slug: string): Promise<Announcement[]> {

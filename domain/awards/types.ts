@@ -38,7 +38,7 @@ export const layerLabels: Record<AwardLayer, string> = {
   competition_distinction: "Competition Distinctions",
   school_award: "School Awards",
   spotlight: "Spotlight Awards",
-  teacher_parent: "Teacher and Parent Recognition",
+  teacher_parent: "Teacher, Parent and Principal Recognition",
   sports: "Sports Recognition",
   principal: "Principal Recognition",
 };

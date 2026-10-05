@@ -8,6 +8,8 @@ import { listCompetitions, listOpenAndUpcoming } from "@/domain/competitions/ser
 import { getOwnStudentProfile } from "@/domain/students/service";
 import { RegistrationCard } from "@/ui/components/dashboard/RegistrationCard";
 import { CompetitionBasket } from "@/ui/components/dashboard/CompetitionBasket";
+import { DashboardHero, dashboardHeroCtaClass } from "@/ui/components/dashboard/DashboardHero";
+import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
 export default async function MyCompetitionsPage() {
   const user = await getCurrentUser();
@@ -30,14 +32,22 @@ export default async function MyCompetitionsPage() {
   const registeredSlugs = allRegistrations.filter((r) => r.status !== "rejected").map((r) => r.competitionSlug);
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-foreground">My Competitions</h1>
-        <a href="#register" className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90">
+    <>
+      <DashboardHero
+        eyebrow="Competitions"
+        title="My Competitions"
+        subtitle={
+          <>
+            Everything you&apos;re actively registered for. Concluded events move to{" "}
+            <Link href="/dashboard/history">History &amp; Results</Link>.
+          </>
+        }
+      >
+        <a href="#register" className={dashboardHeroCtaClass}>
           Register for competitions
         </a>
-      </div>
-
+      </DashboardHero>
+      <DashboardPage>
       {student?.frlId && (
         <div className="mt-4 inline-flex flex-wrap items-center gap-3 rounded-xl border border-accent/40 bg-accent-soft px-4 py-3">
           <Link href="/dashboard/account" title="Profile photo — view or change" className="shrink-0">
@@ -61,14 +71,6 @@ export default async function MyCompetitionsPage() {
           <span className="text-xs text-muted">Used for every competition you enter.</span>
         </div>
       )}
-
-      <p className="mt-4 max-w-2xl text-muted">
-        Everything you&apos;re actively registered for. Once a competition wraps up, it moves to{" "}
-        <Link href="/dashboard/history" className="font-semibold text-accent">
-          History &amp; Results
-        </Link>
-        .
-      </p>
 
       <div className="mt-6 space-y-4">
         {registrations.map((r) => (
@@ -114,6 +116,7 @@ export default async function MyCompetitionsPage() {
           )}
         </div>
       </section>
-    </div>
+      </DashboardPage>
+    </>
   );
 }

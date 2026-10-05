@@ -18,7 +18,8 @@ function revalidateAnnouncements(competitionSlug?: string) {
 function fieldsFromForm(formData: FormData) {
   return {
     competitionId: String(formData.get("competition_id") ?? "") || null,
-    category: String(formData.get("category")) as AnnouncementCategory,
+    // Categories are retired from the product — persist a fixed default for the column.
+    category: "general" as AnnouncementCategory,
     title: String(formData.get("title") ?? ""),
     body: String(formData.get("body") ?? ""),
     isImportant: formData.get("is_important") === "on",

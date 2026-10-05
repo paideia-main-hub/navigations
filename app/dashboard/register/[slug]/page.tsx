@@ -5,6 +5,8 @@ import { getPublicCompetitionBySlug } from "@/domain/competitions/service";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { listSchoolRoster, getOwnStudentProfile } from "@/domain/students/service";
 import { RegistrationWizard } from "@/ui/components/registration/RegistrationWizard";
+import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
+import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
 export default async function CompetitionRegisterPage({
   params,
@@ -20,10 +22,12 @@ export default async function CompetitionRegisterPage({
 
   if (!user || user.role === "judge" || user.role === "admin") {
     return (
-      <p className="text-muted">
-        Only students and school coordinators register for competitions. Switch to a student or
-        school account to continue.
-      </p>
+      <DashboardPage>
+        <p className="text-muted">
+          Only students and school coordinators register for competitions. Switch to a student or
+          school account to continue.
+        </p>
+      </DashboardPage>
     );
   }
 
@@ -32,36 +36,52 @@ export default async function CompetitionRegisterPage({
   if (isSchool) {
     const school = await getCoordinatorSchool(supabase, user.id);
     if (!school) {
-      return <p className="text-muted">No school found for this coordinator account.</p>;
+      return (
+        <DashboardPage>
+          <p className="text-muted">No school found for this coordinator account.</p>
+        </DashboardPage>
+      );
     }
 
     const roster = await listSchoolRoster(supabase, school.id);
 
     return (
-      <div>
-        <h1 className="mb-6 text-2xl font-bold text-foreground">Register for {competition.title}</h1>
-        <RegistrationWizard
-          competition={competition}
-          mode="school"
-          schoolId={school.id}
-          schoolName={school.officialName}
-          roster={roster}
+      <>
+        <DashboardHero
+          eyebrow="Register"
+          title={competition.title}
+          subtitle={`Entering on behalf of ${school.officialName}.`}
         />
-      </div>
+        <DashboardPage>
+          <div>
+            <RegistrationWizard
+              competition={competition}
+              mode="school"
+              schoolId={school.id}
+              schoolName={school.officialName}
+              roster={roster}
+            />
+          </div>
+        </DashboardPage>
+      </>
     );
   }
 
   const ownProfile = await getOwnStudentProfile(supabase, user.id);
 
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold text-foreground">Register for {competition.title}</h1>
-      <RegistrationWizard
-        competition={competition}
-        mode="student"
-        studentName={user.fullName}
-        studentId={ownProfile?.id}
-      />
-    </div>
+    <>
+      <DashboardHero eyebrow="Register" title={competition.title} subtitle="Complete registration for yourself." />
+      <DashboardPage>
+        <div>
+          <RegistrationWizard
+            competition={competition}
+            mode="student"
+            studentName={user.fullName}
+            studentId={ownProfile?.id}
+          />
+        </div>
+      </DashboardPage>
+    </>
   );
 }

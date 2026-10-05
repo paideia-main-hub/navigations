@@ -86,11 +86,28 @@
   --color-brand-deep-accent: var(--brand-deep-accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-plus-jakarta);
+}
+
+html {
+  /* Prevent horizontal/vertical chrome jump when a tall page shows a
+     scrollbar and a short page does not. */
+  scrollbar-gutter: stable;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* Headings use Plus Jakarta Sans — same as Featuring Now slide titles. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Replay-on-key-change entrance used by the homepage Champions Podium

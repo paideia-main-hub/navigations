@@ -22,8 +22,8 @@ const icons: Record<string, ReactNode> = {
 const STEPS = [
   { icon: "compass", line1: "Discover", line2: "interests" },
   { icon: "bulb", line1: "Apply", line2: "learning" },
-  { icon: "chart", line1: "Demonstrate", line2: "strengths" },
-  { icon: "people", line1: "Build", line2: "confidence" },
+  { icon: "chart", line1: "Demonstrate", line2: "skills" },
+  { icon: "people", line1: "Develop", line2: "competencies" },
 ] as const;
 
 /** Seconds between one circle starting its float and the next — small enough

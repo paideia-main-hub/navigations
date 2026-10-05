@@ -66,9 +66,10 @@ export function AboutInitiative() {
               Lahore Edition 2026
             </p>
 
-            <p className="mt-5 max-w-lg text-lg leading-relaxed text-brand-deep-muted">
-              Academically grounded in Future Competence Frameworks.
-            </p>
+            <div className="mt-5 max-w-lg space-y-2 text-lg leading-relaxed text-brand-deep-muted">
+              <p>Aligned with Globally Recognised Future Competence Frameworks</p>
+              <p>Connected with the United Nations Sustainable Development Goals (SDGs)</p>
+            </div>
 
             <Link
               href="/competitions"

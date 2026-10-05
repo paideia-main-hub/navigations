@@ -2,18 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import type { Announcement } from "@/domain/announcements/types";
-import { announcementCategoryLabels } from "@/domain/announcements/types";
 import { BandDivider } from "./BandDivider";
 import { SectionHeading } from "./SectionHeading";
-
-function formatParts(iso: string): { day: string; month: string; year: string } {
-  const date = new Date(iso);
-  return {
-    day: date.toLocaleDateString("en-GB", { day: "numeric" }),
-    month: date.toLocaleDateString("en-GB", { month: "short" }),
-    year: date.toLocaleDateString("en-GB", { year: "numeric" }),
-  };
-}
 
 /** Pinned notices stay first. Every other notice is oldest first. */
 function byDateWithPinnedFirst(a: Announcement, b: Announcement): number {
@@ -22,8 +12,7 @@ function byDateWithPinnedFirst(a: Announcement, b: Announcement): number {
   return new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime();
 }
 
-/** A modern visual beside an accordion. Each row keeps its date on
- * a shared timeline, and opening a row reveals that notice. */
+/** Modern visual beside an accordion of notices — no date column. */
 export function AnnouncementsPress({ announcements }: { announcements: Announcement[] }): ReactNode {
   const shown = [...announcements].sort(byDateWithPinnedFirst).slice(0, 4);
   const [openId, setOpenId] = useState<string | null>(shown[0]?.id ?? null);
@@ -60,7 +49,7 @@ export function AnnouncementsPress({ announcements }: { announcements: Announcem
 
       <div className="relative mx-auto max-w-7xl">
         <SectionHeading
-          eyebrow="Press file"
+          eyebrow="Important"
           title="Announcements"
           action={{ href: "/announcements", label: "View all" }}
         />
@@ -80,60 +69,36 @@ export function AnnouncementsPress({ announcements }: { announcements: Announcem
             </div>
 
             <ol className="relative flex flex-col gap-3">
-              <span aria-hidden="true" className="absolute top-6 bottom-6 left-[3.5rem] hidden w-px bg-border sm:block" />
               {shown.map((item) => {
                 const open = openId === item.id;
                 const panelId = `press-${item.id}`;
-                const date = formatParts(item.publishDate);
                 const shell = open
                   ? "border-accent/40 bg-surface shadow-[0_16px_40px_rgba(31,32,65,0.08)]"
                   : "border-border bg-surface hover:border-foreground/15";
                 return (
-                  <li
-                    key={item.id}
-                    className="relative grid grid-cols-1 items-stretch gap-x-3 sm:grid-cols-[7rem_minmax(0,1fr)]"
-                  >
-                    {/* Desktop: date sits on the timeline. Mobile: date moves into the card. */}
-                    <time
-                      dateTime={item.publishDate}
-                      className={`relative z-10 row-start-1 hidden h-full flex-col items-center justify-center rounded-2xl border px-2 text-center sm:flex ${
-                        open
-                          ? "border-accent bg-accent text-accent-foreground"
-                          : "border-border bg-surface text-foreground"
-                      }`}
-                    >
-                      <span className="text-2xl leading-none font-bold">{date.day}</span>
-                      <span className="mt-1 text-xs font-semibold tracking-wide uppercase">{date.month}</span>
-                      <span className={`mt-0.5 text-xs ${open ? "text-accent-foreground/80" : "text-muted"}`}>{date.year}</span>
-                    </time>
-
+                  <li key={item.id} className="relative">
                     <button
                       type="button"
                       aria-expanded={open}
                       aria-controls={panelId}
                       onClick={() => setOpenId(open ? null : item.id)}
-                      className={`col-start-1 row-start-1 flex w-full cursor-pointer items-center gap-3 border px-4 py-3 text-left transition-colors sm:col-start-2 ${shell} ${
+                      className={`flex w-full cursor-pointer items-center gap-3 border px-4 py-3 text-left transition-colors ${shell} ${
                         open ? "rounded-t-2xl border-b-0" : "rounded-2xl"
                       }`}
                     >
                       <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-[0.16em] text-accent-strong uppercase">
-                          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-                            {announcementCategoryLabels[item.category]}
-                            {item.isImportant && (
-                              <span className="rounded-full bg-accent px-2 py-0.5 tracking-[0.12em] text-accent-foreground">
-                                Pinned
-                              </span>
-                            )}
+                        {item.isImportant ? (
+                          <span className="text-[0.65rem] font-semibold tracking-[0.16em] text-accent-strong uppercase">
+                            <span className="rounded-full bg-accent px-2 py-0.5 tracking-[0.12em] text-accent-foreground">
+                              Pinned
+                            </span>
                           </span>
-                          <time
-                            dateTime={item.publishDate}
-                            className="shrink-0 tracking-[0.12em] text-muted sm:hidden"
-                          >
-                            {date.day} {date.month} {date.year}
-                          </time>
+                        ) : null}
+                        <span
+                          className={`block text-base font-bold tracking-tight text-foreground ${item.isImportant ? "mt-1" : ""}`}
+                        >
+                          {item.title}
                         </span>
-                        <span className="mt-1 block text-base font-bold tracking-tight text-foreground">{item.title}</span>
                       </span>
                       <span
                         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
@@ -157,7 +122,7 @@ export function AnnouncementsPress({ announcements }: { announcements: Announcem
                     <div
                       id={panelId}
                       role="region"
-                      className={`col-start-1 grid transition-[grid-template-rows] duration-300 ease-out sm:col-start-2 ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+                      className={`grid transition-[grid-template-rows] duration-300 ease-out ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
                     >
                       <div className={`overflow-hidden ${open ? `rounded-b-2xl border border-t-0 ${shell}` : ""}`}>
                         <div className="px-4 pb-4">

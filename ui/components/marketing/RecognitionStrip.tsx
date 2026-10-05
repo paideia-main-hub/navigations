@@ -77,9 +77,9 @@ export function RecognitionStrip(): ReactNode {
     <section className="relative bg-background">
       {/* Mobile-only: heading above the watermark band. */}
       <div className="relative z-10 mx-auto max-w-7xl px-6 pt-10 sm:hidden">
-        <h2 className="flex items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase">
+        <h2 className="font-heading flex items-center gap-3 text-sm font-extrabold tracking-wider text-foreground uppercase">
           <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
-          5 Layers Recognitions
+          5 Layer Recognition
         </h2>
       </div>
 
@@ -87,9 +87,9 @@ export function RecognitionStrip(): ReactNode {
       <div className="relative">
         <div className="relative mx-auto max-w-7xl px-6">
           <div className="relative flex h-[clamp(3.5rem,16vw,20rem)] items-end">
-            <h2 className="relative z-10 hidden translate-y-3 items-center gap-3 text-sm font-bold tracking-wider text-foreground uppercase sm:flex">
+            <h2 className="font-heading relative z-10 hidden translate-y-3 items-center gap-3 text-sm font-extrabold tracking-wider text-foreground uppercase sm:flex">
               <span aria-hidden="true" className="h-0.5 w-8 bg-accent" />
-              5 Layers Recognitions
+              5 Layer Recognition
             </h2>
           </div>
         </div>

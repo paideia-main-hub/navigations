@@ -1,21 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import Link from "next/link";
 import type { CompetitionWinnerGroup, PublishedWinner } from "@/domain/competitions/service";
 import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
-
-const cardFont = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-});
-
-/** Same face as Important Dates competition titles. */
-const titleFont = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["800"],
-});
 
 type Seat = "left" | "center" | "right";
 
@@ -203,7 +191,7 @@ function RowCard({
 
   return (
     <article
-      className={`${cardFont.className} relative flex w-full animate-podium-card-flip-x items-stretch gap-3.5 overflow-hidden rounded-2xl p-3 text-left text-white [transform-style:preserve-3d]`}
+      className="font-heading relative flex w-full animate-podium-card-flip-x items-stretch gap-3.5 overflow-hidden rounded-2xl p-3 text-left text-white [transform-style:preserve-3d]"
       style={
         {
           background: theme.glass,
@@ -277,7 +265,7 @@ function GlassCard({
       }
     >
       <article
-        className={`${cardFont.className} relative flex h-full flex-col overflow-hidden rounded-[1.35rem] px-5 pt-5 pb-6 text-center text-white ${
+        className={`font-heading relative flex h-full flex-col overflow-hidden rounded-[1.35rem] px-5 pt-5 pb-6 text-center text-white ${
           featured ? "w-[min(100%,17.5rem)]" : "w-[min(100%,14.25rem)]"
         }`}
         style={{ background: theme.glass, boxShadow: theme.glow }}
@@ -396,7 +384,7 @@ export function ChampionsPodium({ groups }: { groups: CompetitionWinnerGroup[] }
           </p>
           <Link
             href={`/competitions/${current.competitionSlug}`}
-            className={`${titleFont.className} animate-podium-in mt-3 block w-full bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-5xl leading-none font-extrabold tracking-tight text-balance text-transparent transition hover:from-amber-600 hover:to-orange-600 sm:text-6xl lg:text-7xl dark:from-amber-300 dark:to-yellow-200 dark:hover:from-amber-200 dark:hover:to-yellow-100`}
+            className="font-heading animate-podium-in mt-3 block w-full bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text pb-[0.12em] text-5xl leading-[1.15] font-extrabold tracking-tight text-balance text-transparent transition hover:from-amber-600 hover:to-orange-600 sm:text-6xl lg:text-7xl dark:from-amber-300 dark:to-yellow-200 dark:hover:from-amber-200 dark:hover:to-yellow-100"
           >
             {current.competitionTitle}
           </Link>

@@ -6,6 +6,8 @@ import { getOwnStudentProfile } from "@/domain/students/service";
 import { getSubmissionForRegistration, listOwnRegistrationsIn } from "@/data/repositories/submissions.repository";
 import { submissionConfigFor, SUBMISSION_SLUGS } from "@/domain/submissions/config";
 import { SubmissionForm } from "@/ui/components/dashboard/SubmissionForm";
+import { DashboardHero, dashboardHeroGhostCtaClass } from "@/ui/components/dashboard/DashboardHero";
+import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
 export default async function SubmitWorkPage({ params }: { params: Promise<{ registrationId: string }> }) {
   const { registrationId } = await params;
@@ -25,25 +27,30 @@ export default async function SubmitWorkPage({ params }: { params: Promise<{ reg
   const submission = await getSubmissionForRegistration(supabase, registrationId);
 
   return (
-    <div className="max-w-3xl">
-      <Link href="/dashboard/submissions" className="text-sm font-semibold text-accent">
-        ← Work Submissions
-      </Link>
-      <h1 className="mt-3 text-2xl font-bold text-foreground">{config.title} — submit your work</h1>
-      <p className="mt-1 text-sm text-muted">
-        {registration.registrationNumber}
-        {student?.frlId ? ` · ${student.frlId}` : ""} · {registration.entrantName}
-      </p>
-      <p className="mt-4 rounded-xl border border-border bg-surface p-4 text-sm text-foreground">{config.brief}</p>
+    <>
+      <DashboardHero
+        eyebrow="Submit work"
+        title={config.title}
+        subtitle={`${registration.registrationNumber}${student?.frlId ? ` · ${student.frlId}` : ""} · ${registration.entrantName}`}
+      >
+        <Link href="/dashboard/submissions" className={dashboardHeroGhostCtaClass}>
+          ← Work Submissions
+        </Link>
+      </DashboardHero>
+      <DashboardPage>
+        <div className="max-w-3xl">
+          <p className="mt-6 rounded-xl border border-border bg-surface p-4 text-sm text-foreground">{config.brief}</p>
 
-      <div className="mt-6">
-        <SubmissionForm
-          registrationId={registrationId}
-          userId={user.id}
-          config={config}
-          initial={submission}
-        />
-      </div>
-    </div>
+          <div className="mt-6">
+            <SubmissionForm
+              registrationId={registrationId}
+              userId={user.id}
+              config={config}
+              initial={submission}
+            />
+          </div>
+        </div>
+      </DashboardPage>
+    </>
   );
 }

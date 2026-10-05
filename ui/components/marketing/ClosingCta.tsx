@@ -22,7 +22,9 @@ export function ClosingCta({
       </div>
 
       <div className="relative">
-        <h2 className="text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">READY TO REGISTER?</h2>
+        <h2 className="font-heading text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
+          READY TO REGISTER?
+        </h2>
         <p className="mx-auto mt-4 max-w-xl text-brand-deep-muted">
           Join students across the country already registered for this season&apos;s competitions.
         </p>

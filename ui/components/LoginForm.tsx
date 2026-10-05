@@ -12,16 +12,22 @@ export function LoginForm({
   hideIntro = false,
   onRegisterClick,
   onForgotPasswordClick,
+  nextPath,
+  linkError: linkErrorProp,
 }: {
   hideIntro?: boolean;
   /** Called before navigating to register (e.g. close a modal). */
   onRegisterClick?: () => void;
   /** When set, forgot-password stays in the current surface instead of navigating. */
   onForgotPasswordClick?: () => void;
+  /** Prefer this over ?next= when the form is opened from the login modal. */
+  nextPath?: string | null;
+  /** Prefer this over ?error= when the form is opened from the login modal. */
+  linkError?: string | null;
 } = {}) {
   const searchParams = useSearchParams();
-  const linkError = searchParams.get("error");
-  const next = searchParams.get("next");
+  const linkError = linkErrorProp ?? searchParams.get("error");
+  const next = nextPath ?? searchParams.get("next");
   const [state, formAction, pending] = useActionState(login, initialState);
 
   return (

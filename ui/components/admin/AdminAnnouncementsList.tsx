@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { setAnnouncementStatusAction, type ActionState } from "@/domain/announcements/actions";
-import { announcementCategoryLabels, type Announcement } from "@/domain/announcements/types";
+import type { Announcement } from "@/domain/announcements/types";
 import type { Competition } from "@/domain/competitions/types";
 import { Badge } from "@/ui/components/Badge";
 import { AnnouncementForm } from "./AnnouncementForm";
@@ -55,11 +55,8 @@ export function AdminAnnouncementsList({
           <div key={a.id} className="rounded-xl border border-border bg-surface p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge tone={a.isImportant ? "accent" : "neutral"}>{announcementCategoryLabels[a.category]}</Badge>
                 <span className="text-xs text-muted">{a.competitionTitle ?? "Site-wide"}</span>
-                <span className="text-xs text-muted">
-                  {new Date(a.publishDate).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-                </span>
+                {a.isImportant ? <Badge tone="accent">Pinned</Badge> : null}
               </div>
               <div className="flex items-center gap-3">
                 <button onClick={() => setEditing(a)} className="text-sm font-medium text-accent">
