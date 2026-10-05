@@ -49,11 +49,23 @@ export function EditAwardCategoryForm({ category }: { category: AwardCategory })
       </div>
 
       <div>
-        <label className="text-sm font-medium text-foreground">Description (public criteria page)</label>
+        <label className="text-sm font-medium text-foreground">Description</label>
+        <p className="mt-0.5 text-xs text-muted">Short line under the award title on the public awards card.</p>
         <textarea
           name="description"
           defaultValue={category.description}
-          rows={4}
+          rows={2}
+          className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+        />
+      </div>
+
+      <div>
+        <label className="text-sm font-medium text-foreground">Details</label>
+        <p className="mt-0.5 text-xs text-muted">Expanded body shown under the divider when the awards card is opened.</p>
+        <textarea
+          name="details"
+          defaultValue={category.details}
+          rows={6}
           className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
         />
       </div>

@@ -1,10 +1,6 @@
-// Full per-award publication copy, straight from
-// documentation/FRL_Awards_Website_Publication_Copy.docx — the client's own
-// requirements doc is explicitly written as website copy, so this is a
-// direct transcription rather than a summary. Used by the /awards landing
-// page to explain who each award is for and how it's decided, independent
-// of whether the matching award_categories row has been created yet in the
-// admin panel.
+// Fallback publication copy keyed by slug. Live cards use admin fields:
+// title, description (under-title line), details (expanded body). These
+// entries remain for preferred order, criteria fallbacks, and seed content.
 import type { AwardLayer } from "@/domain/awards/types";
 
 export interface AwardDetail {
@@ -190,11 +186,10 @@ export const AWARD_DETAILS: AwardDetail[] = [
   },
   {
     slug: "best-principal",
-    title: "Best Principal of Future Ready League Award",
+    title: "Best Principal Award",
     layer: "principal",
     awardedTo: "Up to 50 principals from participating schools",
-    description:
-      "Recognises principals for enabling participation and supporting League coordination. Each school may nominate one principal, and each principal may receive one award per edition. If more than 50 eligible principals are nominated, selection considers documented contributions below. This recognition does not change school leaderboard points.",
+    description: "This recognition does not change school leaderboard points.",
     criteria: [
       { label: "Timely coordination", weight: "30%" },
       { label: "Communication", weight: "25%" },

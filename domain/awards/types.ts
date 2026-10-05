@@ -16,7 +16,10 @@ export interface AwardCategory {
   slug: string;
   title: string;
   layer: AwardLayer;
+  /** Short line under the card title on /awards. */
   description: string;
+  /** Expanded body under the divider on /awards. */
+  details: string;
   requiresSchool: boolean;
   allowsIndependent: boolean;
   rubricCriteria: RubricCriterion[];

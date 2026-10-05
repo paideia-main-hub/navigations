@@ -1,5 +1,5 @@
 import { createClient } from "@/data/supabase/server";
-import { withAwardCardImages } from "@/domain/awards/cardImage";
+import { categoryToAwardDetail } from "@/ui/components/awards/publicCards";
 import { listCategories, listSubmittableCategories } from "@/domain/awards/service";
 import { routeTwoLayers } from "@/domain/awards/types";
 import { listPublicCompetitions } from "@/domain/competitions/service";
@@ -10,7 +10,6 @@ import {
   type CompetitionPathway,
   type CompetitionStatus,
 } from "@/domain/competitions/types";
-import { AWARD_DETAILS } from "@/ui/components/awards/awardDetails";
 import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { CompetitionsDirectory } from "./CompetitionsDirectory";
@@ -33,10 +32,9 @@ export default async function CompetitionsPage({
     listSubmittableCategories(supabase),
     listCategories(supabase),
   ]);
-  const routeTwoAwards = withAwardCardImages(
-    AWARD_DETAILS.filter((a) => routeTwoLayers.includes(a.layer)),
-    allCategories,
-  );
+  const routeTwoAwards = allCategories
+    .filter((c) => routeTwoLayers.includes(c.layer) && c.status !== "draft")
+    .map(categoryToAwardDetail);
 
   const initialCategory = AGE_CATEGORIES.includes(category as AgeCategory) ? (category as AgeCategory) : "all";
   const initialPathway = pathwayOrder.includes(pathway as CompetitionPathway) ? (pathway as CompetitionPathway) : "all";

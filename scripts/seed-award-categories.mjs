@@ -48,6 +48,94 @@ function crit(key, label, weight) {
 // 23 November - 4 December, with recognition at the 5-6 December finale.
 const NOMINATION_CLOSING_AT = "2026-11-22T23:59:00+05:00";
 
+/** Public card copy: description = line under title, details = body under divider.
+ * Kept in sync with ui/components/awards/awardDetails.ts. */
+const PUBLICATION = {
+  "outstanding-performer": {
+    description: "Setting the standard through exceptional skill and performance.",
+    details:
+      "Each of the 23 Route 1 competitions recognises three leading entries. Outstanding Performer is awarded to the first-ranked entry. Rankings follow the competition's published assessment rules. A pair or team receives one entry distinction, with certificates for its verified members. An entry can receive only one distinction in the same competition award pool.",
+  },
+  "distinguished-finalist": {
+    description: "Standing out through strong skills and thoughtful execution.",
+    details:
+      "Each of the 23 Route 1 competitions recognises three leading entries. Distinguished Finalist is awarded to the second-ranked entry. Rankings follow the competition's published assessment rules. A pair or team receives one entry distinction, with certificates for its verified members. An entry can receive only one distinction in the same competition award pool.",
+  },
+  "emerging-talent": {
+    description: "Showing promise today, inspiring possibilities for tomorrow.",
+    details:
+      "Each of the 23 Route 1 competitions recognises three leading entries. Emerging Talent is awarded to the third-ranked entry. Rankings follow the competition's published assessment rules. A pair or team receives one entry distinction, with certificates for its verified members. An entry can receive only one distinction in the same competition award pool.",
+  },
+  "future-ready-participant": {
+    description: "Taking on challenges, building skills, preparing for tomorrow.",
+    details:
+      "Future Ready Participant recognises meaningful participation. Students who complete their competition receive recognition according to the published participation policy. This distinction celebrates skill practice and finishing the challenge — not only podium results.",
+  },
+  "champion-school": {
+    description: "The school with the highest competition points total",
+    details:
+      "Champion points = (Outstanding Performer awards × 10) + (Distinguished Finalist awards × 6) + (Emerging Talent awards × 3). Only approved League competition results count. Each winning pair or team earns one set of points. Other recognition awards do not add points.",
+  },
+  "school-excellence": {
+    description: "The school with the highest number of Outstanding Performer awards",
+    details: "This award counts first positions only.",
+  },
+  "whole-school-participation": {
+    description: "The school with the highest number of confirmed student–competition registrations",
+    details:
+      "A student registered for four competitions counts as four registrations. A team of three counts as three student registrations in that competition. Duplicate, draft, cancelled, withdrawn and rejected registrations do not count. Completion is not required for this registration-based award.",
+  },
+  "diversified-school": {
+    description: "The school participating successfully across the widest range of competitions",
+    details:
+      "Each different competition counts once when the school completes at least one eligible entry. Multiple entries in the same competition do not increase the count. Coverage is the number of competitions completed divided by 23, multiplied by 100.",
+  },
+  "collaboration-and-integrity": {
+    description: "The school that demonstrates the strongest coordination and cooperation during the League",
+    details:
+      "The organizer uses documented records; the highest verified score of at least 70% receives the award. Schools do not need to nominate themselves for any of the five School Awards — exact ties receive joint recognition, and a school may win more than one category.",
+  },
+  "idea-of-the-year": {
+    description: "School-nominated or independent individuals — you don't have to win a League competition to submit",
+    details:
+      "Have you implemented an idea that made a difference, or developed a credible proposal for the future? Share the need you identified, your solution and the value it can create. Choose Implemented idea if you can show implementation and results within the published two-year evidence period, or Future proposal if your idea is planned for the upcoming edition or a stated future year (future proposals need credible research or testing, an implementation plan and measures of success). One award is planned; the highest verified score of at least 70% receives recognition.",
+  },
+  "story-of-the-year": {
+    description: "School-nominated or independent individuals",
+    details:
+      "Share a true story of progress from home, school, work, personal life or the wider community — the starting point, the challenge, the actions taken, what changed and what you learned. Meaningful progress matters, even when it begins with a small step. Submit 600–1,000 words or an audio/video account of up to five minutes, with at least two supporting evidence items and one verifier. English and Urdu entries are welcome.",
+  },
+  "young-changemaker": {
+    description: "A young person aged 5–25 who has influenced others to make a positive change",
+    details:
+      "Show what you initiated, how you involved people and what improved as a result. Contributions within a team are welcome when your own role is clear. Submit two dated evidence items, a before-and-after measure or observable outcome, and one beneficiary or independent adult verifier. Likes, views and followers do not by themselves prove positive change.",
+  },
+  "supportive-teacher": {
+    description: "School-nominated teachers",
+    details:
+      "Thanks teachers for their guidance, coordination, encouragement and cooperation throughout the Future Ready League. This is a nomination-based acknowledgement with no competitive scoring, ranking or merit shortlist — every complete, valid school nomination receives the award. A person nominated more than once in the same category receives one award for that category.",
+  },
+  "supportive-parent": {
+    description: "School-nominated parents and guardians",
+    details:
+      "Recognises the contribution of parents and guardians who make participation possible through encouragement, practical support and cooperation. Like Supportive Teacher, every complete, valid school nomination receives the award — no competitive scoring.",
+  },
+  "excellence-athlete": {
+    description: "A student with sustained, verified performance in one primary sport over the previous two years",
+    details:
+      "Schools submit the nomination with a dated record of achievement, development and sportsmanship — a verified competitive achievement or selection in each of the two consecutive 12-month periods ending on the nomination deadline, plus evidence of regular development. Sports recognition celebrates documented achievement and does not add school leaderboard points.",
+  },
+  "blazer-athlete": {
+    description: "A student with strong verified achievement across three distinct sports",
+    details:
+      "Schools must identify three sports and provide a competitive result or selection record for each within the two-year evidence period; different events in the same sport count as one sport. Each sport must score at least 10 out of 20, and the overall score must reach 70%. A student may receive both Excellence Athlete and Blazer Athlete if independently eligible for each.",
+  },
+  "best-principal": {
+    description: "Up to 50 principals from participating schools",
+    details: "This recognition does not change school leaderboard points.",
+  },
+};
+
 const CATEGORIES = [
   {
     slug: "outstanding-performer",
@@ -312,10 +400,9 @@ const CATEGORIES = [
   },
   {
     slug: "best-principal",
-    title: "Best Principal of Future Ready League Award",
+    title: "Best Principal Award",
     layer: "principal",
-    description:
-      "Up to 50 participating school principals are recognised for enabling participation and supporting League coordination. Each school may nominate one principal.",
+    description: "Up to 50 principals from participating schools",
     requiresSchool: true,
     allowsIndependent: false,
     rubricCriteria: [
@@ -344,12 +431,14 @@ async function main() {
   const supabase = createClient(url, serviceRoleKey, { auth: { autoRefreshToken: false, persistSession: false } });
 
   for (const c of CATEGORIES) {
+    const publication = PUBLICATION[c.slug] ?? {};
     const { error } = await supabase.from("award_categories").upsert(
       {
         slug: c.slug,
-        title: c.title,
+        title: c.slug === "best-principal" ? "Best Principal Award" : c.title,
         layer: c.layer,
-        description: c.description,
+        description: publication.description ?? c.description,
+        details: publication.details ?? c.description,
         requires_school: c.requiresSchool,
         allows_independent: c.allowsIndependent,
         rubric_criteria: c.rubricCriteria,

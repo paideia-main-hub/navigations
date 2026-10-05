@@ -77,7 +77,7 @@ function CardFace({
       <div className={`flex items-start gap-3 p-5 ${equalizeBody ? "min-h-0 flex-1" : ""}`}>
         <span className="flex-1">
           <span className="block leading-snug font-bold text-foreground">{award.title}</span>
-          <span className="mt-1.5 block text-sm text-muted">{award.awardedTo}</span>
+          {award.awardedTo ? <span className="mt-1.5 block text-sm text-muted">{award.awardedTo}</span> : null}
           {award.layer === "competition_distinction" || award.layer === "school_award" ? (
             <span className="mt-2 block text-xs font-medium text-muted italic">
               No submission needed — published with the season&apos;s results.

@@ -16,10 +16,17 @@ export default async function AwardCategoryPage({ params }: { params: Promise<{ 
 
   return (
     <div className="bg-background">
-      <PageBanner eyebrow={layerLabels[category.layer]} title={category.title} subtitle={category.description} />
+      <PageBanner eyebrow={layerLabels[category.layer]} title={category.title} subtitle={category.description || undefined} />
 
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <div className="rounded-xl border border-border bg-surface p-6">
+        {category.details ? (
+          <div className="rounded-xl border border-border bg-surface p-6">
+            <h2 className="font-semibold text-foreground">About this award</h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted">{category.details}</p>
+          </div>
+        ) : null}
+
+        <div className={`rounded-xl border border-border bg-surface p-6 ${category.details ? "mt-4" : ""}`}>
           <h2 className="font-semibold text-foreground">Who can submit</h2>
           <p className="mt-2 text-sm text-muted">
             {category.requiresSchool
