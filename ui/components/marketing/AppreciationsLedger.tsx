@@ -1,15 +1,10 @@
 "use client";
 
-import { Source_Serif_4 } from "next/font/google";
 import { useCallback, useEffect, useId, useState } from "react";
+import { sourceSerif as serif } from "@/app/fonts";
 import type { Appreciation } from "@/domain/appreciations/types";
 import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
 import { BandDivider } from "./BandDivider";
-
-const serif = Source_Serif_4({
-  subsets: ["latin"],
-  weight: ["600", "700"],
-});
 
 const THEMES = [
   { sheet: "#b14e2c", pill: "bg-[#f6e4d6] text-[#b14e2c]", school: "text-[#b14e2c]" },
