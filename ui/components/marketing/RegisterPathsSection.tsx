@@ -143,7 +143,7 @@ export function RegisterPathsSection() {
           </div>
           <button
             type="button"
-            onClick={openLogin}
+            onClick={() => openLogin()}
             className="group inline-flex cursor-pointer items-center gap-2 rounded-full bg-brand-deep px-5 py-2.5 text-sm font-bold text-brand-deep-foreground transition-[background-color,transform,box-shadow] duration-300 ease-out hover:bg-accent hover:text-accent-foreground hover:shadow-[0_0_0_6px_rgba(255,105,31,0.16)]"
           >
             Log in
