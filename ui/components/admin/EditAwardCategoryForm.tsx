@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { updateCategoryAction, type ActionState } from "@/domain/awards/actions";
 import type { AwardCategory, RubricCriterion } from "@/domain/awards/types";
 import { isJudgedLayer } from "@/domain/awards/types";
@@ -8,15 +8,31 @@ import { AwardCategoryImageUploader } from "@/ui/components/admin/AwardCategoryI
 
 const initialState: ActionState = { error: null };
 
+function normalizeCriteria(raw: RubricCriterion[] | null | undefined): RubricCriterion[] {
+  if (!Array.isArray(raw) || raw.length === 0) return [{ key: "", label: "", weight: 0 }];
+  return raw.map((c) => ({
+    key: String(c?.key ?? ""),
+    label: String(c?.label ?? ""),
+    weight: Number(c?.weight) || 0,
+  }));
+}
+
 export function EditAwardCategoryForm({ category }: { category: AwardCategory }) {
   const [state, formAction, pending] = useActionState(updateCategoryAction, initialState);
-  const [criteria, setCriteria] = useState<RubricCriterion[]>(category.rubricCriteria.length > 0 ? category.rubricCriteria : [{ key: "", label: "", weight: 0 }]);
+  const [criteria, setCriteria] = useState<RubricCriterion[]>(() => normalizeCriteria(category.rubricCriteria));
+
+  // Soft navigations between award edit pages reuse this client component —
+  // re-sync so saved rubric rows always appear for the open category.
+  useEffect(() => {
+    setCriteria(normalizeCriteria(category.rubricCriteria));
+    // Only re-load when switching awards — not on every parent re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: keyed by category.id
+  }, [category.id]);
 
   const totalWeight = criteria.reduce((sum, c) => sum + (Number(c.weight) || 0), 0);
   const judged = isJudgedLayer(category.layer);
-  /** Always editable — school awards like Collaboration & Integrity also use rubric weights. */
-  const showRubric = true;
-  const showJudgingControls = judged || category.rubricCriteria.length > 0;
+  const savedCriteriaCount = Array.isArray(category.rubricCriteria) ? category.rubricCriteria.length : 0;
+  const showJudgingControls = judged || savedCriteriaCount > 0;
 
   function updateCriterion(i: number, patch: Partial<RubricCriterion>) {
     setCriteria((prev) => prev.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
@@ -85,49 +101,60 @@ export function EditAwardCategoryForm({ category }: { category: AwardCategory })
         </label>
       </div>
 
-      {showRubric ? (
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Rubric criteria (shown as pills on the public card)</label>
-          <p className="text-xs text-muted">Leave empty if this award has no weighted criteria. Weights should total 100% when used.</p>
-          {criteria.map((c, i) => (
-            <div key={i} className="flex gap-2">
-              <input
-                name={`criteria[${i}][key]`}
-                placeholder="key (e.g. evidence)"
-                value={c.key}
-                onChange={(e) => updateCriterion(i, { key: e.target.value })}
-                className="w-40 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-              />
-              <input
-                name={`criteria[${i}][label]`}
-                placeholder="Label (e.g. Evidence and learning)"
-                value={c.label}
-                onChange={(e) => updateCriterion(i, { label: e.target.value })}
-                className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-              />
-              <input
-                name={`criteria[${i}][weight]`}
-                type="number"
-                placeholder="Weight %"
-                value={c.weight}
-                onChange={(e) => updateCriterion(i, { weight: Number(e.target.value) })}
-                className="w-28 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-              />
-              <button type="button" onClick={() => setCriteria((prev) => prev.filter((_, idx) => idx !== i))} className="text-sm text-red-600 dark:text-red-400">
-                Remove
-              </button>
-            </div>
-          ))}
-          <div className="flex items-center justify-between">
-            <button type="button" onClick={() => setCriteria((prev) => [...prev, { key: "", label: "", weight: 0 }])} className="text-sm font-semibold text-accent">
-              + Add criterion
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground">Rubric criteria (shown as pills on the public card)</label>
+        <p className="text-xs text-muted">
+          {savedCriteriaCount > 0
+            ? `${savedCriteriaCount} saved criter${savedCriteriaCount === 1 ? "ion" : "ia"} loaded below. Weights should total 100% when used.`
+            : "No criteria saved yet. Add rows below, or leave empty if this award has none."}
+        </p>
+        {criteria.map((c, i) => (
+          <div key={`${category.id}-criterion-${i}`} className="flex flex-col gap-2 sm:flex-row">
+            <input
+              name={`criteria[${i}][key]`}
+              placeholder="key (e.g. evidence)"
+              value={c.key}
+              onChange={(e) => updateCriterion(i, { key: e.target.value })}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground sm:w-40"
+            />
+            <input
+              name={`criteria[${i}][label]`}
+              placeholder="Label (e.g. Evidence and learning)"
+              value={c.label}
+              onChange={(e) => updateCriterion(i, { label: e.target.value })}
+              className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+            />
+            <input
+              name={`criteria[${i}][weight]`}
+              type="number"
+              placeholder="Weight %"
+              value={Number.isFinite(c.weight) ? c.weight : 0}
+              onChange={(e) => updateCriterion(i, { weight: Number(e.target.value) })}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground sm:w-28"
+            />
+            <button
+              type="button"
+              onClick={() =>
+                setCriteria((prev) => {
+                  const next = prev.filter((_, idx) => idx !== i);
+                  return next.length > 0 ? next : [{ key: "", label: "", weight: 0 }];
+                })
+              }
+              className="text-sm text-red-600 dark:text-red-400"
+            >
+              Remove
             </button>
-            <p className={`text-xs ${totalWeight === 100 || totalWeight === 0 ? "text-muted" : "text-amber-600 dark:text-amber-400"}`}>
-              Total: {totalWeight}%
-            </p>
           </div>
+        ))}
+        <div className="flex items-center justify-between">
+          <button type="button" onClick={() => setCriteria((prev) => [...prev, { key: "", label: "", weight: 0 }])} className="text-sm font-semibold text-accent">
+            + Add criterion
+          </button>
+          <p className={`text-xs ${totalWeight === 100 || totalWeight === 0 ? "text-muted" : "text-amber-600 dark:text-amber-400"}`}>
+            Total: {totalWeight}%
+          </p>
         </div>
-      ) : null}
+      </div>
 
       {showJudgingControls ? (
         <div className="grid gap-4 sm:grid-cols-2">

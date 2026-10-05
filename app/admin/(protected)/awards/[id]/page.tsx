@@ -25,7 +25,7 @@ export default async function EditAwardCategoryPage({ params }: { params: Promis
       </p>
 
       <div className="mt-8">
-        <EditAwardCategoryForm category={category} />
+        <EditAwardCategoryForm key={category.id} category={category} />
       </div>
 
       {judged && (
