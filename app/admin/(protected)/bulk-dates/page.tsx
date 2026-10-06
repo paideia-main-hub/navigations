@@ -11,8 +11,9 @@ export default async function AdminBulkDatesPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-foreground">Set bulk dates for competitions</h1>
-      <p className="mt-2 max-w-2xl text-sm text-muted">
-        Apply the same date to many competitions, or set different dates per competition from one place.
+      <p className="mt-2 max-w-3xl text-sm text-muted">
+        By category: set venue, online submission, and all matching date slots for many competitions at once — or give
+        each competition its own date on the second tab.
       </p>
 
       <div className="mt-6">
@@ -20,12 +21,12 @@ export default async function AdminBulkDatesPage() {
           tabs={[
             {
               id: "bulk",
-              label: "Set bulk dates",
+              label: "Set by category",
               content: <BulkDatesForm competitions={competitions} />,
             },
             {
               id: "random",
-              label: "Set random dates",
+              label: "Set per competition",
               content: <RandomDatesForm competitions={competitions} />,
             },
           ]}

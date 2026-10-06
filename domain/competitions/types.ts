@@ -8,7 +8,13 @@ export type CompetitionStatus = "draft" | "upcoming" | "open" | "closed" | "arch
 export type ManualType = "registration_rules" | "guiding_principles" | "complete_manual" | "judging_rubric";
 export type ResourceType = "practice_question" | "sample_task" | "video" | "quiz" | "article";
 export type AwardType = "gold" | "silver" | "bronze" | "finalist" | "merit" | "custom";
-export type EventType = "registration_close" | "round" | "result_date" | "final_event" | "other";
+export type EventType =
+  | "registration_close"
+  | "round"
+  | "submission_deadline"
+  | "result_date"
+  | "final_event"
+  | "other";
 
 export interface EligibilityRule {
   id: string;
@@ -142,6 +148,11 @@ export interface CompetitionSummary {
    * until an admin tags the competition. */
   competencies: string[];
   imageUrl: string | null;
+  /** Physical contest / performance venue. Unused for Independent Submission. */
+  venue: string | null;
+  /** Online work upload. Always true for Independent Submission; optional for
+   * Applied Skills and Project Showcase; false for Live Performances. */
+  hasOnlineSubmission: boolean;
   supportsIndividual: boolean;
   supportsTeam: boolean;
   feeRequired: boolean;
@@ -230,6 +241,7 @@ export const awardLabels: Record<AwardType, string> = {
 export const eventTypeLabels: Record<EventType, string> = {
   registration_close: "Registration closes",
   round: "Round",
+  submission_deadline: "Submission deadline",
   result_date: "Result date",
   final_event: "Final event",
   other: "Other",
@@ -239,6 +251,7 @@ export const eventTypeLabels: Record<EventType, string> = {
 export const eventTypeAdminLabels: Record<EventType, string> = {
   registration_close: "Registration closes",
   round: "Round / competition day",
+  submission_deadline: "Online submission last date",
   result_date: "Result date",
   final_event: "Final event / ceremony",
   other: "Other",
@@ -248,8 +261,19 @@ export const eventTypeAdminLabels: Record<EventType, string> = {
 export const eventTypeHints: Record<EventType, string> = {
   registration_close:
     "Last day/time to register for this competition. Used for “registration closes” on cards and sorting by deadline.",
-  round: "A competition day, heat, or live session for this competition (you can add more than one).",
+  round: "Contest / performance day at the venue for this competition.",
+  submission_deadline: "Last day to upload online work for this competition.",
   result_date: "When results for this competition are published.",
   final_event: "Showcase, finale, or awards moment tied to this competition.",
   other: "Any other milestone that should appear in Important Dates on the competition page.",
 };
+
+/** Ordered list used by bulk-date tools and wide admin tables. */
+export const allEventTypes: EventType[] = [
+  "registration_close",
+  "round",
+  "submission_deadline",
+  "result_date",
+  "final_event",
+  "other",
+];

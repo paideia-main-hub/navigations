@@ -16,6 +16,9 @@ const MAX_CHIPS = 8;
 const icons: Record<EventType, ReactNode> = {
   registration_close: <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-14v4.2l2.8 1.8" />,
   round: <path d="M5 22V3m0 0h12l-2.2 4L17 11H5" />,
+  submission_deadline: (
+    <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7l-5-5Zm0 0v5h5M9 13h6M9 17h4" />
+  ),
   result_date: (
     <path d="M9 3h6v2.5H9zM7.5 5H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1.5M9 14l2 2 4-4" />
   ),

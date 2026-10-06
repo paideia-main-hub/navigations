@@ -424,6 +424,19 @@ export function submissionConfigFor(slug: string): SubmissionCompetition | undef
 
 export const SUBMISSION_SLUGS = SUBMISSION_COMPETITIONS.map((c) => c.slug);
 
+/** True when the competition should offer online work upload.
+ * Form fields still come from SUBMISSION_COMPETITIONS by slug; the
+ * hasOnlineSubmission / Independent pathway flags mark intent in admin. */
+export function competitionTakesWorkUpload(competition: {
+  slug: string;
+  pathway?: string | null;
+  hasOnlineSubmission?: boolean;
+}): boolean {
+  if (submissionConfigFor(competition.slug)) return true;
+  if (competition.pathway === "independent_submission") return true;
+  return Boolean(competition.hasOnlineSubmission);
+}
+
 export function rubricCriteria(config: SubmissionCompetition): RubricCriterion[] {
   return config.rubric.flatMap((g) => g.criteria);
 }

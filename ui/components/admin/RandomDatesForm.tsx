@@ -3,9 +3,12 @@
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { bulkSaveIndividualEventsAction, type ActionState } from "@/domain/competitions/actions";
+import { competitionAllowsEventType } from "@/domain/competitions/pathwayDateRules";
 import {
+  allEventTypes,
   eventTypeAdminLabels,
   eventTypeHints,
+  pathwayLabels,
   statusLabels,
   type CompetitionSummary,
   type EventType,
@@ -14,7 +17,7 @@ import { formatEventDateOnly, toDateInputValue } from "@/ui/components/admin/eve
 
 const initialState: ActionState = { error: null };
 
-const DATE_TYPES: EventType[] = ["registration_close", "round", "result_date", "final_event", "other"];
+const DATE_TYPES: EventType[] = allEventTypes.filter((t) => t !== "other");
 
 export function RandomDatesForm({ competitions }: { competitions: CompetitionSummary[] }) {
   const router = useRouter();
@@ -61,9 +64,11 @@ export function RandomDatesForm({ competitions }: { competitions: CompetitionSum
     const q = query.trim().toLowerCase();
     if (!q) return [];
     return competitions.filter(
-      (c) => c.title.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q),
+      (c) =>
+        competitionAllowsEventType(c.pathway, c.hasOnlineSubmission, type) &&
+        (c.title.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q)),
     );
-  }, [competitions, query]);
+  }, [competitions, query, type]);
 
   const selectedCompetitions = useMemo(
     () => selected.map((id) => byId.get(id)).filter((c): c is CompetitionSummary => Boolean(c)),
@@ -211,11 +216,14 @@ export function RandomDatesForm({ competitions }: { competitions: CompetitionSum
           ) : results.length === 0 ? (
             <p className="px-4 py-8 text-center text-sm text-muted">No competitions match “{query.trim()}”.</p>
           ) : (
-            <table className="w-full min-w-[640px] text-left text-sm">
+            <table className="w-full min-w-[800px] text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-muted">
                   <th className="px-4 py-3 font-medium">Select</th>
                   <th className="px-4 py-3 font-medium">Competition</th>
+                  <th className="px-4 py-3 font-medium">Category</th>
+                  <th className="px-4 py-3 font-medium">Venue</th>
+                  <th className="px-4 py-3 font-medium">Online</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Current {eventTypeAdminLabels[type]}</th>
                 </tr>
@@ -237,6 +245,13 @@ export function RandomDatesForm({ competitions }: { competitions: CompetitionSum
                       <td className="px-4 py-3">
                         <p className="font-medium text-foreground">{c.title}</p>
                         <p className="text-xs text-muted">/{c.slug}</p>
+                      </td>
+                      <td className="px-4 py-3 text-muted whitespace-nowrap">
+                        {c.pathway ? pathwayLabels[c.pathway] : "Not set"}
+                      </td>
+                      <td className="px-4 py-3 text-muted whitespace-nowrap">{c.venue || "—"}</td>
+                      <td className="px-4 py-3 text-muted whitespace-nowrap">
+                        {c.hasOnlineSubmission ? "Yes" : "No"}
                       </td>
                       <td className="px-4 py-3 text-muted">{statusLabels[c.status]}</td>
                       <td className="px-4 py-3 text-muted">

@@ -3,7 +3,20 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/data/supabase/admin";
-import { DEFAULT_ENTRY_FEE, type CompetitionPathway } from "@/domain/competitions/types";
+import {
+  allowedEventTypes,
+  competitionAllowsEventType,
+  effectiveHasOnlineSubmission,
+  pathwayAllowsOnlineSubmissionToggle,
+  pathwayRequiresOnlineSubmission,
+  pathwayRequiresVenue,
+} from "@/domain/competitions/pathwayDateRules";
+import {
+  DEFAULT_ENTRY_FEE,
+  eventTypeAdminLabels,
+  pathwayOrder,
+  type CompetitionPathway,
+} from "@/domain/competitions/types";
 import { requireAdminSession } from "@/domain/admin-auth/guard";
 import { deleteCompetitionCardImage, uploadCompetitionCardImage, uploadFile } from "@/domain/storage/actions";
 import { normalizeCompetencies } from "./competencies";
@@ -79,10 +92,12 @@ export async function createCompetitionAction(_prevState: ActionState, formData:
     datesCardOne: String(formData.get("dates_card_one") ?? "").trim(),
     datesCardTwo: String(formData.get("dates_card_two") ?? "").trim(),
     overview: "",
-    // Both are set later from the competition editor.
+    // Pathway, venue and online-submission are set later from the competition editor.
     pathway: null,
     competencies: readCompetencies(formData),
     imageUrl: null,
+    venue: null,
+    hasOnlineSubmission: false,
     domain: "",
     status: "draft",
     supportsIndividual: true,
@@ -107,6 +122,13 @@ export async function updateCompetitionCoreAction(_prevState: ActionState, formD
   if (!existing) return { error: "Competition not found." };
 
   const newSlug = slugify(String(formData.get("slug") ?? existing.slug)) || existing.slug;
+  const pathway = (String(formData.get("pathway") ?? "") || null) as CompetitionPathway | null;
+  const hasOnlineSubmission = effectiveHasOnlineSubmission(
+    pathway,
+    formData.get("has_online_submission") === "on",
+  );
+  const venueRaw = String(formData.get("venue") ?? "").trim();
+  const venue = pathwayRequiresVenue(pathway) ? venueRaw || null : null;
 
   const { error, warning } = await service.updateCompetitionCore(admin, id, {
     slug: newSlug,
@@ -116,10 +138,12 @@ export async function updateCompetitionCoreAction(_prevState: ActionState, formD
     datesCardTwo: String(formData.get("dates_card_two") ?? "").trim(),
     overview: String(formData.get("overview") ?? ""),
     domain: String(formData.get("domain") ?? ""),
-    pathway: (String(formData.get("pathway") ?? "") || null) as CompetitionPathway | null,
+    pathway,
     competencies: readCompetencies(formData),
     // Card artwork is managed by uploadCompetitionImageAction / removeCompetitionImageAction.
     imageUrl: existing.imageUrl,
+    venue,
+    hasOnlineSubmission,
     status: existing.status,
     supportsIndividual: formData.get("supports_individual") === "on",
     supportsTeam: formData.get("supports_team") === "on",
@@ -475,21 +499,211 @@ export async function saveEventsAction(_prevState: ActionState, formData: FormDa
   const admin = createAdminClient();
   const competitionId = String(formData.get("competition_id"));
 
-  const rows = collectIndexed(formData, "events");
-  const { error } = await service.saveEvents(
-    admin,
-    competitionId,
-    rows.map((r) => ({
+  const competition = await service.adminGetCompetitionById(admin, competitionId);
+  if (!competition) return { error: "Competition not found." };
+
+  const allowed = new Set(allowedEventTypes(competition.pathway, competition.hasOnlineSubmission));
+
+  const rows = collectIndexed(formData, "events")
+    .map((r) => ({
       type: r.type as EventType,
-      title: r.title ?? "",
-      eventDate: r.eventDate ?? new Date().toISOString(),
+      title: (r.title ?? "").trim(),
+      eventDate: r.eventDate ?? "",
       description: r.description || null,
-    })),
-  );
+    }))
+    .filter((r) => allowed.has(r.type) && r.eventDate);
+
+  const { error } = await service.saveEvents(admin, competitionId, rows);
 
   if (error) return { error };
   revalidateCompetition(competitionId);
   return { error: null, success: true };
+}
+
+const ALL_CATEGORY_DATE_TYPES: EventType[] = [
+  "registration_close",
+  "round",
+  "submission_deadline",
+  "result_date",
+  "final_event",
+];
+
+/** Apply venue, online-submission flag, and any filled pathway date slots to
+ * many competitions in one save. `pathway=all` applies across categories,
+ * writing each field only onto competitions whose category allows it. */
+export async function bulkSavePathwayScheduleAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireAdminSession();
+  const admin = createAdminClient();
+
+  const scope = String(formData.get("pathway") ?? "");
+  const allCategories = scope === "all";
+  const pathway = scope as CompetitionPathway;
+  if (!allCategories && !pathwayOrder.includes(pathway)) {
+    return { error: "Choose a participation category first." };
+  }
+
+  const competitionIds = formData.getAll("competition_id").map(String).filter(Boolean);
+  if (competitionIds.length === 0) return { error: "Select at least one competition." };
+
+  const listed = await service.adminListCompetitions(admin);
+  const byId = new Map(listed.map((c) => [c.id, c]));
+  for (const id of competitionIds) {
+    const c = byId.get(id);
+    if (!c) return { error: "One of the selected competitions was not found." };
+    if (!allCategories && c.pathway !== pathway) {
+      return { error: "Every selected competition must match the chosen participation category." };
+    }
+  }
+
+  const applyVenue = formData.get("apply_venue") === "on";
+  const applyOnline = formData.get("apply_online") === "on";
+  const venueRaw = String(formData.get("venue") ?? "").trim();
+  const onlineChecked = formData.get("has_online_submission") === "on";
+
+  const formDateTypes = allCategories
+    ? ALL_CATEGORY_DATE_TYPES
+    : allowedEventTypes(pathway, effectiveHasOnlineSubmission(pathway, onlineChecked)).filter(
+        (t) => t !== "other",
+      );
+  const description = String(formData.get("description") ?? "").trim() || null;
+
+  const dateUpdates: { type: EventType; title: string; eventDate: string }[] = [];
+  for (const type of formDateTypes) {
+    const dateOnly = String(formData.get(`date[${type}]`) ?? "").trim();
+    if (!dateOnly) continue;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+      return { error: `Invalid date for ${eventTypeAdminLabels[type]}.` };
+    }
+    const title =
+      String(formData.get(`title[${type}]`) ?? "").trim() || eventTypeAdminLabels[type];
+    dateUpdates.push({ type, title, eventDate: `${dateOnly}T12:00:00.000Z` });
+  }
+
+  let touchedMeta = false;
+  let clearedSubmissionDeadlines = false;
+
+  if (applyVenue) {
+    const venueIds = competitionIds.filter((id) => pathwayRequiresVenue(byId.get(id)?.pathway ?? null));
+    if (venueIds.length > 0) {
+      const { error } = await service.bulkUpdateScheduleMeta(admin, venueIds, {
+        venue: venueRaw || null,
+      });
+      if (error) return { error };
+      touchedMeta = true;
+    }
+  }
+
+  if (applyOnline) {
+    if (allCategories) {
+      const toggleIds = competitionIds.filter((id) =>
+        pathwayAllowsOnlineSubmissionToggle(byId.get(id)?.pathway ?? null),
+      );
+      if (toggleIds.length > 0) {
+        const { error } = await service.bulkUpdateScheduleMeta(admin, toggleIds, {
+          hasOnlineSubmission: onlineChecked,
+        });
+        if (error) return { error };
+        touchedMeta = true;
+        if (!onlineChecked) {
+          const { error: clearError } = await service.deleteEventTypeForCompetitions(
+            admin,
+            toggleIds,
+            "submission_deadline",
+          );
+          if (clearError) return { error: clearError };
+          clearedSubmissionDeadlines = true;
+        }
+      }
+      const independentIds = competitionIds.filter((id) =>
+        pathwayRequiresOnlineSubmission(byId.get(id)?.pathway ?? null),
+      );
+      if (independentIds.length > 0) {
+        const { error } = await service.bulkUpdateScheduleMeta(admin, independentIds, {
+          hasOnlineSubmission: true,
+        });
+        if (error) return { error };
+        touchedMeta = true;
+      }
+      const liveIds = competitionIds.filter((id) => byId.get(id)?.pathway === "live_response");
+      if (liveIds.length > 0) {
+        const { error } = await service.bulkUpdateScheduleMeta(admin, liveIds, {
+          hasOnlineSubmission: false,
+        });
+        if (error) return { error };
+        touchedMeta = true;
+      }
+    } else {
+      const metaPatch: { hasOnlineSubmission?: boolean } = {};
+      if (pathwayRequiresOnlineSubmission(pathway)) metaPatch.hasOnlineSubmission = true;
+      else if (pathwayAllowsOnlineSubmissionToggle(pathway)) metaPatch.hasOnlineSubmission = onlineChecked;
+      else if (pathway === "live_response") metaPatch.hasOnlineSubmission = false;
+
+      if (metaPatch.hasOnlineSubmission !== undefined) {
+        const { error } = await service.bulkUpdateScheduleMeta(admin, competitionIds, metaPatch);
+        if (error) return { error };
+        touchedMeta = true;
+      }
+      if (pathwayAllowsOnlineSubmissionToggle(pathway) && !onlineChecked) {
+        const { error } = await service.deleteEventTypeForCompetitions(
+          admin,
+          competitionIds,
+          "submission_deadline",
+        );
+        if (error) return { error };
+        clearedSubmissionDeadlines = true;
+      }
+    }
+  }
+
+  if (!touchedMeta && dateUpdates.length === 0 && !clearedSubmissionDeadlines) {
+    return {
+      error: "Fill at least one date, or apply venue / use the online-submission toggle.",
+    };
+  }
+
+  for (const event of dateUpdates) {
+    const targetIds = competitionIds.filter((id) => {
+      const c = byId.get(id);
+      if (!c) return false;
+      const onlineForRules = (() => {
+        if (pathwayRequiresOnlineSubmission(c.pathway)) return true;
+        if (c.pathway === "live_response") return false;
+        if (applyOnline && pathwayAllowsOnlineSubmissionToggle(c.pathway)) return onlineChecked;
+        return c.hasOnlineSubmission;
+      })();
+      return competitionAllowsEventType(c.pathway, onlineForRules, event.type);
+    });
+    if (targetIds.length === 0) continue;
+    const { error } = await service.upsertEventTypeForCompetitions(admin, targetIds, {
+      type: event.type,
+      title: event.title,
+      eventDate: event.eventDate,
+      description,
+    });
+    if (error) return { error };
+  }
+
+  revalidatePath("/admin/bulk-dates");
+  revalidatePath("/admin/competitions");
+  revalidatePath("/competitions");
+  revalidatePath("/");
+  for (const id of competitionIds) {
+    revalidatePath(`/admin/competitions/${id}`);
+  }
+
+  const parts: string[] = [];
+  if (dateUpdates.length > 0) parts.push(`${dateUpdates.length} date type${dateUpdates.length === 1 ? "" : "s"}`);
+  if (touchedMeta) parts.push("venue / online settings");
+  if (clearedSubmissionDeadlines) parts.push("cleared submission deadlines");
+
+  return {
+    error: null,
+    success: true,
+    message: `Updated ${parts.join(" + ") || "schedule"} on ${competitionIds.length} competition${competitionIds.length === 1 ? "" : "s"}${allCategories ? " across all categories" : ""}.`,
+  };
 }
 
 export async function bulkSaveEventsAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -502,7 +716,14 @@ export async function bulkSaveEventsAction(_prevState: ActionState, formData: Fo
   const dateOnly = String(formData.get("eventDate") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
 
-  const allowed: EventType[] = ["registration_close", "round", "result_date", "final_event", "other"];
+  const allowed: EventType[] = [
+    "registration_close",
+    "round",
+    "submission_deadline",
+    "result_date",
+    "final_event",
+    "other",
+  ];
   if (!allowed.includes(type)) return { error: "Choose a date type." };
   if (!title) return { error: "Title is required." };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) return { error: "Date is required." };
@@ -546,7 +767,14 @@ export async function bulkSaveIndividualEventsAction(
   const description = String(formData.get("description") ?? "").trim() || null;
   const competitionIds = formData.getAll("competition_id").map(String).filter(Boolean);
 
-  const allowed: EventType[] = ["registration_close", "round", "result_date", "final_event", "other"];
+  const allowed: EventType[] = [
+    "registration_close",
+    "round",
+    "submission_deadline",
+    "result_date",
+    "final_event",
+    "other",
+  ];
   if (!allowed.includes(type)) return { error: "Choose a date type." };
   if (!title) return { error: "Title is required." };
   if (competitionIds.length === 0) return { error: "Select at least one competition." };

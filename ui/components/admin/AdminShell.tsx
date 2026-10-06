@@ -119,7 +119,7 @@ export function AdminShell({ fullName, children }: { fullName: string; children:
           <span className="font-semibold tracking-tight text-foreground">Admin Console</span>
           <ThemeToggle />
         </header>
-        <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+        <main className="w-full px-4 py-8 sm:px-6 lg:px-8">{children}</main>
       </div>
     </div>
   );
