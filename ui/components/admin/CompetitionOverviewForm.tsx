@@ -290,7 +290,7 @@ export function CompetitionOverviewForm({ competition }: { competition: Competit
               const next = e.target.value as CompetitionPathway | "";
               setPathway(next);
               if (pathwayRequiresOnlineSubmission(next || null)) setHasOnlineSubmission(true);
-              if (next === "live_response") setHasOnlineSubmission(false);
+              else if (!pathwayAllowsOnlineSubmissionToggle(next || null)) setHasOnlineSubmission(false);
             }}
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
           >

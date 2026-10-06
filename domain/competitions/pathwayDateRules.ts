@@ -10,9 +10,9 @@ export function pathwayRequiresOnlineSubmission(pathway: CompetitionPathway | nu
   return pathway === "independent_submission";
 }
 
-/** Applied Skills and Project Showcase can optionally add online upload. */
+/** Applied Skills, Project Showcase, and Live Performances can optionally add online upload. */
 export function pathwayAllowsOnlineSubmissionToggle(pathway: CompetitionPathway | null): boolean {
-  return pathway === "applied_skills" || pathway === "project_showcase";
+  return pathway === "applied_skills" || pathway === "project_showcase" || pathway === "live_response";
 }
 
 /** Effective flag after applying pathway rules. */
@@ -21,7 +21,6 @@ export function effectiveHasOnlineSubmission(
   hasOnlineSubmission: boolean,
 ): boolean {
   if (pathwayRequiresOnlineSubmission(pathway)) return true;
-  if (pathway === "live_response") return false;
   if (pathwayAllowsOnlineSubmissionToggle(pathway)) return hasOnlineSubmission;
   return hasOnlineSubmission;
 }
@@ -58,9 +57,7 @@ export function allowedEventTypes(
 
   if (pathway === "independent_submission") return [...BASE_INDEPENDENT];
 
-  if (pathway === "live_response") return [...BASE_PHYSICAL];
-
-  // applied_skills | project_showcase
+  // applied_skills | project_showcase | live_response
   return online ? [...BASE_PHYSICAL, "submission_deadline"] : [...BASE_PHYSICAL];
 }
 
