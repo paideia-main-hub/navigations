@@ -627,19 +627,10 @@ export async function bulkSavePathwayScheduleAction(
         if (error) return { error };
         touchedMeta = true;
       }
-      const liveIds = competitionIds.filter((id) => byId.get(id)?.pathway === "live_response");
-      if (liveIds.length > 0) {
-        const { error } = await service.bulkUpdateScheduleMeta(admin, liveIds, {
-          hasOnlineSubmission: false,
-        });
-        if (error) return { error };
-        touchedMeta = true;
-      }
     } else {
       const metaPatch: { hasOnlineSubmission?: boolean } = {};
       if (pathwayRequiresOnlineSubmission(pathway)) metaPatch.hasOnlineSubmission = true;
       else if (pathwayAllowsOnlineSubmissionToggle(pathway)) metaPatch.hasOnlineSubmission = onlineChecked;
-      else if (pathway === "live_response") metaPatch.hasOnlineSubmission = false;
 
       if (metaPatch.hasOnlineSubmission !== undefined) {
         const { error } = await service.bulkUpdateScheduleMeta(admin, competitionIds, metaPatch);
@@ -670,7 +661,6 @@ export async function bulkSavePathwayScheduleAction(
       if (!c) return false;
       const onlineForRules = (() => {
         if (pathwayRequiresOnlineSubmission(c.pathway)) return true;
-        if (c.pathway === "live_response") return false;
         if (applyOnline && pathwayAllowsOnlineSubmissionToggle(c.pathway)) return onlineChecked;
         return c.hasOnlineSubmission;
       })();

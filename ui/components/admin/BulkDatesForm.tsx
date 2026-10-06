@@ -94,7 +94,6 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
 
   useEffect(() => {
     if (onlineForced) setHasOnlineSubmission(true);
-    else if (pathway === "live_response") setHasOnlineSubmission(false);
     else setHasOnlineSubmission(false);
     setApplyVenue(false);
     setSelected(new Set());
@@ -239,8 +238,8 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
                           ? "Select one or more competitions on the right to turn this on or off."
                           : allCategories
                             ? hasOnlineSubmission
-                              ? "On — Applied Skills / Project Showcase get online upload + an online submission date. Independent stays online; Live stays offline."
-                              : "Off — clears online upload on Applied Skills / Project Showcase. Independent stays online; Live stays offline."
+                              ? "On — Applied Skills / Project Showcase / Live Performances get online upload + an online submission date. Independent stays online."
+                              : "Off — clears online upload on Applied Skills / Project Showcase / Live Performances. Independent stays online."
                             : hasOnlineSubmission
                               ? "On — selected competitions accept online work, and an online submission date is included below."
                               : "Off — no online upload; any existing submission deadlines on selected competitions are cleared."}
@@ -281,8 +280,8 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
               {allCategories ? (
                 <p className="rounded-xl border border-border bg-surface-muted/60 px-4 py-3 text-sm text-muted">
                   All categories: each filled date is applied only where that category allows it (for example, contest day
-                  skips Independent Submission; online submission date skips Live Performances unless online is on for
-                  Applied Skills / Project Showcase).
+                  skips Independent Submission; online submission date applies where online is on, and always on Independent
+                  Submission).
                 </p>
               ) : null}
 

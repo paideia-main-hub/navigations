@@ -151,7 +151,7 @@ export interface CompetitionSummary {
   /** Physical contest / performance venue. Unused for Independent Submission. */
   venue: string | null;
   /** Online work upload. Always true for Independent Submission; optional for
-   * Applied Skills and Project Showcase; false for Live Performances. */
+   * Applied Skills, Project Showcase, and Live Performances. */
   hasOnlineSubmission: boolean;
   supportsIndividual: boolean;
   supportsTeam: boolean;
