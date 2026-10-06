@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/data/supabase/server";
 import { getPublicCompetitionBySlug, registrationDeadlineOf } from "@/domain/competitions/service";
+import { isDefaultEventTitle } from "@/domain/competitions/dateLabels";
 import { categoryLabels, statusLabels, awardLabels, eventTypeLabels } from "@/domain/competitions/types";
 import { announcementsForCompetition } from "@/domain/announcements/service";
 import { listPublishedComputedWinners } from "@/domain/results/service";
@@ -230,7 +231,7 @@ export default async function CompetitionPage({
               <li key={e.id} className="flex justify-between border-b border-border py-2">
                 <span className={muted}>
                   {eventTypeLabels[e.type] ?? e.type}
-                  {e.title && e.title !== eventTypeLabels[e.type] ? ` — ${e.title}` : ""}
+                  {e.title && !isDefaultEventTitle(e) ? ` — ${e.title}` : ""}
                 </span>
                 <span className="font-medium text-foreground">
                   {new Date(e.eventDate).toLocaleDateString("en-GB")}

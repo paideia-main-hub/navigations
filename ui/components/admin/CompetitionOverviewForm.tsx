@@ -328,7 +328,7 @@ export function CompetitionOverviewForm({ competition }: { competition: Competit
                 <p className="text-sm font-medium text-foreground">Online submission</p>
                 <p className="mt-0.5 text-xs text-muted">
                   {hasOnlineSubmission
-                    ? "On — Important Dates includes an online submission last date."
+                    ? "On — Important Dates includes an online submission date."
                     : "Off — contest day and venue only; no online upload deadline."}
                 </p>
               </div>
