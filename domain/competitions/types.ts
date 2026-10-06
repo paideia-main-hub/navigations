@@ -241,7 +241,7 @@ export const awardLabels: Record<AwardType, string> = {
 export const eventTypeLabels: Record<EventType, string> = {
   registration_close: "Registration closes",
   round: "Round",
-  submission_deadline: "Submission deadline",
+  submission_deadline: "Online submission date",
   result_date: "Result date",
   final_event: "Final event",
   other: "Other",
@@ -251,7 +251,7 @@ export const eventTypeLabels: Record<EventType, string> = {
 export const eventTypeAdminLabels: Record<EventType, string> = {
   registration_close: "Registration closes",
   round: "Round / competition day",
-  submission_deadline: "Online submission last date",
+  submission_deadline: "Online submission date",
   result_date: "Result date",
   final_event: "Final event / ceremony",
   other: "Other",

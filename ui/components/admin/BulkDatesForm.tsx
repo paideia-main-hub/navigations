@@ -239,10 +239,10 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
                           ? "Select one or more competitions on the right to turn this on or off."
                           : allCategories
                             ? hasOnlineSubmission
-                              ? "On — Applied Skills / Project Showcase get online upload + submission last date. Independent stays online; Live stays offline."
+                              ? "On — Applied Skills / Project Showcase get online upload + an online submission date. Independent stays online; Live stays offline."
                               : "Off — clears online upload on Applied Skills / Project Showcase. Independent stays online; Live stays offline."
                             : hasOnlineSubmission
-                              ? "On — selected competitions accept online work, and a submission last date is included below."
+                              ? "On — selected competitions accept online work, and an online submission date is included below."
                               : "Off — no online upload; any existing submission deadlines on selected competitions are cleared."}
                       </p>
                     </div>
@@ -281,7 +281,7 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
               {allCategories ? (
                 <p className="rounded-xl border border-border bg-surface-muted/60 px-4 py-3 text-sm text-muted">
                   All categories: each filled date is applied only where that category allows it (for example, contest day
-                  skips Independent Submission; submission last date skips Live Performances unless online is on for
+                  skips Independent Submission; online submission date skips Live Performances unless online is on for
                   Applied Skills / Project Showcase).
                 </p>
               ) : null}
@@ -364,7 +364,7 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
                 Select a participation category to see its competitions and date columns.
               </p>
             ) : (
-              <table className="w-full min-w-[900px] text-left text-sm">
+              <table className="w-full min-w-[1100px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-border text-muted">
                     <th className="px-4 py-3 font-medium">
@@ -379,11 +379,11 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
                       </label>
                     </th>
                     <th className="px-4 py-3 font-medium">Competition</th>
-                    {allCategories ? <th className="px-4 py-3 font-medium">Category</th> : null}
+                    <th className="px-4 py-3 font-medium">Category</th>
                     <th className="px-4 py-3 font-medium">Status</th>
-                    {showVenue ? <th className="px-4 py-3 font-medium">Venue</th> : null}
-                    {showOnlineToggle ? <th className="px-4 py-3 font-medium">Online</th> : null}
-                    {scheduleTypes.map((eventType) => (
+                    <th className="px-4 py-3 font-medium">Venue</th>
+                    <th className="px-4 py-3 font-medium">Online submission</th>
+                    {ALL_CATEGORY_DATE_TYPES.map((eventType) => (
                       <th
                         key={eventType}
                         title={eventTypeAdminLabels[eventType]}
@@ -398,13 +398,7 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
                   {filtered.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={
-                          3 +
-                          (allCategories ? 1 : 0) +
-                          (showVenue ? 1 : 0) +
-                          (showOnlineToggle ? 1 : 0) +
-                          scheduleTypes.length
-                        }
+                        colSpan={6 + ALL_CATEGORY_DATE_TYPES.length}
                         className="px-4 py-8 text-center text-muted"
                       >
                         No competitions
@@ -429,21 +423,15 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
                           <p className="font-medium text-foreground">{c.title}</p>
                           <p className="text-xs text-muted">/{c.slug}</p>
                         </td>
-                        {allCategories ? (
-                          <td className="px-4 py-3 text-muted whitespace-nowrap">
-                            {c.pathway ? pathwayLabels[c.pathway] : "Not set"}
-                          </td>
-                        ) : null}
+                        <td className="px-4 py-3 text-muted whitespace-nowrap">
+                          {c.pathway ? pathwayLabels[c.pathway] : "Not set"}
+                        </td>
                         <td className="px-4 py-3 text-muted whitespace-nowrap">{statusLabels[c.status]}</td>
-                        {showVenue ? (
-                          <td className="px-4 py-3 text-muted whitespace-nowrap">{c.venue || "—"}</td>
-                        ) : null}
-                        {showOnlineToggle ? (
-                          <td className="px-4 py-3 text-muted whitespace-nowrap">
-                            {c.hasOnlineSubmission ? "Yes" : "No"}
-                          </td>
-                        ) : null}
-                        {scheduleTypes.map((eventType) => (
+                        <td className="px-4 py-3 text-muted whitespace-nowrap">{c.venue || "—"}</td>
+                        <td className="px-4 py-3 text-muted whitespace-nowrap">
+                          {c.hasOnlineSubmission ? "Yes" : "No"}
+                        </td>
+                        {ALL_CATEGORY_DATE_TYPES.map((eventType) => (
                           <td key={eventType} className="px-4 py-3 text-muted whitespace-nowrap">
                             {datesForType(c, eventType)}
                           </td>

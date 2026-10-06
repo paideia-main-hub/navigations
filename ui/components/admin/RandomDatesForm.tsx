@@ -223,7 +223,7 @@ export function RandomDatesForm({ competitions }: { competitions: CompetitionSum
                   <th className="px-4 py-3 font-medium">Competition</th>
                   <th className="px-4 py-3 font-medium">Category</th>
                   <th className="px-4 py-3 font-medium">Venue</th>
-                  <th className="px-4 py-3 font-medium">Online</th>
+                  <th className="px-4 py-3 font-medium">Online submission</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Current {eventTypeAdminLabels[type]}</th>
                 </tr>
