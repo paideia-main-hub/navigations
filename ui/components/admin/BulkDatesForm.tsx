@@ -6,6 +6,7 @@ import { bulkSaveEventsAction, type ActionState } from "@/domain/competitions/ac
 import {
   eventTypeAdminLabels,
   eventTypeHints,
+  eventTypeLabels,
   pathwayLabels,
   pathwayOrder,
   statusLabels,
@@ -19,6 +20,14 @@ const initialState: ActionState = { error: null };
 
 const BULK_TYPES: EventType[] = ["registration_close", "round", "result_date", "final_event", "other"];
 type PathwayFilter = CompetitionPathway | "regardless";
+
+function datesForType(competition: CompetitionSummary, eventType: EventType): string {
+  const matches = competition.events
+    .filter((e) => e.type === eventType)
+    .map((e) => formatEventDateOnly(e.eventDate))
+    .filter(Boolean);
+  return matches.length > 0 ? matches.join(", ") : "—";
+}
 
 export function BulkDatesForm({ competitions }: { competitions: CompetitionSummary[] }) {
   const router = useRouter();
@@ -197,7 +206,7 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
         </div>
 
         <div className="overflow-x-auto rounded-xl border border-border bg-surface">
-          <table className="w-full min-w-[640px] text-left text-sm">
+          <table className="w-full min-w-[1100px] text-left text-sm">
             <thead>
               <tr className="border-b border-border text-muted">
                 <th className="px-4 py-3 font-medium">
@@ -214,54 +223,59 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
                 <th className="px-4 py-3 font-medium">Competition</th>
                 <th className="px-4 py-3 font-medium">Category</th>
                 <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Current date</th>
+                {BULK_TYPES.map((eventType) => (
+                  <th
+                    key={eventType}
+                    title={eventTypeAdminLabels[eventType]}
+                    className={`px-4 py-3 font-medium whitespace-nowrap ${
+                      eventType === type ? "bg-accent-soft text-foreground" : ""
+                    }`}
+                  >
+                    {eventTypeLabels[eventType]}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-muted">
+                  <td colSpan={4 + BULK_TYPES.length} className="px-4 py-8 text-center text-muted">
                     No competitions match this filter.
                   </td>
                 </tr>
               ) : (
-                filtered.map((c) => {
-                  const existing = c.events.find((e) => e.type === type);
-                  return (
-                    <tr key={c.id} className="border-b border-border last:border-0">
-                      <td className="px-4 py-3">
-                        <input
-                          type="checkbox"
-                          name="competition_id"
-                          value={c.id}
-                          checked={selected.has(c.id)}
-                          onChange={() => toggle(c.id)}
-                          className="rounded border-border"
-                        />
+                filtered.map((c) => (
+                  <tr key={c.id} className="border-b border-border last:border-0">
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        name="competition_id"
+                        value={c.id}
+                        checked={selected.has(c.id)}
+                        onChange={() => toggle(c.id)}
+                        className="rounded border-border"
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-foreground">{c.title}</p>
+                      <p className="text-xs text-muted">/{c.slug}</p>
+                    </td>
+                    <td className="px-4 py-3 text-muted whitespace-nowrap">
+                      {c.pathway ? pathwayLabels[c.pathway] : "Not set"}
+                    </td>
+                    <td className="px-4 py-3 text-muted whitespace-nowrap">{statusLabels[c.status]}</td>
+                    {BULK_TYPES.map((eventType) => (
+                      <td
+                        key={eventType}
+                        className={`px-4 py-3 whitespace-nowrap ${
+                          eventType === type ? "bg-accent-soft/50 text-foreground" : "text-muted"
+                        }`}
+                      >
+                        {datesForType(c, eventType)}
                       </td>
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-foreground">{c.title}</p>
-                        <p className="text-xs text-muted">/{c.slug}</p>
-                      </td>
-                      <td className="px-4 py-3 text-muted">
-                        {c.pathway ? pathwayLabels[c.pathway] : "Not set"}
-                      </td>
-                      <td className="px-4 py-3 text-muted">{statusLabels[c.status]}</td>
-                      <td className="px-4 py-3 text-muted">
-                        {existing ? (
-                          <span>
-                            {formatEventDateOnly(existing.eventDate)}
-                            {existing.title ? (
-                              <span className="mt-0.5 block text-xs">{existing.title}</span>
-                            ) : null}
-                          </span>
-                        ) : (
-                          "Not set"
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
+                    ))}
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
