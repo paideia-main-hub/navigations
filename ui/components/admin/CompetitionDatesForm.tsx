@@ -1,18 +1,19 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import { saveEventsAction, type ActionState } from "@/domain/competitions/actions";
+import { allowedEventTypes } from "@/domain/competitions/pathwayDateRules";
 import {
   eventTypeAdminLabels,
   eventTypeHints,
+  pathwayLabels,
   type Competition,
   type CompetitionEvent,
   type EventType,
 } from "@/domain/competitions/types";
-
 const initialState: ActionState = { error: null };
 
-type DraftEvent = Partial<CompetitionEvent>;
+type DraftEvent = Partial<CompetitionEvent> & { type: EventType };
 
 function toLocalInputValue(iso?: string): string {
   if (!iso) return "";
@@ -22,14 +23,31 @@ function toLocalInputValue(iso?: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+function buildRows(competition: Competition): DraftEvent[] {
+  const allowed = allowedEventTypes(competition.pathway, competition.hasOnlineSubmission);
+  return allowed.map((type) => {
+    const existing = competition.events.find((e) => e.type === type);
+    return {
+      id: existing?.id,
+      type,
+      title: existing?.title ?? eventTypeAdminLabels[type],
+      eventDate: existing?.eventDate,
+      description: existing?.description ?? "",
+    };
+  });
+}
+
 export function CompetitionDatesForm({ competition }: { competition: Competition }) {
   const [state, formAction, pending] = useActionState(saveEventsAction, initialState);
-  const [rows, setRows] = useState<DraftEvent[]>(
-    competition.events.length > 0 ? competition.events : [{ type: "registration_close", title: "Registration closes" }],
+  const [rows, setRows] = useState<DraftEvent[]>(() => buildRows(competition));
+
+  const allowed = useMemo(
+    () => allowedEventTypes(competition.pathway, competition.hasOnlineSubmission),
+    [competition.pathway, competition.hasOnlineSubmission],
   );
 
   useEffect(() => {
-    setRows(competition.events.length > 0 ? competition.events : [{ type: "registration_close", title: "Registration closes" }]);
+    setRows(buildRows(competition));
   }, [competition]);
 
   function updateRow(i: number, patch: Partial<DraftEvent>) {
@@ -41,44 +59,41 @@ export function CompetitionDatesForm({ competition }: { competition: Competition
       <input type="hidden" name="competition_id" value={competition.id} />
 
       <div className="rounded-xl border border-border bg-surface-muted/60 px-4 py-3 text-sm text-muted">
-        <p className="font-medium text-foreground">Each card is one date for this competition only.</p>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>
-            <span className="font-medium text-foreground">Type</span> — what kind of date it is (drives deadlines and labels in the system).
-          </li>
-          <li>
-            <span className="font-medium text-foreground">Title</span> — wording shown on the public competition page.
-          </li>
-          <li>
-            <span className="font-medium text-foreground">Date &amp; time</span> — when that milestone happens.
-          </li>
-          <li>
-            <span className="font-medium text-foreground">Description</span> — optional short note under the title on the public page.
-          </li>
-        </ul>
+        {!competition.pathway ? (
+          <p>
+            Assign a <span className="font-medium text-foreground">participation category</span> on the Overview
+            tab so the correct date slots appear for this competition.
+          </p>
+        ) : (
+          <>
+            <p className="font-medium text-foreground">
+              Dates for {pathwayLabels[competition.pathway]}
+              {competition.hasOnlineSubmission ? " · includes online submission" : ""}
+            </p>
+            <p className="mt-1">
+              Each row is one milestone. Leave a date blank to skip it for now — blank rows are not saved.
+              {competition.pathway === "independent_submission"
+                ? " This category has no contest / venue day."
+                : null}
+            </p>
+            {competition.venue ? (
+              <p className="mt-2 text-foreground">
+                Venue: <span className="font-medium">{competition.venue}</span>
+              </p>
+            ) : null}
+          </>
+        )}
       </div>
 
       {rows.map((row, i) => {
-        const type = (row.type ?? "other") as EventType;
+        const type = row.type;
         return (
-          <div key={i} className="grid gap-3 rounded-xl border border-border bg-surface p-4 sm:grid-cols-2">
+          <div key={type} className="grid gap-3 rounded-xl border border-border bg-surface p-4 sm:grid-cols-2">
+            <input type="hidden" name={`events[${i}][type]`} value={type} />
             <div className="sm:col-span-2">
-              <p className="text-xs font-semibold tracking-wide text-accent-strong uppercase">Date {i + 1}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Type (what this date is for)</label>
-              <select
-                name={`events[${i}][type]`}
-                value={type}
-                onChange={(e) => updateRow(i, { type: e.target.value as EventType })}
-                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-              >
-                {Object.entries(eventTypeAdminLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
+              <p className="text-xs font-semibold tracking-wide text-accent-strong uppercase">
+                {eventTypeAdminLabels[type]}
+              </p>
               <p className="mt-1 text-xs text-muted">{eventTypeHints[type]}</p>
             </div>
             <div>
@@ -87,7 +102,7 @@ export function CompetitionDatesForm({ competition }: { competition: Competition
                 name={`events[${i}][title]`}
                 value={row.title ?? ""}
                 onChange={(e) => updateRow(i, { title: e.target.value })}
-                placeholder="e.g. Registration closes"
+                placeholder={eventTypeAdminLabels[type]}
                 className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               />
             </div>
@@ -97,10 +112,11 @@ export function CompetitionDatesForm({ competition }: { competition: Competition
                 name={`events[${i}][eventDate]`}
                 type="datetime-local"
                 defaultValue={toLocalInputValue(row.eventDate)}
+                key={`${type}-${row.eventDate ?? "empty"}-${competition.updatedAt}`}
                 className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               />
             </div>
-            <div>
+            <div className="sm:col-span-2">
               <label className="text-sm font-medium text-foreground">Description (optional note)</label>
               <input
                 name={`events[${i}][description]`}
@@ -110,24 +126,13 @@ export function CompetitionDatesForm({ competition }: { competition: Competition
                 className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               />
             </div>
-            <button
-              type="button"
-              onClick={() => setRows((prev) => prev.filter((_, idx) => idx !== i))}
-              className="col-span-full justify-self-start text-sm font-medium text-red-600 dark:text-red-400"
-            >
-              Remove date
-            </button>
           </div>
         );
       })}
 
-      <button
-        type="button"
-        onClick={() => setRows((prev) => [...prev, { type: "other", title: "" }])}
-        className="text-sm font-semibold text-accent"
-      >
-        + Add date
-      </button>
+      {allowed.length === 0 ? (
+        <p className="text-sm text-muted">No date slots for this category yet.</p>
+      ) : null}
 
       {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
       {state.success && <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">Saved.</p>}

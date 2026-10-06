@@ -7,7 +7,17 @@ import {
   updateCompetitionCoreAction,
   type ActionState,
 } from "@/domain/competitions/actions";
-import { pathwayLabels, pathwayOrder, type Competition } from "@/domain/competitions/types";
+import {
+  pathwayAllowsOnlineSubmissionToggle,
+  pathwayRequiresOnlineSubmission,
+  pathwayRequiresVenue,
+} from "@/domain/competitions/pathwayDateRules";
+import {
+  pathwayLabels,
+  pathwayOrder,
+  type Competition,
+  type CompetitionPathway,
+} from "@/domain/competitions/types";
 import { FormField } from "@/ui/components/FormField";
 import { CompetencyPicker } from "@/ui/components/admin/CompetencyPicker";
 import { resolveCompetitionCardImage } from "@/domain/competitions/cardImage";
@@ -226,6 +236,17 @@ function CompetitionImageUploader({ competition }: { competition: Competition })
 
 export function CompetitionOverviewForm({ competition }: { competition: Competition }) {
   const [state, formAction, pending] = useActionState(updateCompetitionCoreAction, initialState);
+  const [pathway, setPathway] = useState<CompetitionPathway | "">(competition.pathway ?? "");
+  const [hasOnlineSubmission, setHasOnlineSubmission] = useState(competition.hasOnlineSubmission);
+
+  useEffect(() => {
+    setPathway(competition.pathway ?? "");
+    setHasOnlineSubmission(competition.hasOnlineSubmission);
+  }, [competition.pathway, competition.hasOnlineSubmission]);
+
+  const showVenue = pathwayRequiresVenue(pathway || null);
+  const showOnlineToggle = pathwayAllowsOnlineSubmissionToggle(pathway || null);
+  const onlineForced = pathwayRequiresOnlineSubmission(pathway || null);
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -264,7 +285,13 @@ export function CompetitionOverviewForm({ competition }: { competition: Competit
           <label className="text-sm font-medium text-foreground">Participation category</label>
           <select
             name="pathway"
-            defaultValue={competition.pathway ?? ""}
+            value={pathway}
+            onChange={(e) => {
+              const next = e.target.value as CompetitionPathway | "";
+              setPathway(next);
+              if (pathwayRequiresOnlineSubmission(next || null)) setHasOnlineSubmission(true);
+              if (next === "live_response") setHasOnlineSubmission(false);
+            }}
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
           >
             <option value="">Not assigned</option>
@@ -274,8 +301,66 @@ export function CompetitionOverviewForm({ competition }: { competition: Competit
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-muted">Which Route 1 card this appears under on the home page.</p>
+          <p className="mt-1 text-xs text-muted">
+            Sets which date types appear on the Important Dates tab and whether a venue / online submission applies.
+          </p>
         </div>
+
+        {showVenue ? (
+          <div>
+            <FormField
+              label="Venue"
+              name="venue"
+              defaultValue={competition.venue ?? ""}
+              placeholder="e.g. Expo Centre, Lahore"
+            />
+            <p className="mt-1 text-xs text-muted">
+              Physical location for the contest / performance day. Shown on the public competition page.
+            </p>
+          </div>
+        ) : null}
+
+        {showOnlineToggle ? (
+          <div className="rounded-xl border border-border bg-surface p-4">
+            {hasOnlineSubmission ? <input type="hidden" name="has_online_submission" value="on" /> : null}
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground">Online submission</p>
+                <p className="mt-0.5 text-xs text-muted">
+                  {hasOnlineSubmission
+                    ? "On — Important Dates includes an online submission last date."
+                    : "Off — contest day and venue only; no online upload deadline."}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={hasOnlineSubmission}
+                aria-label="Online submission"
+                onClick={() => setHasOnlineSubmission((v) => !v)}
+                className={`relative h-7 w-12 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
+                  hasOnlineSubmission ? "bg-accent" : "bg-border"
+                }`}
+              >
+                <span
+                  aria-hidden
+                  className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 ${
+                    hasOnlineSubmission ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {onlineForced ? (
+          <>
+            <input type="hidden" name="has_online_submission" value="on" />
+            <p className="rounded-xl border border-border bg-surface-muted/60 px-4 py-3 text-sm text-muted">
+              Independent Submission always includes online work upload (no contest venue day).
+            </p>
+          </>
+        ) : null}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="flex items-center gap-2 text-sm text-foreground">

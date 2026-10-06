@@ -219,18 +219,27 @@ export default async function CompetitionPage({
       label: "Important Dates",
       icon: "📅",
       content: (
-        <ul className="max-w-2xl space-y-2 text-sm">
-          {competition.events.map((e) => (
-            <li key={e.id} className="flex justify-between border-b border-border py-2">
-              <span className={muted}>
-                {eventTypeLabels[e.type]}
-                {e.title && e.title !== eventTypeLabels[e.type] ? ` — ${e.title}` : ""}
-              </span>
-              <span className="font-medium text-foreground">{new Date(e.eventDate).toLocaleDateString("en-GB")}</span>
-            </li>
-          ))}
-          {competition.events.length === 0 && <li className={`py-2 ${muted}`}>Dates not yet scheduled.</li>}
-        </ul>
+        <div className="max-w-2xl space-y-4 text-sm">
+          {competition.venue ? (
+            <p className={muted}>
+              Venue: <span className="font-medium text-foreground">{competition.venue}</span>
+            </p>
+          ) : null}
+          <ul className="space-y-2">
+            {competition.events.map((e) => (
+              <li key={e.id} className="flex justify-between border-b border-border py-2">
+                <span className={muted}>
+                  {eventTypeLabels[e.type] ?? e.type}
+                  {e.title && e.title !== eventTypeLabels[e.type] ? ` — ${e.title}` : ""}
+                </span>
+                <span className="font-medium text-foreground">
+                  {new Date(e.eventDate).toLocaleDateString("en-GB")}
+                </span>
+              </li>
+            ))}
+            {competition.events.length === 0 && <li className={`py-2 ${muted}`}>Dates not yet scheduled.</li>}
+          </ul>
+        </div>
       ),
     },
     {

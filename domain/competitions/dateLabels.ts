@@ -1,0 +1,37 @@
+import type { CompetitionEvent, EventType } from "@/domain/competitions/types";
+
+/** Compact two-word (or short) labels for public date chips. */
+export const shortEventLabels: Record<EventType, string> = {
+  registration_close: "Registration closes",
+  round: "Contest day",
+  submission_deadline: "Submission ends",
+  result_date: "Results out",
+  final_event: "Final event",
+  other: "Other date",
+};
+
+const TYPE_ORDER: EventType[] = [
+  "registration_close",
+  "round",
+  "submission_deadline",
+  "result_date",
+  "final_event",
+  "other",
+];
+
+export function shortLabelForEvent(event: CompetitionEvent): string {
+  const title = event.title?.trim();
+  if (title) {
+    const words = title.split(/\s+/).filter(Boolean);
+    if (words.length > 0 && words.length <= 3) return words.join(" ");
+  }
+  return shortEventLabels[event.type] ?? "Other date";
+}
+
+export function sortCompetitionEvents(events: CompetitionEvent[]): CompetitionEvent[] {
+  return [...events].sort((a, b) => {
+    const byDate = new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime();
+    if (byDate !== 0) return byDate;
+    return TYPE_ORDER.indexOf(a.type) - TYPE_ORDER.indexOf(b.type);
+  });
+}

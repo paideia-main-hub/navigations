@@ -26,6 +26,7 @@ import type {
   StageRubric,
 } from "@/domain/competitions/types";
 import { PATHWAY_BY_SLUG } from "@/domain/competitions/pathwayFallback";
+import { effectiveHasOnlineSubmission } from "@/domain/competitions/pathwayDateRules";
 
 const FULL_SELECT = `
   *,
@@ -52,6 +53,8 @@ type Row = {
   pathway?: CompetitionPathway | null;
   image_url?: string | null;
   competencies?: string[] | null;
+  venue?: string | null;
+  has_online_submission?: boolean | null;
   supports_individual: boolean;
   supports_team: boolean;
   fee_required: boolean;
@@ -214,6 +217,11 @@ function toCompetition(row: Row): Competition {
     pathway: row.pathway ?? PATHWAY_BY_SLUG[row.slug] ?? null,
     competencies: row.competencies ?? [],
     imageUrl: row.image_url ?? null,
+    venue: row.venue ?? null,
+    hasOnlineSubmission: effectiveHasOnlineSubmission(
+      row.pathway ?? PATHWAY_BY_SLUG[row.slug] ?? null,
+      Boolean(row.has_online_submission),
+    ),
     supportsIndividual: row.supports_individual,
     supportsTeam: row.supports_team,
     feeRequired: row.fee_required,
@@ -281,12 +289,10 @@ const SUMMARY_CHILDREN = `
   events (*)
 `;
 
-const SUMMARY_SELECT = `${SUMMARY_COLUMNS}, pathway, image_url, dates_card_one, dates_card_two, competencies, ${SUMMARY_CHILDREN}`;
+const SUMMARY_SELECT = `${SUMMARY_COLUMNS}, pathway, image_url, dates_card_one, dates_card_two, competencies, venue, has_online_submission, ${SUMMARY_CHILDREN}`;
 
-/** Fallbacks for a database missing migration 0022 (competencies), 0020
- * (Important Dates card lines) or both — tried in order, each only after the
- * previous failed on a missing column, so whichever of the two is applied
- * still gets read. */
+/** Fallbacks for databases missing later migrations — tried newest-first. */
+const SUMMARY_SELECT_PRE_0027 = `${SUMMARY_COLUMNS}, pathway, image_url, dates_card_one, dates_card_two, competencies, ${SUMMARY_CHILDREN}`;
 const SUMMARY_SELECT_PRE_0022 = `${SUMMARY_COLUMNS}, pathway, image_url, dates_card_one, dates_card_two, ${SUMMARY_CHILDREN}`;
 const SUMMARY_SELECT_PRE_0020_WITH_COMPETENCIES = `${SUMMARY_COLUMNS}, pathway, image_url, competencies, ${SUMMARY_CHILDREN}`;
 const SUMMARY_SELECT_PRE_0020 = `${SUMMARY_COLUMNS}, pathway, image_url, ${SUMMARY_CHILDREN}`;
@@ -336,6 +342,11 @@ function toSummary(row: Row): CompetitionSummary {
     pathway: row.pathway ?? PATHWAY_BY_SLUG[row.slug] ?? null,
     competencies: row.competencies ?? [],
     imageUrl: row.image_url ?? null,
+    venue: row.venue ?? null,
+    hasOnlineSubmission: effectiveHasOnlineSubmission(
+      row.pathway ?? PATHWAY_BY_SLUG[row.slug] ?? null,
+      Boolean(row.has_online_submission),
+    ),
     supportsIndividual: row.supports_individual,
     supportsTeam: row.supports_team,
     feeRequired: row.fee_required,
@@ -354,6 +365,7 @@ export const getCompetitionSummaries = cache(async (supabase: SupabaseClient): P
   // Newest schema first; step back only while the failure is a missing column.
   for (const select of [
     SUMMARY_SELECT,
+    SUMMARY_SELECT_PRE_0027,
     SUMMARY_SELECT_PRE_0022,
     SUMMARY_SELECT_PRE_0020_WITH_COMPETENCIES,
     SUMMARY_SELECT_PRE_0020,
@@ -465,6 +477,7 @@ export const getCompetitionBySlug = cache(
 export async function adminListCompetitions(admin: SupabaseClient): Promise<CompetitionSummary[]> {
   for (const select of [
     SUMMARY_SELECT,
+    SUMMARY_SELECT_PRE_0027,
     SUMMARY_SELECT_PRE_0022,
     SUMMARY_SELECT_PRE_0020_WITH_COMPETENCIES,
     SUMMARY_SELECT_PRE_0020,
@@ -504,6 +517,8 @@ export interface CompetitionCoreInput {
   pathway: CompetitionPathway | null;
   competencies: string[];
   imageUrl: string | null;
+  venue: string | null;
+  hasOnlineSubmission: boolean;
   status: CompetitionStatus;
   supportsIndividual: boolean;
   supportsTeam: boolean;
@@ -524,6 +539,8 @@ function coreToRow(input: CompetitionCoreInput) {
     pathway: input.pathway,
     competencies: input.competencies,
     image_url: input.imageUrl,
+    venue: input.venue,
+    has_online_submission: effectiveHasOnlineSubmission(input.pathway, input.hasOnlineSubmission),
     status: input.status,
     supports_individual: input.supportsIndividual,
     supports_team: input.supportsTeam,
@@ -542,7 +559,14 @@ export const COMPETENCIES_PENDING_MIGRATION =
  * block the rest of a save, so these writes retry once without it and report
  * that via `warning`. */
 function isMissingCompetenciesColumn(error: { code?: string; message?: string } | null): boolean {
-  return error?.code === UNDEFINED_COLUMN || /competencies/.test(error?.message ?? "");
+  return error?.code === UNDEFINED_COLUMN && /competencies/.test(error?.message ?? "");
+}
+
+function isMissingVenueOnlineColumns(error: { code?: string; message?: string } | null): boolean {
+  return (
+    error?.code === UNDEFINED_COLUMN &&
+    (/venue/.test(error?.message ?? "") || /has_online_submission/.test(error?.message ?? ""))
+  );
 }
 
 function withoutCompetencies<T extends { competencies: string[] }>(row: T): Omit<T, "competencies"> {
@@ -551,17 +575,36 @@ function withoutCompetencies<T extends { competencies: string[] }>(row: T): Omit
   return rest;
 }
 
+function withoutVenueOnline<T extends { venue: string | null; has_online_submission: boolean }>(
+  row: T,
+): Omit<T, "venue" | "has_online_submission"> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { venue, has_online_submission, ...rest } = row;
+  return rest;
+}
+
+export const VENUE_ONLINE_PENDING_MIGRATION =
+  "Saved, but venue / online-submission settings were not stored: apply supabase/migrations/0027_competition_venue_online_submission.sql to the database first.";
+
 export async function insertCompetition(
   admin: SupabaseClient,
   input: CompetitionCoreInput,
 ): Promise<{ id: string | null; error: string | null; warning?: string }> {
-  const row = coreToRow(input);
+  let row: Record<string, unknown> = coreToRow(input);
   let result = await admin.from("competitions").insert(row).select("id").single();
   let warning: string | undefined;
+
+  if (result.error && isMissingVenueOnlineColumns(result.error)) {
+    row = withoutVenueOnline(row as ReturnType<typeof coreToRow>);
+    result = await admin.from("competitions").insert(row).select("id").single();
+    warning = VENUE_ONLINE_PENDING_MIGRATION;
+  }
   if (result.error && isMissingCompetenciesColumn(result.error)) {
-    result = await admin.from("competitions").insert(withoutCompetencies(row)).select("id").single();
+    row = withoutCompetencies(row as { competencies: string[] } & Record<string, unknown>);
+    result = await admin.from("competitions").insert(row).select("id").single();
     if (input.competencies.length > 0) warning = COMPETENCIES_PENDING_MIGRATION;
   }
+
   const { data, error } = result;
   if (error || !data) return { id: null, error: error?.message ?? "Failed to create competition." };
   return { id: data.id as string, error: null, warning };
@@ -572,14 +615,26 @@ export async function updateCompetitionCore(
   id: string,
   input: CompetitionCoreInput,
 ): Promise<{ error: string | null; warning?: string }> {
-  const row = { ...coreToRow(input), updated_at: new Date().toISOString() };
-  const { error } = await admin.from("competitions").update(row).eq("id", id);
-  if (error && isMissingCompetenciesColumn(error)) {
-    const retry = await admin.from("competitions").update(withoutCompetencies(row)).eq("id", id);
-    if (retry.error) return { error: retry.error.message };
-    return { error: null, warning: input.competencies.length > 0 ? COMPETENCIES_PENDING_MIGRATION : undefined };
+  let row: Record<string, unknown> = { ...coreToRow(input), updated_at: new Date().toISOString() };
+  let { error } = await admin.from("competitions").update(row).eq("id", id);
+  let warning: string | undefined;
+
+  if (error && isMissingVenueOnlineColumns(error)) {
+    row = withoutVenueOnline(row as ReturnType<typeof coreToRow> & { updated_at: string });
+    const retry = await admin.from("competitions").update(row).eq("id", id);
+    error = retry.error;
+    warning = VENUE_ONLINE_PENDING_MIGRATION;
   }
-  return { error: error?.message ?? null };
+  if (error && isMissingCompetenciesColumn(error)) {
+    row = withoutCompetencies(row as { competencies: string[] } & Record<string, unknown>);
+    const retry = await admin.from("competitions").update(row).eq("id", id);
+    if (retry.error) return { error: retry.error.message };
+    return {
+      error: null,
+      warning: input.competencies.length > 0 ? COMPETENCIES_PENDING_MIGRATION : warning,
+    };
+  }
+  return { error: error?.message ?? null, warning };
 }
 
 export async function setCompetitionImageUrl(
@@ -955,6 +1010,36 @@ export async function replaceEvents(
       description: e.description,
     })),
   );
+  return { error: error?.message ?? null };
+}
+
+/** Bulk-update venue and/or online-submission flag on many competitions. */
+export async function bulkUpdateScheduleMeta(
+  admin: SupabaseClient,
+  competitionIds: string[],
+  patch: { venue?: string | null; hasOnlineSubmission?: boolean },
+): Promise<{ error: string | null }> {
+  if (competitionIds.length === 0) return { error: "Select at least one competition." };
+  if (patch.venue === undefined && patch.hasOnlineSubmission === undefined) {
+    return { error: null };
+  }
+
+  const row: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (patch.venue !== undefined) row.venue = patch.venue;
+  if (patch.hasOnlineSubmission !== undefined) row.has_online_submission = patch.hasOnlineSubmission;
+
+  const { error } = await admin.from("competitions").update(row).in("id", competitionIds);
+  return { error: error?.message ?? null };
+}
+
+/** Removes one event type from many competitions (e.g. drop submission deadlines). */
+export async function deleteEventTypeForCompetitions(
+  admin: SupabaseClient,
+  competitionIds: string[],
+  type: EventType,
+): Promise<{ error: string | null }> {
+  if (competitionIds.length === 0) return { error: null };
+  const { error } = await admin.from("events").delete().in("competition_id", competitionIds).eq("type", type);
   return { error: error?.message ?? null };
 }
 

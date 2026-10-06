@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { unbounded as dateNumeralFont } from "@/app/fonts";
+import { shortLabelForEvent, sortCompetitionEvents } from "@/domain/competitions/dateLabels";
 import type { CompetitionSummary } from "@/domain/competitions/types";
+import { formatEventDateOnly } from "@/ui/components/admin/eventDateFormat";
 import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
 import { BandDivider } from "./BandDivider";
 
@@ -309,11 +311,13 @@ function iconForTitle(title: string): SlideIcon {
   return "spark";
 }
 
-/** Contest date + activity name. Icon is drawn by the parent so it can
- * match that slide’s background family. */
+/** All admin-set dates + activity name + the two short description cards.
+ * Icon is drawn by the parent so it can match that slide’s background family. */
 function SpotlightFace({ item }: { item: CompetitionSummary }) {
-  const eventDate = competitionDateOf(item);
-  const parts = eventDate ? formatCompetitionDate(eventDate) : null;
+  const events = sortCompetitionEvents(item.events);
+  const heroDate = competitionDateOf(item);
+  const parts = heroDate ? formatCompetitionDate(heroDate) : null;
+  const notes = [item.datesCardOne, item.datesCardTwo].map((n) => n.trim()).filter(Boolean);
 
   return (
     <div className="@container relative z-10 flex h-full w-full flex-1 flex-col items-center justify-center px-1 text-center">
@@ -338,10 +342,39 @@ function SpotlightFace({ item }: { item: CompetitionSummary }) {
         </p>
       )}
       <p
-        className="font-heading mt-6 line-clamp-3 leading-tight text-balance text-brand-deep-foreground text-[length:min(1.85rem,12cqi)]"
+        className="font-heading mt-5 line-clamp-2 leading-tight text-balance text-brand-deep-foreground text-[length:min(1.65rem,11cqi)]"
       >
         {item.title}
       </p>
+
+      {events.length > 0 ? (
+        <ul className="mt-4 w-full max-w-[18rem] space-y-1.5 text-left">
+          {events.map((event) => (
+            <li
+              key={event.id}
+              className="flex items-baseline justify-between gap-2 text-[0.7rem] text-brand-deep-foreground/80 sm:text-xs"
+            >
+              <span className="font-semibold">{shortLabelForEvent(event)}</span>
+              <span className="shrink-0 tabular-nums text-brand-deep-muted">
+                {formatEventDateOnly(event.eventDate)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {notes.length > 0 ? (
+        <div className={`mt-4 grid w-full max-w-[18rem] gap-2 ${notes.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+          {notes.map((note) => (
+            <p
+              key={note}
+              className="rounded-lg border border-white/15 bg-white/10 px-2 py-1.5 text-center text-[0.65rem] font-bold tracking-wide text-brand-deep-foreground sm:text-xs"
+            >
+              {note}
+            </p>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

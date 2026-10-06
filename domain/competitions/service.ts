@@ -323,6 +323,8 @@ export const removeWinner = repo.deleteWinner;
 export const saveEvents = repo.replaceEvents;
 export const upsertEventTypeForCompetitions = repo.upsertEventTypeForCompetitions;
 export const upsertEventTypePerCompetition = repo.upsertEventTypePerCompetition;
+export const bulkUpdateScheduleMeta = repo.bulkUpdateScheduleMeta;
+export const deleteEventTypeForCompetitions = repo.deleteEventTypeForCompetitions;
 
 export type {
   CompetitionCoreInput,
