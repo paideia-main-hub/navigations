@@ -35,20 +35,22 @@ export default async function WorkSubmissionsPage() {
           </Link>
         </div>
       ) : (
-        <ul className="mt-6 grid gap-4 md:grid-cols-2">
+        <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {registrations.map((r) => {
             const s = byRegistration.get(r.registrationId);
             const status = s?.status ?? null;
             return (
-              <li key={r.registrationId} className="flex flex-col rounded-xl border border-border bg-surface p-5">
-                <p className="text-[0.68rem] font-semibold tracking-[0.14em] text-accent-strong uppercase">Independent Submission</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{r.competitionTitle}</p>
+              <li key={r.registrationId} className="flex max-w-xs flex-col rounded-xl border border-border bg-surface p-4">
+                <p className="text-[0.65rem] font-semibold tracking-[0.14em] text-accent-strong uppercase">
+                  Independent Submission
+                </p>
+                <p className="mt-1 text-base font-bold text-foreground">{r.competitionTitle}</p>
                 <p className="text-xs text-muted">
                   {r.registrationNumber}
                   {r.entryType === "team" ? ` · Team ${r.entrantName}` : ""}
                 </p>
                 <p
-                  className={`mt-3 inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${
+                  className={`mt-2 inline-flex w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                     status === "scored"
                       ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
                       : status === "submitted"
@@ -61,9 +63,13 @@ export default async function WorkSubmissionsPage() {
                 </p>
                 <Link
                   href={`/dashboard/submissions/${r.registrationId}`}
-                  className="mt-4 w-fit rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90"
+                  className="mt-3 inline-flex h-8 w-fit items-center rounded-full bg-accent px-4 text-sm font-semibold text-accent-foreground hover:opacity-90"
                 >
-                  {status === "scored" ? "View score & feedback" : status === "submitted" ? "View / update submission" : "Open & submit work"}
+                  {status === "scored"
+                    ? "View score & feedback"
+                    : status === "submitted"
+                      ? "View / update submission"
+                      : "Open & submit work"}
                 </Link>
               </li>
             );

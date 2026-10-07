@@ -13,6 +13,7 @@ import {
   eventTypeAdminLabels,
   eventTypeHints,
   eventTypeLabels,
+  formatFee,
   pathwayLabels,
   pathwayOrder,
   statusLabels,
@@ -48,6 +49,7 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
   const [pathway, setPathway] = useState<PathwayScope>("");
   const [hasOnlineSubmission, setHasOnlineSubmission] = useState(false);
   const [applyVenue, setApplyVenue] = useState(false);
+  const [applyFee, setApplyFee] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [query, setQuery] = useState("");
   const [fieldsKey, setFieldsKey] = useState(0);
@@ -87,6 +89,7 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
     setSelected(new Set());
     setQuery("");
     setApplyVenue(false);
+    setApplyFee(false);
     setHasOnlineSubmission(onlineForced);
     setFieldsKey((k) => k + 1);
     router.refresh();
@@ -96,6 +99,7 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
     if (onlineForced) setHasOnlineSubmission(true);
     else setHasOnlineSubmission(false);
     setApplyVenue(false);
+    setApplyFee(false);
     setSelected(new Set());
   }, [pathway, onlineForced]);
 
@@ -219,6 +223,34 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
                   />
                 </div>
               ) : null}
+
+              <div className="rounded-xl border border-border bg-background p-3">
+                <label className="flex items-start gap-2 text-sm text-foreground">
+                  <input
+                    type="checkbox"
+                    name="apply_fee"
+                    checked={applyFee}
+                    onChange={(e) => setApplyFee(e.target.checked)}
+                    className="mt-0.5 rounded border-border"
+                  />
+                  <span>
+                    <span className="font-medium">Apply fee to selected</span>
+                    <span className="mt-0.5 block text-xs text-muted">
+                      Writes this entry fee (PKR) onto every selected competition.
+                    </span>
+                  </span>
+                </label>
+                <input
+                  name="fee_amount"
+                  key={`fee-${fieldsKey}`}
+                  type="number"
+                  min="0"
+                  step="1"
+                  disabled={!applyFee}
+                  placeholder="e.g. 1000"
+                  className="mt-3 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground disabled:opacity-50"
+                />
+              </div>
 
               {showOnlineToggle ? (
                 <div
@@ -380,6 +412,7 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
                     <th className="px-4 py-3 font-medium">Competition</th>
                     <th className="px-4 py-3 font-medium">Category</th>
                     <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Fee</th>
                     <th className="px-4 py-3 font-medium">Venue</th>
                     <th className="px-4 py-3 font-medium">Online submission</th>
                     {ALL_CATEGORY_DATE_TYPES.map((eventType) => (
@@ -397,7 +430,7 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
                   {filtered.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={6 + ALL_CATEGORY_DATE_TYPES.length}
+                        colSpan={7 + ALL_CATEGORY_DATE_TYPES.length}
                         className="px-4 py-8 text-center text-muted"
                       >
                         No competitions
@@ -426,6 +459,9 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
                           {c.pathway ? pathwayLabels[c.pathway] : "Not set"}
                         </td>
                         <td className="px-4 py-3 text-muted whitespace-nowrap">{statusLabels[c.status]}</td>
+                        <td className="px-4 py-3 text-muted whitespace-nowrap">
+                          {c.feeAmount != null ? formatFee(c.feeAmount) : "—"}
+                        </td>
                         <td className="px-4 py-3 text-muted whitespace-nowrap">{c.venue || "—"}</td>
                         <td className="px-4 py-3 text-muted whitespace-nowrap">
                           {c.hasOnlineSubmission ? "Yes" : "No"}

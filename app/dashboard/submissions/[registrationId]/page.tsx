@@ -39,9 +39,16 @@ export default async function SubmitWorkPage({ params }: { params: Promise<{ reg
       </DashboardHero>
       <DashboardPage>
         <div className="max-w-3xl">
-          <p className="mt-6 rounded-xl border border-border bg-surface p-4 text-sm text-foreground">{config.brief}</p>
-
-          <div className="mt-6">
+          <Link
+            href="/dashboard/submissions"
+            className="inline-flex text-sm font-semibold text-accent hover:opacity-90"
+          >
+            ← Back to Work Submissions
+          </Link>
+          <p className="mt-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-relaxed text-muted">
+            {config.brief}
+          </p>
+          <div className="mt-4">
             <SubmissionForm
               registrationId={registrationId}
               userId={user.id}

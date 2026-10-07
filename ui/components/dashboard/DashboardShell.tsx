@@ -164,9 +164,9 @@ export function DashboardShell({
       <div className="bg-background">
         <PersistentHero hero={hero} />
 
-        {/* Full-bleed band: sidebar at the left edge; main matches hero max-w-7xl */}
+        {/* Sidebar + main share the same max-w-7xl column as the public site. */}
         <div className="w-full py-8 sm:py-10 lg:py-12">
-          <div className="flex w-full items-start gap-4 px-4 sm:gap-6 sm:px-6">
+          <div className="mx-auto flex w-full max-w-7xl items-start gap-4 px-6 sm:gap-6">
             <aside
               className={`sticky top-28 z-30 hidden w-64 shrink-0 self-start sm:top-32 lg:block ${sidebarClass}`}
             >
@@ -184,7 +184,7 @@ export function DashboardShell({
               </div>
             ) : null}
 
-            <div className="min-w-0 w-full max-w-7xl">
+            <div className="min-w-0 flex-1">
               <div className={`mb-4 flex items-center gap-3 px-4 py-3 lg:hidden ${panelClass}`}>
                 <button
                   type="button"

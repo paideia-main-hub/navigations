@@ -16,11 +16,22 @@ import {
   type WorkSubmission,
 } from "@/domain/submissions/config";
 
-const input =
-  "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent disabled:opacity-70";
+const control =
+  "mt-1 h-8 w-full rounded-md border border-border bg-background px-2 text-sm leading-8 text-foreground outline-none focus:border-accent disabled:opacity-70";
+const area =
+  "mt-1 min-h-20 w-full resize-y rounded-md border border-border bg-background px-2 py-2 text-sm leading-5 text-foreground outline-none focus:border-accent disabled:opacity-70";
 
 function formatSize(bytes: number): string {
   return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
+function FieldLabel({ children, required }: { children: string; required?: boolean }) {
+  return (
+    <span className="text-xs font-semibold tracking-wide text-foreground">
+      {children}
+      {required ? <span className="text-red-600"> *</span> : null}
+    </span>
+  );
 }
 
 /** The student's entry form for one Independent Submission competition,
@@ -98,27 +109,29 @@ export function SubmissionForm({
     }
     setMessage({
       tone: "ok",
-      text: submit ? "Submission confirmed ✓ — it's now with the League team for review. You can still update it until it's scored." : "Draft saved.",
+      text: submit
+        ? "Submission confirmed — it's with the League team for review. You can still update it until it's scored."
+        : "Draft saved.",
     });
     router.refresh();
   }
 
   if (locked && initial) {
     return (
-      <div className="space-y-5">
-        <div className="rounded-xl border border-emerald-300 bg-surface p-5 dark:border-emerald-800">
-          <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">{submissionStatusLabels.scored}</p>
-          <p className="mt-1 text-3xl font-black text-foreground">
-            {initial.totalScore} <span className="text-lg font-semibold text-muted">/ {initial.maxScore}</span>
+      <div className="space-y-4">
+        <div className="rounded-xl border border-emerald-300 bg-surface px-4 py-3 dark:border-emerald-800">
+          <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">{submissionStatusLabels.scored}</p>
+          <p className="mt-1 text-2xl font-black text-foreground">
+            {initial.totalScore} <span className="text-base font-semibold text-muted">/ {initial.maxScore}</span>
           </p>
-          {initial.feedback && <p className="mt-3 text-sm whitespace-pre-line text-foreground">{initial.feedback}</p>}
+          {initial.feedback && <p className="mt-2 text-sm whitespace-pre-line text-foreground">{initial.feedback}</p>}
         </div>
         <div className="overflow-hidden rounded-xl border border-border bg-surface">
           {config.rubric.map((group, gi) => (
             <div key={gi}>
-              {group.title && <p className="bg-surface-muted px-4 py-2 text-xs font-semibold text-muted">{group.title}</p>}
+              {group.title && <p className="bg-surface-muted px-3 py-1.5 text-xs font-semibold text-muted">{group.title}</p>}
               {group.criteria.map((c) => (
-                <div key={c.key} className="flex justify-between border-t border-border px-4 py-2 text-sm">
+                <div key={c.key} className="flex justify-between border-t border-border px-3 py-1.5 text-sm">
                   <span className="text-foreground">{c.label}</span>
                   <span className="font-semibold text-foreground">
                     {initial.scores[c.key] ?? "—"} / {c.max}
@@ -132,54 +145,52 @@ export function SubmissionForm({
     );
   }
 
+  const visible = config.fields.filter((f) => isFieldVisible(f, answers));
+
   return (
-    <div className="space-y-5">
-      {status && (
+    <div className="overflow-hidden rounded-xl border border-border bg-surface">
+      {status ? (
         <p
-          className={`rounded-lg px-4 py-2 text-sm font-medium ${
-            status === "submitted" ? "bg-sky-50 text-sky-800 dark:bg-sky-500/10 dark:text-sky-300" : "bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300"
+          className={`border-b border-border px-4 py-2 text-xs font-medium ${
+            status === "submitted"
+              ? "bg-sky-50 text-sky-800 dark:bg-sky-500/10 dark:text-sky-300"
+              : "bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300"
           }`}
         >
           {submissionStatusLabels[status]}
           {initial?.submittedAt ? ` · ${new Date(initial.submittedAt).toLocaleString("en-GB")}` : ""}
         </p>
-      )}
+      ) : null}
 
-      {config.fields
-        .filter((f) => isFieldVisible(f, answers))
-        .map((field) => {
+      <div className="grid gap-x-4 gap-y-3 p-4 sm:grid-cols-2">
+        {visible.map((field) => {
           const value = answers[field.id] ?? "";
           const required = "required" in field && field.required;
-          const label = (
-            <span className="text-sm font-medium text-foreground">
-              {field.label}
-              {required && <span className="text-red-600"> *</span>}
-            </span>
-          );
-          const help = "help" in field && field.help ? <p className="mt-1 text-xs text-muted">{field.help}</p> : null;
+          const help = "help" in field && field.help ? <p className="mt-1 text-[11px] leading-4 text-muted">{field.help}</p> : null;
+          const wide = field.kind === "textarea" || field.kind === "file" || field.kind === "declaration" || field.kind === "url";
 
           switch (field.kind) {
             case "text":
               return (
                 <label key={field.id} className="block">
-                  {label}
-                  <input value={value} onChange={(e) => set(field.id, e.target.value)} className={input} />
+                  <FieldLabel required={required}>{field.label}</FieldLabel>
+                  <input value={value} onChange={(e) => set(field.id, e.target.value)} className={control} />
                   {help}
                 </label>
               );
             case "url":
               return (
-                <label key={field.id} className="block">
-                  {label}
-                  <input type="url" value={value} onChange={(e) => set(field.id, e.target.value)} placeholder="https://" className={input} />
+                <label key={field.id} className="block sm:col-span-2">
+                  <FieldLabel required={required}>{field.label}</FieldLabel>
+                  <input type="url" value={value} onChange={(e) => set(field.id, e.target.value)} placeholder="https://" className={control} />
                   {help}
                 </label>
               );
             case "select":
               return (
                 <label key={field.id} className="block">
-                  {label}
-                  <select value={value} onChange={(e) => set(field.id, e.target.value)} className={input}>
+                  <FieldLabel required={required}>{field.label}</FieldLabel>
+                  <select value={value} onChange={(e) => set(field.id, e.target.value)} className={control}>
                     <option value="">Choose…</option>
                     {field.options.map((o) => (
                       <option key={o} value={o}>
@@ -194,16 +205,21 @@ export function SubmissionForm({
               const n = wordCount(value);
               const out = field.words && value && (n < field.words[0] || n > field.words[1]);
               return (
-                <label key={field.id} className="block">
-                  {label}
-                  <textarea value={value} onChange={(e) => set(field.id, e.target.value)} rows={field.words && field.words[1] > 150 ? 6 : 4} className={input} />
+                <label key={field.id} className="block sm:col-span-2">
+                  <FieldLabel required={required}>{field.label}</FieldLabel>
+                  <textarea
+                    value={value}
+                    onChange={(e) => set(field.id, e.target.value)}
+                    rows={field.words && field.words[1] > 150 ? 5 : 3}
+                    className={area}
+                  />
                   <div className="mt-1 flex justify-between gap-3">
                     {help ?? <span />}
-                    {field.words && (
-                      <span className={`shrink-0 text-xs ${out ? "text-amber-600 dark:text-amber-400" : "text-muted"}`}>
+                    {field.words ? (
+                      <span className={`shrink-0 text-[11px] ${out ? "text-amber-600 dark:text-amber-400" : "text-muted"}`}>
                         {n} words{field.words[1] > 0 ? ` · ${field.words[0]}–${field.words[1]}` : ""}
                       </span>
-                    )}
+                    ) : null}
                   </div>
                 </label>
               );
@@ -211,75 +227,84 @@ export function SubmissionForm({
             case "file": {
               const current = files[field.id];
               return (
-                <div key={field.id}>
-                  {label}
+                <div key={field.id} className={wide ? "sm:col-span-2" : ""}>
+                  <FieldLabel required={required}>{field.label}</FieldLabel>
                   {help}
-                  <div className="mt-2 flex flex-wrap items-center gap-3 rounded-lg border border-dashed border-border bg-background p-3">
+                  <div className="mt-1 flex h-8 items-center gap-2 rounded-md border border-dashed border-border bg-background px-2">
                     {current ? (
                       <>
-                        <span className="text-sm text-foreground">📎 {current.name}</span>
-                        <span className="text-xs text-muted">{formatSize(current.size)}</span>
+                        <span className="min-w-0 truncate text-sm text-foreground">{current.name}</span>
+                        <span className="shrink-0 text-[11px] text-muted">{formatSize(current.size)}</span>
                         <button
                           type="button"
                           onClick={() => setFiles((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== field.id)))}
-                          className="text-xs font-semibold text-red-600 hover:underline dark:text-red-400"
+                          className="ml-auto shrink-0 text-[11px] font-semibold text-red-600 hover:underline dark:text-red-400"
                         >
                           Remove
                         </button>
                       </>
                     ) : (
-                      <label className="cursor-pointer rounded-full bg-accent-soft px-4 py-2 text-sm font-semibold text-accent-strong hover:opacity-90">
-                        {uploading === field.id ? "Uploading…" : "Choose file"}
-                        <input
-                          type="file"
-                          accept={field.accept}
-                          disabled={uploading !== null}
-                          className="sr-only"
-                          onChange={(e) => {
-                            const f = e.target.files?.[0];
-                            e.target.value = "";
-                            if (f) void upload(field, f);
-                          }}
-                        />
-                      </label>
+                      <>
+                        <label className="inline-flex h-6 cursor-pointer items-center rounded-md bg-accent-soft px-2 text-xs font-semibold text-accent-strong hover:opacity-90">
+                          {uploading === field.id ? "Uploading…" : "Choose file"}
+                          <input
+                            type="file"
+                            accept={field.accept}
+                            disabled={uploading !== null}
+                            className="sr-only"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              e.target.value = "";
+                              if (f) void upload(field, f);
+                            }}
+                          />
+                        </label>
+                        <span className="truncate text-[11px] text-muted">
+                          {field.extensions.join(", ").toUpperCase()} · up to {MAX_UPLOAD_MB} MB
+                        </span>
+                      </>
                     )}
-                    <span className="text-xs text-muted">
-                      {field.extensions.join(", ").toUpperCase()} · up to {MAX_UPLOAD_MB} MB
-                    </span>
                   </div>
                 </div>
               );
             }
             case "declaration":
               return (
-                <label key={field.id} className="flex items-start gap-2 rounded-lg border border-border bg-surface p-3 text-sm text-foreground">
-                  <input type="checkbox" checked={value === "yes"} onChange={(e) => set(field.id, e.target.checked ? "yes" : "")} className="mt-0.5" />
+                <label key={field.id} className="flex h-8 items-center gap-2 rounded-md border border-border bg-background px-2 text-sm text-foreground sm:col-span-2">
+                  <input type="checkbox" checked={value === "yes"} onChange={(e) => set(field.id, e.target.checked ? "yes" : "")} />
                   {field.label}
                 </label>
               );
           }
         })}
+      </div>
 
-      {problems.length > 0 && (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+      {problems.length > 0 ? (
+        <div className="border-t border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
           <p className="font-semibold">Before you can submit:</p>
-          <ul className="mt-1 list-disc pl-5">
+          <ul className="mt-1 list-disc pl-5 text-xs">
             {problems.map((p) => (
               <li key={p}>{p}</li>
             ))}
           </ul>
         </div>
-      )}
-      {message && (
-        <p className={`text-sm ${message.tone === "ok" ? "text-emerald-700 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>{message.text}</p>
-      )}
+      ) : null}
+      {message ? (
+        <p
+          className={`border-t border-border px-4 py-2 text-sm ${
+            message.tone === "ok" ? "text-emerald-700 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+          }`}
+        >
+          {message.text}
+        </p>
+      ) : null}
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2 border-t border-border px-4 py-3">
         <button
           type="button"
           onClick={() => save(false)}
           disabled={saving !== null || uploading !== null}
-          className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:border-accent disabled:opacity-50"
+          className="h-8 rounded-full border border-border px-4 text-sm font-semibold text-foreground hover:border-accent disabled:opacity-50"
         >
           {saving === "draft" ? "Saving…" : "Save draft"}
         </button>
@@ -287,7 +312,7 @@ export function SubmissionForm({
           type="button"
           onClick={() => save(true)}
           disabled={saving !== null || uploading !== null}
-          className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
+          className="h-8 rounded-full bg-accent px-4 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
         >
           {saving === "submit" ? "Submitting…" : status === "submitted" ? "Update submission" : "Submit entry"}
         </button>

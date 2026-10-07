@@ -4,11 +4,17 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { AdminSubmissionRow } from "@/data/repositories/submissions.repository";
 import { categoryLabels, type AgeCategory } from "@/domain/competitions/types";
-import { SUBMISSION_COMPETITIONS, submissionStatusLabels, type SubmissionStatus } from "@/domain/submissions/config";
+import { submissionStatusLabels, type SubmissionStatus } from "@/domain/submissions/config";
 
-/** Every submitted entry, one competition at a time (the toggle), with search
- * and a status filter. Each row opens the review & scoring page. */
-export function SubmissionsTable({ submissions, initialCompetition }: { submissions: AdminSubmissionRow[]; initialCompetition: string }) {
+export function SubmissionsTable({
+  submissions,
+  competitions,
+  initialCompetition,
+}: {
+  submissions: AdminSubmissionRow[];
+  competitions: { slug: string; title: string }[];
+  initialCompetition: string;
+}) {
   const [competition, setCompetition] = useState(initialCompetition);
   const [status, setStatus] = useState<SubmissionStatus | "all">("all");
   const [query, setQuery] = useState("");
@@ -33,7 +39,7 @@ export function SubmissionsTable({ submissions, initialCompetition }: { submissi
   return (
     <div>
       <div role="tablist" aria-label="Competition" className="inline-flex flex-wrap rounded-full border border-border bg-surface p-1">
-        {SUBMISSION_COMPETITIONS.map((c) => {
+        {competitions.map((c) => {
           const count = submissions.filter((s) => s.competitionSlug === c.slug).length;
           const pending = submissions.filter((s) => s.competitionSlug === c.slug && s.status === "submitted").length;
           const active = competition === c.slug;
@@ -130,7 +136,7 @@ export function SubmissionsTable({ submissions, initialCompetition }: { submissi
               <tr>
                 <td colSpan={8} className="px-4 py-10 text-center text-muted">
                   No {status === "all" ? "" : `${submissionStatusLabels[status].toLowerCase()} `}submissions for{" "}
-                  {SUBMISSION_COMPETITIONS.find((c) => c.slug === competition)?.title} yet.
+                  {competitions.find((c) => c.slug === competition)?.title ?? "this competition"} yet.
                 </td>
               </tr>
             )}
