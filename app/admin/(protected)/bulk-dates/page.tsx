@@ -10,9 +10,9 @@ export default async function AdminBulkDatesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-foreground">Set bulk dates for competitions</h1>
+      <h1 className="text-2xl font-bold text-foreground">Bulk changes to Competitions</h1>
       <p className="mt-2 max-w-3xl text-sm text-muted">
-        By category: set venue, online submission, and all matching date slots for many competitions at once — or give
+        By category: set venue, fee, online submission, and matching date slots for many competitions at once — or give
         each competition its own date on the second tab.
       </p>
 

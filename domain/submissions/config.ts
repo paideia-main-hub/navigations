@@ -100,7 +100,6 @@ export const SUBMISSION_COMPETITIONS: SubmissionCompetition[] = [
         help: "If [factor changes], then [outcome is expected to change] because [scientific reasoning].",
         words: [0, 120],
       },
-      { kind: "text", id: "word_count", label: "Main report word count", help: "Excluding title page, references and appendices.", required: true },
       {
         kind: "file",
         id: "report",

@@ -16,7 +16,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: "🏠" },
   { href: "/admin/competitions", label: "Competitions", icon: "🏆" },
-  { href: "/admin/bulk-dates", label: "Set bulk dates for competitions", icon: "📅" },
+  { href: "/admin/bulk-dates", label: "Bulk changes to Competitions", icon: "📅" },
   { href: "/admin/bulk-dates-awards", label: "Set bulk dates for awards", icon: "🗓️" },
   { href: "/admin/announcements", label: "Announcements", icon: "📣" },
   { href: "/admin/appreciations", label: "Appreciations", icon: "✨" },

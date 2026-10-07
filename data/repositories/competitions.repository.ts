@@ -1013,20 +1013,25 @@ export async function replaceEvents(
   return { error: error?.message ?? null };
 }
 
-/** Bulk-update venue and/or online-submission flag on many competitions. */
+/** Bulk-update venue, fee, and/or online-submission flag on many competitions. */
 export async function bulkUpdateScheduleMeta(
   admin: SupabaseClient,
   competitionIds: string[],
-  patch: { venue?: string | null; hasOnlineSubmission?: boolean },
+  patch: { venue?: string | null; hasOnlineSubmission?: boolean; feeAmount?: number | null },
 ): Promise<{ error: string | null }> {
   if (competitionIds.length === 0) return { error: "Select at least one competition." };
-  if (patch.venue === undefined && patch.hasOnlineSubmission === undefined) {
+  if (
+    patch.venue === undefined &&
+    patch.hasOnlineSubmission === undefined &&
+    patch.feeAmount === undefined
+  ) {
     return { error: null };
   }
 
   const row: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (patch.venue !== undefined) row.venue = patch.venue;
   if (patch.hasOnlineSubmission !== undefined) row.has_online_submission = patch.hasOnlineSubmission;
+  if (patch.feeAmount !== undefined) row.fee_amount = patch.feeAmount;
 
   const { error } = await admin.from("competitions").update(row).in("id", competitionIds);
   return { error: error?.message ?? null };

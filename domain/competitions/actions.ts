@@ -560,8 +560,18 @@ export async function bulkSavePathwayScheduleAction(
 
   const applyVenue = formData.get("apply_venue") === "on";
   const applyOnline = formData.get("apply_online") === "on";
+  const applyFee = formData.get("apply_fee") === "on";
   const venueRaw = String(formData.get("venue") ?? "").trim();
   const onlineChecked = formData.get("has_online_submission") === "on";
+  const feeRaw = String(formData.get("fee_amount") ?? "").trim();
+
+  let feeAmount: number | null | undefined;
+  if (applyFee) {
+    if (!feeRaw) return { error: "Enter a fee amount, or uncheck Apply fee." };
+    const parsed = Number(feeRaw);
+    if (!Number.isFinite(parsed) || parsed < 0) return { error: "Fee amount must be a number 0 or greater." };
+    feeAmount = parsed;
+  }
 
   const formDateTypes = allCategories
     ? ALL_CATEGORY_DATE_TYPES
@@ -594,6 +604,12 @@ export async function bulkSavePathwayScheduleAction(
       if (error) return { error };
       touchedMeta = true;
     }
+  }
+
+  if (applyFee && feeAmount !== undefined) {
+    const { error } = await service.bulkUpdateScheduleMeta(admin, competitionIds, { feeAmount });
+    if (error) return { error };
+    touchedMeta = true;
   }
 
   if (applyOnline) {
@@ -651,7 +667,7 @@ export async function bulkSavePathwayScheduleAction(
 
   if (!touchedMeta && dateUpdates.length === 0 && !clearedSubmissionDeadlines) {
     return {
-      error: "Fill at least one date, or apply venue / use the online-submission toggle.",
+      error: "Fill at least one date, or apply venue / fee / the online-submission toggle.",
     };
   }
 
@@ -686,7 +702,7 @@ export async function bulkSavePathwayScheduleAction(
 
   const parts: string[] = [];
   if (dateUpdates.length > 0) parts.push(`${dateUpdates.length} date type${dateUpdates.length === 1 ? "" : "s"}`);
-  if (touchedMeta) parts.push("venue / online settings");
+  if (touchedMeta) parts.push("venue / fee / online settings");
   if (clearedSubmissionDeadlines) parts.push("cleared submission deadlines");
 
   return {

@@ -1,12 +1,33 @@
 import { createAdminClient } from "@/data/supabase/admin";
 import { adminListSubmissions } from "@/data/repositories/submissions.repository";
-import { SUBMISSION_COMPETITIONS } from "@/domain/submissions/config";
+import { adminListCompetitions } from "@/domain/competitions/service";
+import { competitionTakesWorkUpload } from "@/domain/submissions/config";
 import { SubmissionsTable } from "@/ui/components/admin/SubmissionsTable";
 
 export default async function AdminSubmissionsPage({ searchParams }: { searchParams: Promise<{ competition?: string }> }) {
   const { competition } = await searchParams;
-  const submissions = await adminListSubmissions(createAdminClient());
+  const admin = createAdminClient();
+  const [submissions, competitions] = await Promise.all([
+    adminListSubmissions(admin),
+    adminListCompetitions(admin),
+  ]);
+
+  const fromFlag = competitions
+    .filter((c) => competitionTakesWorkUpload(c))
+    .map((c) => ({ slug: c.slug, title: c.title }));
+  const listed = new Set(fromFlag.map((c) => c.slug));
+  const extraSlugs = [...new Set(submissions.map((s) => s.competitionSlug).filter((slug) => !listed.has(slug)))];
+  const extra = extraSlugs.map((slug) => {
+    const match = competitions.find((c) => c.slug === slug);
+    return { slug, title: match?.title ?? slug };
+  });
+  const onlineCompetitions = [...fromFlag, ...extra].sort((a, b) => a.title.localeCompare(b.title));
+
   const awaiting = submissions.filter((s) => s.status === "submitted").length;
+  const initial =
+    (competition && onlineCompetitions.some((c) => c.slug === competition) ? competition : null) ??
+    onlineCompetitions[0]?.slug ??
+    "";
 
   return (
     <div>
@@ -14,8 +35,9 @@ export default async function AdminSubmissionsPage({ searchParams }: { searchPar
         <div>
           <h1 className="text-2xl font-bold text-foreground">Work Submissions</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted">
-            Entries for the Independent Submission competitions — {SUBMISSION_COMPETITIONS.map((c) => c.title).join(", ")}. Open one to
-            view the work and score it against its published rubric. Drafts students haven&apos;t submitted yet aren&apos;t listed.
+            Entries for every competition with online submission on. Open one to view the work. InquiryQuest,
+            CultureScript and Message for Humanity can be scored against their published rubric. Drafts students
+            haven&apos;t submitted yet aren&apos;t listed.
           </p>
         </div>
         {awaiting > 0 && (
@@ -26,10 +48,13 @@ export default async function AdminSubmissionsPage({ searchParams }: { searchPar
       </div>
 
       <div className="mt-6">
-        <SubmissionsTable
-          submissions={submissions}
-          initialCompetition={SUBMISSION_COMPETITIONS.some((c) => c.slug === competition) ? competition! : SUBMISSION_COMPETITIONS[0].slug}
-        />
+        {onlineCompetitions.length === 0 ? (
+          <p className="rounded-xl border border-border bg-surface px-4 py-8 text-center text-sm text-muted">
+            No competitions have online submission enabled yet.
+          </p>
+        ) : (
+          <SubmissionsTable submissions={submissions} competitions={onlineCompetitions} initialCompetition={initial} />
+        )}
       </div>
     </div>
   );
