@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 
 const BG_SRC = "/hero-two-bg.jpg";
 const COLLAGE_SRC = "/hero-collage.png?v=5";
+const COLLAGE_MOBILE_SRC = "/hero-collage-mobile.png?v=3";
 const SCRIPT_SRC = "/hero-script.png?v=4";
 const COLLAGE_W = 1024;
 const COLLAGE_H = 768;
@@ -105,7 +106,16 @@ export function HeroTwo() {
           height={COLLAGE_H}
           fetchPriority="high"
           decoding="async"
-          className="h-full max-h-full w-full object-contain"
+          className="hidden h-full max-h-full w-full object-contain sm:block"
+        />
+        <img
+          src={COLLAGE_MOBILE_SRC}
+          alt=""
+          width={900}
+          height={1680}
+          fetchPriority="high"
+          decoding="async"
+          className="h-full max-h-full w-full object-contain sm:hidden"
         />
       </div>
 
@@ -118,7 +128,7 @@ export function HeroTwo() {
           height={SCRIPT_H}
           fetchPriority="high"
           decoding="async"
-          className="relative h-auto w-[min(72vw,28rem)] object-contain sm:w-[min(56vw,32rem)]"
+          className="relative h-auto w-[min(58vw,20rem)] translate-y-3 object-contain sm:w-[min(56vw,32rem)] sm:translate-y-0"
           style={
             scriptReady
               ? {

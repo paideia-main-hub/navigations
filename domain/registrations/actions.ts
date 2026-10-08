@@ -10,9 +10,13 @@ import { insertPaymentAndLink } from "@/domain/payments/service";
 import { uploadReceiptFile } from "@/domain/storage/actions";
 import { createTeam } from "@/domain/teams/service";
 import { createAdHocTeammate, getOwnStudentProfile, updateOwnStudentGrade } from "@/domain/students/service";
-import { insertRegistration, insertConsentRecords } from "@/data/repositories/registrations.repository";
+import {
+  insertRegistration,
+  insertConsentRecords,
+  studentAlreadyRegisteredForCompetition,
+} from "@/data/repositories/registrations.repository";
 import type { BasketItemInput, BasketLine, BasketResult } from "./basket";
-import { generateRegistrationNumber, listMyRegistrations } from "./service";
+import { generateRegistrationNumber } from "./service";
 import type { Registration, SubmitRegistrationInput } from "./types";
 
 /** Orchestrates a full registration submission: creates a team (and any
@@ -31,6 +35,32 @@ export async function submitRegistrationAction(
 
   if (input.entryType === "individual" && !studentId) {
     return { registration: null, error: "No student profile found for this account." };
+  }
+
+  // One student → one active registration per competition (school or self-serve).
+  // Checked with the service role so a school-created entry still blocks a
+  // later student checkout, and the other way around.
+  const studentsToCheck =
+    input.entryType === "individual"
+      ? studentId
+        ? [studentId]
+        : []
+      : [...new Set((input.existingMemberIds ?? []).filter(Boolean))];
+  if (studentsToCheck.length > 0) {
+    const admin = createAdminClient();
+    for (const sid of studentsToCheck) {
+      const { already, competitionTitle } = await studentAlreadyRegisteredForCompetition(
+        admin,
+        sid,
+        input.competitionSlug,
+      );
+      if (already) {
+        return {
+          registration: null,
+          error: `Already registered for ${competitionTitle ?? input.competitionTitle} — each student can enter a competition only once.`,
+        };
+      }
+    }
   }
 
   if (input.entryType === "team") {
@@ -142,16 +172,15 @@ export async function submitCompetitionBasketAction(formData: FormData): Promise
   if (!student) return { ok: false, error: "No student profile found for this account." };
 
   // --- Validate every pick before creating anything --------------------------
-  const existing = await listMyRegistrations(supabase, user.id);
-  const alreadyRegistered = new Set(existing.filter((r) => r.status !== "rejected").map((r) => r.competitionSlug));
-
+  const admin = createAdminClient();
   const planned: { item: BasketItemInput; competition: Competition; rule: Competition["eligibility"][number]; fee: number }[] = [];
   for (const item of items) {
     const competition = await getPublicCompetitionBySlug(supabase, item.competitionSlug);
     if (!competition || (competition.status !== "open" && competition.status !== "upcoming")) {
       return { ok: false, error: `${competition?.title ?? item.competitionSlug} isn't open for registration.` };
     }
-    if (alreadyRegistered.has(competition.slug)) {
+    const { already } = await studentAlreadyRegisteredForCompetition(admin, student.id, competition.slug);
+    if (already) {
       return { ok: false, error: `You're already registered for ${competition.title} — remove it from your selection.` };
     }
     const rule = competition.eligibility.find((r) => isGradeEligible(r.minGrade, r.maxGrade, grade));
