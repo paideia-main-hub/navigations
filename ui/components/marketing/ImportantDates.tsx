@@ -3,9 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { unbounded as dateNumeralFont } from "@/app/fonts";
-import { shortLabelForEvent, sortCompetitionEvents } from "@/domain/competitions/dateLabels";
 import type { CompetitionSummary } from "@/domain/competitions/types";
-import { formatEventDateOnly } from "@/ui/components/admin/eventDateFormat";
 import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
 import { BandDivider } from "./BandDivider";
 
@@ -314,7 +312,6 @@ function iconForTitle(title: string): SlideIcon {
 /** All admin-set dates + activity name + the two short description cards.
  * Icon is drawn by the parent so it can match that slide’s background family. */
 function SpotlightFace({ item }: { item: CompetitionSummary }) {
-  const events = sortCompetitionEvents(item.events);
   const heroDate = competitionDateOf(item);
   const parts = heroDate ? formatCompetitionDate(heroDate) : null;
   const notes = [item.datesCardOne, item.datesCardTwo].map((n) => n.trim()).filter(Boolean);
@@ -346,22 +343,6 @@ function SpotlightFace({ item }: { item: CompetitionSummary }) {
       >
         {item.title}
       </p>
-
-      {events.length > 0 ? (
-        <ul className="mt-4 w-full max-w-[18rem] space-y-1.5 text-left">
-          {events.map((event) => (
-            <li
-              key={event.id}
-              className="flex items-baseline justify-between gap-2 text-[0.7rem] text-brand-deep-foreground/80 sm:text-xs"
-            >
-              <span className="font-semibold">{shortLabelForEvent(event)}</span>
-              <span className="shrink-0 tabular-nums text-brand-deep-muted">
-                {formatEventDateOnly(event.eventDate)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : null}
 
       {notes.length > 0 ? (
         <div className={`mt-4 grid w-full max-w-[18rem] gap-2 ${notes.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>

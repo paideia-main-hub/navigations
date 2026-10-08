@@ -70,6 +70,45 @@ export async function listRegistrationsByRegistrant(supabase: SupabaseClient, pr
   );
 }
 
+/** Whether this student already has a non-rejected entry for the competition —
+ * either as an individual registration or as a member of a registered team.
+ * Call with a client that can see all relevant rows (typically service role). */
+export async function studentAlreadyRegisteredForCompetition(
+  supabase: SupabaseClient,
+  studentId: string,
+  competitionSlug: string,
+): Promise<{ already: boolean; competitionTitle: string | null }> {
+  const { data: individual } = await supabase
+    .from("registrations")
+    .select("competition_title")
+    .eq("student_id", studentId)
+    .eq("competition_slug", competitionSlug)
+    .neq("status", "rejected")
+    .limit(1)
+    .maybeSingle();
+  if (individual) {
+    return { already: true, competitionTitle: individual.competition_title as string };
+  }
+
+  const { data: memberships } = await supabase.from("team_members").select("team_id").eq("student_id", studentId);
+  const teamIds = (memberships ?? []).map((row) => row.team_id as string);
+  if (teamIds.length === 0) return { already: false, competitionTitle: null };
+
+  const { data: teamReg } = await supabase
+    .from("registrations")
+    .select("competition_title")
+    .eq("competition_slug", competitionSlug)
+    .neq("status", "rejected")
+    .in("team_id", teamIds)
+    .limit(1)
+    .maybeSingle();
+  if (teamReg) {
+    return { already: true, competitionTitle: teamReg.competition_title as string };
+  }
+
+  return { already: false, competitionTitle: null };
+}
+
 /** Admin overview: every registration across every school/student, unscoped,
  * optionally narrowed to one competition. Filters on the competition_slug
  * snapshot column (registrations don't carry a real competition_id FK — see

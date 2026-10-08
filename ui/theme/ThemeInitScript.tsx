@@ -1,4 +1,6 @@
-import Script from "next/script";
+"use client";
+
+import { useSyncExternalStore } from "react";
 
 // Runs before hydration so the correct theme class is present on <html>
 // before first paint — otherwise the page would flash the wrong theme.
@@ -12,15 +14,20 @@ const THEME_INIT = `
 })();
 `;
 
+const emptySubscribe = () => () => {};
+
+/** Inline theme boot script. Emitted only during SSR/hydration — React 19
+ * warns if a <script> is created again on later client renders, and those
+ * re-created tags would never execute anyway. */
 export function ThemeInitScript() {
-  // The no-before-interactive-script-outside-document lint rule predates App
-  // Router support for this strategy — Next.js's own docs (script.md) say a
-  // beforeInteractive Script belongs in the root layout, which is exactly
-  // where this is rendered (see app/layout.tsx).
+  const renderScript = useSyncExternalStore(emptySubscribe, () => false, () => true);
+  if (!renderScript) return null;
+
   return (
-    // eslint-disable-next-line @next/next/no-before-interactive-script-outside-document
-    <Script id="theme-init" strategy="beforeInteractive">
-      {THEME_INIT}
-    </Script>
+    <script
+      id="theme-init"
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{ __html: THEME_INIT }}
+    />
   );
 }

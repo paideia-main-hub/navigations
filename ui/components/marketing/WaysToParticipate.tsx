@@ -16,7 +16,6 @@ const icons: Record<string, ReactNode> = {
   trophy: (
     <path d="M8 21h8m-4-4v4m-6-17h12v5a6 6 0 0 1-12 0V4Zm0 2H4a2 2 0 0 0 0 4h2m12-4h2a2 2 0 0 1 0 4h-2" />
   ),
-  star: <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2Z" />,
   medal: (
     <path d="M12 21a6 6 0 1 0 0-12 6 6 0 0 0 0 12Zm0 0v-2m-4.5-8.5L5 3h5l2 4m2.5 3.5L19 3h-5l-2 4" />
   ),
@@ -91,8 +90,8 @@ const ROUTES = [
     number: 2,
     title: "Apply/Nominate for Special Recognition",
     blurb: "Put forward an individual, submission, school or sporting achievement for a League award.",
-    // Track 5 is the rule, so this group starts at 6 and runs four cards.
-    headerClass: "lg:col-start-6 lg:col-span-4 lg:row-start-1",
+    // Track 5 is the rule, so this group starts at 6 and runs three cards.
+    headerClass: "lg:col-start-6 lg:col-span-3 lg:row-start-1",
     cards: [
       {
         label: "Spotlight Awards",
@@ -103,18 +102,10 @@ const ROUTES = [
         bubble: "bg-violet-200 dark:bg-violet-400/40",
       },
       {
-        label: "School Awards",
-        icon: "star",
-        href: "/awards#school_award",
-        col: "lg:col-start-7",
-        bg: "bg-cyan-50 dark:bg-cyan-500/10",
-        bubble: "bg-cyan-200 dark:bg-cyan-400/40",
-      },
-      {
         label: "Sports Recognition Awards",
         icon: "medal",
         href: "/awards#sports",
-        col: "lg:col-start-8",
+        col: "lg:col-start-7",
         bg: "bg-accent-soft",
         bubble: "bg-accent/30",
       },
@@ -122,7 +113,7 @@ const ROUTES = [
         label: "Teacher & Parent Recognition",
         icon: "heart",
         href: "/awards#teacher_parent",
-        col: "lg:col-start-9",
+        col: "lg:col-start-8",
         bg: "bg-fuchsia-50 dark:bg-fuchsia-500/10",
         bubble: "bg-fuchsia-200 dark:bg-fuchsia-400/40",
       },
@@ -160,13 +151,13 @@ export function WaysToParticipate() {
           Ways to Participate
         </h2>
 
-        {/* One grid for everything. Tracks 1-4 and 6-9 are equal 1fr columns
+        {/* One grid for everything. Tracks 1-4 and 6-8 are equal 1fr columns
             with the rule in the auto track between them, and every card is
-            pinned to row 2 — so all eight come out the same width, and the row
+            pinned to row 2 — so all seven come out the same width, and the row
             stretches them all to the tallest. DOM order still reads
             header, cards, header, cards, which is the order small screens
             stack in once the explicit placement stops applying. */}
-        <div className="mt-16 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto_repeat(4,minmax(0,1fr))] lg:grid-rows-[auto_1fr] lg:gap-x-5 lg:gap-y-14">
+        <div className="mt-16 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto_repeat(3,minmax(0,1fr))] lg:grid-rows-[auto_1fr] lg:gap-x-5 lg:gap-y-14">
           {ROUTES.map((route) => (
             <Fragment key={route.number}>
               <div className={`col-span-2 ${route.headerClass} ${route.number === 2 ? "mt-6 lg:mt-0" : ""}`}>
