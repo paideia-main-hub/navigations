@@ -5,6 +5,7 @@ import { createAnnouncementAction, updateAnnouncementAction, type ActionState } 
 import type { Announcement } from "@/domain/announcements/types";
 import type { Competition } from "@/domain/competitions/types";
 import { FormField } from "@/ui/components/FormField";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 const initialState: ActionState = { error: null };
 
@@ -64,7 +65,10 @@ export function AnnouncementForm({
       {/* Stored for ordering only — not shown on the public site or in this form. */}
       <input type="hidden" name="publish_date" value={toDateInputValue(editing?.publishDate)} />
       <div>
-        <label className="text-sm font-medium text-foreground">Body</label>
+        <label className="text-sm font-medium text-foreground">
+          Body
+          <RequiredMark />
+        </label>
         <textarea
           name="body"
           rows={3}

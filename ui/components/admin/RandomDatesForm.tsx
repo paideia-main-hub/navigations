@@ -13,6 +13,8 @@ import {
   type CompetitionSummary,
   type EventType,
 } from "@/domain/competitions/types";
+import { DateField } from "@/ui/components/DateField";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 import { formatEventDateOnly, toDateInputValue } from "@/ui/components/admin/eventDateFormat";
 
 const initialState: ActionState = { error: null };
@@ -168,7 +170,10 @@ export function RandomDatesForm({ competitions }: { competitions: CompetitionSum
         </div>
 
         <div>
-          <label className="text-sm font-medium text-foreground">Title (shown on competition pages)</label>
+          <label className="text-sm font-medium text-foreground">
+            Title (shown on competition pages)
+            <RequiredMark />
+          </label>
           <input
             name="title"
             value={title}
@@ -280,7 +285,10 @@ export function RandomDatesForm({ competitions }: { competitions: CompetitionSum
               <thead>
                 <tr className="border-b border-border text-muted">
                   <th className="px-4 py-3 font-medium">Competition</th>
-                  <th className="px-4 py-3 font-medium">Date</th>
+                  <th className="px-4 py-3 font-medium">
+                    Date
+                    <RequiredMark />
+                  </th>
                   <th className="px-4 py-3 font-medium"></th>
                 </tr>
               </thead>
@@ -293,13 +301,13 @@ export function RandomDatesForm({ competitions }: { competitions: CompetitionSum
                       <p className="text-xs text-muted">/{c.slug}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <input
+                      <DateField
                         name={`eventDate[${c.id}]`}
-                        type="date"
+                        label={`${c.title} date`}
                         required
                         value={dates[c.id] ?? ""}
-                        onChange={(e) => setDate(c.id, e.target.value)}
-                        className="w-full max-w-xs rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                        onChange={(next) => setDate(c.id, next)}
+                        className="max-w-xs"
                       />
                     </td>
                     <td className="px-4 py-3 text-right">

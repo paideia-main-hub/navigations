@@ -3,6 +3,8 @@
 import { useActionState } from "react";
 import { signUpStudent, type ActionState } from "@/domain/auth/actions";
 import { FormField } from "@/ui/components/FormField";
+import { RequiredMark } from "@/ui/components/RequiredMark";
+import { SelectField } from "@/ui/components/SelectField";
 import { StepForm } from "@/ui/components/StepForm";
 
 const initialState: ActionState = { error: null };
@@ -56,24 +58,29 @@ export function StudentRegisterForm({ hideIntro = false }: { hideIntro?: boolean
               <>
                 <FormField label="Date of birth" name="date_of_birth" type="date" required max={today} />
                 <div>
-                  <label className="text-sm font-medium text-foreground">Gender</label>
-                  <select
+                  <label className="text-sm font-medium text-foreground">
+                    Gender
+                    <RequiredMark />
+                  </label>
+                  <SelectField
                     name="gender"
+                    label="Gender"
                     required
-                    defaultValue=""
-                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
-                  >
-                    <option value="" disabled>
-                      Select gender
-                    </option>
-                    <option value="female">Female</option>
-                    <option value="male">Male</option>
-                    <option value="other">Other</option>
-                    <option value="prefer_not_to_say">Prefer not to say</option>
-                  </select>
+                    placeholder="Select gender"
+                    className="mt-1"
+                    options={[
+                      { value: "female", label: "Female" },
+                      { value: "male", label: "Male" },
+                      { value: "other", label: "Other" },
+                      { value: "prefer_not_to_say", label: "Prefer not to say" },
+                    ]}
+                  />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground">Profile photo</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Profile photo
+                    <RequiredMark />
+                  </label>
                   <input
                     type="file"
                     name="photo"
@@ -104,19 +111,18 @@ export function StudentRegisterForm({ hideIntro = false }: { hideIntro?: boolean
             description: "Who the League contacts about your participation.",
             content: (
               <>
-                <FormField label="Guardian name" name="guardian_name" required minLength={2} autoComplete="name" />
+                <FormField label="Parent / Guardian name" name="guardian_name" required minLength={2} autoComplete="name" />
                 <FormField label="Relationship" name="guardian_relationship" required minLength={2} />
                 <FormField
-                  label="Guardian email"
+                  label="Parent / Guardian email"
                   name="guardian_email"
                   type="email"
-                  required
                   inputMode="email"
                   autoComplete="email"
                   placeholder="name@example.com"
                 />
                 <FormField
-                  label="Guardian mobile"
+                  label="Parent / Guardian mobile"
                   name="guardian_mobile"
                   type="tel"
                   required
@@ -134,7 +140,10 @@ export function StudentRegisterForm({ hideIntro = false }: { hideIntro?: boolean
             content: (
               <label className="flex items-start gap-2 text-sm text-muted">
                 <input type="checkbox" required className="mt-0.5" />
-                I accept the competition rules and the site&apos;s privacy and data-consent terms.
+                <span>
+                  I accept the competition rules and the site&apos;s privacy and data-consent terms.
+                  <RequiredMark />
+                </span>
               </label>
             ),
           },

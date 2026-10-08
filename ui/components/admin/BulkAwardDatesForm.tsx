@@ -9,6 +9,8 @@ import {
   type AwardCategory,
 } from "@/domain/awards/types";
 import { formatEventDateOnly } from "@/ui/components/admin/eventDateFormat";
+import { DateField } from "@/ui/components/DateField";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 const initialState: ActionState = { error: null };
 
@@ -91,13 +93,16 @@ export function BulkAwardDatesForm({ categories }: { categories: AwardCategory[]
         </p>
 
         <div>
-          <label className="text-sm font-medium text-foreground">Nomination closing date</label>
-          <input
+          <label className="text-sm font-medium text-foreground">
+            Nomination closing date
+            <RequiredMark />
+          </label>
+          <DateField
             key={`closing-${fieldsKey}`}
             name="closing_at"
-            type="date"
+            label="Nomination closing date"
             required
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+            className="mt-1"
           />
         </div>
       </div>

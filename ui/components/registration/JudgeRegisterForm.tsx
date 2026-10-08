@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { signUpJudge, type ActionState } from "@/domain/auth/actions";
 import { FormField } from "@/ui/components/FormField";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 import { StepForm } from "@/ui/components/StepForm";
 
 const initialState: ActionState = { error: null };
@@ -53,7 +54,10 @@ export function JudgeRegisterForm({ hideIntro = false }: { hideIntro?: boolean }
             description: "Helps the admin team match you to competitions.",
             content: (
               <div>
-                <label className="text-sm font-medium text-foreground">Bio / relevant experience</label>
+                <label className="text-sm font-medium text-foreground">
+                  Bio / relevant experience
+                  <RequiredMark />
+                </label>
                 <textarea
                   name="bio"
                   rows={5}
@@ -71,7 +75,10 @@ export function JudgeRegisterForm({ hideIntro = false }: { hideIntro?: boolean }
             content: (
               <label className="flex items-start gap-2 text-sm text-muted">
                 <input type="checkbox" required className="mt-0.5" />
-                I accept the judging code of conduct and the site&apos;s privacy and data-consent terms.
+                <span>
+                  I accept the judging code of conduct and the site&apos;s privacy and data-consent terms.
+                  <RequiredMark />
+                </span>
               </label>
             ),
           },

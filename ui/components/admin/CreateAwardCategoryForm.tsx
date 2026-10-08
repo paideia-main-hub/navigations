@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { createCategoryAction, type ActionState } from "@/domain/awards/actions";
 import { layerLabels, type AwardLayer } from "@/domain/awards/types";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 const initialState: ActionState = { error: null };
 
@@ -25,7 +26,10 @@ export function CreateAwardCategoryForm() {
   return (
     <form action={formAction} className="max-w-lg space-y-4 rounded-xl border border-border bg-surface p-6">
       <div>
-        <label className="text-sm font-medium text-foreground">Title</label>
+        <label className="text-sm font-medium text-foreground">
+          Title
+          <RequiredMark />
+        </label>
         <input
           name="title"
           required
@@ -36,7 +40,10 @@ export function CreateAwardCategoryForm() {
         />
       </div>
       <div>
-        <label className="text-sm font-medium text-foreground">Slug (used in the public URL)</label>
+        <label className="text-sm font-medium text-foreground">
+          Slug (used in the public URL)
+          <RequiredMark />
+        </label>
         <input
           name="slug"
           required
@@ -52,7 +59,10 @@ export function CreateAwardCategoryForm() {
         </p>
       </div>
       <div>
-        <label className="text-sm font-medium text-foreground">Layer</label>
+        <label className="text-sm font-medium text-foreground">
+          Layer
+          <RequiredMark />
+        </label>
         <select name="layer" required className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground">
           {Object.entries(layerLabels).map(([value, label]) => (
             <option key={value} value={value as AwardLayer}>

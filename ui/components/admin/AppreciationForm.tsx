@@ -4,6 +4,7 @@ import { useActionState, useEffect } from "react";
 import { createAppreciationAction, updateAppreciationAction, type ActionState } from "@/domain/appreciations/actions";
 import type { Appreciation } from "@/domain/appreciations/types";
 import { FormField } from "@/ui/components/FormField";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 const initialState: ActionState = { error: null };
 
@@ -28,7 +29,10 @@ export function AppreciationForm({
       {editing && <input type="hidden" name="appreciation_id" value={editing.id} />}
       <FormField label="Heading" name="heading" required defaultValue={editing?.heading} />
       <div>
-        <label className="text-sm font-medium text-foreground">Description</label>
+        <label className="text-sm font-medium text-foreground">
+          Description
+          <RequiredMark />
+        </label>
         <textarea
           name="description"
           rows={4}

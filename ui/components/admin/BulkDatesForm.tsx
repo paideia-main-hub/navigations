@@ -22,6 +22,8 @@ import {
   type EventType,
 } from "@/domain/competitions/types";
 import { formatEventDateOnly } from "@/ui/components/admin/eventDateFormat";
+import { DateField } from "@/ui/components/DateField";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 const initialState: ActionState = { error: null };
 
@@ -170,7 +172,10 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
           </p>
 
           <div>
-            <label className="text-sm font-medium text-foreground">Participation category</label>
+            <label className="text-sm font-medium text-foreground">
+              Participation category
+              <RequiredMark />
+            </label>
             <select
               name="pathway"
               value={pathway}
@@ -324,11 +329,11 @@ export function BulkDatesForm({ competitions }: { competitions: CompetitionSumma
                     <div key={type} className="rounded-xl border border-border bg-background p-3">
                       <label className="text-sm font-medium text-foreground">{eventTypeAdminLabels[type]}</label>
                       <p className="mt-0.5 text-xs text-muted">{eventTypeHints[type]}</p>
-                      <input
+                      <DateField
                         key={`date-${type}-${fieldsKey}`}
                         name={`date[${type}]`}
-                        type="date"
-                        className="mt-2 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground"
+                        label={eventTypeAdminLabels[type]}
+                        className="mt-2"
                       />
                       <input
                         key={`title-${type}-${fieldsKey}`}

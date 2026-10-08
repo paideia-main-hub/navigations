@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import type { StudentProfile } from "@/domain/students/types";
 import { createTeamAction, type ActionState } from "@/domain/teams/actions";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 const initialState: ActionState = { error: null };
 
@@ -40,7 +41,10 @@ export function CreateTeamForm({ roster }: { roster: StudentProfile[] }) {
     <form ref={formRef} action={formAction} className="space-y-3 rounded-xl border border-border bg-surface p-4">
       <h3 className="font-semibold text-foreground">Create team</h3>
       <div>
-        <label className="text-sm font-medium text-foreground">Team name</label>
+        <label className="text-sm font-medium text-foreground">
+          Team name
+          <RequiredMark />
+        </label>
         <input
           name="team_name"
           required
@@ -48,7 +52,10 @@ export function CreateTeamForm({ roster }: { roster: StudentProfile[] }) {
         />
       </div>
       <div>
-        <label className="text-sm font-medium text-foreground">Members (select at least 2)</label>
+        <label className="text-sm font-medium text-foreground">
+          Members (select at least 2)
+          <RequiredMark />
+        </label>
         <div className="mt-1 max-h-48 space-y-1 overflow-y-auto">
           {roster.map((s) => (
             <label key={s.id} className="flex items-center gap-2 text-sm text-foreground">

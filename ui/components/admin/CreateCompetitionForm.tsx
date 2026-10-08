@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { createCompetitionAction, type ActionState } from "@/domain/competitions/actions";
 import { FormField } from "@/ui/components/FormField";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 import { CompetencyPicker } from "@/ui/components/admin/CompetencyPicker";
 
 const initialState: ActionState = { error: null };
@@ -28,7 +29,10 @@ export function CreateCompetitionForm() {
   return (
     <form action={formAction} className="max-w-lg space-y-4 rounded-xl border border-border bg-surface p-6">
       <div>
-        <label className="text-sm font-medium text-foreground">Title</label>
+        <label className="text-sm font-medium text-foreground">
+          Title
+          <RequiredMark />
+        </label>
         <input
           name="title"
           required
@@ -38,7 +42,10 @@ export function CreateCompetitionForm() {
         />
       </div>
       <div>
-        <label className="text-sm font-medium text-foreground">Slug (used in the public URL)</label>
+        <label className="text-sm font-medium text-foreground">
+          Slug (used in the public URL)
+          <RequiredMark />
+        </label>
         <input
           name="slug"
           required

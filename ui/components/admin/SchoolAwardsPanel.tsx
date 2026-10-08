@@ -8,6 +8,7 @@ import {
   type ActionState,
 } from "@/domain/school-awards/actions";
 import type { SchoolAwardResultRow } from "@/data/repositories/school-awards.repository";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 const initialState: ActionState = { error: null };
 
@@ -89,7 +90,10 @@ function CollaborationScoreForm({ categoryId, schools }: { categoryId: string; s
     <form action={formAction} className="flex flex-wrap items-end gap-2 rounded-xl border border-border bg-surface p-4">
       <input type="hidden" name="category_id" value={categoryId} />
       <div>
-        <label className="text-xs font-medium text-foreground">School</label>
+        <label className="text-xs font-medium text-foreground">
+          School
+          <RequiredMark />
+        </label>
         <select name="school_id" required className="mt-1 block rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground">
           {schools.map((s) => (
             <option key={s.id} value={s.id}>
@@ -99,7 +103,10 @@ function CollaborationScoreForm({ categoryId, schools }: { categoryId: string; s
         </select>
       </div>
       <div>
-        <label className="text-xs font-medium text-foreground">Score (0-100)</label>
+        <label className="text-xs font-medium text-foreground">
+          Score (0-100)
+          <RequiredMark />
+        </label>
         <input name="score" type="number" min={0} max={100} required className="mt-1 block w-24 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" />
       </div>
       <button

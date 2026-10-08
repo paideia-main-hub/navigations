@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { login, type ActionState } from "@/domain/auth/actions";
 import { PasswordInput } from "@/ui/components/PasswordInput";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 const initialState: ActionState = { error: null };
 
@@ -42,7 +43,10 @@ export function LoginForm({
       <form action={formAction} className={hideIntro ? "space-y-4" : "mt-6 space-y-4"}>
         {next ? <input type="hidden" name="next" value={next} /> : null}
         <div>
-          <label className="text-sm font-medium text-foreground">Email</label>
+          <label className="text-sm font-medium text-foreground">
+            Email
+            <RequiredMark />
+          </label>
           <input
             type="email"
             name="email"
@@ -54,7 +58,10 @@ export function LoginForm({
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">Password</label>
+          <label className="text-sm font-medium text-foreground">
+            Password
+            <RequiredMark />
+          </label>
           <PasswordInput name="password" required autoComplete="current-password" minLength={8} />
         </div>
 

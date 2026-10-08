@@ -8,6 +8,7 @@ import {
   requestClarificationAction,
   type ActionState,
 } from "@/domain/award-nominations/actions";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 const initialState: ActionState = { error: null };
 
@@ -46,13 +47,17 @@ function ClarificationForm({ nominationId }: { nominationId: string }) {
   return (
     <form action={formAction} className="flex flex-wrap items-start gap-2">
       <input type="hidden" name="nomination_id" value={nominationId} />
-      <textarea
-        name="message"
-        required
-        rows={2}
-        placeholder="What do you need the nominator to clarify or fix?"
-        className="min-w-[240px] flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-      />
+      <label className="min-w-[240px] flex-1 text-sm font-medium text-foreground">
+        Message
+        <RequiredMark />
+        <textarea
+          name="message"
+          required
+          rows={2}
+          placeholder="What do you need the nominator to clarify or fix?"
+          className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+        />
+      </label>
       <button
         type="submit"
         disabled={pending}

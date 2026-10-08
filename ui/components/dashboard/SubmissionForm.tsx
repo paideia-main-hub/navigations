@@ -15,9 +15,10 @@ import {
   type SubmissionFile,
   type WorkSubmission,
 } from "@/domain/submissions/config";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 const control =
-  "mt-1 h-8 w-full rounded-md border border-border bg-background px-2 text-sm leading-8 text-foreground outline-none focus:border-accent disabled:opacity-70";
+  "mt-1 h-[38px] w-full rounded-md border border-border bg-background px-2 text-sm leading-[38px] text-foreground outline-none focus:border-accent disabled:opacity-70";
 const area =
   "mt-1 min-h-20 w-full resize-y rounded-md border border-border bg-background px-2 py-2 text-sm leading-5 text-foreground outline-none focus:border-accent disabled:opacity-70";
 
@@ -29,7 +30,7 @@ function FieldLabel({ children, required }: { children: string; required?: boole
   return (
     <span className="text-xs font-semibold tracking-wide text-foreground">
       {children}
-      {required ? <span className="text-red-600"> *</span> : null}
+      {required ? <RequiredMark /> : null}
     </span>
   );
 }
@@ -230,7 +231,7 @@ export function SubmissionForm({
                 <div key={field.id} className={wide ? "sm:col-span-2" : ""}>
                   <FieldLabel required={required}>{field.label}</FieldLabel>
                   {help}
-                  <div className="mt-1 flex h-8 items-center gap-2 rounded-md border border-dashed border-border bg-background px-2">
+                  <div className="mt-1 flex h-[38px] items-center gap-2 rounded-md border border-dashed border-border bg-background px-2">
                     {current ? (
                       <>
                         <span className="min-w-0 truncate text-sm text-foreground">{current.name}</span>
@@ -270,7 +271,7 @@ export function SubmissionForm({
             }
             case "declaration":
               return (
-                <label key={field.id} className="flex h-8 items-center gap-2 rounded-md border border-border bg-background px-2 text-sm text-foreground sm:col-span-2">
+                <label key={field.id} className="flex h-[38px] items-center gap-2 rounded-md border border-border bg-background px-2 text-sm text-foreground sm:col-span-2">
                   <input type="checkbox" checked={value === "yes"} onChange={(e) => set(field.id, e.target.checked ? "yes" : "")} />
                   {field.label}
                 </label>
