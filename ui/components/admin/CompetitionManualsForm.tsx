@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { deleteManualAction, uploadManualAction, type ActionState } from "@/domain/competitions/actions";
 import { manualTypeLabels, type Competition, type ManualType } from "@/domain/competitions/types";
 import { FormField } from "@/ui/components/FormField";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 const initialState: ActionState = { error: null };
 
@@ -63,7 +64,10 @@ export function CompetitionManualsForm({ competition }: { competition: Competiti
           <FormField label="Version date" name="version_date" type="date" />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">File (PDF/Word)</label>
+          <label className="text-sm font-medium text-foreground">
+            File (PDF/Word)
+            <RequiredMark />
+          </label>
           <input
             type="file"
             name="file"

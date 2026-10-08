@@ -14,6 +14,7 @@ import {
   type InterviewMode,
 } from "@/domain/judge-applications/types";
 import { Badge } from "@/ui/components/Badge";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 const initialState: ActionState = { error: null };
 
@@ -37,12 +38,16 @@ function ScheduleInterviewForm({ applicationId }: { applicationId: string }) {
           </option>
         ))}
       </select>
-      <input
-        type="datetime-local"
-        name="interview_at"
-        required
-        className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground"
-      />
+      <label className="text-sm font-medium text-foreground">
+        Interview time
+        <RequiredMark />
+        <input
+          type="datetime-local"
+          name="interview_at"
+          required
+          className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground"
+        />
+      </label>
       <input
         type="text"
         name="location"

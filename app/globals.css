@@ -108,6 +108,20 @@ body {
   color: var(--foreground);
 }
 
+/* Single-line fields share one height. Checkboxes, radios, sliders and
+   multi-line text areas keep their own size. Kept in the base layer so a
+   utility such as h-8 can still size a control inside a widget. */
+@layer base {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]),
+  select {
+    height: 38px;
+  }
+
+  form :is(button, [type="button"], [type="submit"], [type="reset"]):not(:disabled) {
+    cursor: pointer;
+  }
+}
+
 /* Headings use Plus Jakarta Sans — same as Featuring Now slide titles. */
 h1,
 h2,

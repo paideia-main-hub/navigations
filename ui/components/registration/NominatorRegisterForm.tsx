@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { signUpNominator, type ActionState } from "@/domain/auth/actions";
 import { FormField } from "@/ui/components/FormField";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 import { StepForm } from "@/ui/components/StepForm";
 
 const initialState: ActionState = { error: null };
@@ -53,7 +54,10 @@ export function NominatorRegisterForm({ hideIntro = false }: { hideIntro?: boole
             content: (
               <label className="flex items-start gap-2 text-sm text-muted">
                 <input type="checkbox" required className="mt-0.5" />
-                I accept the award category rules and the site&apos;s privacy and data-consent terms.
+                <span>
+                  I accept the award category rules and the site&apos;s privacy and data-consent terms.
+                  <RequiredMark />
+                </span>
               </label>
             ),
           },

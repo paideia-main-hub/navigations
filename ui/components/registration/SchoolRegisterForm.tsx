@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { signUpSchool, type ActionState } from "@/domain/auth/actions";
 import { FormField } from "@/ui/components/FormField";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 import { StepForm } from "@/ui/components/StepForm";
 
 const initialState: ActionState = { error: null };
@@ -112,8 +113,11 @@ export function SchoolRegisterForm({ hideIntro = false }: { hideIntro?: boolean 
                 <FormField label="Password" name="password" type="password" required minLength={8} />
                 <label className="flex items-start gap-2 text-sm text-muted">
                   <input type="checkbox" required className="mt-0.5" />
-                  I confirm this information is accurate and accept the competition rules and result/media publication
-                  consent terms on behalf of the school.
+                  <span>
+                    I confirm this information is accurate and accept the competition rules and result/media publication
+                    consent terms on behalf of the school.
+                    <RequiredMark />
+                  </span>
                 </label>
               </>
             ),

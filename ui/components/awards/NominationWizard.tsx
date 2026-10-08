@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import type { AwardCategory } from "@/domain/awards/types";
 import { submitNominationAction, type ActionState } from "@/domain/award-nominations/actions";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 import { CATEGORY_FIELDS } from "./categoryFields";
 
 const initialState: ActionState = { error: null };
@@ -65,7 +66,10 @@ export function NominationWizard({
       <div className="space-y-3 rounded-xl border border-border bg-surface p-4">
         <h2 className="font-semibold text-foreground">Nominee</h2>
         <div>
-          <label className="text-sm font-medium text-foreground">Name</label>
+          <label className="text-sm font-medium text-foreground">
+            Name
+            <RequiredMark />
+          </label>
           <input
             name="nominee_name"
             required
@@ -79,7 +83,10 @@ export function NominationWizard({
         </div>
         {isIdeaOfTheYear && (
           <div>
-            <label className="text-sm font-medium text-foreground">Route</label>
+            <label className="text-sm font-medium text-foreground">
+              Route
+              <RequiredMark />
+            </label>
             <select name="route" required defaultValue="implemented" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground">
               <option value="implemented">Implemented idea — I can show implementation and results</option>
               <option value="future_proposal">Future proposal — planned for an upcoming edition or stated future year</option>
@@ -94,12 +101,18 @@ export function NominationWizard({
           {fields.map((f) =>
             f.type === "textarea" ? (
               <div key={f.key}>
-                <label className="text-sm font-medium text-foreground">{f.label}</label>
+                <label className="text-sm font-medium text-foreground">
+                  {f.label}
+                  <RequiredMark />
+                </label>
                 <textarea name={`field_${f.key}`} rows={3} required className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" />
               </div>
             ) : (
               <div key={f.key}>
-                <label className="text-sm font-medium text-foreground">{f.label}</label>
+                <label className="text-sm font-medium text-foreground">
+                  {f.label}
+                  <RequiredMark />
+                </label>
                 <input name={`field_${f.key}`} required className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" />
               </div>
             ),
@@ -173,11 +186,17 @@ export function NominationWizard({
         <h2 className="font-semibold text-foreground">Consent</h2>
         <label className="flex items-start gap-2 text-sm text-foreground">
           <input type="checkbox" name="consent_terms" checked={consent.terms} onChange={(e) => setConsent((p) => ({ ...p, terms: e.target.checked }))} className="mt-0.5" />
-          I accept the award category rules and code of conduct.
+          <span>
+            I accept the award category rules and code of conduct.
+            <RequiredMark />
+          </span>
         </label>
         <label className="flex items-start gap-2 text-sm text-foreground">
           <input type="checkbox" name="consent_privacy" checked={consent.privacy} onChange={(e) => setConsent((p) => ({ ...p, privacy: e.target.checked }))} className="mt-0.5" />
-          I consent to the site&apos;s data privacy policy.
+          <span>
+            I consent to the site&apos;s data privacy policy.
+            <RequiredMark />
+          </span>
         </label>
         <label className="flex items-start gap-2 text-sm text-foreground">
           <input

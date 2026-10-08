@@ -12,6 +12,7 @@ import {
 } from "@/domain/competitions/types";
 import { submitCompetitionBasketAction } from "@/domain/registrations/actions";
 import type { BasketItemInput, BasketLine } from "@/domain/registrations/basket";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 type Step = "browse" | "details" | "teams" | "consent" | "payment" | "done";
 
@@ -253,6 +254,7 @@ export function CompetitionBasket({
             </dl>
             <label className="block max-w-xs text-sm font-medium text-foreground">
               Your current grade
+              <RequiredMark />
               <input
                 value={grade}
                 onChange={(e) => {
@@ -290,7 +292,10 @@ export function CompetitionBasket({
 
             <label className="flex items-start gap-2 text-sm text-foreground">
               <input type="checkbox" checked={detailsConfirmed} onChange={(e) => setDetailsConfirmed(e.target.checked)} className="mt-0.5" />
-              My name, school and grade above are correct.
+              <span>
+                My name, school and grade above are correct.
+                <RequiredMark />
+              </span>
             </label>
 
             <div className="flex flex-wrap gap-3">
@@ -341,10 +346,14 @@ export function CompetitionBasket({
                     <>
                       <label className="block text-sm font-medium text-foreground">
                         Team name
+                        <RequiredMark />
                         <input value={t.teamName} onChange={(e) => updateTeam(c.slug, { teamName: e.target.value }, c)} className={input} />
                       </label>
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-foreground">Teammates</p>
+                        <p className="text-sm font-medium text-foreground">
+                          Teammates
+                          <RequiredMark />
+                        </p>
                         <input readOnly value={`${student.fullName} (you)`} className={`${input} bg-surface-muted text-muted`} />
                         {t.teammates.map((name, i) => (
                           <input
@@ -397,7 +406,10 @@ export function CompetitionBasket({
                   onChange={(e) => setConsent((prev) => ({ ...prev, [item.key]: e.target.checked }))}
                   className="mt-0.5"
                 />
-                {item.label}
+                <span>
+                  {item.label}
+                  <RequiredMark />
+                </span>
               </label>
             ))}
             <div className="flex flex-wrap gap-3">
@@ -432,7 +444,9 @@ export function CompetitionBasket({
               total={total}
             />
             <label className="block text-sm font-medium text-foreground">
-              Payment receipt <span className="font-normal text-muted">(photo or PDF of the transfer for {formatFee(total)})</span>
+              Payment receipt
+              <RequiredMark />{" "}
+              <span className="font-normal text-muted">(photo or PDF of the transfer for {formatFee(total)})</span>
               <input
                 type="file"
                 accept="image/*,application/pdf"

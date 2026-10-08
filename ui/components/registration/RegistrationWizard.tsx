@@ -9,6 +9,7 @@ import type { StudentProfile } from "@/domain/students/types";
 import type { Registration } from "@/domain/registrations/types";
 import { submitRegistrationAction } from "@/domain/registrations/actions";
 import { submitPaymentAction } from "@/domain/payments/actions";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 type Step = "eligibility" | "entry" | "consent" | "review" | "payment" | "success";
 
@@ -220,6 +221,7 @@ export function RegistrationWizard({
           <div>
             <label className="text-sm font-medium text-foreground">
               {mode === "school" ? "Student's grade" : "Your grade"}
+              <RequiredMark />
             </label>
             <input
               type="text"
@@ -286,7 +288,9 @@ export function RegistrationWizard({
           {entryType === "individual" && mode === "school" && (
             <div>
               <label className="text-sm font-medium text-foreground">
-                Select students <span className="font-normal text-muted">(one registration per student selected)</span>
+                Select students
+                <RequiredMark />{" "}
+                <span className="font-normal text-muted">(one registration per student selected)</span>
               </label>
               {roster.length === 0 ? (
                 <p className="mt-1 text-sm text-muted">
@@ -327,7 +331,10 @@ export function RegistrationWizard({
           {entryType === "team" && (
             <div className="space-y-3">
               <div>
-                <label className="text-sm font-medium text-foreground">Team name</label>
+                <label className="text-sm font-medium text-foreground">
+                  Team name
+                  <RequiredMark />
+                </label>
                 <input
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
@@ -339,6 +346,7 @@ export function RegistrationWizard({
                 <div>
                   <label className="text-sm font-medium text-foreground">
                     Teammates ({teamMin}–{teamMax} members total, including you)
+                    <RequiredMark />
                   </label>
                   <div className="mt-1 space-y-2">
                     <input
@@ -371,6 +379,7 @@ export function RegistrationWizard({
                 <div>
                   <label className="text-sm font-medium text-foreground">
                     Select team members ({teamMin}–{teamMax})
+                    <RequiredMark />
                   </label>
                   {roster.length === 0 ? (
                     <p className="mt-1 text-sm text-muted">
@@ -441,7 +450,10 @@ export function RegistrationWizard({
                 onChange={(e) => setConsent((prev) => ({ ...prev, [item.key]: e.target.checked }))}
                 className="mt-0.5"
               />
-              {item.label}
+              <span>
+                {item.label}
+                <RequiredMark />
+              </span>
             </label>
           ))}
           <div className="flex gap-3">
@@ -538,7 +550,10 @@ export function RegistrationWizard({
             approved.
           </p>
           <div>
-            <label className="text-sm font-medium text-foreground">Fee receipt</label>
+            <label className="text-sm font-medium text-foreground">
+              Fee receipt
+              <RequiredMark />
+            </label>
             <input
               type="file"
               accept="image/*,application/pdf"

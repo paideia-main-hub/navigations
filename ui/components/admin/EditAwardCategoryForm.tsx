@@ -5,6 +5,8 @@ import { updateCategoryAction, type ActionState } from "@/domain/awards/actions"
 import type { AwardCategory, RubricCriterion } from "@/domain/awards/types";
 import { isJudgedLayer } from "@/domain/awards/types";
 import { AwardCategoryImageUploader } from "@/ui/components/admin/AwardCategoryImageUploader";
+import { DateField } from "@/ui/components/DateField";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 const initialState: ActionState = { error: null };
 
@@ -49,7 +51,10 @@ export function EditAwardCategoryForm({ category }: { category: AwardCategory })
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="text-sm font-medium text-foreground">Title</label>
+          <label className="text-sm font-medium text-foreground">
+            Title
+            <RequiredMark />
+          </label>
           <input
             name="title"
             defaultValue={category.title}
@@ -58,7 +63,10 @@ export function EditAwardCategoryForm({ category }: { category: AwardCategory })
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">Slug</label>
+          <label className="text-sm font-medium text-foreground">
+            Slug
+            <RequiredMark />
+          </label>
           <input
             name="slug"
             defaultValue={category.slug}
@@ -191,31 +199,31 @@ export function EditAwardCategoryForm({ category }: { category: AwardCategory })
         </div>
         <div>
           <label className="text-sm font-medium text-foreground">Evidence period start</label>
-          <input
+          <DateField
             name="evidence_period_start"
-            type="date"
+            label="Evidence period start"
             defaultValue={category.evidencePeriodStart ?? ""}
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+            className="mt-1"
           />
         </div>
         <div>
           <label className="text-sm font-medium text-foreground">Evidence period end</label>
-          <input
+          <DateField
             name="evidence_period_end"
-            type="date"
+            label="Evidence period end"
             defaultValue={category.evidencePeriodEnd ?? ""}
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+            className="mt-1"
           />
         </div>
       </div>
 
       <div>
         <label className="text-sm font-medium text-foreground">Nomination closing date</label>
-        <input
+        <DateField
           name="closing_at"
-          type="date"
+          label="Nomination closing date"
           defaultValue={category.closingAt ? category.closingAt.slice(0, 10) : ""}
-          className="mt-1 w-full max-w-xs rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+          className="mt-1 max-w-xs"
         />
       </div>
 

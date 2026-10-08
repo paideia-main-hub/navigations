@@ -1,4 +1,6 @@
+import { DateField } from "@/ui/components/DateField";
 import { PasswordInput } from "@/ui/components/PasswordInput";
+import { RequiredMark } from "@/ui/components/RequiredMark";
 
 export function FormField({
   label,
@@ -34,7 +36,10 @@ export function FormField({
 
   return (
     <div>
-      <label className="text-sm font-medium text-foreground">{label}</label>
+      <label className="text-sm font-medium text-foreground">
+        {label}
+        {required ? <RequiredMark /> : null}
+      </label>
       {type === "password" ? (
         <PasswordInput
           name={name}
@@ -46,6 +51,16 @@ export function FormField({
               : "new-password"
           }
           minLength={minLength}
+        />
+      ) : type === "date" ? (
+        <DateField
+          name={name}
+          label={label}
+          required={required}
+          defaultValue={defaultValue}
+          min={min}
+          max={max}
+          className="mt-1"
         />
       ) : (
         <input
