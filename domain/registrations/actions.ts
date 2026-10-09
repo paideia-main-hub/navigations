@@ -5,7 +5,7 @@ import { createClient } from "@/data/supabase/server";
 import { createAdminClient } from "@/data/supabase/admin";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getPublicCompetitionBySlug, isGradeEligible } from "@/domain/competitions/service";
-import { categoryLabels, DEFAULT_ENTRY_FEE, type Competition } from "@/domain/competitions/types";
+import { categoryLabels, type Competition } from "@/domain/competitions/types";
 import { insertPaymentAndLink } from "@/domain/payments/service";
 import { uploadReceiptFile } from "@/domain/storage/actions";
 import { createTeam } from "@/domain/teams/service";
@@ -199,7 +199,10 @@ export async function submitCompetitionBasketAction(formData: FormData): Promise
       return { ok: false, error: `${competition.title} is a team competition — add your teammates.` };
     }
 
-    planned.push({ item, competition, rule, fee: competition.feeAmount ?? DEFAULT_ENTRY_FEE });
+    if (competition.feeAmount == null) {
+      return { ok: false, error: `The entry fee for ${competition.title} has not been set yet.` };
+    }
+    planned.push({ item, competition, rule, fee: competition.feeAmount });
   }
 
   // --- Receipt first: nothing is created if the upload fails ----------------

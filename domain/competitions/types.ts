@@ -183,9 +183,9 @@ export const categoryLabels: Record<AgeCategory, string> = {
   secondary: "Secondary",
 };
 
-/** Entry fee per registration, in Pakistani rupees — the same for every
- * League competition. New competitions start with it; an admin can still
- * change one competition's amount from its Overview tab. */
+/** Starting entry fee, in Pakistani rupees, for a competition an admin has
+ * just created. Everywhere a fee is shown reads that competition's saved
+ * fee_amount, which an admin can change from its Overview tab or Bulk changes. */
 export const DEFAULT_ENTRY_FEE = 1000;
 
 /** "PKR 1,000" */

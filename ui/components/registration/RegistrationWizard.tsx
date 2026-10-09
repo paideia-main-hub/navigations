@@ -9,7 +9,12 @@ import type { StudentProfile } from "@/domain/students/types";
 import type { Registration } from "@/domain/registrations/types";
 import { submitRegistrationAction } from "@/domain/registrations/actions";
 import { submitPaymentAction } from "@/domain/payments/actions";
+import type { PaymentAccount } from "@/domain/payments/types";
+import { withFileUploadProgress, type UploadProgressState } from "@/ui/lib/fileUploadProgress";
+import { PaymentInstructions } from "@/ui/components/PaymentInstructions";
 import { RequiredMark } from "@/ui/components/RequiredMark";
+import { StepMotion } from "@/ui/components/StepMotion";
+import { UploadProgress } from "@/ui/components/UploadProgress";
 
 type Step = "eligibility" | "entry" | "consent" | "review" | "payment" | "success";
 
@@ -21,6 +26,7 @@ export function RegistrationWizard({
   schoolId,
   schoolName,
   roster = [],
+  paymentAccount,
 }: {
   competition: Competition;
   mode: "student" | "school";
@@ -32,8 +38,16 @@ export function RegistrationWizard({
   schoolId?: string;
   schoolName?: string;
   roster?: StudentProfile[];
+  paymentAccount: PaymentAccount;
 }) {
   const [step, setStep] = useState<Step>("eligibility");
+  const [direction, setDirection] = useState<"forward" | "back">("forward");
+
+  function moveTo(next: Step) {
+    const order: Step[] = ["eligibility", "entry", "consent", "review", "payment", "success"];
+    setDirection(order.indexOf(next) < order.indexOf(step) ? "back" : "forward");
+    setStep(next);
+  }
   const [grade, setGrade] = useState("");
   const [matchedRule, setMatchedRule] = useState<Competition["eligibility"][number] | null>(null);
   const [ineligible, setIneligible] = useState(false);
@@ -59,6 +73,7 @@ export function RegistrationWizard({
 
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [transfer, setTransfer] = useState<UploadProgressState | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [paymentDone, setPaymentDone] = useState(false);
 
@@ -78,7 +93,7 @@ export function RegistrationWizard({
     if (match) {
       setMatchedRule(match);
       setIneligible(false);
-      setStep("entry");
+      moveTo("entry");
     } else {
       setIneligible(true);
     }
@@ -137,7 +152,7 @@ export function RegistrationWizard({
       }
       setResults(created);
       setSubmitting(false);
-      setStep("payment");
+      moveTo("payment");
       return;
     }
 
@@ -163,7 +178,7 @@ export function RegistrationWizard({
     }
 
     setResults([registration]);
-    setStep("payment");
+    moveTo("payment");
   }
 
   async function handlePaymentSubmit() {
@@ -174,17 +189,19 @@ export function RegistrationWizard({
     setPaymentSubmitting(true);
     setPaymentError(null);
 
-    const { error } = await submitPaymentAction({
-      competitionSlug: competition.slug,
-      competitionTitle: competition.title,
-      schoolId: mode === "school" ? (schoolId ?? null) : null,
-      schoolName: mode === "school" ? (schoolName ?? null) : null,
-      entryCount,
-      amountExpected,
-      registrationIds: results.map((r) => r.id),
-      receiptFile,
-    });
-
+    const { error } = await withFileUploadProgress(setTransfer, () =>
+      submitPaymentAction({
+        competitionSlug: competition.slug,
+        competitionTitle: competition.title,
+        schoolId: mode === "school" ? (schoolId ?? null) : null,
+        schoolName: mode === "school" ? (schoolName ?? null) : null,
+        entryCount,
+        amountExpected,
+        registrationIds: results.map((r) => r.id),
+        receiptFile,
+      }),
+    );
+    setTransfer(null);
     setPaymentSubmitting(false);
 
     if (error) {
@@ -193,13 +210,13 @@ export function RegistrationWizard({
     }
 
     setPaymentDone(true);
-    setStep("success");
+    moveTo("success");
   }
 
   const steps: Step[] = ["eligibility", "entry", "consent", "review", "payment"];
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="form-actions mx-auto max-w-2xl">
       <ol className="mb-8 flex flex-wrap gap-2 text-xs font-medium text-muted">
         {steps.map((s, i) => (
           <li
@@ -211,6 +228,7 @@ export function RegistrationWizard({
         ))}
       </ol>
 
+      <StepMotion step={step} direction={direction}>
       {step === "eligibility" && (
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-foreground">Check eligibility</h2>
@@ -414,13 +432,13 @@ export function RegistrationWizard({
 
           <div className="flex gap-3">
             <button
-              onClick={() => setStep("eligibility")}
+              onClick={() => moveTo("eligibility")}
               className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground"
             >
               Back
             </button>
             <button
-              onClick={() => setStep("consent")}
+              onClick={() => moveTo("consent")}
               disabled={
                 (entryType === "team" && !teamName.trim()) ||
                 (entryType === "team" && mode === "school" && selectedRosterIds.length < 2) ||
@@ -458,13 +476,13 @@ export function RegistrationWizard({
           ))}
           <div className="flex gap-3">
             <button
-              onClick={() => setStep("entry")}
+              onClick={() => moveTo("entry")}
               className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground"
             >
               Back
             </button>
             <button
-              onClick={() => setStep("review")}
+              onClick={() => moveTo("review")}
               disabled={!consentComplete}
               className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
             >
@@ -507,7 +525,7 @@ export function RegistrationWizard({
           {submitError && <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>}
           <div className="flex gap-3">
             <button
-              onClick={() => setStep("consent")}
+              onClick={() => moveTo("consent")}
               className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground"
             >
               Back
@@ -544,10 +562,9 @@ export function RegistrationWizard({
               )}
             </p>
           </div>
+          <PaymentInstructions account={paymentAccount} amount={amountExpected != null ? formatFee(amountExpected) : null} />
           <p className="text-sm text-muted">
-            Pay the fee using the bank/payment details published for this competition, then upload a photo or scan of
-            your receipt below. An admin reviews every receipt — your registration is marked under review until it&apos;s
-            approved.
+            An admin reviews every receipt. The registration stays under review until the payment is approved.
           </p>
           <div>
             <label className="text-sm font-medium text-foreground">
@@ -561,6 +578,7 @@ export function RegistrationWizard({
               className="mt-1 block w-full text-sm text-foreground file:mr-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-strong hover:file:bg-accent-soft/80"
             />
           </div>
+          {transfer ? <UploadProgress phase={transfer.phase} percent={transfer.percent} /> : null}
           {paymentError && <p className="text-sm text-red-600 dark:text-red-400">{paymentError}</p>}
           <div className="flex gap-3">
             <button
@@ -603,6 +621,7 @@ export function RegistrationWizard({
           </Link>
         </div>
       )}
+      </StepMotion>
     </div>
   );
 }

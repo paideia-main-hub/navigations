@@ -74,6 +74,8 @@ function revalidateCompetition(id: string, slug?: string) {
   revalidatePath(`/admin/competitions/${id}`);
   revalidatePath("/competitions");
   revalidatePath("/");
+  revalidatePath("/schools");
+  revalidatePath("/dashboard/register");
   if (slug) revalidatePath(`/competitions/${slug}`);
 }
 
@@ -696,6 +698,8 @@ export async function bulkSavePathwayScheduleAction(
   revalidatePath("/admin/competitions");
   revalidatePath("/competitions");
   revalidatePath("/");
+  revalidatePath("/schools");
+  revalidatePath("/dashboard/register");
   for (const id of competitionIds) {
     revalidatePath(`/admin/competitions/${id}`);
   }
@@ -750,6 +754,8 @@ export async function bulkSaveEventsAction(_prevState: ActionState, formData: Fo
   revalidatePath("/admin/competitions");
   revalidatePath("/competitions");
   revalidatePath("/");
+  revalidatePath("/schools");
+  revalidatePath("/dashboard/register");
   for (const id of competitionIds) {
     revalidatePath(`/admin/competitions/${id}`);
   }
@@ -805,6 +811,8 @@ export async function bulkSaveIndividualEventsAction(
   revalidatePath("/admin/competitions");
   revalidatePath("/competitions");
   revalidatePath("/");
+  revalidatePath("/schools");
+  revalidatePath("/dashboard/register");
   for (const id of competitionIds) {
     revalidatePath(`/admin/competitions/${id}`);
   }

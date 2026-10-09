@@ -3,12 +3,14 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { addStudentAction, type ActionState } from "@/domain/students/actions";
 import { FormField } from "@/ui/components/FormField";
+import { UploadProgress, useFileFormProgress } from "@/ui/components/UploadProgress";
 
 const initialState: ActionState = { error: null };
 
 export function AddStudentForm() {
   const [open, setOpen] = useState(false);
   const [state, formAction, pending] = useActionState(addStudentAction, initialState);
+  const { onSubmitCapture, progress } = useFileFormProgress(pending);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -31,7 +33,7 @@ export function AddStudentForm() {
   }
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-3 rounded-xl border border-border bg-surface p-4">
+    <form ref={formRef} action={formAction} onSubmitCapture={onSubmitCapture} className="space-y-3 rounded-xl border border-border bg-surface p-4">
       <h3 className="font-semibold text-foreground">Add student</h3>
       <div className="grid gap-3 sm:grid-cols-2">
         <FormField label="Full name" name="full_name" required />
@@ -53,6 +55,7 @@ export function AddStudentForm() {
         />
         <p className="mt-1 text-xs text-muted">Used on this student&apos;s certificate and, if they win, on the public results page.</p>
       </div>
+      {progress ? <UploadProgress phase={progress.phase} percent={progress.percent} /> : null}
       {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
       <div className="flex gap-3">
         <button

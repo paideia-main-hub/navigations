@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getPublicCompetitionBySlug } from "@/domain/competitions/service";
+import { getPaymentAccount } from "@/domain/payments/service";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { listSchoolRoster, getOwnStudentProfile } from "@/domain/students/service";
 import { RegistrationWizard } from "@/ui/components/registration/RegistrationWizard";
@@ -17,7 +18,10 @@ export default async function CompetitionRegisterPage({
   const user = await getCurrentUser();
   const supabase = await createClient();
   // Drafts and archived competitions can't be registered for, even by URL.
-  const competition = await getPublicCompetitionBySlug(supabase, slug);
+  const [competition, paymentAccount] = await Promise.all([
+    getPublicCompetitionBySlug(supabase, slug),
+    getPaymentAccount(supabase),
+  ]);
   if (!competition) notFound();
 
   if (!user || user.role === "judge" || user.role === "admin") {
@@ -60,6 +64,7 @@ export default async function CompetitionRegisterPage({
               schoolId={school.id}
               schoolName={school.officialName}
               roster={roster}
+              paymentAccount={paymentAccount}
             />
           </div>
         </DashboardPage>
@@ -78,6 +83,7 @@ export default async function CompetitionRegisterPage({
             competition={competition}
             mode="student"
             studentName={user.fullName}
+            paymentAccount={paymentAccount}
             studentId={ownProfile?.id}
           />
         </div>

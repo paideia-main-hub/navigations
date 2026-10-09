@@ -5,14 +5,18 @@ import { useRouter } from "next/navigation";
 import { isGradeEligible } from "@/domain/competitions/service";
 import {
   categoryLabels,
-  DEFAULT_ENTRY_FEE,
   formatFee,
   pathwayLabels,
   type CompetitionSummary,
 } from "@/domain/competitions/types";
 import { submitCompetitionBasketAction } from "@/domain/registrations/actions";
 import type { BasketItemInput, BasketLine } from "@/domain/registrations/basket";
+import type { PaymentAccount } from "@/domain/payments/types";
+import { withFileUploadProgress, type UploadProgressState } from "@/ui/lib/fileUploadProgress";
+import { PaymentInstructions } from "@/ui/components/PaymentInstructions";
 import { RequiredMark } from "@/ui/components/RequiredMark";
+import { StepMotion } from "@/ui/components/StepMotion";
+import { UploadProgress } from "@/ui/components/UploadProgress";
 
 type Step = "browse" | "details" | "teams" | "consent" | "payment" | "done";
 
@@ -30,10 +34,10 @@ interface TeamDraft {
 }
 
 const btnPrimary =
-  "rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50";
-const btnSecondary = "rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:border-accent";
+  "form-action cursor-pointer rounded-full bg-accent px-5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50";
+const btnSecondary = "form-action cursor-pointer rounded-full border border-border px-5 text-sm font-semibold text-foreground hover:border-accent";
 const input =
-  "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent";
+  "mt-1 h-[38px] w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-accent";
 
 const STEP_LABELS: Record<Exclude<Step, "browse" | "done">, string> = {
   details: "Your details",
@@ -42,8 +46,8 @@ const STEP_LABELS: Record<Exclude<Step, "browse" | "done">, string> = {
   payment: "Fee & payment",
 };
 
-function feeOf(c: CompetitionSummary): number {
-  return c.feeAmount ?? DEFAULT_ENTRY_FEE;
+function feeLabel(c: CompetitionSummary): string {
+  return c.feeAmount == null ? "Fee not set" : formatFee(c.feeAmount);
 }
 
 function gradeRange(c: CompetitionSummary): string {
@@ -70,16 +74,19 @@ export function CompetitionBasket({
   competitions,
   registeredSlugs,
   student,
+  paymentAccount,
 }: {
   competitions: CompetitionSummary[];
   registeredSlugs: string[];
   student: StudentInfo;
+  paymentAccount: PaymentAccount;
 }) {
   const router = useRouter();
   const registered = useMemo(() => new Set(registeredSlugs), [registeredSlugs]);
   const bySlug = useMemo(() => new Map(competitions.map((c) => [c.slug, c])), [competitions]);
 
   const [step, setStep] = useState<Step>("browse");
+  const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [selected, setSelected] = useState<string[]>([]);
   const [grade, setGrade] = useState(student.grade ?? "");
   const [detailsConfirmed, setDetailsConfirmed] = useState(false);
@@ -87,6 +94,7 @@ export function CompetitionBasket({
   const [consent, setConsent] = useState({ terms: false, privacy: false, results: false, photo: false });
   const [receipt, setReceipt] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [transfer, setTransfer] = useState<UploadProgressState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ frlId: string | null; lines: BasketLine[]; total: number } | null>(null);
 
@@ -111,7 +119,8 @@ export function CompetitionBasket({
   }, [selected, student.frlId]);
 
   const picks = selected.map((s) => bySlug.get(s)).filter((c): c is CompetitionSummary => Boolean(c));
-  const total = picks.reduce((sum, c) => sum + feeOf(c), 0);
+  const feeMissing = picks.some((c) => c.feeAmount == null);
+  const total = picks.reduce((sum, c) => sum + (c.feeAmount ?? 0), 0);
   const ineligible = picks.filter((c) => !ruleFor(c, grade));
   const teamPicks = picks.filter((c) => c.supportsTeam);
   const flowSteps: Exclude<Step, "browse" | "done">[] = teamPicks.length > 0 ? ["details", "teams", "consent", "payment"] : ["details", "consent", "payment"];
@@ -163,7 +172,8 @@ export function CompetitionBasket({
     fd.set("consent", JSON.stringify(consent));
     fd.set("receipt", receipt);
 
-    const res = await submitCompetitionBasketAction(fd);
+    const res = await withFileUploadProgress(setTransfer, () => submitCompetitionBasketAction(fd));
+    setTransfer(null);
     setSubmitting(false);
     if (!res.ok) {
       setError(res.error);
@@ -173,11 +183,14 @@ export function CompetitionBasket({
     setSelected([]);
     setTeams({});
     setReceipt(null);
+    setDirection("forward");
     setStep("done");
     router.refresh();
   }
 
   function goTo(next: Step) {
+    const order: Step[] = ["browse", "details", "teams", "consent", "payment", "done"];
+    setDirection(order.indexOf(next) < order.indexOf(step) ? "back" : "forward");
     setError(null);
     setStep(next);
     if (typeof window !== "undefined") document.getElementById("register")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -208,7 +221,7 @@ export function CompetitionBasket({
           }))}
           total={result.total}
         />
-        <button onClick={() => setStep("browse")} className={`${btnSecondary} mt-5`}>
+        <button onClick={() => goTo("browse")} className={`${btnSecondary} mt-5`}>
           Register for more competitions
         </button>
       </div>
@@ -232,6 +245,7 @@ export function CompetitionBasket({
           ))}
         </ol>
 
+        <StepMotion step={step} direction={direction}>
         {step === "details" && (
           <div className="space-y-5">
             <div>
@@ -427,10 +441,9 @@ export function CompetitionBasket({
           <div className="space-y-5">
             <div>
               <h3 className="text-lg font-bold text-foreground">Fee summary &amp; payment</h3>
-              <p className="text-sm text-muted">
-                Pay the total once using the League&apos;s published payment details, then upload one receipt covering everything below.
-              </p>
+              <p className="text-sm text-muted">One receipt covers every competition in this checkout.</p>
             </div>
+            <PaymentInstructions account={paymentAccount} amount={feeMissing ? null : formatFee(total)} />
             <FeeTable
               rows={picks.map((c) => {
                 const rule = ruleFor(c, grade);
@@ -438,11 +451,16 @@ export function CompetitionBasket({
                 return {
                   title: c.title,
                   detail: `${rule ? categoryLabels[rule.category] : ""}${team ? ` · Team “${teamDraft(c).teamName}”` : " · Individual"}`,
-                  fee: feeOf(c),
+                  fee: c.feeAmount ?? 0,
                 };
               })}
               total={total}
             />
+            {feeMissing && (
+              <p className="text-sm text-red-600 dark:text-red-400">
+                One of the selected competitions does not have a fee yet. Remove it, or ask an admin to set the fee, before you pay.
+              </p>
+            )}
             <label className="block text-sm font-medium text-foreground">
               Payment receipt
               <RequiredMark />{" "}
@@ -454,17 +472,19 @@ export function CompetitionBasket({
                 className="mt-1 block w-full text-sm text-foreground file:mr-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-strong"
               />
             </label>
+            {transfer ? <UploadProgress phase={transfer.phase} percent={transfer.percent} /> : null}
             {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
             <div className="flex flex-wrap gap-3">
               <button onClick={() => goTo("consent")} disabled={submitting} className={btnSecondary}>
                 Back
               </button>
-              <button onClick={submit} disabled={submitting || !receipt} className={btnPrimary}>
+              <button onClick={submit} disabled={submitting || !receipt || feeMissing} className={btnPrimary}>
                 {submitting ? "Registering…" : `Submit ${picks.length} registration${picks.length === 1 ? "" : "s"} · ${formatFee(total)}`}
               </button>
             </div>
           </div>
         )}
+        </StepMotion>
       </div>
     );
   }
@@ -497,7 +517,7 @@ export function CompetitionBasket({
                     .join(" · ")}
                 </p>
                 <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-                  <span className="text-sm font-semibold text-foreground">{formatFee(feeOf(c))}</span>
+                  <span className="text-sm font-semibold text-foreground">{feeLabel(c)}</span>
                   {isRegistered ? (
                     <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                       Registered ✓
@@ -509,8 +529,8 @@ export function CompetitionBasket({
                       title={notForGrade ? `Not open to grade ${grade}` : undefined}
                       className={
                         isSelected
-                          ? "rounded-full border border-accent px-4 py-1.5 text-xs font-semibold text-accent-strong hover:bg-accent-soft"
-                          : "rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                          ? "cursor-pointer rounded-full border border-accent px-4 py-1.5 text-xs font-semibold text-accent-strong hover:bg-accent-soft"
+                          : "cursor-pointer rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                       }
                     >
                       {isSelected ? "Added ✓ · Remove" : notForGrade ? "Not for your grade" : "+ Add"}
@@ -527,7 +547,7 @@ export function CompetitionBasket({
         <div className="sticky bottom-4 z-20 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-accent bg-surface p-4 shadow-[0_18px_40px_-20px_rgba(31,32,65,0.5)]">
           <div className="text-sm">
             <p className="font-semibold text-foreground">
-              {picks.length} competition{picks.length === 1 ? "" : "s"} selected · {formatFee(total)}
+              {picks.length} competition{picks.length === 1 ? "" : "s"} selected · {feeMissing ? "Fee not set" : formatFee(total)}
             </p>
             <p className="line-clamp-1 text-xs text-muted">{picks.map((c) => c.title).join(", ")}</p>
           </div>
@@ -535,7 +555,7 @@ export function CompetitionBasket({
             <button onClick={() => setSelected([])} className={btnSecondary}>
               Clear
             </button>
-            <button onClick={() => goTo("details")} className={btnPrimary}>
+            <button onClick={() => goTo("details")} disabled={feeMissing} className={btnPrimary}>
               Continue to register
             </button>
           </div>

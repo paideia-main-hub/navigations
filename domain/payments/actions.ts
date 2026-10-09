@@ -6,7 +6,7 @@ import { createAdminClient } from "@/data/supabase/admin";
 import { getCurrentUser } from "@/domain/auth/session";
 import { requireAdminSession } from "@/domain/admin-auth/guard";
 import { uploadReceiptFile, getReceiptSignedUrl } from "@/domain/storage/actions";
-import { insertPaymentAndLink } from "./service";
+import { insertPaymentAndLink, savePaymentAccount } from "./service";
 import { reviewPayment as reviewPaymentService } from "./service";
 import type { SubmitPaymentInput } from "./types";
 
@@ -63,6 +63,31 @@ export async function approvePaymentAction(paymentId: string): Promise<{ error: 
     revalidatePath("/admin/registrations");
   }
   return { error };
+}
+
+export async function updatePaymentAccountAction(
+  _prev: { error: string | null; saved: boolean },
+  formData: FormData,
+): Promise<{ error: string | null; saved: boolean }> {
+  await requireAdminSession();
+  const account = {
+    bankName: String(formData.get("bank_name") ?? "").trim(),
+    accountTitle: String(formData.get("account_title") ?? "").trim(),
+    accountNumber: String(formData.get("account_number") ?? "").trim(),
+    iban: String(formData.get("iban") ?? "").trim(),
+  };
+  if (!account.bankName || !account.accountTitle || !account.accountNumber || !account.iban) {
+    return { error: "Bank name, account title, account number and IBAN are all required.", saved: false };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await savePaymentAccount(admin, account);
+  if (error) return { error, saved: false };
+
+  revalidatePath("/admin/payment-account");
+  revalidatePath("/dashboard/register");
+  revalidatePath("/dashboard/register", "layout");
+  return { error: null, saved: true };
 }
 
 export async function rejectPaymentAction(paymentId: string, note: string | null): Promise<{ error: string | null }> {

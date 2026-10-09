@@ -30,7 +30,7 @@ export type FieldDef =
       /** extensions allowed, lower-case, without the dot */
       extensions: string[];
       showIf?: Condition;
-      /** when set, a link field can stand in for this file (large videos) */
+      /** when set, a stored link can stand in for this file on older entries */
       linkAlternative?: string;
     }
   | { kind: "url"; id: string; label: string; help?: string; showIf?: Condition }
@@ -272,13 +272,10 @@ export const SUBMISSION_COMPETITIONS: SubmissionCompetition[] = [
         kind: "file",
         id: "video",
         label: "Video (MP4, 3–5 minutes)",
-        help: `Upload here if under ${MAX_UPLOAD_MB} MB — otherwise paste a share link below (YouTube unlisted, Google Drive, etc. — make sure anyone with the link can view).`,
         accept: "video/mp4,.mp4",
         extensions: ["mp4"],
         required: true,
-        linkAlternative: "video_link",
       },
-      { kind: "url", id: "video_link", label: "…or video link" },
       {
         kind: "textarea",
         id: "creator_statement",
@@ -369,14 +366,11 @@ export const SUBMISSION_COMPETITIONS: SubmissionCompetition[] = [
         kind: "file",
         id: "video",
         label: "Video (MP4, maximum 30 seconds)",
-        help: `Upload here if under ${MAX_UPLOAD_MB} MB — otherwise paste a share link below.`,
         required: true,
         accept: "video/mp4,.mp4",
         extensions: ["mp4"],
         showIf: { field: "format", equals: "30-second video" },
-        linkAlternative: "video_link",
       },
-      { kind: "url", id: "video_link", label: "…or video link", showIf: { field: "format", equals: "30-second video" } },
       { kind: "select", id: "ai_use", label: "AI use", required: true, options: AI_USE_OPTIONS },
       {
         kind: "textarea",

@@ -1,20 +1,21 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { MenuScroll } from "@/ui/components/MenuScroll";
 
 export type FilterOption = { value: string; label: string };
 
 const filterFieldClass =
-  "rounded-lg border border-border bg-background py-2 text-sm text-foreground outline-none focus:border-accent";
-export const filterInputClass = `${filterFieldClass} px-2.5`;
-const selectTriggerClass = `${filterFieldClass} relative w-full cursor-pointer pl-2.5 pr-8 text-left`;
+  "box-border h-[38px] rounded-lg border border-border bg-background py-0 text-sm text-foreground outline-none focus:border-accent";
+export const filterInputClass = `${filterFieldClass} px-3 placeholder:text-muted`;
+const selectTriggerClass = `${filterFieldClass} relative flex w-full cursor-pointer appearance-none items-center pl-3 pr-12 text-left`;
 
 function Chevron({ open }: { open: boolean }) {
   return (
     <svg
       aria-hidden
       viewBox="0 0 16 16"
-      className={`pointer-events-none absolute top-1/2 right-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted transition-transform duration-200 ${
+      className={`pointer-events-none absolute top-1/2 right-4 h-3.5 w-3.5 -translate-y-1/2 text-muted transition-transform duration-200 ${
         open ? "rotate-180" : ""
       }`}
       fill="none"
@@ -41,6 +42,7 @@ export function FilterSelect({
   className,
   searchable = false,
   searchPlaceholder,
+  triggerClassName,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -49,12 +51,13 @@ export function FilterSelect({
   className?: string;
   searchable?: boolean;
   searchPlaceholder?: string;
+  triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [placement, setPlacement] = useState<"bottom" | "top">("bottom");
   const rootRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLUListElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const selected = options.find((option) => option.value === value) ?? options[0];
 
@@ -116,14 +119,18 @@ export function FilterSelect({
   }
 
   const menu = open ? (
-    <ul
-      ref={menuRef}
-      role="listbox"
-      aria-label={ariaLabel}
-      className={`filter-dropdown-scroll absolute left-0 z-50 max-h-60 w-max min-w-full overflow-y-auto overflow-x-hidden rounded-lg border border-border bg-surface py-1 shadow-[0_16px_40px_-20px_rgba(31,32,65,0.45)] ${
+    <div
+      className={`absolute left-0 z-50 w-max min-w-full ${
         placement === "bottom" ? "top-full mt-1.5" : "bottom-full mb-1.5"
       }`}
     >
+    <MenuScroll
+      scrollRef={menuRef}
+      role="listbox"
+      aria-label={ariaLabel}
+      className="max-h-60 overflow-x-hidden rounded-lg border border-border bg-surface py-1 shadow-[0_16px_40px_-20px_rgba(31,32,65,0.45)]"
+    >
+    <ul>
       {visibleOptions.length > 0 ? (
         visibleOptions.map((option) => {
           const active = option.value === value;
@@ -150,6 +157,8 @@ export function FilterSelect({
         <li className="px-3 py-2 text-sm text-muted">No matches</li>
       )}
     </ul>
+    </MenuScroll>
+    </div>
   ) : null;
 
   return (
@@ -174,7 +183,7 @@ export function FilterSelect({
               setOpen(true);
               setQuery("");
             }}
-            className={`${selectTriggerClass} cursor-text`}
+            className={`${selectTriggerClass} cursor-text ${triggerClassName ?? ""}`}
           />
           <Chevron open={open} />
         </div>
@@ -185,7 +194,7 @@ export function FilterSelect({
           aria-expanded={open}
           aria-haspopup="listbox"
           onClick={() => setOpen((current) => !current)}
-          className={selectTriggerClass}
+          className={`${selectTriggerClass} ${triggerClassName ?? ""}`}
           style={{ cursor: "pointer" }}
         >
           <span className="block truncate">{selected?.label}</span>

@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { deleteResourceAction, saveResourceAction, type ActionState } from "@/domain/competitions/actions";
 import { resourceTypeLabels, type Competition, type Resource, type ResourceType } from "@/domain/competitions/types";
 import { FormField } from "@/ui/components/FormField";
+import { UploadProgress, useFileFormProgress } from "@/ui/components/UploadProgress";
 
 const initialState: ActionState = { error: null };
 
@@ -24,6 +25,7 @@ function DeleteResourceButton({ competitionId, resourceId }: { competitionId: st
 export function CompetitionResourcesForm({ competition }: { competition: Competition }) {
   const [editing, setEditing] = useState<Resource | null>(null);
   const [state, formAction, pending] = useActionState(saveResourceAction, initialState);
+  const { onSubmitCapture, progress } = useFileFormProgress(pending);
 
   useEffect(() => {
     if (state.success) setEditing(null);
@@ -49,7 +51,7 @@ export function CompetitionResourcesForm({ competition }: { competition: Competi
         {competition.resources.length === 0 && <p className="text-sm text-muted">No practice resources added yet.</p>}
       </div>
 
-      <form key={editing?.id ?? "new"} action={formAction} className="space-y-3 rounded-xl border border-border bg-surface p-4">
+      <form key={editing?.id ?? "new"} action={formAction} onSubmitCapture={onSubmitCapture} className="space-y-3 rounded-xl border border-border bg-surface p-4">
         <h3 className="font-semibold text-foreground">{editing ? "Edit resource" : "Add a resource"}</h3>
         <input type="hidden" name="competition_id" value={competition.id} />
         {editing && <input type="hidden" name="resource_id" value={editing.id} />}
@@ -89,6 +91,7 @@ export function CompetitionResourcesForm({ competition }: { competition: Competi
             Allow download
           </label>
         </div>
+        {progress ? <UploadProgress phase={progress.phase} percent={progress.percent} /> : null}
         {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
         <div className="flex gap-3">
           {editing && (

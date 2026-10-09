@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { FilterSelect, filterInputClass } from "@/ui/components/FilterSelect";
 
 export interface DataTableFilter<T> {
   label: string;
@@ -22,6 +23,7 @@ export function DataTable<T>({
   filters = [],
   pageSize = 10,
   emptyMessage = "Nothing here yet.",
+  actions,
   children,
 }: {
   rows: T[];
@@ -31,6 +33,8 @@ export function DataTable<T>({
   filters?: DataTableFilter<T>[];
   pageSize?: number;
   emptyMessage?: string;
+  /** Sits on the top-right of the result count, above the filters. */
+  actions?: React.ReactNode;
   children: (pageRows: T[]) => React.ReactNode;
 }) {
   const [query, setQuery] = useState("");
@@ -68,38 +72,40 @@ export function DataTable<T>({
 
   return (
     <div>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <p className="inline-flex items-center rounded-full bg-accent-soft px-3 py-1 text-sm font-semibold text-accent-strong">
+          {filtered.length} result{filtered.length === 1 ? "" : "s"}
+        </p>
+        {actions}
+      </div>
       {hasControls && (
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           {searchFields && (
             <input
-              type="search"
+              type="text"
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
                 setPage(1);
               }}
               placeholder={searchPlaceholder}
-              className="min-w-[200px] flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
+              className={`min-w-[200px] flex-1 ${filterInputClass} bg-surface!`}
             />
           )}
           {filters.map((filter, i) => (
-            <select
+            <FilterSelect
               key={filter.label}
               value={filterValues[i] ?? "all"}
-              onChange={(e) => updateFilter(i, e.target.value)}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-            >
-              <option value="all">{filter.label}: All</option>
-              {filter.options.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => updateFilter(i, value)}
+              aria-label={filter.label}
+              className="w-full sm:w-52"
+              triggerClassName="bg-surface!"
+              options={[
+                { value: "all", label: `${filter.label}: All` },
+                ...filter.options,
+              ]}
+            />
           ))}
-          <p className="text-sm text-muted sm:ml-auto">
-            {filtered.length} result{filtered.length === 1 ? "" : "s"}
-          </p>
         </div>
       )}
 

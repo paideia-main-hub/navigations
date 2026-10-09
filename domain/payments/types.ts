@@ -6,6 +6,23 @@
 
 export type PaymentStatus = "pending_review" | "approved" | "rejected";
 
+/** The League bank account a payer transfers the fee into. One row for the
+ * whole site, edited from the admin dashboard. Empty strings mean the admin
+ * has not published that field yet. */
+export interface PaymentAccount {
+  bankName: string;
+  accountTitle: string;
+  accountNumber: string;
+  iban: string;
+}
+
+export const emptyPaymentAccount: PaymentAccount = {
+  bankName: "",
+  accountTitle: "",
+  accountNumber: "",
+  iban: "",
+};
+
 export const paymentStatusLabels: Record<PaymentStatus, string> = {
   pending_review: "Payment under review",
   approved: "Payment approved",

@@ -13,7 +13,7 @@ export const NAV_BY_ROLE: Record<UserRole, DashboardNavItem[]> = {
     { href: "/dashboard/competitions", label: "My Competitions", icon: "🏆" },
     { href: "/dashboard/submissions", label: "Work Submissions", icon: "📤" },
     { href: "/dashboard/history", label: "History & Results", icon: "📜" },
-    { href: "/dashboard/register", label: "Register", icon: "➕" },
+    { href: "/dashboard/register", label: "Register for competitions", icon: "➕" },
     { href: "/dashboard/nominate", label: "Start Nomination", icon: "✨" },
     { href: "/dashboard/nominations", label: "My Nominations", icon: "🎖️" },
     { href: "/dashboard/account", label: "Account", icon: "🔐" },

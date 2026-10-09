@@ -24,6 +24,52 @@ import {
 
 const BUCKET = "work-submissions";
 
+/** Authorises a browser upload into this student's own folder. The file
+ * bytes stay out of the server action (videos are up to 50 MB); the token
+ * is minted only after the registration is confirmed to belong to the
+ * signed-in student. */
+export async function createWorkFileUploadAction(input: {
+  registrationId: string;
+  fieldId: string;
+  extension: string;
+}): Promise<{ path: string | null; token: string | null; error: string | null }> {
+  const user = await getCurrentUser();
+  if (!user) return { path: null, token: null, error: "You must be logged in." };
+
+  const supabase = await createClient();
+  const student = await getOwnStudentProfile(supabase, user.id);
+  const mine = await listOwnRegistrationsIn(supabase, user.id, student?.id ?? null, SUBMISSION_SLUGS);
+  const registration = mine.find((r) => r.registrationId === input.registrationId);
+  if (!registration) return { path: null, token: null, error: "You can only submit work for competitions you're registered in." };
+
+  const config = submissionConfigFor(registration.competitionSlug);
+  if (!config) return { path: null, token: null, error: "This competition doesn't take work submissions." };
+
+  const existing = await getSubmissionForRegistration(supabase, input.registrationId);
+  if (existing?.status === "scored") {
+    return { path: null, token: null, error: "This entry has already been reviewed and can no longer be changed." };
+  }
+
+  const field = config.fields.find((item) => item.kind === "file" && item.id === input.fieldId);
+  const extension = input.extension.toLowerCase();
+  if (!field || field.kind !== "file" || !field.extensions.includes(extension)) {
+    return { path: null, token: null, error: "That file type is not allowed." };
+  }
+
+  const path = `${user.id}/${input.registrationId}/${field.id}-${crypto.randomUUID()}.${extension}`;
+  const storage = createAdminClient().storage;
+  let signed = await storage.from(BUCKET).createSignedUploadUrl(path);
+  if (signed.error && /related resource does not exist|Bucket not found/i.test(signed.error.message)) {
+    const created = await storage.createBucket(BUCKET, { public: false, fileSizeLimit: 50 * 1024 * 1024 });
+    if (created.error && !/already exists/i.test(created.error.message)) {
+      return { path: null, token: null, error: created.error.message };
+    }
+    signed = await storage.from(BUCKET).createSignedUploadUrl(path);
+  }
+  if (signed.error || !signed.data) return { path: null, token: null, error: signed.error?.message ?? "Could not start the upload." };
+  return { path: signed.data.path, token: signed.data.token, error: null };
+}
+
 /** Saves the student's entry for one of their Independent Submission
  * registrations — as a draft, or as the final submission once every
  * requirement in the competition's manual is met. Files have already been

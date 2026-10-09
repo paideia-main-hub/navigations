@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { PaymentStatus, RegistrationPayment } from "@/domain/payments/types";
+import { emptyPaymentAccount, type PaymentAccount, type PaymentStatus, type RegistrationPayment } from "@/domain/payments/types";
 
 type Row = {
   id: string;
@@ -109,4 +109,44 @@ export async function listOwnPaymentStatuses(supabase: SupabaseClient, submitted
   const { data, error } = await supabase.from("registration_payments").select("id, status").eq("submitted_by", submittedBy);
   if (error || !data) return new Map();
   return new Map((data as { id: string; status: PaymentStatus }[]).map((r) => [r.id, r.status]));
+}
+
+type AccountRow = {
+  bank_name: string;
+  account_title: string;
+  account_number: string;
+  iban: string;
+};
+
+function toAccount(row: AccountRow): PaymentAccount {
+  return {
+    bankName: row.bank_name ?? "",
+    accountTitle: row.account_title ?? "",
+    accountNumber: row.account_number ?? "",
+    iban: row.iban ?? "",
+  };
+}
+
+/** The single published bank account. A missing row reads as empty so a
+ * page can still render before an admin fills the account in. */
+export async function getPaymentAccount(supabase: SupabaseClient): Promise<PaymentAccount> {
+  const { data, error } = await supabase
+    .from("payment_account")
+    .select("bank_name, account_title, account_number, iban")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error || !data) return emptyPaymentAccount;
+  return toAccount(data as AccountRow);
+}
+
+export async function savePaymentAccount(admin: SupabaseClient, account: PaymentAccount): Promise<{ error: string | null }> {
+  const { error } = await admin.from("payment_account").upsert({
+    id: 1,
+    bank_name: account.bankName,
+    account_title: account.accountTitle,
+    account_number: account.accountNumber,
+    iban: account.iban,
+    updated_at: new Date().toISOString(),
+  });
+  return { error: error?.message ?? null };
 }
