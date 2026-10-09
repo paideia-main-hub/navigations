@@ -129,6 +129,28 @@ export function CompetitionBasket({
     setSelected((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]));
   }
 
+  function removePick(slug: string) {
+    const remaining = selected.filter((item) => item !== slug);
+    setSelected(remaining);
+    setTeams((prev) => {
+      if (!(slug in prev)) return prev;
+      const next = { ...prev };
+      delete next[slug];
+      return next;
+    });
+    if (step === "browse" || step === "done") return;
+    if (remaining.length === 0) {
+      setDirection("back");
+      setStep("browse");
+      return;
+    }
+    const stillHasTeam = remaining.some((item) => bySlug.get(item)?.supportsTeam);
+    if (step === "teams" && !stillHasTeam) {
+      setDirection("forward");
+      setStep("consent");
+    }
+  }
+
   function teamDraft(c: CompetitionSummary): TeamDraft {
     return teams[c.slug] ?? { entryType: c.supportsIndividual ? "individual" : "team", teamName: "", teammates: [""] };
   }
@@ -287,18 +309,16 @@ export function CompetitionBasket({
                 return (
                   <li key={c.slug} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
                     <span className="font-medium text-foreground">{c.title}</span>
-                    {rule ? (
-                      <span className="text-emerald-700 dark:text-emerald-400">✓ {categoryLabels[rule.category]}</span>
-                    ) : (
-                      <span className="flex items-center gap-3">
+                    <span className="flex shrink-0 items-center gap-3">
+                      {rule ? (
+                        <span className="text-emerald-700 dark:text-emerald-400">✓ {categoryLabels[rule.category]}</span>
+                      ) : (
                         <span className="text-amber-700 dark:text-amber-400">{grade.trim() ? `Not open to grade ${grade}` : "Enter your grade"}</span>
-                        {grade.trim() && (
-                          <button onClick={() => toggle(c.slug)} className="text-xs font-semibold text-red-600 hover:underline dark:text-red-400">
-                            Remove
-                          </button>
-                        )}
-                      </span>
-                    )}
+                      )}
+                      <button type="button" onClick={() => removePick(c.slug)} className="cursor-pointer text-xs font-semibold text-red-600 hover:underline dark:text-red-400">
+                        Remove
+                      </button>
+                    </span>
                   </li>
                 );
               })}
@@ -340,7 +360,12 @@ export function CompetitionBasket({
               const problem = teamProblem(c);
               return (
                 <div key={c.slug} className="space-y-3 rounded-xl border border-border bg-background p-4">
-                  <p className="font-semibold text-foreground">{c.title}</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-semibold text-foreground">{c.title}</p>
+                    <button type="button" onClick={() => removePick(c.slug)} className="cursor-pointer text-xs font-semibold text-red-600 hover:underline dark:text-red-400">
+                      Remove
+                    </button>
+                  </div>
                   {c.supportsIndividual && (
                     <div className="flex gap-2">
                       {(["individual", "team"] as const).map((type) => (
@@ -449,12 +474,14 @@ export function CompetitionBasket({
                 const rule = ruleFor(c, grade);
                 const team = teamDraft(c).entryType === "team" && c.supportsTeam;
                 return {
+                  slug: c.slug,
                   title: c.title,
                   detail: `${rule ? categoryLabels[rule.category] : ""}${team ? ` · Team “${teamDraft(c).teamName}”` : " · Individual"}`,
                   fee: c.feeAmount ?? 0,
                 };
               })}
               total={total}
+              onRemove={removePick}
             />
             {feeMissing && (
               <p className="text-sm text-red-600 dark:text-red-400">
@@ -565,19 +592,39 @@ export function CompetitionBasket({
   );
 }
 
-function FeeTable({ rows, total }: { rows: { title: string; detail: string; fee: number }[]; total: number }) {
+function FeeTable({
+  rows,
+  total,
+  onRemove,
+}: {
+  rows: { slug?: string; title: string; detail: string; fee: number }[];
+  total: number;
+  onRemove?: (slug: string) => void;
+}) {
   return (
     <table className="mt-4 w-full overflow-hidden rounded-xl border border-border text-sm">
       <tbody>
-        {rows.map((r) => (
-          <tr key={r.title} className="border-b border-border">
+        {rows.map((r) => {
+          const slug = r.slug;
+          return (
+          <tr key={slug ?? r.title} className="border-b border-border">
             <td className="px-4 py-3">
-              <p className="font-medium text-foreground">{r.title}</p>
-              {r.detail && <p className="text-xs text-muted">{r.detail}</p>}
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-medium text-foreground">{r.title}</p>
+                  {r.detail && <p className="text-xs text-muted">{r.detail}</p>}
+                </div>
+                {onRemove && slug ? (
+                  <button type="button" onClick={() => onRemove(slug)} className="cursor-pointer text-xs font-semibold text-red-600 hover:underline dark:text-red-400">
+                    Remove
+                  </button>
+                ) : null}
+              </div>
             </td>
             <td className="px-4 py-3 text-right whitespace-nowrap text-foreground">{formatFee(r.fee)}</td>
           </tr>
-        ))}
+          );
+        })}
       </tbody>
       <tfoot>
         <tr className="bg-surface-muted">
