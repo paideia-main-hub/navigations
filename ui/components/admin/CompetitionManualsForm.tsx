@@ -5,6 +5,7 @@ import { deleteManualAction, uploadManualAction, type ActionState } from "@/doma
 import { manualTypeLabels, type Competition, type ManualType } from "@/domain/competitions/types";
 import { FormField } from "@/ui/components/FormField";
 import { RequiredMark } from "@/ui/components/RequiredMark";
+import { UploadProgress, useFileFormProgress } from "@/ui/components/UploadProgress";
 
 const initialState: ActionState = { error: null };
 
@@ -24,6 +25,7 @@ function DeleteManualButton({ competitionId, manualId }: { competitionId: string
 
 export function CompetitionManualsForm({ competition }: { competition: Competition }) {
   const [state, formAction, pending] = useActionState(uploadManualAction, initialState);
+  const { onSubmitCapture, progress } = useFileFormProgress(pending);
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -45,7 +47,7 @@ export function CompetitionManualsForm({ competition }: { competition: Competiti
         {competition.manuals.length === 0 && <p className="text-sm text-muted">No manuals uploaded yet.</p>}
       </div>
 
-      <form action={formAction} className="space-y-3 rounded-xl border border-border bg-surface p-4">
+      <form action={formAction} onSubmitCapture={onSubmitCapture} className="space-y-3 rounded-xl border border-border bg-surface p-4">
         <h3 className="font-semibold text-foreground">Upload a manual</h3>
         <input type="hidden" name="competition_id" value={competition.id} />
         <div>
@@ -75,6 +77,7 @@ export function CompetitionManualsForm({ competition }: { competition: Competiti
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
           />
         </div>
+        {progress ? <UploadProgress phase={progress.phase} percent={progress.percent} /> : null}
         {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
         {state.success && <p className="text-sm text-emerald-600 dark:text-emerald-400">Uploaded.</p>}
         <button

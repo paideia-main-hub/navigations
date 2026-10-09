@@ -35,12 +35,12 @@ export default async function WorkSubmissionsPage() {
           </Link>
         </div>
       ) : (
-        <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <ul className="mt-6 flex flex-wrap justify-center gap-3">
           {registrations.map((r) => {
             const s = byRegistration.get(r.registrationId);
             const status = s?.status ?? null;
             return (
-              <li key={r.registrationId} className="flex max-w-xs flex-col rounded-xl border border-border bg-surface p-4">
+              <li key={r.registrationId} className="flex w-full max-w-xs flex-col rounded-xl border border-border bg-surface p-4">
                 <p className="text-[0.65rem] font-semibold tracking-[0.14em] text-accent-strong uppercase">
                   Independent Submission
                 </p>

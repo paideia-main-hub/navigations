@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { removeAwardImageAction, type ActionState } from "@/domain/awards/actions";
 import type { AwardCategory } from "@/domain/awards/types";
 import { resolveAwardCardImage } from "@/domain/awards/cardImage";
+import { UploadProgress } from "@/ui/components/UploadProgress";
 
 const initialState: ActionState = { error: null };
 
@@ -184,26 +185,11 @@ export function AwardCategoryImageUploader({ category }: { category: AwardCatego
             </div>
 
             {busy && (
-              <div className="space-y-1.5" aria-live="polite">
-                <div className="flex items-center justify-between text-[0.7rem] font-medium text-muted">
-                  <span>{phase === "processing" ? "Compressing & saving…" : "Uploading…"}</span>
-                  <span>{progress}%</span>
-                </div>
-                <div
-                  role="progressbar"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={progress}
-                  className="h-1.5 overflow-hidden rounded-full bg-surface-muted"
-                >
-                  <div
-                    className={`h-full rounded-full bg-accent transition-[width] duration-150 ease-out ${
-                      phase === "processing" ? "animate-pulse" : ""
-                    }`}
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-              </div>
+              <UploadProgress
+                phase={phase === "processing" ? "saving" : "uploading"}
+                percent={progress}
+                savingLabel="Compressing & saving…"
+              />
             )}
 
             {(error || removeState.error) && (

@@ -19,3 +19,5 @@ export async function reviewPayment(
 export type { InsertPaymentInput } from "@/data/repositories/payments.repository";
 export const insertPaymentAndLink = repo.insertPaymentAndLink;
 export const listOwnPaymentStatuses = repo.listOwnPaymentStatuses;
+export const getPaymentAccount = repo.getPaymentAccount;
+export const savePaymentAccount = repo.savePaymentAccount;

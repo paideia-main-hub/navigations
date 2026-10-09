@@ -21,6 +21,7 @@ const navLinks = [
 export type HeaderUser = {
   fullName: string;
   role: UserRole;
+  photoUrl?: string | null;
 };
 
 export function Header({ user = null }: { user?: HeaderUser | null }) {
@@ -49,6 +50,7 @@ export function Header({ user = null }: { user?: HeaderUser | null }) {
               <HeaderAccountMenu
                 fullName={user.fullName}
                 role={user.role}
+                photoUrl={user.photoUrl}
                 onNavigate={() => setMobileOpen(false)}
               />
             ) : (

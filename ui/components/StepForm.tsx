@@ -1,6 +1,8 @@
 "use client";
 
-import { startTransition, useRef, useState, type ReactNode } from "react";
+import { startTransition, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { beginFileUploadTracking, endFileUploadTracking, type UploadProgressState } from "@/ui/lib/fileUploadProgress";
+import { UploadProgress } from "@/ui/components/UploadProgress";
 
 export interface FormStep {
   title: string;
@@ -39,8 +41,40 @@ export function StepForm({
   pendingLabel: string;
 }) {
   const [current, setCurrent] = useState(0);
+  const [motion, setMotion] = useState<{ id: number; direction: "forward" | "back" }>({ id: 0, direction: "forward" });
   const stepRefs = useRef<(HTMLFieldSetElement | null)[]>([]);
+  const trackingFile = useRef(false);
+  const [fileProgress, setFileProgress] = useState<UploadProgressState | null>(null);
   const last = current === steps.length - 1;
+
+  useEffect(() => {
+    if (pending || !trackingFile.current) return;
+    trackingFile.current = false;
+    endFileUploadTracking();
+    setFileProgress(null);
+  }, [pending]);
+
+  useEffect(
+    () => () => {
+      if (!trackingFile.current) return;
+      trackingFile.current = false;
+      endFileUploadTracking();
+    },
+    [],
+  );
+
+  // Replay the enter animation on the step that just became visible. Inactive
+  // steps stay mounted (so answers persist), which means a CSS class alone
+  // would not restart.
+  useLayoutEffect(() => {
+    if (motion.id === 0) return;
+    const el = stepRefs.current[current];
+    if (!el) return;
+    const name = motion.direction === "back" ? "step-enter-back" : "step-enter-forward";
+    el.style.animation = "none";
+    void el.offsetWidth;
+    el.style.animation = `${name} 0.34s ease`;
+  }, [motion.id, motion.direction, current]);
 
   /** Shows the browser's message on the first invalid field of this step. */
   function stepIsValid(index: number): boolean {
@@ -57,6 +91,7 @@ export function StepForm({
   }
 
   function goTo(index: number) {
+    setMotion((m) => ({ id: m.id + 1, direction: index < current ? "back" : "forward" }));
     setCurrent(index);
     // Put focus on the first field of the step for keyboard users.
     requestAnimationFrame(() => {
@@ -85,6 +120,10 @@ export function StepForm({
           }
         }
         const formData = new FormData(e.currentTarget);
+        if ([...formData.values()].some((value) => value instanceof File && value.size > 0)) {
+          trackingFile.current = true;
+          beginFileUploadTracking(setFileProgress);
+        }
         startTransition(() => action(formData));
       }}
       noValidate
@@ -110,7 +149,7 @@ export function StepForm({
                 // so each step is validated before it's left behind.
                 onClick={() => i < current && goTo(i)}
                 disabled={i > current}
-                className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                className={`form-step rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
                   i === current
                     ? "bg-accent text-accent-foreground"
                     : i < current
@@ -133,7 +172,7 @@ export function StepForm({
             stepRefs.current[i] = el;
           }}
           hidden={i !== current}
-          className="space-y-4"
+          className="step-motion space-y-4"
         >
           <legend className="mb-4">
             <span className="block text-lg font-bold text-foreground">{step.title}</span>
@@ -144,6 +183,11 @@ export function StepForm({
       ))}
 
       {error && <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {fileProgress ? (
+        <div className="mt-4">
+          <UploadProgress phase={fileProgress.phase} percent={fileProgress.percent} />
+        </div>
+      ) : null}
 
       <div className="mt-6 flex gap-3">
         {current > 0 && (

@@ -6,7 +6,7 @@ import { getOwnStudentProfile } from "@/domain/students/service";
 import { getSubmissionForRegistration, listOwnRegistrationsIn } from "@/data/repositories/submissions.repository";
 import { submissionConfigFor, SUBMISSION_SLUGS } from "@/domain/submissions/config";
 import { SubmissionForm } from "@/ui/components/dashboard/SubmissionForm";
-import { DashboardHero, dashboardHeroGhostCtaClass } from "@/ui/components/dashboard/DashboardHero";
+import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
 export default async function SubmitWorkPage({ params }: { params: Promise<{ registrationId: string }> }) {
@@ -32,11 +32,7 @@ export default async function SubmitWorkPage({ params }: { params: Promise<{ reg
         eyebrow="Submit work"
         title={config.title}
         subtitle={`${registration.registrationNumber}${student?.frlId ? ` · ${student.frlId}` : ""} · ${registration.entrantName}`}
-      >
-        <Link href="/dashboard/submissions" className={dashboardHeroGhostCtaClass}>
-          ← Work Submissions
-        </Link>
-      </DashboardHero>
+      />
       <DashboardPage>
         <div className="max-w-3xl">
           <Link
@@ -49,12 +45,7 @@ export default async function SubmitWorkPage({ params }: { params: Promise<{ reg
             {config.brief}
           </p>
           <div className="mt-4">
-            <SubmissionForm
-              registrationId={registrationId}
-              userId={user.id}
-              config={config}
-              initial={submission}
-            />
+            <SubmissionForm registrationId={registrationId} config={config} initial={submission} />
           </div>
         </div>
       </DashboardPage>

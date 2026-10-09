@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { MenuScroll } from "@/ui/components/MenuScroll";
 
 export type SelectOption = { value: string; label: string };
 
@@ -11,6 +12,8 @@ export function SelectField({
   options,
   required = false,
   defaultValue = "",
+  value: valueProp,
+  onValueChange,
   placeholder = "Select",
   className = "",
 }: {
@@ -19,13 +22,17 @@ export function SelectField({
   options: SelectOption[];
   required?: boolean;
   defaultValue?: string;
+  /** When set, the field shows this value instead of its own state. */
+  value?: string;
+  onValueChange?: (value: string) => void;
   placeholder?: string;
   className?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const listId = useId();
-  const [value, setValue] = useState(defaultValue);
+  const [uncontrolled, setUncontrolled] = useState(defaultValue);
+  const value = valueProp ?? uncontrolled;
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
   const selected = options.find((option) => option.value === value);
@@ -68,7 +75,8 @@ export function SelectField({
   }, [open]);
 
   function choose(next: string) {
-    setValue(next);
+    if (valueProp === undefined) setUncontrolled(next);
+    onValueChange?.(next);
     setOpen(false);
   }
 
@@ -95,7 +103,7 @@ export function SelectField({
           }}
           className="peer absolute inset-0 z-10 cursor-pointer opacity-0"
         />
-        <div className="pointer-events-none flex h-[38px] w-full items-center rounded-lg border border-border bg-background pr-10 pl-3 text-sm peer-focus:border-accent">
+        <div className="pointer-events-none flex h-[38px] w-full items-center rounded-lg border border-border bg-background pr-12 pl-3 text-sm peer-focus:border-accent">
           <span className={`truncate ${selected ? "text-foreground" : "text-muted"}`}>
             {selected?.label ?? placeholder}
           </span>
@@ -103,7 +111,7 @@ export function SelectField({
         <svg
           aria-hidden
           viewBox="0 0 16 16"
-          className={`pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-muted transition-transform ${
+          className={`pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-muted transition-transform ${
             open ? "rotate-180" : ""
           }`}
           fill="none"
@@ -114,13 +122,13 @@ export function SelectField({
 
       {open &&
         createPortal(
-          <div
-            ref={menuRef}
+          <div className="fixed z-[100]" style={{ top: coords.top, left: coords.left, width: coords.width }}>
+          <MenuScroll
+            scrollRef={menuRef}
             id={listId}
             role="listbox"
             aria-label={label}
-            style={{ top: coords.top, left: coords.left, width: coords.width }}
-            className="filter-dropdown-scroll fixed z-[100] max-h-60 overflow-y-auto rounded-xl border border-border bg-surface p-1 text-foreground shadow-[0_18px_40px_-20px_rgba(31,32,65,0.55)]"
+            className="max-h-60 rounded-xl border border-border bg-surface p-1 text-foreground shadow-[0_18px_40px_-20px_rgba(31,32,65,0.55)]"
           >
             {options.map((option) => {
               const active = option.value === value;
@@ -141,6 +149,7 @@ export function SelectField({
                 </button>
               );
             })}
+          </MenuScroll>
           </div>,
           document.body,
         )}

@@ -44,31 +44,30 @@ export function HistoryTable({
     .slice(0, limit ?? registrations.length);
 
   return (
-    <div>
-      {showExport && (
-        <div className="mb-3 flex justify-end">
-          <CsvDownloadButton
-            label={exportLabel}
-            filename={exportFilename}
-            rows={sorted.map((r) => {
-              const result = results.get(r.id);
-              return {
-                Competition: r.competitionTitle,
-                Entrant: r.entrantName,
-                "Entry type": r.entryType,
-                "Registration #": r.registrationNumber,
-                Status: registrationStatusLabels[r.status],
-                Result: result ? (result.customAwardLabel ?? result.award ?? "Released") : "",
-                Score: result?.score != null ? String(result.score) : "",
-                "Submitted at": new Date(r.submittedAt).toLocaleDateString("en-GB"),
-              };
-            })}
-          />
-        </div>
-      )}
-      <DataTable
+    <DataTable
         rows={sorted}
         searchPlaceholder="Search by competition, entrant or registration #…"
+        actions={
+          showExport ? (
+            <CsvDownloadButton
+              label={exportLabel}
+              filename={exportFilename}
+              rows={sorted.map((r) => {
+                const result = results.get(r.id);
+                return {
+                  Competition: r.competitionTitle,
+                  Entrant: r.entrantName,
+                  "Entry type": r.entryType,
+                  "Registration #": r.registrationNumber,
+                  Status: registrationStatusLabels[r.status],
+                  Result: result ? (result.customAwardLabel ?? result.award ?? "Released") : "",
+                  Score: result?.score != null ? String(result.score) : "",
+                  "Submitted at": new Date(r.submittedAt).toLocaleDateString("en-GB"),
+                };
+              })}
+            />
+          ) : null
+        }
         searchFields={(r) => [r.competitionTitle, r.entrantName, r.registrationNumber]}
         filters={[
           {
@@ -131,6 +130,5 @@ export function HistoryTable({
           </div>
         )}
       </DataTable>
-    </div>
   );
 }

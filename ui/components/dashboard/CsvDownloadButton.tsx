@@ -12,7 +12,7 @@ export function CsvDownloadButton({
   label,
   filename,
   rows,
-  className = "rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground hover:border-accent disabled:opacity-50",
+  className = "form-action cursor-pointer rounded-full bg-accent px-4 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50",
 }: {
   label: string;
   filename: string;
@@ -30,14 +30,19 @@ export function CsvDownloadButton({
     URL.revokeObjectURL(url);
   }
 
+  const unavailable = rows.length === 0;
+
   return (
-    <button
-      type="button"
-      onClick={download}
-      disabled={rows.length === 0}
-      className={className}
-    >
-      {label}
-    </button>
+    <span className={unavailable ? "inline-flex cursor-not-allowed" : "inline-flex"}>
+      <button
+        type="button"
+        onClick={download}
+        disabled={unavailable}
+        aria-disabled={unavailable}
+        className={className}
+      >
+        {label}
+      </button>
+    </span>
   );
 }

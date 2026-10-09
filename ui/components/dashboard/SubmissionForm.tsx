@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/data/supabase/client";
-import { saveSubmissionAction } from "@/domain/submissions/actions";
+import { createClient as createStorageClient } from "@supabase/supabase-js";
+import { createWorkFileUploadAction, saveSubmissionAction } from "@/domain/submissions/actions";
 import {
   isFieldVisible,
   MAX_UPLOAD_MB,
@@ -15,12 +15,23 @@ import {
   type SubmissionFile,
   type WorkSubmission,
 } from "@/domain/submissions/config";
+import { withFileUploadProgress, type UploadProgressState } from "@/ui/lib/fileUploadProgress";
 import { RequiredMark } from "@/ui/components/RequiredMark";
+import { SelectField } from "@/ui/components/SelectField";
+import { UploadProgress } from "@/ui/components/UploadProgress";
 
 const control =
   "mt-1 h-[38px] w-full rounded-md border border-border bg-background px-2 text-sm leading-[38px] text-foreground outline-none focus:border-accent disabled:opacity-70";
 const area =
   "mt-1 min-h-20 w-full resize-y rounded-md border border-border bg-background px-2 py-2 text-sm leading-5 text-foreground outline-none focus:border-accent disabled:opacity-70";
+
+/** Uploads with the signed token only, so a missing browser session cannot
+ * reject the file before it is stored. */
+function workStorage() {
+  return createStorageClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+}
 
 function formatSize(bytes: number): string {
   return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -36,25 +47,25 @@ function FieldLabel({ children, required }: { children: string; required?: boole
 }
 
 /** The student's entry form for one Independent Submission competition,
- * generated from domain/submissions/config.ts. Files go straight from the
- * browser into the private work-submissions bucket (under the student's own
- * folder), so large uploads never pass through the app server; the typed
- * answers and file references are then saved with saveSubmissionAction. */
+ * generated from domain/submissions/config.ts. A signed upload token is
+ * issued on the server, then the file goes straight from the browser into
+ * the private work-submissions bucket (under the student's own folder).
+ * Typed answers and file references are saved with saveSubmissionAction. */
 export function SubmissionForm({
   registrationId,
-  userId,
   config,
   initial,
 }: {
   registrationId: string;
-  userId: string;
   config: SubmissionCompetition;
   initial: WorkSubmission | null;
 }) {
   const router = useRouter();
   const [answers, setAnswers] = useState<Record<string, string>>(initial?.answers ?? {});
   const [files, setFiles] = useState<Record<string, SubmissionFile>>(initial?.files ?? {});
-  const [uploading, setUploading] = useState<string | null>(null);
+  const [uploading, setUploading] = useState<{ fieldId: string; name: string; size: number } | null>(null);
+  const [transfer, setTransfer] = useState<UploadProgressState | null>(null);
+  const [uploadError, setUploadError] = useState<{ fieldId: string; text: string } | null>(null);
   const [saving, setSaving] = useState<"draft" | "submit" | null>(null);
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const [problems, setProblems] = useState<string[]>([]);
@@ -67,27 +78,48 @@ export function SubmissionForm({
 
   async function upload(field: Extract<FieldDef, { kind: "file" }>, file: File) {
     setMessage(null);
+    setUploadError(null);
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
     if (!field.extensions.includes(ext)) {
-      setMessage({ tone: "error", text: `${field.label}: please choose a ${field.extensions.join(", ").toUpperCase()} file.` });
+      setUploadError({ fieldId: field.id, text: `Please choose a ${field.extensions.join(", ").toUpperCase()} file.` });
       return;
     }
     if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
-      setMessage({
-        tone: "error",
-        text: `${file.name} is ${formatSize(file.size)} — the upload limit is ${MAX_UPLOAD_MB} MB.${field.linkAlternative ? " Paste a share link instead." : " Please compress it and try again."}`,
+      setUploadError({
+        fieldId: field.id,
+        text: `${file.name} is ${formatSize(file.size)}. The limit is ${MAX_UPLOAD_MB} MB — compress it and try again.`,
       });
       return;
     }
-    setUploading(field.id);
-    const path = `${userId}/${registrationId}/${field.id}-${crypto.randomUUID()}.${ext}`;
-    const { error } = await createClient().storage.from("work-submissions").upload(path, file, { contentType: file.type || undefined, upsert: false });
-    setUploading(null);
-    if (error) {
-      setMessage({ tone: "error", text: `Upload failed: ${error.message}` });
-      return;
+    setUploading({ fieldId: field.id, name: file.name, size: file.size });
+    setTransfer({ phase: "uploading", percent: 0 });
+    try {
+      const prepared = await createWorkFileUploadAction({ registrationId, fieldId: field.id, extension: ext });
+      if (prepared.error || !prepared.path || !prepared.token) {
+        setUploadError({ fieldId: field.id, text: prepared.error ?? "Could not start the upload." });
+        return;
+      }
+      const uploadPath = prepared.path;
+      const uploadToken = prepared.token;
+      const { error } = await withFileUploadProgress(setTransfer, () =>
+        workStorage()
+          .storage.from("work-submissions")
+          .uploadToSignedUrl(uploadPath, uploadToken, file, { contentType: file.type || undefined }),
+      );
+      if (error) {
+        setUploadError({ fieldId: field.id, text: `${file.name} was not uploaded. ${error.message}` });
+        return;
+      }
+      setFiles((prev) => ({ ...prev, [field.id]: { path: uploadPath, name: file.name, size: file.size } }));
+    } catch (err) {
+      setUploadError({
+        fieldId: field.id,
+        text: `${file.name} was not uploaded. ${err instanceof Error ? err.message : "Try again."}`,
+      });
+    } finally {
+      setUploading(null);
+      setTransfer(null);
     }
-    setFiles((prev) => ({ ...prev, [field.id]: { path, name: file.name, size: file.size } }));
   }
 
   async function save(submit: boolean) {
@@ -101,8 +133,20 @@ export function SubmissionForm({
       }
     }
     setSaving(submit ? "submit" : "draft");
-    const res = await saveSubmissionAction({ registrationId, answers, files, submit });
-    setSaving(null);
+    let percent = 12;
+    setTransfer({ phase: "saving", percent });
+    const pulse = window.setInterval(() => {
+      percent = Math.min(90, percent + Math.max(2, Math.round((90 - percent) * 0.2)));
+      setTransfer({ phase: "saving", percent });
+    }, 200);
+    let res: Awaited<ReturnType<typeof saveSubmissionAction>>;
+    try {
+      res = await saveSubmissionAction({ registrationId, answers, files, submit });
+    } finally {
+      window.clearInterval(pulse);
+      setSaving(null);
+      setTransfer(null);
+    }
     if (res.error) {
       setProblems(res.problems ?? []);
       setMessage({ tone: "error", text: res.error });
@@ -189,18 +233,20 @@ export function SubmissionForm({
               );
             case "select":
               return (
-                <label key={field.id} className="block">
+                <div key={field.id} className="block">
                   <FieldLabel required={required}>{field.label}</FieldLabel>
-                  <select value={value} onChange={(e) => set(field.id, e.target.value)} className={control}>
-                    <option value="">Choose…</option>
-                    {field.options.map((o) => (
-                      <option key={o} value={o}>
-                        {o}
-                      </option>
-                    ))}
-                  </select>
+                  <SelectField
+                    name={field.id}
+                    label={field.label}
+                    required={required}
+                    placeholder="Choose…"
+                    className="mt-1"
+                    value={value}
+                    onValueChange={(next) => set(field.id, next)}
+                    options={field.options.map((option) => ({ value: option, label: option }))}
+                  />
                   {help}
-                </label>
+                </div>
               );
             case "textarea": {
               const n = wordCount(value);
@@ -227,27 +273,31 @@ export function SubmissionForm({
             }
             case "file": {
               const current = files[field.id];
+              const pending = uploading?.fieldId === field.id ? uploading : null;
+              const shown = current ?? pending;
               return (
                 <div key={field.id} className={wide ? "sm:col-span-2" : ""}>
                   <FieldLabel required={required}>{field.label}</FieldLabel>
                   {help}
                   <div className="mt-1 flex h-[38px] items-center gap-2 rounded-md border border-dashed border-border bg-background px-2">
-                    {current ? (
+                    {shown ? (
                       <>
-                        <span className="min-w-0 truncate text-sm text-foreground">{current.name}</span>
-                        <span className="shrink-0 text-[11px] text-muted">{formatSize(current.size)}</span>
-                        <button
-                          type="button"
-                          onClick={() => setFiles((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== field.id)))}
-                          className="ml-auto shrink-0 text-[11px] font-semibold text-red-600 hover:underline dark:text-red-400"
-                        >
-                          Remove
-                        </button>
+                        <span className="min-w-0 truncate text-sm text-foreground">{shown.name}</span>
+                        <span className="shrink-0 text-[11px] text-muted">{formatSize(shown.size)}</span>
+                        {current ? (
+                          <button
+                            type="button"
+                            onClick={() => setFiles((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== field.id)))}
+                            className="ml-auto shrink-0 cursor-pointer text-[11px] font-semibold text-red-600 hover:underline dark:text-red-400"
+                          >
+                            Remove
+                          </button>
+                        ) : null}
                       </>
                     ) : (
                       <>
                         <label className="inline-flex h-6 cursor-pointer items-center rounded-md bg-accent-soft px-2 text-xs font-semibold text-accent-strong hover:opacity-90">
-                          {uploading === field.id ? "Uploading…" : "Choose file"}
+                          Choose file
                           <input
                             type="file"
                             accept={field.accept}
@@ -266,13 +316,17 @@ export function SubmissionForm({
                       </>
                     )}
                   </div>
+                  {transfer && pending ? <div className="mt-2"><UploadProgress phase={transfer.phase} percent={transfer.percent} /></div> : null}
+                  {uploadError?.fieldId === field.id ? (
+                    <p className="mt-1 text-[11px] leading-4 text-red-600 dark:text-red-400">{uploadError.text}</p>
+                  ) : null}
                 </div>
               );
             }
             case "declaration":
               return (
-                <label key={field.id} className="flex h-[38px] items-center gap-2 rounded-md border border-border bg-background px-2 text-sm text-foreground sm:col-span-2">
-                  <input type="checkbox" checked={value === "yes"} onChange={(e) => set(field.id, e.target.checked ? "yes" : "")} />
+                <label key={field.id} className="flex items-start gap-2 rounded-md border border-border bg-background px-2 py-2.5 text-xs leading-5 text-foreground sm:col-span-2">
+                  <input type="checkbox" checked={value === "yes"} onChange={(e) => set(field.id, e.target.checked ? "yes" : "")} className="mt-0.5" />
                   {field.label}
                 </label>
               );
@@ -300,12 +354,18 @@ export function SubmissionForm({
         </p>
       ) : null}
 
+      {transfer && saving ? (
+        <div className="border-t border-border px-4 py-3">
+          <UploadProgress phase={transfer.phase} percent={transfer.percent} />
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap gap-2 border-t border-border px-4 py-3">
         <button
           type="button"
           onClick={() => save(false)}
           disabled={saving !== null || uploading !== null}
-          className="h-8 rounded-full border border-border px-4 text-sm font-semibold text-foreground hover:border-accent disabled:opacity-50"
+          className="form-action rounded-full border border-border px-4 text-sm font-semibold text-foreground hover:border-accent disabled:opacity-50"
         >
           {saving === "draft" ? "Saving…" : "Save draft"}
         </button>
@@ -313,7 +373,7 @@ export function SubmissionForm({
           type="button"
           onClick={() => save(true)}
           disabled={saving !== null || uploading !== null}
-          className="h-8 rounded-full bg-accent px-4 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
+          className="form-action rounded-full bg-accent px-4 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
         >
           {saving === "submit" ? "Submitting…" : status === "submitted" ? "Update submission" : "Submit entry"}
         </button>

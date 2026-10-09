@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { removeOwnPhotoAction, updateOwnPhotoAction } from "@/domain/students/actions";
+import { withFileUploadProgress, type UploadProgressState } from "@/ui/lib/fileUploadProgress";
+import { UploadProgress } from "@/ui/components/UploadProgress";
 
 function initials(name: string): string {
   return name
@@ -26,6 +28,7 @@ export function ProfilePhotoCard({ name, photoUrl }: { name: string; photoUrl: s
   const [preview, setPreview] = useState<string | null>(null);
   const [viewing, setViewing] = useState(false);
   const [busy, setBusy] = useState<"save" | "remove" | null>(null);
+  const [transfer, setTransfer] = useState<UploadProgressState | null>(null);
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const [confirmRemove, setConfirmRemove] = useState(false);
 
@@ -72,7 +75,8 @@ export function ProfilePhotoCard({ name, photoUrl }: { name: string; photoUrl: s
     setMessage(null);
     const fd = new FormData();
     fd.set("photo", pending);
-    const res = await updateOwnPhotoAction(fd);
+    const res = await withFileUploadProgress(setTransfer, () => updateOwnPhotoAction(fd));
+    setTransfer(null);
     setBusy(null);
     if (res.error) {
       setMessage({ tone: "error", text: res.error });
@@ -193,6 +197,11 @@ export function ProfilePhotoCard({ name, photoUrl }: { name: string; photoUrl: s
               </>
             )}
           </div>
+          {transfer ? (
+            <div className="mt-3">
+              <UploadProgress phase={transfer.phase} percent={transfer.percent} />
+            </div>
+          ) : null}
           <p className="mt-2 text-xs text-muted">JPG, PNG or WebP, up to 8 MB. It&apos;s cropped to a square automatically.</p>
           {message && (
             <p className={`mt-2 text-sm ${message.tone === "ok" ? "text-emerald-700 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>{message.text}</p>

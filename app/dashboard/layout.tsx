@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
+import { getOwnStudentProfile } from "@/domain/students/service";
 import { Header } from "@/ui/components/Header";
 import { Footer } from "@/ui/components/Footer";
 import { LoginModalProvider } from "@/ui/components/LoginModalContext";
@@ -12,13 +14,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // dashboard is only for students, schools, judges and nominators.
   if (user.role === "admin") redirect("/admin");
 
-  const headerUser = { fullName: user.fullName, role: user.role };
+  const student = user.role === "student" ? await getOwnStudentProfile(await createClient(), user.id) : null;
+  const headerUser = { fullName: user.fullName, role: user.role, photoUrl: student?.photoUrl ?? null };
 
   return (
     <LoginModalProvider>
       <Header user={headerUser} />
       <main className="flex-1 pt-24 sm:pt-28">
-        <DashboardShell role={user.role} fullName={user.fullName}>
+        <DashboardShell
+          role={user.role}
+          fullName={user.fullName}
+          photoUrl={student?.photoUrl ?? null}
+          frlId={student?.frlId ?? null}
+        >
           {children}
         </DashboardShell>
       </main>

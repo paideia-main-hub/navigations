@@ -199,6 +199,16 @@ export function finalEventDateOf(competition: CompetitionSummary): string | unde
   return findEvent(competition.events, "final_event");
 }
 
+/** Last day to upload online work. Only set when online submission is on. */
+export function submissionDeadlineOf(competition: CompetitionSummary): string | undefined {
+  return findEvent(competition.events, "submission_deadline");
+}
+
+/** When results for this competition are published. */
+export function resultDateOf(competition: CompetitionSummary): string | undefined {
+  return findEvent(competition.events, "result_date");
+}
+
 function findEvent(events: CompetitionEvent[], type: CompetitionEvent["type"]): string | undefined {
   return events.find((e) => e.type === type)?.eventDate;
 }

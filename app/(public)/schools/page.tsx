@@ -1,3 +1,6 @@
+import { createClient } from "@/data/supabase/server";
+import { listPublicCompetitions } from "@/domain/competitions/service";
+import { formatFee } from "@/domain/competitions/types";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { FaqAccordion } from "@/ui/components/marketing/FaqAccordion";
 import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
@@ -5,6 +8,36 @@ import type { FaqCardItem } from "@/ui/components/marketing/FaqExpandGrid";
 import { FaqIcon } from "@/ui/components/marketing/faqIcons";
 
 export const metadata = { title: "For Schools | Navigations" };
+
+function feePolicyAnswer(fees: number[]) {
+  const distinct = [...new Set(fees)];
+  if (distinct.length === 1) {
+    const fee = distinct[0];
+    return (
+      <>
+        Every competition in the League currently has an entry fee of {formatFee(fee)} per entry — so registering
+        three students for a competition is {formatFee(fee * 3)}. That amount is the fee set in the League admin, it
+        is shown again before you submit, there are no extra charges at checkout, and payment instructions are given
+        as part of the registration flow itself.
+      </>
+    );
+  }
+  if (distinct.length > 1) {
+    return (
+      <>
+        Each competition has its own entry fee, set in the League admin and shown before you submit. Registering
+        several students for one competition multiplies that competition&apos;s fee by the number of entries. There
+        are no extra charges at checkout, and payment instructions are given as part of the registration flow itself.
+      </>
+    );
+  }
+  return (
+    <>
+      The entry fee for each competition is shown before you submit. There are no extra charges at checkout, and
+      payment instructions are given as part of the registration flow itself.
+    </>
+  );
+}
 
 const items: FaqCardItem[] = [
   {
@@ -91,9 +124,10 @@ const items: FaqCardItem[] = [
     question: "Competition fees / payment policy, where applicable",
     answer: (
       <>
-        Every competition in the League has an entry fee of PKR 1,000 per entry — so registering three students
-        for a competition is PKR 3,000. The amount is shown before you submit, there are no extra charges at
-        checkout, and payment instructions are given as part of the registration flow itself.
+        Each competition&apos;s entry fee is the amount set for it in the League admin, and that amount is shown
+        before you submit. Registering several students for one competition multiplies that competition&apos;s fee
+        by the number of entries. There are no extra charges at checkout, and payment instructions are given as
+        part of the registration flow itself.
       </>
     ),
   },
@@ -161,7 +195,11 @@ const items: FaqCardItem[] = [
   },
 ];
 
-export default function ForSchoolsPage() {
+export default async function ForSchoolsPage() {
+  const competitions = await listPublicCompetitions(await createClient());
+  const fees = competitions.flatMap((c) => (c.feeAmount == null ? [] : [c.feeAmount]));
+  const cards: FaqCardItem[] = items.map((item) => (item.id === "fees" ? { ...item, answer: feePolicyAnswer(fees) } : item));
+
   return (
     <div className="bg-background">
       <PageBanner
@@ -176,7 +214,7 @@ export default function ForSchoolsPage() {
       <div className="mx-auto max-w-7xl px-6 py-14">
         <FaqAccordion
           variant="schools"
-          items={items}
+          items={cards}
           searchPlaceholder="Search questions…"
           stuckHref="/contact"
           stuckLabel="Contact us"

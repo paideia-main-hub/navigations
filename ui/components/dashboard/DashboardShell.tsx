@@ -117,13 +117,27 @@ function PersistentHero({ hero }: { hero: DashboardHeroPayload | null }) {
  * One dashboard chrome for every route:
  * persistent hero band + left sidebar; only hero copy and main content swap.
  */
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
 export function DashboardShell({
   role,
   fullName,
+  photoUrl = null,
+  frlId = null,
   children,
 }: {
   role: UserRole;
   fullName: string;
+  photoUrl?: string | null;
+  frlId?: string | null;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -148,12 +162,35 @@ export function DashboardShell({
 
   const sidebarInner = (
     <div>
-      <div className="px-5 py-5">
-        <p className="text-xs font-bold tracking-[0.16em] text-accent uppercase">Dashboard</p>
-        <p className="mt-1 truncate text-sm font-semibold text-foreground">{fullName}</p>
-        <p className="truncate text-xs text-muted">{ROLE_LABELS[role]}</p>
+      <div className="border-b border-border px-5 py-5">
+        <div className="flex items-center gap-3">
+          {role === "student" ? (
+            <Link href="/dashboard/account" title="Profile photo — view or change" className="shrink-0">
+              {photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- public Supabase Storage URL
+                <img src={photoUrl} alt="Your profile photo" className="h-20 w-20 rounded-full object-cover ring-2 ring-surface" />
+              ) : (
+                <span className="grid h-20 w-20 place-items-center rounded-full bg-brand-deep text-base font-bold text-brand-deep-foreground ring-2 ring-surface">
+                  {initials(fullName)}
+                </span>
+              )}
+            </Link>
+          ) : null}
+          <div className="min-w-0">
+            <p className="text-xs font-bold tracking-[0.16em] text-accent uppercase">Dashboard</p>
+            <p className="mt-1 truncate text-sm font-semibold text-foreground">{fullName}</p>
+            <p className="truncate text-xs text-muted">{ROLE_LABELS[role]}</p>
+          </div>
+        </div>
+        {frlId ? (
+          <div className="mt-3">
+            <p className="text-[0.65rem] font-semibold tracking-[0.14em] text-accent-strong uppercase">Your League ID</p>
+            <p className="mt-0.5 font-mono text-sm font-bold text-foreground">{frlId}</p>
+            <p className="mt-1 text-xs text-muted">Used for every competition you enter.</p>
+          </div>
+        ) : null}
       </div>
-      <div className="px-3 pb-4">
+      <div className="px-3 py-4">
         <NavLinks items={items} pathname={pathname} onNavigate={() => setMobileOpen(false)} />
       </div>
     </div>
@@ -205,7 +242,8 @@ export function DashboardShell({
   );
 }
 
-/** @deprecated Pages may still wrap content in this — it is a no-op passthrough. */
+/** Page body in the column beside the sidebar. Each block fills that column
+ * up to its own max-width, then sits in the horizontal center. */
 export function DashboardPage({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return <div className="mx-auto flex w-full flex-col items-center [&>*]:w-full">{children}</div>;
 }

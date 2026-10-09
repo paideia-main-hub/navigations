@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { AwardCategory } from "@/domain/awards/types";
 import { submitNominationAction, type ActionState } from "@/domain/award-nominations/actions";
 import { RequiredMark } from "@/ui/components/RequiredMark";
+import { UploadProgress, useFileFormProgress } from "@/ui/components/UploadProgress";
 import { CATEGORY_FIELDS } from "./categoryFields";
 
 const initialState: ActionState = { error: null };
@@ -32,6 +33,7 @@ export function NominationWizard({
   defaultNomineeName?: string;
 }) {
   const [state, formAction, pending] = useActionState(submitNominationAction, initialState);
+  const { onSubmitCapture, progress } = useFileFormProgress(pending);
   const fields = CATEGORY_FIELDS[category.slug] ?? [];
   const isSports = category.layer === "sports";
   const isIdeaOfTheYear = category.slug === "idea-of-the-year";
@@ -59,7 +61,7 @@ export function NominationWizard({
   }
 
   return (
-    <form action={formAction} className="max-w-2xl space-y-6">
+    <form action={formAction} onSubmitCapture={onSubmitCapture} className="max-w-2xl space-y-6">
       <input type="hidden" name="category_id" value={category.id} />
       {schoolId && <input type="hidden" name="school_id" value={schoolId} />}
 
@@ -226,6 +228,7 @@ export function NominationWizard({
         </p>
       )}
 
+      {progress ? <UploadProgress phase={progress.phase} percent={progress.percent} /> : null}
       {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
       <button
         type="submit"

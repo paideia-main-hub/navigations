@@ -108,15 +108,58 @@ body {
   color: var(--foreground);
 }
 
-/* Single-line fields share one height. Checkboxes, radios, sliders and
-   multi-line text areas keep their own size. Kept in the base layer so a
-   utility such as h-8 can still size a control inside a widget. */
-@layer base {
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]),
-  select {
-    height: 38px;
-  }
+/* Single-line fields share one height. Written outside a layer so vertical
+   padding utilities cannot stretch the box. Checkboxes, radios, sliders,
+   hidden fields and multi-line text areas keep their own size. Compact
+   selects (the date picker's month and year) opt out with h-8. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]),
+select:not(.h-8) {
+  box-sizing: border-box;
+  height: 38px;
+}
 
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="file"]),
+select:not(.h-8) {
+  padding-block: 0;
+}
+
+/* Native selects draw their own arrow flush to the edge. Replace it with the
+   same chevron used by SelectField, inset from the right. */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%235c6180' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  padding-right: 2.75rem;
+}
+
+html.dark select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%23a8adcc' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+select.h-8 {
+  background-position: right 0.7rem center;
+  background-size: 0.85rem;
+  padding-right: 1.7rem;
+}
+
+/* Form actions match the 38px field height. Written outside a layer so
+   vertical padding utilities cannot stretch them. Step chips and switches
+   keep their own size. .form-action covers the same buttons when they sit
+   outside a <form> (checkout and registration wizards). */
+form :is(button, [type="button"], [type="submit"], [type="reset"]):not(.form-step):not(.menu-item):not([role="switch"]),
+.form-actions :is(button, [type="button"], [type="submit"], [type="reset"]):not(.form-step):not(.menu-item):not([role="switch"]),
+.form-action {
+  box-sizing: border-box;
+  height: 38px;
+  padding-block: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@layer base {
   form :is(button, [type="button"], [type="submit"], [type="reset"]):not(:disabled) {
     cursor: pointer;
   }
@@ -428,30 +471,23 @@ h6 {
   color: var(--foreground);
 }
 
-/* Thin rounded scrollbar for custom filter dropdowns. */
+/* Native bar is hidden so Windows arrow buttons never appear. A thin thumb
+   is drawn on top of the menu instead. */
 .filter-dropdown-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--muted) 55%, transparent) transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .filter-dropdown-scroll::-webkit-scrollbar {
-  width: 8px;
+  width: 0;
+  height: 0;
+  display: none;
 }
 
-.filter-dropdown-scroll::-webkit-scrollbar-track {
-  background: transparent;
-  margin-block: 6px;
-}
-
-.filter-dropdown-scroll::-webkit-scrollbar-thumb {
-  background-color: color-mix(in srgb, var(--muted) 40%, transparent);
-  border-radius: 999px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-
-.filter-dropdown-scroll::-webkit-scrollbar-thumb:hover {
-  background-color: color-mix(in srgb, var(--muted) 65%, transparent);
+.filter-dropdown-scroll::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* The header floats fixed above everything, so any anchor jump (#id links,
@@ -461,4 +497,42 @@ h6 {
    page flow. */
 [id] {
   scroll-margin-top: 6rem;
+}
+
+/* Step changes in multi-step forms. Applied as a class or as an inline
+   animation name (so a mounted fieldset can replay it). */
+@keyframes step-enter-forward {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes step-enter-back {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.step-enter-forward {
+  animation: step-enter-forward 0.34s ease;
+}
+
+.step-enter-back {
+  animation: step-enter-back 0.34s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-motion {
+    animation: none !important;
+  }
 }
