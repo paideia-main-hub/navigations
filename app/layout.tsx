@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { geistMono, geistSans, plusJakarta } from "@/app/fonts";
 import { GoogleAnalytics } from "@/ui/components/GoogleAnalytics";
 import { OverlayScrollbar } from "@/ui/components/OverlayScrollbar";
@@ -25,16 +24,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeInitScript />
         {measurementId ? (
           <>
-            <Script src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`} strategy="beforeInteractive" />
-            <Script id="google-analytics" strategy="beforeInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                window.gtag = gtag;
-                gtag('js', new Date());
-                gtag('config', '${measurementId}');
-              `}
-            </Script>
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`} />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config','${measurementId}');`,
+              }}
+            />
           </>
         ) : null}
       </head>
