@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { geistMono, geistSans, plusJakarta } from "@/app/fonts";
 import { GoogleAnalytics } from "@/ui/components/GoogleAnalytics";
 import { OverlayScrollbar } from "@/ui/components/OverlayScrollbar";
 import { ThemeInitScript } from "@/ui/theme/ThemeInitScript";
 import "./globals.css";
+
+const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export const metadata: Metadata = {
   title: "Navigations",
@@ -20,6 +23,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <ThemeInitScript />
+        {measurementId ? (
+          <>
+            <Script src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`} strategy="beforeInteractive" />
+            <Script id="google-analytics" strategy="beforeInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                window.gtag = gtag;
+                gtag('js', new Date());
+                gtag('config', '${measurementId}');
+              `}
+            </Script>
+          </>
+        ) : null}
       </head>
       <body suppressHydrationWarning className="flex min-h-full flex-col bg-background text-foreground">
         {children}
