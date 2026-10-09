@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { SubmissionFile, SubmissionStatus, WorkSubmission } from "@/domain/submissions/config";
+import { effectiveHasOnlineSubmission } from "@/domain/competitions/pathwayDateRules";
+import type { CompetitionPathway } from "@/domain/competitions/types";
+import { SUBMISSION_SLUGS, type SubmissionFile, type SubmissionStatus, type WorkSubmission } from "@/domain/submissions/config";
 
 type Row = {
   id: string;
@@ -46,6 +48,21 @@ export interface SubmittableRegistration {
   entrantName: string;
 }
 
+/** Competitions whose admin "online submission" setting is on.
+ * Independent Submission is always on. If the column cannot be read, the
+ * three competitions that already have a form stay available. */
+export async function listOnlineSubmissionCompetitions(
+  supabase: SupabaseClient,
+): Promise<{ slug: string; pathway: CompetitionPathway | null }[]> {
+  const { data, error } = await supabase.from("competitions").select("slug, pathway, has_online_submission");
+  if (error || !data) {
+    return SUBMISSION_SLUGS.map((slug) => ({ slug, pathway: "independent_submission" as const }));
+  }
+  return (data as { slug: string; pathway: CompetitionPathway | null; has_online_submission: boolean | null }[])
+    .filter((row) => effectiveHasOnlineSubmission(row.pathway, Boolean(row.has_online_submission)))
+    .map((row) => ({ slug: row.slug, pathway: row.pathway }));
+}
+
 /** The student's own registrations in the given competitions — ones they made
  * themselves or that a school made for them. Filtered explicitly rather than
  * relying on RLS alone, because published results make other students'
@@ -56,6 +73,7 @@ export async function listOwnRegistrationsIn(
   studentId: string | null,
   slugs: string[],
 ): Promise<SubmittableRegistration[]> {
+  if (slugs.length === 0) return [];
   const owner = studentId ? `registered_by.eq.${profileId},student_id.eq.${studentId}` : `registered_by.eq.${profileId}`;
   const { data, error } = await supabase
     .from("registrations")

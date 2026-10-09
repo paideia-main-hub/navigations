@@ -3,8 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getOwnStudentProfile } from "@/domain/students/service";
-import { getSubmissionForRegistration, listOwnRegistrationsIn } from "@/data/repositories/submissions.repository";
-import { submissionConfigFor, SUBMISSION_SLUGS } from "@/domain/submissions/config";
+import { getSubmissionForRegistration, listOnlineSubmissionCompetitions, listOwnRegistrationsIn } from "@/data/repositories/submissions.repository";
+import { submissionConfigFor } from "@/domain/submissions/config";
 import { SubmissionForm } from "@/ui/components/dashboard/SubmissionForm";
 import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
@@ -17,20 +17,25 @@ export default async function SubmitWorkPage({ params }: { params: Promise<{ reg
 
   const supabase = await createClient();
   const student = await getOwnStudentProfile(supabase, user.id);
+  const online = await listOnlineSubmissionCompetitions(supabase);
   // Only registrations that belong to this student — anyone else's id 404s.
-  const registration = (await listOwnRegistrationsIn(supabase, user.id, student?.id ?? null, SUBMISSION_SLUGS)).find(
-    (r) => r.registrationId === registrationId,
-  );
-  const config = registration ? submissionConfigFor(registration.competitionSlug) : undefined;
-  if (!registration || !config) notFound();
-
-  const submission = await getSubmissionForRegistration(supabase, registrationId);
+  const registration = (
+    await listOwnRegistrationsIn(
+      supabase,
+      user.id,
+      student?.id ?? null,
+      online.map((competition) => competition.slug),
+    )
+  ).find((r) => r.registrationId === registrationId);
+  if (!registration) notFound();
+  const config = submissionConfigFor(registration.competitionSlug);
+  const submission = config ? await getSubmissionForRegistration(supabase, registrationId) : null;
 
   return (
     <>
       <DashboardHero
         eyebrow="Submit work"
-        title={config.title}
+        title={config?.title ?? registration.competitionTitle}
         subtitle={`${registration.registrationNumber}${student?.frlId ? ` · ${student.frlId}` : ""} · ${registration.entrantName}`}
       />
       <DashboardPage>
@@ -41,12 +46,20 @@ export default async function SubmitWorkPage({ params }: { params: Promise<{ reg
           >
             ← Back to Work Submissions
           </Link>
-          <p className="mt-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-relaxed text-muted">
-            {config.brief}
-          </p>
-          <div className="mt-4">
-            <SubmissionForm registrationId={registrationId} config={config} initial={submission} />
-          </div>
+          {config ? (
+            <>
+              <p className="mt-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-relaxed text-muted">
+                {config.brief}
+              </p>
+              <div className="mt-4">
+                <SubmissionForm registrationId={registrationId} config={config} initial={submission} />
+              </div>
+            </>
+          ) : (
+            <p className="mt-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-relaxed text-muted">
+              Online submission is open for this competition. The questions to collect will be added later.
+            </p>
+          )}
         </div>
       </DashboardPage>
     </>

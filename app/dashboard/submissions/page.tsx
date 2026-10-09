@@ -3,8 +3,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getOwnStudentProfile } from "@/domain/students/service";
-import { listOwnRegistrationsIn, listSubmissionsForRegistrations } from "@/data/repositories/submissions.repository";
-import { SUBMISSION_COMPETITIONS, SUBMISSION_SLUGS, submissionStatusLabels } from "@/domain/submissions/config";
+import { listOnlineSubmissionCompetitions, listOwnRegistrationsIn, listSubmissionsForRegistrations } from "@/data/repositories/submissions.repository";
+import { pathwayLabels, type CompetitionPathway } from "@/domain/competitions/types";
+import { submissionConfigFor, submissionStatusLabels } from "@/domain/submissions/config";
 import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
@@ -15,7 +16,14 @@ export default async function WorkSubmissionsPage() {
 
   const supabase = await createClient();
   const student = await getOwnStudentProfile(supabase, user.id);
-  const registrations = await listOwnRegistrationsIn(supabase, user.id, student?.id ?? null, SUBMISSION_SLUGS);
+  const online = await listOnlineSubmissionCompetitions(supabase);
+  const pathwayBySlug = new Map(online.map((competition) => [competition.slug, competition.pathway]));
+  const registrations = await listOwnRegistrationsIn(
+    supabase,
+    user.id,
+    student?.id ?? null,
+    online.map((competition) => competition.slug),
+  );
   const submissions = await listSubmissionsForRegistrations(supabase, registrations.map((r) => r.registrationId));
   const byRegistration = new Map(submissions.map((s) => [s.registrationId, s]));
 
@@ -24,12 +32,12 @@ export default async function WorkSubmissionsPage() {
       <DashboardHero
         eyebrow="Competitions"
         title="Work Submissions"
-        subtitle={`${SUBMISSION_COMPETITIONS.map((c) => c.title).join(", ")} — hand in your work for review.`}
+        subtitle="Hand in your work for competitions that accept online submission."
       />
       <DashboardPage>
       {registrations.length === 0 ? (
         <div className="mt-6 rounded-xl border border-border bg-surface p-8 text-center">
-          <p className="text-muted">You aren&apos;t registered in any Independent Submission competition yet.</p>
+          <p className="text-muted">You aren&apos;t registered in a competition that is open for online submission yet.</p>
           <Link href="/dashboard/competitions#register" className="mt-3 inline-block text-sm font-semibold text-accent">
             Register from My Competitions →
           </Link>
@@ -39,10 +47,12 @@ export default async function WorkSubmissionsPage() {
           {registrations.map((r) => {
             const s = byRegistration.get(r.registrationId);
             const status = s?.status ?? null;
+            const hasForm = Boolean(submissionConfigFor(r.competitionSlug));
+            const pathway = pathwayBySlug.get(r.competitionSlug);
             return (
               <li key={r.registrationId} className="flex w-full max-w-xs flex-col rounded-xl border border-border bg-surface p-4">
                 <p className="text-[0.65rem] font-semibold tracking-[0.14em] text-accent-strong uppercase">
-                  Independent Submission
+                  {pathwayLabel(pathway)}
                 </p>
                 <p className="mt-1 text-base font-bold text-foreground">{r.competitionTitle}</p>
                 <p className="text-xs text-muted">
@@ -65,9 +75,9 @@ export default async function WorkSubmissionsPage() {
                   href={`/dashboard/submissions/${r.registrationId}`}
                   className="mt-3 inline-flex h-8 w-fit items-center rounded-full bg-accent px-4 text-sm font-semibold text-accent-foreground hover:opacity-90"
                 >
-                  {status === "scored"
+                  {hasForm && status === "scored"
                     ? "View score & feedback"
-                    : status === "submitted"
+                    : hasForm && status === "submitted"
                       ? "View / update submission"
                       : "Open & submit work"}
                 </Link>
@@ -79,4 +89,9 @@ export default async function WorkSubmissionsPage() {
       </DashboardPage>
     </>
   );
+}
+
+function pathwayLabel(pathway: CompetitionPathway | null | undefined): string {
+  if (pathway && pathway in pathwayLabels) return pathwayLabels[pathway];
+  return "Online submission";
 }
