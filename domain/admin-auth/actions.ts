@@ -36,11 +36,11 @@ export async function adminLogin(_prevState: ActionState, formData: FormData): P
 }
 
 /** Signs out of the admin panel only (scope "local"), leaving any other
- * session in the browser untouched. */
+ * session in the browser untouched, then returns to the homepage. */
 export async function adminLogout() {
   const supabase = await createAdminSessionClient();
   await supabase.auth.signOut({ scope: "local" });
-  redirect("/admin/login");
+  redirect("/");
 }
 
 /** Changes the signed-in admin's own password (Admin → Account). Uses the
