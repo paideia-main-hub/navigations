@@ -4,7 +4,7 @@ import { createAdminClient } from "@/data/supabase/admin";
 import { adminGetSubmission } from "@/data/repositories/submissions.repository";
 import { adminListCompetitions } from "@/domain/competitions/service";
 import { categoryLabels, type AgeCategory } from "@/domain/competitions/types";
-import { isFieldVisible, submissionConfigFor, wordCount } from "@/domain/submissions/config";
+import { isFieldVisible, rubricCriteria, submissionConfigFor, wordCount } from "@/domain/submissions/config";
 import { SubmissionFileLink } from "@/ui/components/admin/SubmissionFileLink";
 import { SubmissionScoreForm } from "@/ui/components/admin/SubmissionScoreForm";
 
@@ -123,7 +123,7 @@ export default async function AdminSubmissionReviewPage({ params }: { params: Pr
         <section>
           <h2 className="text-sm font-bold tracking-wider text-muted uppercase">Score</h2>
           <div className="mt-3">
-            {config ? (
+            {config && rubricCriteria(config).length > 0 ? (
               <SubmissionScoreForm
                 submissionId={submission.id}
                 rubric={config.rubric}
