@@ -54,7 +54,7 @@ export function MyNominationsTable({ nominations }: { nominations: AwardNominati
                     <Badge tone={statusTone[n.status] ?? "neutral"}>{nominationStatusLabels[n.status]}</Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link href={`/dashboard/nominations/${n.id}`} className="text-sm font-semibold text-accent">
+                    <Link href={`/dashboard/nominations/${n.id}`} prefetch className="text-sm font-semibold text-accent">
                       Track →
                     </Link>
                   </td>
