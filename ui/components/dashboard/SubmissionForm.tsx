@@ -51,12 +51,25 @@ function FieldLabel({ children, required }: { children: string; required?: boole
  * issued on the server, then the file goes straight from the browser into
  * the private work-submissions bucket (under the student's own folder).
  * Typed answers and file references are saved with saveSubmissionAction. */
+function formatPakistan(iso: string): string {
+  return new Date(iso).toLocaleString("en-GB", {
+    timeZone: "Asia/Karachi",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export function SubmissionForm({
   registrationId,
+  registrationNumber,
   config,
   initial,
 }: {
   registrationId: string;
+  registrationNumber: string;
   config: SubmissionCompetition;
   initial: WorkSubmission | null;
 }) {
@@ -152,10 +165,15 @@ export function SubmissionForm({
       setMessage({ tone: "error", text: res.error });
       return;
     }
+    const received = Object.values(files)
+      .map((file) => file.name)
+      .filter((name) => name.length > 0);
     setMessage({
       tone: "ok",
       text: submit
-        ? "Submission confirmed — it's with the League team for review. You can still update it until it's scored."
+        ? `Submission confirmed. Entry ${registrationNumber} · ${formatPakistan(new Date().toISOString())} PKT.${
+            received.length > 0 ? ` Files received: ${received.join(", ")}.` : ""
+          } You can still update it until it's scored.`
         : "Draft saved.",
     });
     router.refresh();
@@ -203,7 +221,12 @@ export function SubmissionForm({
           }`}
         >
           {submissionStatusLabels[status]}
-          {initial?.submittedAt ? ` · ${new Date(initial.submittedAt).toLocaleString("en-GB")}` : ""}
+          {initial?.submittedAt ? ` · ${formatPakistan(initial.submittedAt)} PKT` : ""}
+        </p>
+      ) : null}
+      {status === "submitted" && Object.keys(files).length > 0 ? (
+        <p className="border-b border-border px-4 py-2 text-xs text-muted">
+          Files received: {Object.values(files).map((file) => file.name).join(", ")}
         </p>
       ) : null}
 

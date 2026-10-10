@@ -61,11 +61,11 @@ export default async function RegistrationsPage() {
         subtitle={
           <>
             Every student and team still active. Concluded competitions move to{" "}
-            <Link href="/dashboard/history">History &amp; Results</Link>.
+            <Link href="/dashboard/history" prefetch>History &amp; Results</Link>.
           </>
         }
       >
-        <Link href="/dashboard/register" className={dashboardHeroCtaClass}>
+        <Link href="/dashboard/register" prefetch className={dashboardHeroCtaClass}>
           Register a student or team
         </Link>
       </DashboardHero>

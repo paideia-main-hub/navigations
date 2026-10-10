@@ -34,13 +34,13 @@ export default async function MyCompetitionsPage() {
         subtitle={
           <>
             Everything you&apos;re actively registered for. Concluded events move to{" "}
-            <Link href="/dashboard/history">History &amp; Results</Link>.
+            <Link href="/dashboard/history" prefetch>History &amp; Results</Link>.
           </>
         }
       />
       <DashboardPage>
       <div className="mt-6 flex justify-end">
-        <Link href="/dashboard/register" className={dashboardHeroCtaClass}>
+        <Link href="/dashboard/register" prefetch className={dashboardHeroCtaClass}>
           {hasRegistration ? "Register for more competitions" : "Register for competitions"}
         </Link>
       </div>

@@ -53,7 +53,7 @@ export default async function HistoryPage() {
           subtitle={
             <>
               Concluded competitions for {school.officialName}. Active entries stay on{" "}
-              <Link href="/dashboard/registrations">Registrations</Link>.
+              <Link href="/dashboard/registrations" prefetch>Registrations</Link>.
             </>
           }
         />
@@ -104,7 +104,7 @@ export default async function HistoryPage() {
         subtitle={
           <>
             Concluded competitions and published results. Active entries stay on{" "}
-            <Link href="/dashboard/competitions">My Competitions</Link>.
+            <Link href="/dashboard/competitions" prefetch>My Competitions</Link>.
           </>
         }
       />

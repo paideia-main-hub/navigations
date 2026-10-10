@@ -93,6 +93,7 @@ export function HeaderAccountMenu({
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch
                   role="menuitem"
                   aria-current={active ? "page" : undefined}
                   onClick={() => {

@@ -15,8 +15,10 @@ export default async function WorkSubmissionsPage() {
   if (user.role !== "student") redirect("/dashboard");
 
   const supabase = await createClient();
-  const student = await getOwnStudentProfile(supabase, user.id);
-  const online = await listOnlineSubmissionCompetitions(supabase);
+  const [student, online] = await Promise.all([
+    getOwnStudentProfile(supabase, user.id),
+    listOnlineSubmissionCompetitions(supabase),
+  ]);
   const pathwayBySlug = new Map(online.map((competition) => [competition.slug, competition.pathway]));
   const registrations = await listOwnRegistrationsIn(
     supabase,
@@ -38,7 +40,7 @@ export default async function WorkSubmissionsPage() {
       {registrations.length === 0 ? (
         <div className="mt-6 rounded-xl border border-border bg-surface p-8 text-center">
           <p className="text-muted">You aren&apos;t registered in a competition that is open for online submission yet.</p>
-          <Link href="/dashboard/competitions#register" className="mt-3 inline-block text-sm font-semibold text-accent">
+          <Link href="/dashboard/competitions#register" prefetch className="mt-3 inline-block text-sm font-semibold text-accent">
             Register from My Competitions →
           </Link>
         </div>
@@ -73,6 +75,7 @@ export default async function WorkSubmissionsPage() {
                 </p>
                 <Link
                   href={`/dashboard/submissions/${r.registrationId}`}
+                  prefetch
                   className="mt-3 inline-flex h-8 w-fit items-center rounded-full bg-accent px-4 text-sm font-semibold text-accent-foreground hover:opacity-90"
                 >
                   {hasForm && status === "scored"

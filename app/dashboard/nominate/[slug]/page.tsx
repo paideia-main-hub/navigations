@@ -25,7 +25,7 @@ export default async function DashboardNominatePage({ params }: { params: Promis
         <div className="mx-auto max-w-xl py-16 text-center">
           <p className="text-muted">
             {category.title} requires a participating school account.{" "}
-            <Link href="/dashboard/nominate" className="font-semibold text-accent">
+            <Link href="/dashboard/nominate" prefetch className="font-semibold text-accent">
               Back to categories
             </Link>
             .

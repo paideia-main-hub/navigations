@@ -46,11 +46,15 @@ export interface SubmittableRegistration {
   competitionTitle: string;
   entryType: "individual" | "team";
   entrantName: string;
+  schoolName: string | null;
+  grade: string | null;
+  category: string | null;
+  teamMembers: string[];
 }
 
 /** Competitions whose admin "online submission" setting is on.
  * Independent Submission is always on. If the column cannot be read, the
- * three competitions that already have a form stay available. */
+ * competitions that already have a form stay available. */
 export async function listOnlineSubmissionCompetitions(
   supabase: SupabaseClient,
 ): Promise<{ slug: string; pathway: CompetitionPathway | null }[]> {
@@ -77,7 +81,9 @@ export async function listOwnRegistrationsIn(
   const owner = studentId ? `registered_by.eq.${profileId},student_id.eq.${studentId}` : `registered_by.eq.${profileId}`;
   const { data, error } = await supabase
     .from("registrations")
-    .select("id, registration_number, competition_slug, competition_title, entry_type, status, students(full_name), teams(team_name)")
+    .select(
+      "id, registration_number, competition_slug, competition_title, entry_type, category, status, students(full_name, grade, school_name_input), teams(team_name, team_members(students(full_name))), schools(official_name)",
+    )
     .in("competition_slug", slugs)
     .neq("status", "rejected")
     .or(owner)
@@ -90,8 +96,10 @@ export async function listOwnRegistrationsIn(
       competition_slug: string;
       competition_title: string;
       entry_type: "individual" | "team";
-      students: { full_name: string } | null;
-      teams: { team_name: string } | null;
+      category: string | null;
+      students: { full_name: string; grade: string | null; school_name_input: string | null } | null;
+      teams: { team_name: string; team_members: { students: { full_name: string } | null }[] } | null;
+      schools: { official_name: string } | null;
     }[]
   ).map((r) => ({
     registrationId: r.id,
@@ -100,6 +108,12 @@ export async function listOwnRegistrationsIn(
     competitionTitle: r.competition_title,
     entryType: r.entry_type,
     entrantName: r.entry_type === "team" ? (r.teams?.team_name ?? "Team") : (r.students?.full_name ?? ""),
+    schoolName: r.schools?.official_name ?? r.students?.school_name_input ?? null,
+    grade: r.students?.grade ?? null,
+    category: r.category,
+    teamMembers: (r.teams?.team_members ?? [])
+      .map((member) => member.students?.full_name ?? "")
+      .filter((name) => name.length > 0),
   }));
 }
 

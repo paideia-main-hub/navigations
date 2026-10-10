@@ -28,7 +28,7 @@ export default async function MyNominationsPage() {
         title="My Nominations"
         subtitle="Every nomination you have submitted, plus any clarification requests."
       >
-        <Link href="/dashboard/nominate" className={dashboardHeroCtaClass}>
+        <Link href="/dashboard/nominate" prefetch className={dashboardHeroCtaClass}>
           Start a nomination
         </Link>
       </DashboardHero>

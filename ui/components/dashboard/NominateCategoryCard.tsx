@@ -12,6 +12,7 @@ export function NominateCategoryCard({ category }: { category: AwardCategory }) 
   return (
     <Link
       href={`/dashboard/nominate/${category.slug}`}
+      prefetch
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_18px_40px_-36px_rgba(31,32,65,0.55)] transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1 hover:border-accent/50 hover:shadow-[0_28px_50px_-34px_rgba(31,32,65,0.55)]"
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-brand-deep">

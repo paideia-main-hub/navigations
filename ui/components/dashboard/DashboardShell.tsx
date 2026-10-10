@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import type { UserRole } from "@/domain/auth/session";
 import { NAV_BY_ROLE, ROLE_LABELS } from "@/ui/components/dashboard/navByRole";
@@ -38,6 +38,17 @@ export function useDashboardHeroSetter() {
   return set;
 }
 
+function NavLinkBody({ icon, label }: { icon: string; label: string }) {
+  const { pending } = useLinkStatus();
+  return (
+    <>
+      <span className="text-base">{icon}</span>
+      <span className="min-w-0 flex-1">{label}</span>
+      {pending ? <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-accent" aria-hidden /> : null}
+    </>
+  );
+}
+
 function NavLinks({
   items,
   pathname,
@@ -58,6 +69,7 @@ function NavLinks({
           <Link
             key={item.href}
             href={item.href}
+            prefetch
             onClick={onNavigate}
             className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
               active
@@ -65,8 +77,7 @@ function NavLinks({
                 : "text-muted hover:bg-background/70 hover:text-foreground"
             }`}
           >
-            <span className="text-base">{item.icon}</span>
-            {item.label}
+            <NavLinkBody icon={item.icon} label={item.label} />
           </Link>
         );
       })}
@@ -165,7 +176,7 @@ export function DashboardShell({
       <div className="border-b border-border px-5 py-5">
         <div className="flex items-center gap-3">
           {role === "student" ? (
-            <Link href="/dashboard/account" title="Profile photo — view or change" className="shrink-0">
+            <Link href="/dashboard/account" prefetch title="Profile photo — view or change" className="shrink-0">
               {photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element -- public Supabase Storage URL
                 <img src={photoUrl} alt="Your profile photo" className="h-20 w-20 rounded-full object-cover ring-2 ring-surface" />
