@@ -49,10 +49,32 @@ export async function login(_prevState: ActionState, formData: FormData): Promis
   redirect(safeNext);
 }
 
-export async function logout() {
+/** Pages that send an anonymous visitor away. After logout, leave these for the homepage. */
+function requiresSignIn(pathname: string): boolean {
+  if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) return true;
+  if (pathname === "/reset-password") return true;
+  if (pathname === "/admin") return true;
+  if (pathname.startsWith("/admin/") && pathname !== "/admin/login") return true;
+  return false;
+}
+
+function safeRelativePath(raw: string): string {
+  const value = raw.trim();
+  if (!value.startsWith("/") || value.startsWith("//") || value.includes("\\")) return "/";
+  const pathname = value.split("?")[0]?.split("#")[0] || "/";
+  return pathname || "/";
+}
+
+/** Auth-only pages go home. Public pages stay where the visitor already is. */
+function destinationAfterLogout(from: string): string {
+  const path = safeRelativePath(from);
+  return requiresSignIn(path) ? "/" : path;
+}
+
+export async function logout(formData: FormData) {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/login");
+  redirect(destinationAfterLogout(String(formData.get("from") ?? "")));
 }
 
 /** Step 1 of the forgot-password flow: email a recovery link. Supabase never

@@ -113,6 +113,7 @@ export function HeaderAccountMenu({
           </MenuScroll>
           <div className="border-t border-border pt-1">
             <form action={logout}>
+              <input type="hidden" name="from" value={pathname || "/"} />
               <button
                 type="submit"
                 role="menuitem"

@@ -62,7 +62,6 @@ export function SchoolRegisterForm({ hideIntro = false }: { hideIntro?: boolean 
                   label="Website"
                   name="website"
                   type="url"
-                  required
                   inputMode="url"
                   autoComplete="url"
                   placeholder="https://example.edu"
