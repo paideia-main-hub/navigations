@@ -8,8 +8,9 @@ import { getCurrentUser } from "@/domain/auth/session";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { uploadOwnPhoto } from "@/domain/storage/actions";
 import { addStudentToSchool, getOwnStudentProfile, setStudentPhoto, updateOwnStudentProfile, updateSchoolStudent } from "./service";
+import type { StudentProfile } from "./types";
 
-export type ActionState = { error: string | null; success?: boolean };
+export type ActionState = { error: string | null; success?: boolean; student?: StudentProfile };
 
 export async function addStudentAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const user = await getCurrentUser();
@@ -35,14 +36,20 @@ export async function addStudentAction(_prevState: ActionState, formData: FormDa
   // Optional, same as at student self-registration — a failed upload
   // doesn't block adding the student, it just leaves photoUrl null until
   // someone uploads one later.
+  let saved = student;
   const photo = formData.get("photo");
   if (photo instanceof File && photo.size > 0) {
     const { url } = await uploadOwnPhoto(photo, student.id);
-    if (url) await setStudentPhoto(supabase, student.id, url);
+    if (url) {
+      await setStudentPhoto(supabase, student.id, url);
+      saved = { ...student, photoUrl: url };
+    }
   }
 
   revalidatePath("/dashboard");
-  return { error: null, success: true };
+  revalidatePath("/dashboard/students");
+  revalidatePath("/dashboard/register/[slug]", "page");
+  return { error: null, success: true, student: saved };
 }
 
 export async function updateSchoolStudentAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
