@@ -70,6 +70,32 @@ export async function listRegistrationsByRegistrant(supabase: SupabaseClient, pr
   );
 }
 
+export type ExistingRegistrationStanding = {
+  already: boolean;
+  competitionTitle: string | null;
+  /** "approved" or "under review" when a live entry exists. */
+  standing: "approved" | "under review" | null;
+  studentName: string | null;
+};
+
+function standingFrom(status: string | null, paymentStatus: string | null): "approved" | "under review" {
+  if (
+    paymentStatus === "approved" ||
+    status === "approved" ||
+    status === "qualified" ||
+    status === "finalist" ||
+    status === "completed"
+  ) {
+    return "approved";
+  }
+  return "under review";
+}
+
+function paymentStatusOf(value: { status: string } | { status: string }[] | null): string | null {
+  if (!value) return null;
+  return Array.isArray(value) ? (value[0]?.status ?? null) : value.status;
+}
+
 /** Whether this student already has a non-rejected entry for the competition —
  * either as an individual registration or as a member of a registered team.
  * Call with a client that can see all relevant rows (typically service role). */
@@ -77,36 +103,92 @@ export async function studentAlreadyRegisteredForCompetition(
   supabase: SupabaseClient,
   studentId: string,
   competitionSlug: string,
-): Promise<{ already: boolean; competitionTitle: string | null }> {
-  const { data: individual } = await supabase
+): Promise<ExistingRegistrationStanding> {
+  const none: ExistingRegistrationStanding = {
+    already: false,
+    competitionTitle: null,
+    standing: null,
+    studentName: null,
+  };
+
+  const { data: nameRow } = await supabase.from("students").select("full_name").eq("id", studentId).maybeSingle();
+  const studentName = typeof nameRow?.full_name === "string" ? nameRow.full_name : null;
+
+  const individualQuery = await supabase
     .from("registrations")
-    .select("competition_title")
+    .select("competition_title, status, registration_payments(status)")
     .eq("student_id", studentId)
     .eq("competition_slug", competitionSlug)
     .neq("status", "rejected")
     .limit(1)
     .maybeSingle();
+  const individual =
+    individualQuery.error == null
+      ? individualQuery.data
+      : (
+          await supabase
+            .from("registrations")
+            .select("competition_title, status")
+            .eq("student_id", studentId)
+            .eq("competition_slug", competitionSlug)
+            .neq("status", "rejected")
+            .limit(1)
+            .maybeSingle()
+        ).data;
   if (individual) {
-    return { already: true, competitionTitle: individual.competition_title as string };
+    const row = individual as {
+      competition_title: string;
+      status: string;
+      registration_payments: { status: string } | { status: string }[] | null;
+    };
+    return {
+      already: true,
+      competitionTitle: row.competition_title,
+      standing: standingFrom(row.status, paymentStatusOf(row.registration_payments)),
+      studentName,
+    };
   }
 
   const { data: memberships } = await supabase.from("team_members").select("team_id").eq("student_id", studentId);
   const teamIds = (memberships ?? []).map((row) => row.team_id as string);
-  if (teamIds.length === 0) return { already: false, competitionTitle: null };
+  if (teamIds.length === 0) return { ...none, studentName };
 
-  const { data: teamReg } = await supabase
+  const teamQuery = await supabase
     .from("registrations")
-    .select("competition_title")
+    .select("competition_title, status, registration_payments(status)")
     .eq("competition_slug", competitionSlug)
     .neq("status", "rejected")
     .in("team_id", teamIds)
     .limit(1)
     .maybeSingle();
+  const teamReg =
+    teamQuery.error == null
+      ? teamQuery.data
+      : (
+          await supabase
+            .from("registrations")
+            .select("competition_title, status")
+            .eq("competition_slug", competitionSlug)
+            .neq("status", "rejected")
+            .in("team_id", teamIds)
+            .limit(1)
+            .maybeSingle()
+        ).data;
   if (teamReg) {
-    return { already: true, competitionTitle: teamReg.competition_title as string };
+    const row = teamReg as {
+      competition_title: string;
+      status: string;
+      registration_payments: { status: string } | { status: string }[] | null;
+    };
+    return {
+      already: true,
+      competitionTitle: row.competition_title,
+      standing: standingFrom(row.status, paymentStatusOf(row.registration_payments)),
+      studentName,
+    };
   }
 
-  return { already: false, competitionTitle: null };
+  return { ...none, studentName };
 }
 
 /** Admin overview: every registration across every school/student, unscoped,

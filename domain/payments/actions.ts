@@ -91,9 +91,12 @@ export async function updatePaymentAccountAction(
 }
 
 export async function rejectPaymentAction(paymentId: string, note: string | null): Promise<{ error: string | null }> {
+  const reason = note?.trim() ?? "";
+  if (!reason) return { error: "Enter a reason for rejecting this receipt." };
+
   const admin = await requireAdminSession();
   const supabase = createAdminClient();
-  const { error } = await reviewPaymentService(supabase, paymentId, "rejected", admin.id, note);
+  const { error } = await reviewPaymentService(supabase, paymentId, "rejected", admin.id, reason);
   if (!error) {
     revalidatePath("/admin/payments");
     revalidatePath("/admin/registrations");

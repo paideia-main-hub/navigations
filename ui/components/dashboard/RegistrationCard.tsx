@@ -22,11 +22,20 @@ const paymentTone: Record<string, "success" | "warning" | "neutral"> = {
   rejected: "neutral",
 };
 
+export type CardEntrant = {
+  name: string;
+  entryType: "individual" | "team";
+  registrationNumber: string;
+  standing: "applied" | "registered";
+};
+
 type CardProps = {
   registration: Registration;
   competition: CompetitionSummary | undefined;
   result: ResultInfo | undefined;
   status: DisplayStatus;
+  /** School view: every student on this competition, instead of one entrant. */
+  entrants?: CardEntrant[];
 };
 
 function daysUntil(dateStr: string): number {
@@ -97,7 +106,7 @@ function ResultLine({ result }: { result: ResultInfo | undefined }) {
   );
 }
 
-export function RegistrationCard({ registration: r, competition: c, result, status }: CardProps) {
+export function RegistrationCard({ registration: r, competition: c, result, status, entrants }: CardProps) {
   const rows = scheduleOf(c).map((row) => ({ ...row, days: daysUntil(row.date) }));
   const upcoming = rows.map((row) => row.days).filter((days) => days >= 0);
   const nextIn = upcoming.length > 0 ? Math.min(...upcoming) : null;
@@ -138,18 +147,35 @@ export function RegistrationCard({ registration: r, competition: c, result, stat
               <Link href={`/competitions/${r.competitionSlug}`} className="font-heading text-xl font-extrabold tracking-tight text-foreground hover:text-accent">
                 {r.competitionTitle}
               </Link>
-              <p className="mt-1 text-sm text-muted">
-                {r.entrantName} <span className="capitalize">({r.entryType})</span>
-                <span className="mx-1.5 text-border">·</span>
-                <span className="font-mono text-xs">{r.registrationNumber}</span>
-              </p>
-              {r.entryType === "team" && r.teamMembers && r.teamMembers.length > 0 && (
-                <p className="mt-1 text-xs text-muted">Team: {r.teamMembers.join(", ")}</p>
+              {entrants && entrants.length > 0 ? (
+                <ul className="mt-2 space-y-1.5">
+                  {entrants.map((entrant) => (
+                    <li key={`${entrant.registrationNumber}-${entrant.name}`} className="text-sm text-muted">
+                      <span className="font-medium text-foreground">{entrant.name}</span>
+                      <span className="capitalize"> ({entrant.entryType})</span>
+                      <span className="mx-1.5 text-border">·</span>
+                      <span className="font-mono text-xs">{entrant.registrationNumber}</span>
+                      <span className="mx-1.5 text-border">·</span>
+                      {entrant.standing === "registered" ? "Registered" : "Applied"}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <>
+                  <p className="mt-1 text-sm text-muted">
+                    {r.entrantName} <span className="capitalize">({r.entryType})</span>
+                    <span className="mx-1.5 text-border">·</span>
+                    <span className="font-mono text-xs">{r.registrationNumber}</span>
+                  </p>
+                  {r.entryType === "team" && r.teamMembers && r.teamMembers.length > 0 && (
+                    <p className="mt-1 text-xs text-muted">Team: {r.teamMembers.join(", ")}</p>
+                  )}
+                </>
               )}
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge tone={statusTone[status]}>{displayStatusLabels[status]}</Badge>
-              {r.paymentStatus && <Badge tone={paymentTone[r.paymentStatus]}>{paymentStatusLabels[r.paymentStatus]}</Badge>}
+              {!entrants && r.paymentStatus && <Badge tone={paymentTone[r.paymentStatus]}>{paymentStatusLabels[r.paymentStatus]}</Badge>}
             </div>
           </div>
 

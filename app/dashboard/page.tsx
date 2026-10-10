@@ -1,5 +1,6 @@
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
+import { getCoordinatorAvatarUrl } from "@/domain/profiles/avatar";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { listSchoolRegistrations, listMyRegistrations } from "@/domain/registrations/service";
 import { deriveDisplayStatus } from "@/domain/registrations/service";
@@ -11,7 +12,7 @@ import { listCompetitions } from "@/domain/competitions/service";
 import { listAllAnnouncements } from "@/domain/announcements/service";
 import { StatCard } from "@/ui/components/dashboard/StatCard";
 import { StudentProfileCard } from "@/ui/components/dashboard/StudentProfileCard";
-import { SchoolProfileCard } from "@/ui/components/dashboard/SchoolProfileCard";
+import { SchoolOverview } from "@/ui/components/dashboard/SchoolOverview";
 import { QuickLink } from "@/ui/components/dashboard/QuickLink";
 import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
@@ -26,17 +27,16 @@ export default async function DashboardOverviewPage() {
     const school = await getCoordinatorSchool(supabase, user.id);
     if (!school) {
       return (
-        <DashboardPage>
+        <DashboardPage title="Overview">
           <p className="text-muted">No school found for this coordinator account.</p>
         </DashboardPage>
       );
     }
 
-    const [roster, teams, registrations, announcements] = await Promise.all([
+    const [roster, teams, registrations] = await Promise.all([
       listSchoolRoster(supabase, school.id),
       listSchoolTeams(supabase, school.id),
       listSchoolRegistrations(supabase, school.id),
-      listAllAnnouncements(supabase),
     ]);
 
     return (
@@ -46,38 +46,16 @@ export default async function DashboardOverviewPage() {
           title={`Welcome back, ${school.officialName}`}
           subtitle="Registrations, roster, teams, and results for your school."
         />
-        <DashboardPage>
-          <div>
-            <SchoolProfileCard school={school} />
-          </div>
-
-          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <StatCard label="Students" value={roster.length} />
-            <StatCard label="Teams" value={teams.length} />
-            <StatCard label="Registrations" value={registrations.length} />
-            <StatCard label="Pending" value={registrations.filter((r) => r.status === "pending").length} />
-          </div>
-
-          <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <QuickLink href="/dashboard/registrations" icon="📋" title="Registrations" body="Track every active registration." />
-            <QuickLink href="/dashboard/students" icon="🎓" title="Manage Students" body="View and add to your school roster." />
-            <QuickLink href="/dashboard/teams" icon="👥" title="Manage Teams" body="Create and organize competition teams." />
-            <QuickLink href="/dashboard/history" icon="📜" title="History & Results" body="Concluded competitions and winners." />
-          </section>
-
-          {announcements.length > 0 && (
-            <section className="mt-8">
-              <h2 className="mb-3 text-lg font-semibold text-foreground">Latest Announcements</h2>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {announcements.slice(0, 4).map((a) => (
-                  <div key={a.id} className="rounded-xl border border-border bg-surface p-4">
-                    <p className="font-medium text-foreground">{a.title}</p>
-                    <p className="mt-1 line-clamp-2 text-sm text-muted">{a.body}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+        <DashboardPage title="Overview">
+          <SchoolOverview
+            school={school}
+            coordinatorName={user.fullName}
+            avatarUrl={await getCoordinatorAvatarUrl(user.id)}
+            studentCount={roster.length}
+            teamCount={teams.length}
+            registrationCount={registrations.length}
+            pendingCount={registrations.filter((r) => r.status === "pending").length}
+          />
         </DashboardPage>
       </>
     );

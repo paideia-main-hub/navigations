@@ -123,6 +123,20 @@ select:not(.h-8) {
   padding-block: 0;
 }
 
+/* File buttons sit on the text baseline unless the field's line box matches
+   its 38px height. This one is centered, with 4px of padding inside the button. */
+input.student-photo-file {
+  padding-block: 0;
+  line-height: 38px;
+}
+
+input.student-photo-file::file-selector-button {
+  margin-block: 0;
+  padding-block: 4px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
 /* Native selects draw their own arrow flush to the edge. Replace it with the
    same chevron used by SelectField, inset from the right. */
 select {
@@ -159,10 +173,10 @@ form :is(button, [type="button"], [type="submit"], [type="reset"]):not(.form-ste
   justify-content: center;
 }
 
-@layer base {
-  form :is(button, [type="button"], [type="submit"], [type="reset"]):not(:disabled) {
-    cursor: pointer;
-  }
+/* Outside a layer so it also covers wizard and dashboard buttons that are
+   not inside a <form>, including dialogs portaled to the page body. */
+:is(button, [type="button"], [type="submit"], [type="reset"]):not(:disabled) {
+  cursor: pointer;
 }
 
 /* Headings use Plus Jakarta Sans — same as Featuring Now slide titles. */

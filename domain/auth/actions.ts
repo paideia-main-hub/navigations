@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/data/supabase/server";
 import { createAdminClient } from "@/data/supabase/admin";
+import { isSchoolType } from "@/domain/schools/types";
 import { uploadOwnPhoto } from "@/domain/storage/actions";
 
 export type ActionState = { error: string | null };
@@ -246,6 +247,8 @@ export async function signUpSchool(_prevState: ActionState, formData: FormData):
   const coordinatorName = String(formData.get("coordinator_name"));
   const email = String(formData.get("email"));
   const password = String(formData.get("password"));
+  const schoolType = String(formData.get("school_type") ?? "").trim();
+  if (!isSchoolType(schoolType)) return { error: "Choose a school type." };
 
   const result = await createConfirmedUserAndSignIn(supabase, email, password, {
     full_name: coordinatorName,
@@ -258,7 +261,7 @@ export async function signUpSchool(_prevState: ActionState, formData: FormData):
     .insert({
       created_by: result.userId,
       official_name: String(formData.get("school_name")),
-      school_type: String(formData.get("school_type")) || null,
+      school_type: schoolType,
       city: String(formData.get("city")) || null,
       country: String(formData.get("country")) || null,
       principal_name: String(formData.get("principal_name")) || null,

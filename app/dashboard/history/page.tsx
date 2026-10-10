@@ -26,7 +26,7 @@ export default async function HistoryPage() {
     const school = await getCoordinatorSchool(supabase, user.id);
     if (!school) {
       return (
-        <DashboardPage>
+        <DashboardPage title="History & Results">
           <p className="text-muted">No school found for this coordinator account.</p>
         </DashboardPage>
       );
@@ -57,7 +57,7 @@ export default async function HistoryPage() {
             </>
           }
         />
-        <DashboardPage>
+        <DashboardPage title="History & Results">
           {winners.length > 0 && (
             <section className="mt-6">
               <h2 className="mb-3 text-lg font-semibold text-foreground">Winners</h2>

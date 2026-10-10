@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
+import { getCoordinatorAvatarUrl } from "@/domain/profiles/avatar";
+import { getCoordinatorSchoolName } from "@/domain/schools/service";
 import { getOwnStudentProfile } from "@/domain/students/service";
 import { Header } from "@/ui/components/Header";
 import { Footer } from "@/ui/components/Footer";
@@ -15,7 +17,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (user.role === "admin") redirect("/admin");
 
   const student = user.role === "student" ? await getOwnStudentProfile(await createClient(), user.id) : null;
-  const headerUser = { fullName: user.fullName, role: user.role, photoUrl: student?.photoUrl ?? null };
+  const isCoordinator = user.role === "school_coordinator";
+  const photoUrl =
+    user.role === "student"
+      ? (student?.photoUrl ?? null)
+      : isCoordinator
+        ? await getCoordinatorAvatarUrl(user.id)
+        : null;
+  const schoolName = isCoordinator ? await getCoordinatorSchoolName(user.id) : null;
+  const headerUser = { fullName: user.fullName, role: user.role, photoUrl, subtitle: schoolName };
 
   return (
     <LoginModalProvider>
@@ -24,8 +34,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <DashboardShell
           role={user.role}
           fullName={user.fullName}
-          photoUrl={student?.photoUrl ?? null}
+          photoUrl={photoUrl}
           frlId={student?.frlId ?? null}
+          subtitle={schoolName}
         >
           {children}
         </DashboardShell>

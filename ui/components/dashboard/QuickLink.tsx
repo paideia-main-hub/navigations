@@ -2,7 +2,11 @@ import Link from "next/link";
 
 export function QuickLink({ href, icon, title, body }: { href: string; icon: string; title: string; body: string }) {
   return (
-    <Link href={href} prefetch className="rounded-xl border border-border bg-surface p-4 transition-colors hover:border-accent">
+    <Link
+      href={href}
+      prefetch
+      className="cursor-pointer rounded-xl border border-border bg-accent-soft p-4 transition hover:border-accent hover:bg-surface hover:shadow-md"
+    >
       <p className="font-semibold text-foreground">
         {icon} {title}
       </p>

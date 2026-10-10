@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { MenuScroll } from "@/ui/components/MenuScroll";
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MONTHS = [
@@ -44,6 +45,95 @@ function formatDisplay(iso: string): string {
   const date = parseIso(iso);
   if (!date) return "";
   return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function CalendarMenu({
+  label,
+  value,
+  options,
+  onChange,
+  align = "left",
+  className = "",
+}: {
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (value: string) => void;
+  align?: "left" | "right";
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const selectedRef = useRef<HTMLButtonElement>(null);
+  const current = options.find((option) => option.value === value);
+
+  useEffect(() => {
+    if (!open) return;
+    selectedRef.current?.scrollIntoView({ block: "center" });
+    function onPointer(event: MouseEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointer);
+    return () => document.removeEventListener("mousedown", onPointer);
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className={`relative min-w-0 ${className}`}>
+      <button
+        type="button"
+        aria-label={label}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        onClick={() => setOpen((currentOpen) => !currentOpen)}
+        className="flex h-8 w-full cursor-pointer items-center justify-between gap-1 rounded-lg border border-border bg-background px-2 text-sm font-semibold text-foreground hover:border-accent"
+      >
+        <span className="truncate">{current?.label}</span>
+        <svg
+          aria-hidden
+          viewBox="0 0 16 16"
+          className={`h-3.5 w-3.5 shrink-0 text-muted transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          fill="none"
+        >
+          <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      {open ? (
+        <div className={`absolute top-full z-20 mt-1.5 w-full min-w-[8.5rem] ${align === "right" ? "right-0" : "left-0"}`}>
+          <MenuScroll
+            role="listbox"
+            aria-label={label}
+            className="max-h-52 overflow-x-hidden rounded-xl border border-border bg-surface py-1 shadow-[0_16px_40px_-20px_rgba(31,32,65,0.45)]"
+          >
+            <ul>
+              {options.map((option) => {
+                const active = option.value === value;
+                return (
+                  <li key={option.value} role="presentation">
+                    <button
+                      ref={active ? selectedRef : undefined}
+                      type="button"
+                      role="option"
+                      aria-selected={active}
+                      className={`mx-1 flex w-[calc(100%-0.5rem)] cursor-pointer items-center rounded-lg px-2.5 py-1.5 text-left text-sm ${
+                        active ? "bg-accent font-semibold text-accent-foreground" : "text-foreground hover:bg-accent-soft"
+                      }`}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => {
+                        onChange(option.value);
+                        setOpen(false);
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </MenuScroll>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function clampMonth(date: Date, min: Date | null, max: Date | null): Date {
@@ -238,34 +328,21 @@ export function DateField({
                   <path d="M10 3.5 5.5 8 10 12.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
-              <select
-                aria-label="Month"
-                value={month}
-                onChange={(event) =>
-                  setVisibleMonth(clampMonth(new Date(year, Number(event.target.value), 1), minDate, maxDate))
-                }
-                className="h-8 min-w-0 flex-1 rounded-lg border border-border bg-background px-2 text-sm font-semibold text-foreground outline-none focus:border-accent"
-              >
-                {MONTHS.map((label, index) => (
-                  <option key={label} value={index}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-              <select
-                aria-label="Year"
-                value={year}
-                onChange={(event) =>
-                  setVisibleMonth(clampMonth(new Date(Number(event.target.value), month, 1), minDate, maxDate))
-                }
-                className="h-8 w-[4.75rem] shrink-0 rounded-lg border border-border bg-background px-2 text-sm font-semibold text-foreground outline-none focus:border-accent"
-              >
-                {years.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
+              <CalendarMenu
+                label="Month"
+                value={String(month)}
+                options={MONTHS.map((item, index) => ({ value: String(index), label: item }))}
+                onChange={(next) => setVisibleMonth(clampMonth(new Date(year, Number(next), 1), minDate, maxDate))}
+                className="flex-1"
+              />
+              <CalendarMenu
+                label="Year"
+                value={String(year)}
+                options={years.map((item) => ({ value: String(item), label: String(item) }))}
+                onChange={(next) => setVisibleMonth(clampMonth(new Date(Number(next), month, 1), minDate, maxDate))}
+                align="right"
+                className="w-[5.5rem] shrink-0"
+              />
               <button
                 type="button"
                 aria-label="Next month"

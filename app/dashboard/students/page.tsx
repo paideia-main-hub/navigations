@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/domain/auth/session";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { listSchoolRoster } from "@/domain/students/service";
 import { AddStudentForm } from "@/ui/components/dashboard/AddStudentForm";
+import { StudentRoster } from "@/ui/components/dashboard/StudentRoster";
 import { CsvDownloadButton } from "@/ui/components/dashboard/CsvDownloadButton";
 import { DashboardHero, dashboardHeroGhostCtaClass } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
@@ -17,9 +18,9 @@ export default async function StudentsPage() {
   const school = await getCoordinatorSchool(supabase, user.id);
   if (!school) {
     return (
-      <DashboardPage>
-        <p className="text-muted">No school found for this coordinator account.</p>
-      </DashboardPage>
+        <DashboardPage title="Students">
+          <p className="text-muted">No school found for this coordinator account.</p>
+        </DashboardPage>
     );
   }
 
@@ -40,37 +41,20 @@ export default async function StudentsPage() {
           }))}
         />
       </DashboardHero>
-      <DashboardPage>
-      <div className="overflow-x-auto rounded-xl border border-border bg-surface">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-border text-muted">
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Grade</th>
-              <th className="px-4 py-3 font-medium">Guardian</th>
-            </tr>
-          </thead>
-          <tbody>
-            {roster.map((s) => (
-              <tr key={s.id} className="border-b border-border last:border-0">
-                <td className="px-4 py-3 font-medium text-foreground">{s.fullName}</td>
-                <td className="px-4 py-3 text-muted">{s.grade ?? "—"}</td>
-                <td className="px-4 py-3 text-muted">{s.guardianName ?? "—"}</td>
-              </tr>
-            ))}
-            {roster.length === 0 && (
-              <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-muted">
-                  No students added yet.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-      <div className="mt-4">
-        <AddStudentForm />
-      </div>
+      <DashboardPage title="Students">
+        {roster.length === 0 ? (
+          <div className="rounded-2xl border border-accent/25 bg-accent-soft px-6 py-14 text-center">
+            <p className="text-lg font-semibold text-foreground">No students added yet</p>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+              Add a student to build your roster, then register them for competitions.
+            </p>
+            <div className="mt-6">
+              <AddStudentForm />
+            </div>
+          </div>
+        ) : (
+          <StudentRoster students={roster} />
+        )}
       </DashboardPage>
     </>
   );

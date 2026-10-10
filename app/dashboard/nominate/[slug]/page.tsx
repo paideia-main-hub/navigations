@@ -39,7 +39,7 @@ export default async function DashboardNominatePage({ params }: { params: Promis
     const school = await getCoordinatorSchool(supabase, user.id);
     if (!school) {
       return (
-        <DashboardPage>
+        <DashboardPage title={category.title}>
           <p className="text-muted">No school found for this coordinator account.</p>
         </DashboardPage>
       );
@@ -52,7 +52,7 @@ export default async function DashboardNominatePage({ params }: { params: Promis
           title={category.title}
           subtitle={`Submitting on behalf of ${school.officialName}.`}
         />
-        <DashboardPage>
+        <DashboardPage title={category.title}>
           <div>
             <NominationWizard category={category} schoolId={school.id} />
           </div>

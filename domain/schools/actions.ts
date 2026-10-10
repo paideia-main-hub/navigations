@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
+import { isSchoolType } from "./types";
 import { getCoordinatorSchool, updateSchool } from "./service";
 
 export type ActionState = { error: string | null; success?: boolean };
@@ -18,9 +19,12 @@ export async function updateSchoolProfileAction(
   const school = await getCoordinatorSchool(supabase, user.id);
   if (!school) return { error: "No school found for this coordinator." };
 
+  const schoolType = String(formData.get("school_type") ?? "").trim();
+  if (!isSchoolType(schoolType)) return { error: "Choose a school type." };
+
   const { error } = await updateSchool(supabase, school.id, {
     officialName: String(formData.get("official_name")),
-    schoolType: String(formData.get("school_type")) || null,
+    schoolType,
     city: String(formData.get("city")) || null,
     country: String(formData.get("country")) || null,
     principalName: String(formData.get("principal_name")) || null,

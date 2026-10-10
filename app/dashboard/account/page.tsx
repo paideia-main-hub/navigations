@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getOwnStudentProfile } from "@/domain/students/service";
@@ -9,6 +10,7 @@ import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user) return null;
+  if (user.role === "school_coordinator") redirect("/dashboard");
 
   const student = user.role === "student" ? await getOwnStudentProfile(await createClient(), user.id) : null;
 

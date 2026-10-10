@@ -17,7 +17,13 @@ import {
 } from "@/data/repositories/registrations.repository";
 import type { BasketItemInput, BasketLine, BasketResult } from "./basket";
 import { generateRegistrationNumber } from "./service";
-import type { Registration, SubmitRegistrationInput } from "./types";
+import { alreadyEnteredMessage, type Registration, type SubmitRegistrationInput } from "./types";
+
+function categoryForGrade(competition: Competition, grade: string | null | undefined) {
+  const value = grade?.trim() ?? "";
+  if (!value) return null;
+  return competition.eligibility.find((rule) => isGradeEligible(rule.minGrade, rule.maxGrade, value)) ?? null;
+}
 
 /** Orchestrates a full registration submission: creates a team (and any
  * ad-hoc teammate rows) if needed, inserts the registration, and records
@@ -49,17 +55,52 @@ export async function submitRegistrationAction(
   if (studentsToCheck.length > 0) {
     const admin = createAdminClient();
     for (const sid of studentsToCheck) {
-      const { already, competitionTitle } = await studentAlreadyRegisteredForCompetition(
+      const { already, competitionTitle, standing, studentName } = await studentAlreadyRegisteredForCompetition(
         admin,
         sid,
         input.competitionSlug,
       );
       if (already) {
+        const who = studentName ?? input.entrantNameForDisplay;
         return {
           registration: null,
-          error: `Already registered for ${competitionTitle ?? input.competitionTitle} — each student can enter a competition only once.`,
+          error: alreadyEnteredMessage(competitionTitle ?? input.competitionTitle, [
+            { name: who, standing: standing ?? "under review" },
+          ]),
         };
       }
+    }
+  }
+
+  let category = input.category;
+  if (user.role === "school_coordinator") {
+    const competition = await getPublicCompetitionBySlug(supabase, input.competitionSlug);
+    if (!competition) return { registration: null, error: "This competition is not open for registration." };
+
+    const gradeIds =
+      input.entryType === "individual" && studentId
+        ? [studentId]
+        : input.entryType === "team"
+          ? [...new Set((input.existingMemberIds ?? []).filter(Boolean))]
+          : [];
+
+    if (gradeIds.length > 0) {
+      const { data: gradeRows } = await supabase.from("students").select("id, grade").in("id", gradeIds);
+      const rules = gradeIds.map((id) => {
+        const row = gradeRows?.find((item) => item.id === id);
+        return categoryForGrade(competition, typeof row?.grade === "string" ? row.grade : null);
+      });
+      if (rules.some((rule) => !rule)) {
+        return { registration: null, error: "A selected student's grade is not open for this competition." };
+      }
+      const first = rules[0];
+      if (!first || rules.some((rule) => rule?.category !== first.category)) {
+        return {
+          registration: null,
+          error: "A team is filed under one category. Register students from different bands individually.",
+        };
+      }
+      category = first.category;
     }
   }
 
@@ -95,7 +136,7 @@ export async function submitRegistrationAction(
     registrationNumber,
     competitionSlug: input.competitionSlug,
     competitionTitle: input.competitionTitle,
-    category: input.category,
+    category,
     entryType: input.entryType,
     studentId,
     teamId,
@@ -125,6 +166,39 @@ export async function submitRegistrationAction(
     },
     error: null,
   };
+}
+
+/** Removes registrations this user just created, before a receipt is attached.
+ * Used when the payment step fails so a refresh does not treat them as already entered. */
+export async function discardDraftRegistrationsAction(ids: string[]): Promise<{ error: string | null }> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "You must be logged in." };
+  if (ids.length === 0) return { error: null };
+  const { error } = await createAdminClient()
+    .from("registrations")
+    .delete()
+    .in("id", ids)
+    .eq("registered_by", user.id)
+    .is("payment_id", null);
+  return { error: error?.message ?? null };
+}
+
+/** Live entries for these students in one competition, with approved or under-review standing. */
+export async function existingEntryStandingAction(
+  studentIds: string[],
+  competitionSlug: string,
+): Promise<{ lines: { name: string; standing: "approved" | "under review" }[]; error: string | null }> {
+  const user = await getCurrentUser();
+  if (!user) return { lines: [], error: "You must be logged in." };
+  const admin = createAdminClient();
+  const lines: { name: string; standing: "approved" | "under review" }[] = [];
+  for (const id of [...new Set(studentIds.filter(Boolean))]) {
+    const found = await studentAlreadyRegisteredForCompetition(admin, id, competitionSlug);
+    if (found.already) {
+      lines.push({ name: found.studentName ?? "This student", standing: found.standing ?? "under review" });
+    }
+  }
+  return { lines, error: null };
 }
 
 /** The student's multi-competition checkout: registers the signed-in student
@@ -179,9 +253,16 @@ export async function submitCompetitionBasketAction(formData: FormData): Promise
     if (!competition || (competition.status !== "open" && competition.status !== "upcoming")) {
       return { ok: false, error: `${competition?.title ?? item.competitionSlug} isn't open for registration.` };
     }
-    const { already } = await studentAlreadyRegisteredForCompetition(admin, student.id, competition.slug);
+    const { already, standing } = await studentAlreadyRegisteredForCompetition(admin, student.id, competition.slug);
     if (already) {
-      return { ok: false, error: `You're already registered for ${competition.title} — remove it from your selection.` };
+      const standingLabel = standing ?? "under review";
+      return {
+        ok: false,
+        error:
+          standingLabel === "approved"
+            ? `You have already registered for ${competition.title}.`
+            : `You have already applied for ${competition.title} and can only apply once.`,
+      };
     }
     const rule = competition.eligibility.find((r) => isGradeEligible(r.minGrade, r.maxGrade, grade));
     if (!rule) return { ok: false, error: `Grade ${grade} isn't eligible for ${competition.title} — remove it from your selection.` };

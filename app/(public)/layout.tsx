@@ -3,13 +3,25 @@ import { Footer } from "@/ui/components/Footer";
 import { LoginModalProvider } from "@/ui/components/LoginModalContext";
 import { getCurrentUser } from "@/domain/auth/session";
 import { createClient } from "@/data/supabase/server";
+import { getCoordinatorAvatarUrl } from "@/domain/profiles/avatar";
+import { getCoordinatorSchoolName } from "@/domain/schools/service";
 import { getOwnStudentProfile } from "@/domain/students/service";
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   const student = user?.role === "student" ? await getOwnStudentProfile(await createClient(), user.id) : null;
   const headerUser = user
-    ? { fullName: user.fullName, role: user.role, photoUrl: student?.photoUrl ?? null }
+    ? {
+        fullName: user.fullName,
+        role: user.role,
+        photoUrl:
+          user.role === "student"
+            ? (student?.photoUrl ?? null)
+            : user.role === "school_coordinator"
+              ? await getCoordinatorAvatarUrl(user.id)
+              : null,
+        subtitle: user.role === "school_coordinator" ? await getCoordinatorSchoolName(user.id) : null,
+      }
     : null;
 
   return (
