@@ -20,14 +20,15 @@ export const NAV_BY_ROLE: Record<UserRole, DashboardNavItem[]> = {
   ],
   school_coordinator: [
     { href: "/dashboard", label: "Overview", icon: "🏠" },
+    { href: "/dashboard/competitions", label: "My Competitions", icon: "🏆" },
+    { href: "/dashboard/announcements", label: "Announcement", icon: "📣" },
     { href: "/dashboard/registrations", label: "Registrations", icon: "📋" },
     { href: "/dashboard/students", label: "Students", icon: "🎓" },
     { href: "/dashboard/teams", label: "Teams", icon: "👥" },
     { href: "/dashboard/history", label: "History & Results", icon: "📜" },
-    { href: "/dashboard/register", label: "Register", icon: "➕" },
+    { href: "/dashboard/register", label: "Register for competitions", icon: "➕" },
     { href: "/dashboard/nominate", label: "Start Nomination", icon: "✨" },
     { href: "/dashboard/nominations", label: "My Nominations", icon: "🎖️" },
-    { href: "/dashboard/account", label: "Account", icon: "🔐" },
   ],
   judge: [
     { href: "/dashboard", label: "Overview", icon: "🏠" },

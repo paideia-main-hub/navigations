@@ -17,9 +17,9 @@ export default async function TeamsPage() {
   const school = await getCoordinatorSchool(supabase, user.id);
   if (!school) {
     return (
-      <DashboardPage>
-        <p className="text-muted">No school found for this coordinator account.</p>
-      </DashboardPage>
+        <DashboardPage title="Teams">
+          <p className="text-muted">No school found for this coordinator account.</p>
+        </DashboardPage>
     );
   }
 
@@ -28,7 +28,7 @@ export default async function TeamsPage() {
   return (
     <>
       <DashboardHero eyebrow="School" title="Teams" subtitle="Create teams from your roster and enter them as a group." />
-      <DashboardPage>
+      <DashboardPage title="Teams">
         <div className="space-y-3">
           {teams.map((t) => (
             <div key={t.id} className="rounded-xl border border-border bg-surface p-4">

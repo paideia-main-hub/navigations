@@ -32,9 +32,9 @@ export default async function RegistrationsPage() {
   const school = await getCoordinatorSchool(supabase, user.id);
   if (!school) {
     return (
-      <DashboardPage>
-        <p className="text-muted">No school found for this coordinator account.</p>
-      </DashboardPage>
+        <DashboardPage title="Registrations">
+          <p className="text-muted">No school found for this coordinator account.</p>
+        </DashboardPage>
     );
   }
 
@@ -69,7 +69,7 @@ export default async function RegistrationsPage() {
           Register a student or team
         </Link>
       </DashboardHero>
-      <DashboardPage>
+      <DashboardPage title="Registrations">
       <div>
         <HistoryTable
           registrations={registrations}

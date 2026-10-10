@@ -6,6 +6,8 @@ import { removeOwnPhotoAction, updateOwnPhotoAction } from "@/domain/students/ac
 import { withFileUploadProgress, type UploadProgressState } from "@/ui/lib/fileUploadProgress";
 import { UploadProgress } from "@/ui/components/UploadProgress";
 
+type PhotoResult = { error: string | null; url?: string };
+
 function initials(name: string): string {
   return name
     .split(/\s+/)
@@ -20,7 +22,19 @@ function initials(name: string): string {
  * preview before saving) or remove it. The server crops and resizes the
  * image, so what's saved may be framed slightly differently from the preview's
  * centre crop. */
-export function ProfilePhotoCard({ name, photoUrl }: { name: string; photoUrl: string | null }) {
+export function ProfilePhotoCard({
+  name,
+  photoUrl,
+  saveAction = updateOwnPhotoAction,
+  removeAction = removeOwnPhotoAction,
+  caption = "Shown on your dashboard and with any published results.",
+}: {
+  name: string;
+  photoUrl: string | null;
+  saveAction?: (formData: FormData) => Promise<PhotoResult>;
+  removeAction?: () => Promise<{ error: string | null }>;
+  caption?: string;
+}) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [current, setCurrent] = useState(photoUrl);
@@ -75,7 +89,7 @@ export function ProfilePhotoCard({ name, photoUrl }: { name: string; photoUrl: s
     setMessage(null);
     const fd = new FormData();
     fd.set("photo", pending);
-    const res = await withFileUploadProgress(setTransfer, () => updateOwnPhotoAction(fd));
+    const res = await withFileUploadProgress(setTransfer, () => saveAction(fd));
     setTransfer(null);
     setBusy(null);
     if (res.error) {
@@ -91,7 +105,7 @@ export function ProfilePhotoCard({ name, photoUrl }: { name: string; photoUrl: s
   async function remove() {
     setBusy("remove");
     setMessage(null);
-    const res = await removeOwnPhotoAction();
+    const res = await removeAction();
     setBusy(null);
     setConfirmRemove(false);
     if (res.error) {
@@ -134,7 +148,7 @@ export function ProfilePhotoCard({ name, photoUrl }: { name: string; photoUrl: s
             {preview
               ? "Preview — save to use this photo."
               : current
-                ? "Shown on your dashboard and with any published results."
+                ? caption
                 : "No photo yet — your initials are shown instead."}
           </p>
 

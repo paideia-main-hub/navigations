@@ -22,6 +22,8 @@ export type HeaderUser = {
   fullName: string;
   role: UserRole;
   photoUrl?: string | null;
+  /** Replaces the role label under the name. Coordinators show their school. */
+  subtitle?: string | null;
 };
 
 export function Header({ user = null }: { user?: HeaderUser | null }) {
@@ -51,6 +53,7 @@ export function Header({ user = null }: { user?: HeaderUser | null }) {
                 fullName={user.fullName}
                 role={user.role}
                 photoUrl={user.photoUrl}
+                subtitle={user.subtitle}
                 onNavigate={() => setMobileOpen(false)}
               />
             ) : (

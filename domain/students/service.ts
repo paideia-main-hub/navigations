@@ -6,6 +6,7 @@ import {
   insertAdHocStudent,
   findStudentByProfile,
   updateStudentProfile,
+  updateSchoolStudentRecord,
   updateStudentPhoto,
   updateStudentGrade,
 } from "@/data/repositories/students.repository";
@@ -25,6 +26,15 @@ export async function getOwnStudentProfile(supabase: SupabaseClient, profileId: 
 
 export async function updateOwnStudentGrade(supabase: SupabaseClient, studentId: string, grade: string): Promise<{ error: string | null }> {
   return updateStudentGrade(supabase, studentId, grade);
+}
+
+export async function updateSchoolStudent(
+  supabase: SupabaseClient,
+  schoolId: string,
+  studentId: string,
+  input: AddStudentInput,
+): Promise<{ error: string | null }> {
+  return updateSchoolStudentRecord(supabase, schoolId, studentId, input);
 }
 
 export async function updateOwnStudentProfile(

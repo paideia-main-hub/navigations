@@ -1,3 +1,15 @@
+export const SCHOOL_TYPES = [
+  "Government",
+  "Private with National Curriculum",
+  "Private with Oxford Curriculum",
+] as const;
+
+export type SchoolType = (typeof SCHOOL_TYPES)[number];
+
+export function isSchoolType(value: string): value is SchoolType {
+  return (SCHOOL_TYPES as readonly string[]).includes(value);
+}
+
 export interface School {
   id: string;
   officialName: string;

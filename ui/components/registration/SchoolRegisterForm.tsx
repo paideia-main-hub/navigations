@@ -2,8 +2,10 @@
 
 import { useActionState } from "react";
 import { signUpSchool, type ActionState } from "@/domain/auth/actions";
+import { SCHOOL_TYPES } from "@/domain/schools/types";
 import { FormField } from "@/ui/components/FormField";
 import { RequiredMark } from "@/ui/components/RequiredMark";
+import { SelectField } from "@/ui/components/SelectField";
 import { StepForm } from "@/ui/components/StepForm";
 
 const initialState: ActionState = { error: null };
@@ -36,7 +38,20 @@ export function SchoolRegisterForm({ hideIntro = false }: { hideIntro?: boolean 
             content: (
               <>
                 <FormField label="Official school name" name="school_name" required minLength={2} />
-                <FormField label="School type" name="school_type" required minLength={2} />
+                <div>
+                  <label className="text-sm font-medium text-foreground">
+                    School type
+                    <RequiredMark />
+                  </label>
+                  <SelectField
+                    name="school_type"
+                    label="School type"
+                    required
+                    placeholder="Select school type"
+                    className="mt-1"
+                    options={SCHOOL_TYPES.map((type) => ({ value: type, label: type }))}
+                  />
+                </div>
                 <FormField label="City" name="city" required minLength={2} autoComplete="address-level2" />
                 <FormField label="Country" name="country" required minLength={2} autoComplete="country-name" />
               </>

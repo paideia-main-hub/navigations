@@ -28,7 +28,7 @@ export default async function TrackNominationPage({ params }: { params: Promise<
       >
         <Badge>{nominationStatusLabels[nomination.status]}</Badge>
       </DashboardHero>
-      <DashboardPage>
+      <DashboardPage title={user.role === "school_coordinator" ? nomination.nominationNumber : undefined}>
         <div className="rounded-xl border border-border bg-surface p-4">
           <h2 className="font-semibold text-foreground">Clarification requests</h2>
           <div className="mt-2 space-y-3 text-sm">

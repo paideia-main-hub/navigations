@@ -12,11 +12,13 @@ export function HeaderAccountMenu({
   fullName,
   role,
   photoUrl = null,
+  subtitle = null,
   onNavigate,
 }: {
   fullName: string;
   role: UserRole;
   photoUrl?: string | null;
+  subtitle?: string | null;
   onNavigate?: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -25,6 +27,7 @@ export function HeaderAccountMenu({
   const menuId = useId();
   const items = NAV_BY_ROLE[role];
   const initial = (fullName.trim().charAt(0) || "?").toUpperCase();
+  const secondary = subtitle?.trim() || ROLE_LABELS[role];
 
   useEffect(() => {
     if (!open) return;
@@ -61,7 +64,7 @@ export function HeaderAccountMenu({
         )}
         <span className="min-w-0 hidden sm:block">
           <span className="block truncate text-sm font-semibold text-foreground">{fullName}</span>
-          <span className="block truncate text-[11px] text-muted">{ROLE_LABELS[role]}</span>
+          <span className="block truncate text-[11px] text-muted">{secondary}</span>
         </span>
         <svg
           viewBox="0 0 16 16"
@@ -81,7 +84,7 @@ export function HeaderAccountMenu({
         >
           <div className="border-b border-border px-4 py-3 sm:hidden">
             <p className="truncate text-sm font-semibold text-foreground">{fullName}</p>
-            <p className="truncate text-xs text-muted">{ROLE_LABELS[role]}</p>
+            <p className="truncate text-xs text-muted">{secondary}</p>
           </div>
           <MenuScroll className="max-h-[min(24rem,60vh)] py-1">
             {items.map((item) => {

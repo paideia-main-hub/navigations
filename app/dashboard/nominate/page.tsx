@@ -43,7 +43,7 @@ export default async function NominateCategoryPickerPage() {
           </p>
         ) : null}
       </DashboardHero>
-      <DashboardPage>
+      <DashboardPage title={user.role === "school_coordinator" ? "Start Nomination" : undefined}>
       {nominatable.length > 0 ? (
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {nominatable.map((category) => (

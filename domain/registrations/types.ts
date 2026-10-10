@@ -41,6 +41,33 @@ export const registrationStatusLabels: Record<RegistrationStatus, string> = {
   completed: "Completed",
 };
 
+function joinNames(names: string[]): string {
+  if (names.length <= 1) return names[0] ?? "This student";
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
+/** Duplicate-entry copy. Under review means they have applied. Approved means they are registered. */
+export function alreadyEnteredMessage(
+  competitionTitle: string,
+  lines: { name: string; standing: "approved" | "under review" }[],
+): string {
+  const applied = lines.filter((line) => line.standing !== "approved").map((line) => line.name);
+  const registered = lines.filter((line) => line.standing === "approved").map((line) => line.name);
+  const parts: string[] = [];
+  if (applied.length === 1) {
+    parts.push(`${applied[0]} has already applied for ${competitionTitle} and can only be applied once.`);
+  } else if (applied.length > 1) {
+    parts.push(`${joinNames(applied)} have already applied for ${competitionTitle} and can only be applied once.`);
+  }
+  if (registered.length === 1) {
+    parts.push(`${registered[0]} has already registered for ${competitionTitle}.`);
+  } else if (registered.length > 1) {
+    parts.push(`${joinNames(registered)} have already registered for ${competitionTitle}.`);
+  }
+  return parts.join(" ");
+}
+
 export interface SubmitRegistrationInput {
   competitionSlug: string;
   competitionTitle: string;

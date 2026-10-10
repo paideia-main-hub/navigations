@@ -32,7 +32,7 @@ export default async function MyNominationsPage() {
           Start a nomination
         </Link>
       </DashboardHero>
-      <DashboardPage>
+      <DashboardPage title={user.role === "school_coordinator" ? "My Nominations" : undefined}>
         <div>
           <MyNominationsTable nominations={nominations} />
         </div>

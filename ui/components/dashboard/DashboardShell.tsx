@@ -143,12 +143,14 @@ export function DashboardShell({
   fullName,
   photoUrl = null,
   frlId = null,
+  subtitle = null,
   children,
 }: {
   role: UserRole;
   fullName: string;
   photoUrl?: string | null;
   frlId?: string | null;
+  subtitle?: string | null;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -175,8 +177,13 @@ export function DashboardShell({
     <div>
       <div className="border-b border-border px-5 py-5">
         <div className="flex items-center gap-3">
-          {role === "student" ? (
-            <Link href="/dashboard/account" prefetch title="Profile photo — view or change" className="shrink-0">
+          {role === "student" || role === "school_coordinator" ? (
+            <Link
+              href={role === "school_coordinator" ? "/dashboard" : "/dashboard/account"}
+              prefetch
+              title={role === "school_coordinator" ? "School profile" : "Profile photo — view or change"}
+              className="shrink-0"
+            >
               {photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element -- public Supabase Storage URL
                 <img src={photoUrl} alt="Your profile photo" className="h-20 w-20 rounded-full object-cover ring-2 ring-surface" />
@@ -190,7 +197,7 @@ export function DashboardShell({
           <div className="min-w-0">
             <p className="text-xs font-bold tracking-[0.16em] text-accent uppercase">Dashboard</p>
             <p className="mt-1 truncate text-sm font-semibold text-foreground">{fullName}</p>
-            <p className="truncate text-xs text-muted">{ROLE_LABELS[role]}</p>
+            <p className="truncate text-xs text-muted">{subtitle?.trim() || ROLE_LABELS[role]}</p>
           </div>
         </div>
         {frlId ? (
@@ -255,6 +262,11 @@ export function DashboardShell({
 
 /** Page body in the column beside the sidebar. Each block fills that column
  * up to its own max-width, then sits in the horizontal center. */
-export function DashboardPage({ children }: { children: ReactNode }) {
-  return <div className="mx-auto flex w-full flex-col items-center [&>*]:w-full">{children}</div>;
+export function DashboardPage({ title, children }: { title?: string; children: ReactNode }) {
+  return (
+    <div className="mx-auto flex w-full flex-col items-center [&>*]:w-full">
+      {title ? <h2 className="mb-6 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">{title}</h2> : null}
+      {children}
+    </div>
+  );
 }

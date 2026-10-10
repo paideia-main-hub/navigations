@@ -93,6 +93,34 @@ export async function updateStudentPhoto(supabase: SupabaseClient, studentId: st
   return { error: error?.message ?? null };
 }
 
+/** Coordinator edit: name and profile fields, limited to one school. */
+export async function updateSchoolStudentRecord(
+  supabase: SupabaseClient,
+  schoolId: string,
+  studentId: string,
+  input: AddStudentInput,
+): Promise<{ error: string | null }> {
+  const { data, error } = await supabase
+    .from("students")
+    .update({
+      full_name: input.fullName,
+      grade: input.grade,
+      date_of_birth: input.dateOfBirth,
+      gender: input.gender,
+      guardian_name: input.guardianName,
+      guardian_relationship: input.guardianRelationship,
+      guardian_email: input.guardianEmail,
+      guardian_mobile: input.guardianMobile,
+    })
+    .eq("id", studentId)
+    .eq("school_id", schoolId)
+    .select("id");
+
+  if (error) return { error: error.message };
+  if (!data?.length) return { error: "That student is not on your roster." };
+  return { error: null };
+}
+
 export async function updateStudentProfile(
   supabase: SupabaseClient,
   studentId: string,

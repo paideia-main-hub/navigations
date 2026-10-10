@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
@@ -8,6 +9,21 @@ import { listSchoolRoster, getOwnStudentProfile } from "@/domain/students/servic
 import { RegistrationWizard } from "@/ui/components/registration/RegistrationWizard";
 import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
+
+function RegisterPageHeading({ title }: { title: string }) {
+  return (
+    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">{title}</h2>
+      <Link
+        href="/dashboard/register"
+        prefetch
+        className="shrink-0 text-sm font-semibold text-accent-strong"
+      >
+        ← Back to competitions
+      </Link>
+    </div>
+  );
+}
 
 export default async function CompetitionRegisterPage({
   params,
@@ -42,6 +58,7 @@ export default async function CompetitionRegisterPage({
     if (!school) {
       return (
         <DashboardPage>
+          <RegisterPageHeading title={`Register for ${competition.title}`} />
           <p className="text-muted">No school found for this coordinator account.</p>
         </DashboardPage>
       );
@@ -57,6 +74,7 @@ export default async function CompetitionRegisterPage({
           subtitle={`Entering on behalf of ${school.officialName}.`}
         />
         <DashboardPage>
+          <RegisterPageHeading title={`Register for ${competition.title}`} />
           <div>
             <RegistrationWizard
               competition={competition}

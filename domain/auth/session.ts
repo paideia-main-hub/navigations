@@ -2,6 +2,7 @@
 // (the dashboard layout/page) calls this instead of touching Supabase directly.
 
 import { cache } from "react";
+import { createAdminClient } from "@/data/supabase/admin";
 import { createClient } from "@/data/supabase/server";
 
 export type UserRole = "student" | "school_coordinator" | "judge" | "admin" | "nominator";
@@ -29,16 +30,30 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
 
   if (!user) return null;
 
-  const { data: profile } = await supabase
+  const { data: ownProfile } = await supabase
     .from("profiles")
     .select("full_name, role")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
+
+  // The signed-in id is already verified. If the session query misses the
+  // row, read that same profile with the service role so the dashboard does
+  // not fall back to the email and the student label.
+  let profile = ownProfile;
+  if (!profile?.role) {
+    const admin = createAdminClient();
+    const { data: adminProfile } = await admin
+      .from("profiles")
+      .select("full_name, role")
+      .eq("id", user.id)
+      .maybeSingle();
+    profile = adminProfile;
+  }
 
   return {
     id: user.id,
     email: user.email ?? null,
-    fullName: profile?.full_name ?? user.email ?? "",
+    fullName: profile?.full_name?.trim() || user.email || "",
     role: (profile?.role as UserRole) ?? "student",
   };
 });

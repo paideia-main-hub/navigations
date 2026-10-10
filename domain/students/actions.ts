@@ -7,7 +7,7 @@ import { createAdminClient } from "@/data/supabase/admin";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { uploadOwnPhoto } from "@/domain/storage/actions";
-import { addStudentToSchool, getOwnStudentProfile, setStudentPhoto, updateOwnStudentProfile } from "./service";
+import { addStudentToSchool, getOwnStudentProfile, setStudentPhoto, updateOwnStudentProfile, updateSchoolStudent } from "./service";
 
 export type ActionState = { error: string | null; success?: boolean };
 
@@ -42,6 +42,41 @@ export async function addStudentAction(_prevState: ActionState, formData: FormDa
   }
 
   revalidatePath("/dashboard");
+  return { error: null, success: true };
+}
+
+export async function updateSchoolStudentAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "school_coordinator") return { error: "Not authorized." };
+
+  const fullName = String(formData.get("full_name") ?? "").trim();
+  if (!fullName) return { error: "Enter the student's full name." };
+
+  const supabase = await createClient();
+  const school = await getCoordinatorSchool(supabase, user.id);
+  if (!school) return { error: "No school found for this coordinator." };
+
+  const studentId = String(formData.get("student_id") ?? "");
+  const { error } = await updateSchoolStudent(supabase, school.id, studentId, {
+    fullName,
+    grade: String(formData.get("grade")) || null,
+    dateOfBirth: String(formData.get("date_of_birth")) || null,
+    gender: String(formData.get("gender")) || null,
+    guardianName: String(formData.get("guardian_name")) || null,
+    guardianRelationship: String(formData.get("guardian_relationship")) || null,
+    guardianEmail: String(formData.get("guardian_email")) || null,
+    guardianMobile: String(formData.get("guardian_mobile")) || null,
+  });
+  if (error) return { error };
+
+  const photo = formData.get("photo");
+  if (photo instanceof File && photo.size > 0) {
+    const { url } = await uploadOwnPhoto(photo, studentId);
+    if (url) await setStudentPhoto(supabase, studentId, url);
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/students");
   return { error: null, success: true };
 }
 
