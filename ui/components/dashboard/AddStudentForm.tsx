@@ -15,9 +15,11 @@ const today = new Date().toISOString().slice(0, 10);
 export function AddStudentForm({
   student,
   onClose,
+  onAdded,
 }: {
   student?: StudentProfile;
   onClose?: () => void;
+  onAdded?: (student: StudentProfile) => void;
 } = {}) {
   const editing = Boolean(student);
   const [open, setOpen] = useState(editing);
@@ -29,6 +31,8 @@ export function AddStudentForm({
   const [gender, setGender] = useState(student?.gender === "male" || student?.gender === "female" ? student.gender : "");
   const titleId = useId();
   const closeModal = useRef<() => void>(() => {});
+  const onAddedRef = useRef(onAdded);
+  onAddedRef.current = onAdded;
 
   function clearPhotoProgress() {
     readerRef.current?.abort();
@@ -68,8 +72,9 @@ export function AddStudentForm({
 
   useEffect(() => {
     if (!state.success) return;
+    if (!editing && state.student) onAddedRef.current?.(state.student);
     closeModal.current();
-  }, [state.success]);
+  }, [editing, state.success, state.student]);
 
   useEffect(() => () => readerRef.current?.abort(), []);
 

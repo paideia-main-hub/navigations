@@ -16,6 +16,7 @@ import { submitPaymentAction } from "@/domain/payments/actions";
 import type { PaymentAccount } from "@/domain/payments/types";
 import { withFileUploadProgress, type UploadProgressState } from "@/ui/lib/fileUploadProgress";
 import { CopyButton } from "@/ui/components/CopyButton";
+import { AddStudentForm } from "@/ui/components/dashboard/AddStudentForm";
 import { PaymentInstructions } from "@/ui/components/PaymentInstructions";
 import { RequiredMark } from "@/ui/components/RequiredMark";
 import { StepMotion } from "@/ui/components/StepMotion";
@@ -36,7 +37,7 @@ export function RegistrationWizard({
   studentId,
   schoolId,
   schoolName,
-  roster = [],
+  roster: initialRoster = [],
   paymentAccount,
 }: {
   competition: Competition;
@@ -51,8 +52,16 @@ export function RegistrationWizard({
   roster?: StudentProfile[];
   paymentAccount: PaymentAccount;
 }) {
+  const [roster, setRoster] = useState(initialRoster);
   const [step, setStep] = useState<Step>(mode === "school" ? "entry" : "eligibility");
   const [direction, setDirection] = useState<"forward" | "back">("forward");
+
+  function appendStudent(student: StudentProfile) {
+    setRoster((current) => {
+      if (current.some((item) => item.id === student.id)) return current;
+      return [...current, student].sort((a, b) => a.fullName.localeCompare(b.fullName));
+    });
+  }
 
   function moveTo(next: Step) {
     const order: Step[] = ["eligibility", "entry", "consent", "review", "payment", "success"];
@@ -385,12 +394,15 @@ export function RegistrationWizard({
             ) : null}
           </div>
           {mode === "school" ? (
-            <div className="flex flex-wrap gap-2">
-              {competition.eligibility.map((rule) => (
-                <span key={rule.id} className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-strong">
-                  {categoryLabels[rule.category]} · grades {rule.minGrade}–{rule.maxGrade}
-                </span>
-              ))}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                {competition.eligibility.map((rule) => (
+                  <span key={rule.id} className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-strong">
+                    {categoryLabels[rule.category]} · grades {rule.minGrade}–{rule.maxGrade}
+                  </span>
+                ))}
+              </div>
+              <AddStudentForm onAdded={appendStudent} />
             </div>
           ) : null}
 
@@ -429,13 +441,7 @@ export function RegistrationWizard({
                 <span className="font-normal text-muted">(one registration per student selected)</span>
               </label>
               {roster.length === 0 ? (
-                <p className="mt-1 text-sm text-muted">
-                  No students in your roster yet.{" "}
-                  <Link href="/dashboard/students" className="font-semibold text-accent">
-                    Add a student
-                  </Link>{" "}
-                  first.
-                </p>
+                <p className="mt-1 text-sm text-muted">No students in your roster yet. Add a student to continue.</p>
               ) : eligibleRoster.length === 0 ? (
                 <p className="mt-1 text-sm text-muted">None of the students on your roster are in an open grade for this competition.</p>
               ) : (
@@ -524,13 +530,7 @@ export function RegistrationWizard({
                     <RequiredMark />
                   </label>
                   {roster.length === 0 ? (
-                    <p className="mt-1 text-sm text-muted">
-                      No students in your roster yet.{" "}
-                      <Link href="/dashboard/students" className="font-semibold text-accent">
-                        Add students
-                      </Link>{" "}
-                      first.
-                    </p>
+                    <p className="mt-1 text-sm text-muted">No students in your roster yet. Add a student to continue.</p>
                   ) : eligibleRoster.length === 0 ? (
                     <p className="mt-1 text-sm text-muted">None of the students on your roster are in an open grade for this competition.</p>
                   ) : (
