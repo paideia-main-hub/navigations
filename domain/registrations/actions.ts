@@ -5,8 +5,11 @@ import { createClient } from "@/data/supabase/server";
 import { createAdminClient } from "@/data/supabase/admin";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getPublicCompetitionBySlug, isGradeEligible } from "@/domain/competitions/service";
-import { categoryLabels, type Competition } from "@/domain/competitions/types";
+import { categoryLabels, competitionTeamSize, type AgeCategory, type Competition } from "@/domain/competitions/types";
+import { submitPaymentAction } from "@/domain/payments/actions";
 import { insertPaymentAndLink } from "@/domain/payments/service";
+import { getCoordinatorSchool } from "@/domain/schools/service";
+import { isSchoolEntryDraft, schoolEntryFee, type SchoolEntryDraft } from "./schoolEntries";
 import { uploadReceiptFile } from "@/domain/storage/actions";
 import { createTeam } from "@/domain/teams/service";
 import { createAdHocTeammate, getOwnStudentProfile, updateOwnStudentGrade } from "@/domain/students/service";
@@ -76,6 +79,12 @@ export async function submitRegistrationAction(
   if (user.role === "school_coordinator") {
     const competition = await getPublicCompetitionBySlug(supabase, input.competitionSlug);
     if (!competition) return { registration: null, error: "This competition is not open for registration." };
+    if (input.entryType === "individual" && !competition.supportsIndividual) {
+      return { registration: null, error: `${competition.title} needs a team. Enter the team name and choose its members.` };
+    }
+    if (input.entryType === "team" && !competition.supportsTeam) {
+      return { registration: null, error: `${competition.title} does not take team entries.` };
+    }
 
     const gradeIds =
       input.entryType === "individual" && studentId
@@ -93,41 +102,48 @@ export async function submitRegistrationAction(
       if (rules.some((rule) => !rule)) {
         return { registration: null, error: "A selected student's grade is not open for this competition." };
       }
-      const first = rules[0];
-      if (!first || rules.some((rule) => rule?.category !== first.category)) {
-        return {
-          registration: null,
-          error: "A team is filed under one category. Register students from different bands individually.",
-        };
+      const matched = rules.filter((rule): rule is NonNullable<(typeof rules)[number]> => Boolean(rule));
+      const counts = new Map<AgeCategory, number>();
+      for (const rule of matched) counts.set(rule.category, (counts.get(rule.category) ?? 0) + 1);
+      const categoryEntry = [...counts.entries()].sort((left, right) => right[1] - left[1])[0];
+      if (categoryEntry) category = categoryEntry[0];
+      if (input.entryType === "team") {
+        const { min, max } = competitionTeamSize(competition.eligibility);
+        if (gradeIds.length < min || gradeIds.length > max) {
+          const size = min === max ? `${min}` : `${min}–${max}`;
+          return { registration: null, error: `${competition.title} teams need ${size} members.` };
+        }
       }
-      category = first.category;
     }
   }
 
   if (input.entryType === "team") {
     if (!input.teamName) return { registration: null, error: "Team name is required." };
-
-    const memberIds = [...(input.existingMemberIds ?? [])];
-
-    for (const name of input.newTeammateNames ?? []) {
-      if (!name.trim()) continue;
-      const { id, error } = await createAdHocTeammate(supabase, name.trim());
-      if (error || !id) return { registration: null, error: error ?? "Failed to add a teammate." };
-      memberIds.push(id);
-    }
-
-    if (memberIds.length < 2) {
-      return { registration: null, error: "A team needs at least 2 members." };
-    }
-
-    const { teamId: newTeamId, error: teamError } = await createTeam(supabase, {
-      name: input.teamName,
-      schoolId: input.schoolId,
-      memberStudentIds: memberIds,
-    });
-    if (teamError) return { registration: null, error: teamError };
-    teamId = newTeamId;
     studentId = undefined;
+    if (input.teamId) {
+      teamId = input.teamId;
+    } else {
+      const memberIds = [...(input.existingMemberIds ?? [])];
+
+      for (const name of input.newTeammateNames ?? []) {
+        if (!name.trim()) continue;
+        const { id, error } = await createAdHocTeammate(supabase, name.trim());
+        if (error || !id) return { registration: null, error: error ?? "Failed to add a teammate." };
+        memberIds.push(id);
+      }
+
+      if (memberIds.length < 2) {
+        return { registration: null, error: "A team needs at least 2 members." };
+      }
+
+      const { teamId: newTeamId, error: teamError } = await createTeam(supabase, {
+        name: input.teamName,
+        schoolId: input.schoolId,
+        memberStudentIds: memberIds,
+      });
+      if (teamError) return { registration: null, error: teamError };
+      teamId = newTeamId;
+    }
   }
 
   const registrationNumber = generateRegistrationNumber();
@@ -361,4 +377,164 @@ export async function submitCompetitionBasketAction(formData: FormData): Promise
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/competitions");
   return { ok: true, frlId: student.frlId, lines, total };
+}
+
+export type SchoolEntrySubmitResult =
+  | { ok: true; registrations: { registrationNumber: string; competitionTitle: string }[]; total: number }
+  | { ok: false; error: string };
+
+/** Registers every competition on a coordinator's entry list and attaches
+ * one receipt to all of them. Fees are read from the competitions, not from
+ * the browser. */
+export async function submitSchoolEntriesAction(formData: FormData): Promise<SchoolEntrySubmitResult> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "You must be logged in to register." };
+  if (user.role !== "school_coordinator") return { ok: false, error: "Only a school coordinator can register students this way." };
+
+  let entries: SchoolEntryDraft[];
+  try {
+    const parsed = JSON.parse(String(formData.get("entries") ?? "[]")) as unknown;
+    if (!Array.isArray(parsed) || parsed.length === 0 || !parsed.every(isSchoolEntryDraft)) {
+      return { ok: false, error: "Your hamper couldn't be read. Add the competitions again." };
+    }
+    entries = parsed;
+  } catch {
+    return { ok: false, error: "Your hamper couldn't be read. Add the competitions again." };
+  }
+
+  const receipt = formData.get("receipt");
+  if (!(receipt instanceof File) || receipt.size === 0) return { ok: false, error: "Attach the fee receipt." };
+  const seenStudents = new Set<string>();
+  for (const entry of entries) {
+    for (const student of entry.students) {
+      const key = `${entry.competitionSlug}:${student.id}`;
+      if (seenStudents.has(key)) {
+        return { ok: false, error: `${student.fullName} is listed more than once for ${entry.competitionTitle}.` };
+      }
+      seenStudents.add(key);
+    }
+  }
+
+  const supabase = await createClient();
+  const school = await getCoordinatorSchool(supabase, user.id);
+  if (!school) return { ok: false, error: "No school found for this coordinator account." };
+
+  const createdIds: string[] = [];
+  const registrations: { registrationNumber: string; competitionTitle: string }[] = [];
+  const titles: string[] = [];
+  let total = 0;
+
+  async function rollback() {
+    if (createdIds.length === 0) return;
+    await createAdminClient().from("registrations").delete().in("id", createdIds);
+  }
+
+  for (const entry of entries) {
+    const competition = await getPublicCompetitionBySlug(supabase, entry.competitionSlug);
+    if (!competition || (competition.status !== "open" && competition.status !== "upcoming")) {
+      await rollback();
+      return { ok: false, error: `${entry.competitionTitle} is not open for registration. Nothing was saved.` };
+    }
+    if (competition.feeAmount == null) {
+      await rollback();
+      return { ok: false, error: `${competition.title} does not have a fee yet. Nothing was saved.` };
+    }
+    if (entry.students.length === 0) {
+      await rollback();
+      return { ok: false, error: `Choose at least one student for ${competition.title}.` };
+    }
+    if (entry.entryType === "individual" && !competition.supportsIndividual) {
+      await rollback();
+      return { ok: false, error: `${competition.title} needs a team. Enter the team name and choose its members.` };
+    }
+    if (entry.entryType === "team") {
+      if (!competition.supportsTeam) {
+        await rollback();
+        return { ok: false, error: `${competition.title} does not take team entries.` };
+      }
+      const { min, max } = competitionTeamSize(competition.eligibility);
+      if (entry.students.length < min || entry.students.length > max) {
+        await rollback();
+        const size = min === max ? `${min}` : `${min}–${max}`;
+        return { ok: false, error: `${entry.teamName?.trim() || competition.title} needs ${size} members.` };
+      }
+    }
+
+    const fee = schoolEntryFee({ ...entry, feeAmount: competition.feeAmount });
+    if (fee == null) {
+      await rollback();
+      return { ok: false, error: `${competition.title} does not have a fee yet. Nothing was saved.` };
+    }
+    total += fee;
+    titles.push(competition.title);
+
+    if (entry.entryType === "team") {
+      if (!entry.teamName?.trim()) {
+        await rollback();
+        return { ok: false, error: `Enter a team name for ${competition.title}.` };
+      }
+      const { registration, error } = await submitRegistrationAction({
+        competitionSlug: competition.slug,
+        competitionTitle: competition.title,
+        category: entry.students[0]?.category ?? "primary",
+        entryType: "team",
+        schoolId: school.id,
+        teamName: entry.teamName.trim(),
+        teamId: entry.teamId,
+        existingMemberIds: entry.students.map((student) => student.id),
+        entrantNameForDisplay: entry.teamName.trim(),
+        consent: entry.consent,
+      });
+      if (error || !registration) {
+        await rollback();
+        return { ok: false, error: error ?? `Registering for ${competition.title} failed. Nothing was saved.` };
+      }
+      createdIds.push(registration.id);
+      registrations.push({ registrationNumber: registration.registrationNumber, competitionTitle: competition.title });
+      continue;
+    }
+
+    for (const student of entry.students) {
+      const { registration, error } = await submitRegistrationAction({
+        competitionSlug: competition.slug,
+        competitionTitle: competition.title,
+        category: student.category,
+        entryType: "individual",
+        schoolId: school.id,
+        studentId: student.id,
+        entrantNameForDisplay: student.fullName,
+        consent: entry.consent,
+      });
+      if (error || !registration) {
+        await rollback();
+        return { ok: false, error: error ?? `Registering ${student.fullName} failed. Nothing was saved.` };
+      }
+      createdIds.push(registration.id);
+      registrations.push({ registrationNumber: registration.registrationNumber, competitionTitle: competition.title });
+    }
+  }
+
+  const { error: paymentError } = await submitPaymentAction({
+    competitionSlug: new Set(entries.map((entry) => entry.competitionSlug)).size === 1 ? entries[0].competitionSlug : "multiple",
+    competitionTitle: (() => {
+      const unique = [...new Set(titles)];
+      return unique.length === 1 ? unique[0] : `${unique.length} competitions: ${unique.join(", ")}`;
+    })(),
+    schoolId: school.id,
+    schoolName: school.officialName,
+    entryCount: entries.reduce((sum, entry) => sum + Math.max(entry.students.length, 1), 0),
+    amountExpected: total,
+    registrationIds: createdIds,
+    receiptFile: receipt,
+  });
+  if (paymentError) {
+    await rollback();
+    return { ok: false, error: paymentError };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/register");
+  revalidatePath("/dashboard/competitions");
+  revalidatePath("/dashboard/registrations");
+  return { ok: true, registrations, total };
 }

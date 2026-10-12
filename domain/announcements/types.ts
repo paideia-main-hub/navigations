@@ -14,3 +14,12 @@ export interface Announcement {
   expiryDate: string | null;
   isImportant?: boolean;
 }
+
+/** Compact notice passed to the header bell. */
+export interface HeaderNotice {
+  id: string;
+  title: string;
+  body: string;
+  publishDate: string;
+  competitionTitle?: string;
+}

@@ -7,7 +7,7 @@ import { SchoolRegisterForm } from "@/ui/components/registration/SchoolRegisterF
 import { JudgeRegisterForm } from "@/ui/components/registration/JudgeRegisterForm";
 import { NominatorRegisterForm } from "@/ui/components/registration/NominatorRegisterForm";
 import { useLoginModal } from "@/ui/components/LoginModalContext";
-import { AnimatedModal, useAnimatedModalClose } from "@/ui/components/AnimatedModal";
+import { AnimatedModal, ModalCloseButton } from "@/ui/components/AnimatedModal";
 
 const paths: RegisterPath[] = [
   {
@@ -173,21 +173,11 @@ function RegisterFormModal({ kind, onClose }: { kind: ModalKey; onClose: () => v
 
 function RegisterFormModalBody({ kind }: { kind: ModalKey }) {
   const meta = modalMeta[kind];
-  const requestClose = useAnimatedModalClose();
 
   return (
     <>
       <div className={`relative shrink-0 px-5 py-5 sm:px-7 sm:py-6 ${meta.headerClass}`}>
-        <button
-          type="button"
-          onClick={requestClose}
-          aria-label="Close"
-          className="absolute top-4 right-4 grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-surface/80 text-foreground shadow-sm transition-colors duration-300 hover:bg-surface hover:text-accent-strong sm:top-5 sm:right-5"
-        >
-          <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" aria-hidden>
-            <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          </svg>
-        </button>
+        <ModalCloseButton className="absolute top-4 right-4 bg-surface/80 shadow-sm hover:bg-surface sm:top-5 sm:right-5" />
 
         <p className={`pr-12 text-xs font-black tracking-[0.16em] uppercase ${meta.accentClass}`}>Register</p>
         <h2 id="register-modal-title" className="mt-2 pr-12 text-2xl font-black tracking-tight text-foreground">

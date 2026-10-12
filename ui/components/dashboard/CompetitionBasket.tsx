@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { isGradeEligible } from "@/domain/competitions/service";
 import {
   categoryLabels,
+  entryFormatLabel,
   formatFee,
   pathwayLabels,
   type CompetitionSummary,
@@ -539,9 +540,7 @@ export function CompetitionBasket({
                 {c.pathway && <p className="text-[0.68rem] font-semibold tracking-[0.14em] text-accent-strong uppercase">{pathwayLabels[c.pathway]}</p>}
                 <p className="mt-1 font-bold text-foreground">{c.title}</p>
                 <p className="mt-1 text-xs text-muted">
-                  {[gradeRange(c), c.supportsTeam && !c.supportsIndividual ? "Team" : c.supportsTeam ? "Individual or team" : "Individual"]
-                    .filter(Boolean)
-                    .join(" · ")}
+                  {[gradeRange(c), entryFormatLabel(c)].filter(Boolean).join(" · ")}
                 </p>
                 <div className="mt-auto flex items-center justify-between gap-3 pt-4">
                   <span className="text-sm font-semibold text-foreground">{feeLabel(c)}</span>

@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { AnimatedModal, useAnimatedModalClose } from "@/ui/components/AnimatedModal";
+import { AnimatedModal, ModalCloseButton, useAnimatedModalClose } from "@/ui/components/AnimatedModal";
 import { LoginForm } from "@/ui/components/LoginForm";
 import { ForgotPasswordForm } from "@/ui/components/ForgotPasswordForm";
 
@@ -148,16 +148,7 @@ function LoginModalBody({
   return (
     <>
       <div className="relative shrink-0 bg-brand-deep px-5 py-5 sm:px-7 sm:py-6">
-        <button
-          type="button"
-          onClick={requestClose}
-          aria-label="Close"
-          className="absolute top-4 right-4 grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-white/10 text-brand-deep-foreground transition-colors duration-300 hover:bg-white/20 sm:top-5 sm:right-5"
-        >
-          <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" aria-hidden>
-            <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          </svg>
-        </button>
+        <ModalCloseButton className="absolute top-4 right-4 bg-white/10 text-brand-deep-foreground hover:bg-white/20 hover:text-brand-deep-foreground sm:top-5 sm:right-5" />
 
         <p className="pr-12 text-xs font-black tracking-[0.16em] text-accent uppercase">
           {isForgot ? "Account recovery" : "Welcome back"}

@@ -2,9 +2,10 @@ import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { listOpenAndUpcoming } from "@/domain/competitions/service";
 import { getPaymentAccount } from "@/domain/payments/service";
-import { categoryLabels, statusLabels } from "@/domain/competitions/types";
+import { getCoordinatorSchool } from "@/domain/schools/service";
 import { listMyRegistrations } from "@/domain/registrations/service";
-import { getOwnStudentProfile } from "@/domain/students/service";
+import { getOwnStudentProfile, listSchoolRoster } from "@/domain/students/service";
+import { listSchoolTeams } from "@/domain/teams/service";
 import { CompetitionBasket } from "@/ui/components/dashboard/CompetitionBasket";
 import { CoordinatorCompetitionGrid } from "@/ui/components/dashboard/CoordinatorCompetitionGrid";
 import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
@@ -57,26 +58,34 @@ export default async function DashboardRegisterPage() {
     );
   }
 
-  const competitions = await listOpenAndUpcoming(supabase);
+  const [competitions, paymentAccount, school] = await Promise.all([
+    listOpenAndUpcoming(supabase),
+    getPaymentAccount(supabase),
+    getCoordinatorSchool(supabase, user.id),
+  ]);
+  const roster = school ? await listSchoolRoster(supabase, school.id) : [];
+  const teams = school ? await listSchoolTeams(supabase, school.id) : [];
 
   return (
     <>
       <DashboardHero
         eyebrow="Competitions"
         title="Register"
-        subtitle="Open and upcoming competitions you can enter now."
+        subtitle="Add each competition, then register the whole hamper with one receipt."
       />
       <DashboardPage>
-        <CoordinatorCompetitionGrid
-          competitions={competitions.map((competition) => ({
-            slug: competition.slug,
-            title: competition.title,
-            domain: competition.domain,
-            statusLabel: statusLabels[competition.status],
-            open: competition.status === "open",
-            categories: [...new Set(competition.eligibility.map((rule) => categoryLabels[rule.category]))],
-          }))}
-        />
+        {school ? (
+          <CoordinatorCompetitionGrid
+            competitions={competitions}
+            roster={roster}
+            teams={teams}
+            schoolId={school.id}
+            schoolName={school.officialName}
+            paymentAccount={paymentAccount}
+          />
+        ) : (
+          <p className="text-muted">No school found for this coordinator account.</p>
+        )}
       </DashboardPage>
     </>
   );

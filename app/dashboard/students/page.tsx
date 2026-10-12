@@ -3,7 +3,6 @@ import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { listSchoolRoster } from "@/domain/students/service";
-import { AddStudentForm } from "@/ui/components/dashboard/AddStudentForm";
 import { StudentRoster } from "@/ui/components/dashboard/StudentRoster";
 import { CsvDownloadButton } from "@/ui/components/dashboard/CsvDownloadButton";
 import { DashboardHero, dashboardHeroGhostCtaClass } from "@/ui/components/dashboard/DashboardHero";
@@ -41,20 +40,8 @@ export default async function StudentsPage() {
           }))}
         />
       </DashboardHero>
-      <DashboardPage title="Students">
-        {roster.length === 0 ? (
-          <div className="rounded-2xl border border-accent/25 bg-accent-soft px-6 py-14 text-center">
-            <p className="text-lg font-semibold text-foreground">No students added yet</p>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
-              Add a student to build your roster, then register them for competitions.
-            </p>
-            <div className="mt-6">
-              <AddStudentForm />
-            </div>
-          </div>
-        ) : (
-          <StudentRoster students={roster} />
-        )}
+      <DashboardPage>
+        <StudentRoster students={roster} />
       </DashboardPage>
     </>
   );

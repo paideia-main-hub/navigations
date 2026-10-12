@@ -1,13 +1,16 @@
 import { redirect } from "next/navigation";
+import { createAdminClient } from "@/data/supabase/admin";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getCoordinatorAvatarUrl } from "@/domain/profiles/avatar";
-import { getCoordinatorSchoolName } from "@/domain/schools/service";
+import { getCoordinatorSchool } from "@/domain/schools/service";
 import { getOwnStudentProfile } from "@/domain/students/service";
+import { listHeaderNotices } from "@/domain/announcements/service";
 import { Header } from "@/ui/components/Header";
 import { Footer } from "@/ui/components/Footer";
 import { LoginModalProvider } from "@/ui/components/LoginModalContext";
 import { DashboardShell } from "@/ui/components/dashboard/DashboardShell";
+import { SchoolEntryListProvider } from "@/ui/components/registration/SchoolEntryList";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
@@ -24,24 +27,33 @@ export default async function DashboardLayout({ children }: { children: React.Re
       : isCoordinator
         ? await getCoordinatorAvatarUrl(user.id)
         : null;
-  const schoolName = isCoordinator ? await getCoordinatorSchoolName(user.id) : null;
-  const headerUser = { fullName: user.fullName, role: user.role, photoUrl, subtitle: schoolName };
+  const school = isCoordinator ? await getCoordinatorSchool(createAdminClient(), user.id) : null;
+  const schoolName = school?.officialName.trim() || null;
+  const notices = isCoordinator ? await listHeaderNotices(await createClient()) : undefined;
+  const headerUser = { id: user.id, fullName: user.fullName, role: user.role, photoUrl, subtitle: schoolName, notices };
+  const shell = (
+    <DashboardShell
+      role={user.role}
+      fullName={user.fullName}
+      photoUrl={photoUrl}
+      frlId={student?.frlId ?? null}
+      subtitle={schoolName}
+    >
+      {children}
+    </DashboardShell>
+  );
+
+  const frame = (
+    <>
+      <Header user={headerUser} />
+      <main className="flex-1 pt-24 sm:pt-28">{shell}</main>
+      <Footer />
+    </>
+  );
 
   return (
     <LoginModalProvider>
-      <Header user={headerUser} />
-      <main className="flex-1 pt-24 sm:pt-28">
-        <DashboardShell
-          role={user.role}
-          fullName={user.fullName}
-          photoUrl={photoUrl}
-          frlId={student?.frlId ?? null}
-          subtitle={schoolName}
-        >
-          {children}
-        </DashboardShell>
-      </main>
-      <Footer />
+      {isCoordinator ? <SchoolEntryListProvider storageKey={school?.id ?? user.id}>{frame}</SchoolEntryListProvider> : frame}
     </LoginModalProvider>
   );
 }

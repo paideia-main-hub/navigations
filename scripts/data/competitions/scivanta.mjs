@@ -32,19 +32,19 @@ Competency promise: Critical Thinking, Problem-Solving, Scientific Inquiry, Engi
       category: "middle",
       minGrade: "6",
       maxGrade: "8",
-      teamMinSize: 2,
-      teamMaxSize: 4,
+      teamMinSize: 3,
+      teamMaxSize: 3,
       notes:
-        "Junior category. Team-based, 2–4 students. Judges expect simpler sensors and mechanisms, a guided project record, a smaller data demand and greater documentation scaffolding. Schools may register multiple teams subject to organizer capacity.",
+        "Junior category. Team of exactly 3 students. Judges expect simpler sensors and mechanisms, a guided project record, a smaller data demand and greater documentation scaffolding. Schools may register multiple teams subject to organizer capacity.",
     },
     {
       category: "secondary",
       minGrade: "9",
       maxGrade: "10",
-      teamMinSize: 2,
-      teamMaxSize: 4,
+      teamMinSize: 3,
+      teamMaxSize: 3,
       notes:
-        "Senior category — Grades 9–10 / O Level. Team-based, 2–4 students. Judges expect greater system integration, more independent design, stronger data analysis, a deeper technical defense and less scaffolding. Both categories address the same challenge families at age-appropriate complexity.",
+        "Senior category — Grades 9–10 / O Level. Team of exactly 3 students. Judges expect greater system integration, more independent design, stronger data analysis, a deeper technical defense and less scaffolding. Both categories address the same challenge families at age-appropriate complexity.",
     },
   ],
 
@@ -150,7 +150,7 @@ No functionality mark is worth compromising student or spectator safety — and 
     {
       question: "How big is a team?",
       answer:
-        "2–4 students. Teams are registered by the school coordinator with a named team leader, and each member should be able to explain their own contribution during the judges' defense.",
+        "Exactly 3 students. Teams are registered by the school coordinator with a named team leader, and each member should be able to explain their own contribution during the judges' defense.",
     },
     {
       question: "Does an expensive robotics kit help?",

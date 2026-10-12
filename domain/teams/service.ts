@@ -12,7 +12,7 @@ export async function listAllTeams(admin: SupabaseClient): Promise<Team[]> {
 
 export async function createTeam(
   supabase: SupabaseClient,
-  input: { name: string; schoolId: string | null; memberStudentIds: string[] },
+  input: { name: string; schoolId: string | null; competitionId?: string | null; memberStudentIds: string[] },
 ): Promise<{ teamId: string; error: string | null }> {
   const id = crypto.randomUUID();
   const { error } = await createTeamRow(supabase, { id, ...input });

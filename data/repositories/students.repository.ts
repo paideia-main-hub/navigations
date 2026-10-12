@@ -62,16 +62,36 @@ export async function updateStudentGrade(supabase: SupabaseClient, studentId: st
 }
 
 /** Admin overview: every student across every school, unscoped, joined with
- * the owning school's name. Uses the service-role client. */
+ * the owning school's name. Uses the service-role client. Only the columns
+ * the admin table and CSV export need — full student rows are too heavy here. */
 export async function adminListAllStudents(admin: SupabaseClient): Promise<StudentProfile[]> {
   const { data, error } = await admin
     .from("students")
-    .select(`${STUDENT_COLUMNS}, schools(official_name)`)
+    .select("id, full_name, grade, guardian_name, school_id, schools(official_name)")
     .order("full_name");
 
   if (error || !data) return [];
-  return (data as unknown as (Row & { school_id: string | null; schools: { official_name: string } | null })[]).map((row) => ({
-    ...toStudent(row),
+  return (
+    data as unknown as {
+      id: string;
+      full_name: string;
+      grade: string | null;
+      guardian_name: string | null;
+      school_id: string | null;
+      schools: { official_name: string } | null;
+    }[]
+  ).map((row) => ({
+    id: row.id,
+    fullName: row.full_name,
+    grade: row.grade,
+    dateOfBirth: null,
+    gender: null,
+    guardianName: row.guardian_name,
+    guardianRelationship: null,
+    guardianEmail: null,
+    guardianMobile: null,
+    photoUrl: null,
+    frlId: null,
     schoolId: row.school_id,
     schoolName: row.schools?.official_name ?? null,
   }));

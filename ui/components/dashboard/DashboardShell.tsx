@@ -197,7 +197,7 @@ export function DashboardShell({
           <div className="min-w-0">
             <p className="text-xs font-bold tracking-[0.16em] text-accent uppercase">Dashboard</p>
             <p className="mt-1 truncate text-sm font-semibold text-foreground">{fullName}</p>
-            <p className="truncate text-xs text-muted">{subtitle?.trim() || ROLE_LABELS[role]}</p>
+            <p className="line-clamp-2 text-xs leading-snug break-words text-muted">{subtitle?.trim() || ROLE_LABELS[role]}</p>
           </div>
         </div>
         {frlId ? (
@@ -209,7 +209,11 @@ export function DashboardShell({
         ) : null}
       </div>
       <div className="px-3 py-4">
-        <NavLinks items={items} pathname={pathname} onNavigate={() => setMobileOpen(false)} />
+        <NavLinks
+          items={items}
+          pathname={pathname}
+          onNavigate={() => setMobileOpen(false)}
+        />
       </div>
     </div>
   );

@@ -3,6 +3,8 @@
 // source can change without touching a single page or component.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
+import { createAdminClient } from "@/data/supabase/admin";
 import * as repo from "@/data/repositories/competitions.repository";
 import { listPublishedComputedWinners } from "@/domain/results/service";
 import { awardRank } from "@/domain/results/types";
@@ -286,8 +288,16 @@ export function isGradeEligible(minGrade: string, maxGrade: string, grade: strin
 // are responsible for the admin session check before calling any of these.
 // ---------------------------------------------------------------------------
 
-export async function adminListCompetitions(admin: SupabaseClient): Promise<CompetitionSummary[]> {
-  return repo.adminListCompetitions(admin);
+/** Short-lived cache for admin competition pickers and tables. Live pages
+ * (payments, registrations) still load their own data uncached. */
+const cachedAdminCompetitions = unstable_cache(
+  async () => repo.adminListCompetitions(createAdminClient()),
+  ["admin-list-competitions"],
+  { revalidate: 30, tags: ["admin-competitions"] },
+);
+
+export async function adminListCompetitions(_admin?: SupabaseClient): Promise<CompetitionSummary[]> {
+  return cachedAdminCompetitions();
 }
 
 export async function adminCountCompetitions(admin: SupabaseClient): Promise<number> {

@@ -193,6 +193,113 @@ export function formatFee(amount: number): string {
   return `PKR ${amount.toLocaleString("en-US")}`;
 }
 
+/** Team size for a competition. Members may come from any of its grade bands. */
+export function competitionTeamSize(rules: Pick<EligibilityRule, "teamMinSize" | "teamMaxSize">[]): { min: number; max: number } {
+  const mins = rules.map((rule) => rule.teamMinSize).filter((size): size is number => size != null && size > 0);
+  const maxes = rules.map((rule) => rule.teamMaxSize).filter((size): size is number => size != null && size > 0);
+  const min = mins.length > 0 ? Math.min(...mins) : 2;
+  const max = maxes.length > 0 ? Math.max(...maxes) : min;
+  return { min, max: Math.max(min, max) };
+}
+
+/** Combined open grades, such as "grades 6–10". */
+export function competitionGradeLabel(rules: Pick<EligibilityRule, "minGrade" | "maxGrade">[]): string {
+  const lows = rules.map((rule) => Number(rule.minGrade)).filter((grade) => !Number.isNaN(grade));
+  const highs = rules.map((rule) => Number(rule.maxGrade)).filter((grade) => !Number.isNaN(grade));
+  if (lows.length === 0 || highs.length === 0) return "an open grade";
+  const low = Math.min(...lows);
+  const high = Math.max(...highs);
+  return low === high ? `grade ${low}` : `grades ${low}–${high}`;
+}
+
+function joinNames(names: string[]): string {
+  if (names.length <= 1) return names[0] ?? "A student";
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+}
+
+/**
+ * Says what a team is short of, and the next thing the coordinator should do.
+ * Returns null when the current selection already fits the team size.
+ */
+export function teamRosterGuidance(input: {
+  students: { id: string; fullName: string }[];
+  takenIds: string[];
+  selectedCount: number;
+  min: number;
+  max: number;
+  gradeLabel: string;
+  /** Teams already chosen that meet the size. */
+  readyTeams?: number;
+  /** The registration steps talk about choosing a team. The add-team form talks about choosing students. */
+  place?: "form" | "journey";
+}): string | null {
+  const taken = input.students.filter((student) => input.takenIds.includes(student.id));
+  const free = input.students.filter((student) => !input.takenIds.includes(student.id));
+  const size = input.min === input.max ? `${input.min}` : `${input.min}–${input.max}`;
+  const missing = Math.max(0, input.min - free.length);
+  const takenText =
+    taken.length > 0
+      ? `${joinNames(taken.map((student) => student.fullName))} ${taken.length === 1 ? "is" : "are"} already on another team. `
+      : "";
+  const freeText =
+    free.length === 0 ? "" : free.length === 1 ? `Only ${free[0]?.fullName} is free. ` : `${free.length} students are still free. `;
+  const addText = missing === 1 ? "Add 1 more student." : `Add ${missing} more students.`;
+
+  if ((input.readyTeams ?? 0) > 0) {
+    if (missing <= 0) return null;
+    const stillFree =
+      free.length === 0 ? "No student is still free. " : free.length === 1 ? `Only ${free[0]?.fullName} is still free. ` : `${free.length} students are still free. `;
+    return `The selected team can be registered. ${stillFree}To add another team, ${addText.charAt(0).toLowerCase()}${addText.slice(1)} Use ${input.gradeLabel}.`;
+  }
+
+  if (input.students.length === 0) {
+    return `This team needs ${size} students in ${input.gradeLabel}. Add ${input.min === 1 ? "1 student" : `${input.min} students`}.`;
+  }
+
+  if (missing > 0) {
+    return `This team needs ${size} students in ${input.gradeLabel}. ${takenText}${freeText}${addText}`;
+  }
+
+  if (input.selectedCount < input.min) {
+    const more = input.min - input.selectedCount;
+    if (input.place === "journey" && more === input.min) {
+      return `Select a team of ${size}, or add one. A team can mix any ${input.gradeLabel}.`;
+    }
+    return more === input.min
+      ? `Select ${size} students. A team can mix any ${input.gradeLabel}.`
+      : `Select ${more} more student${more === 1 ? "" : "s"}. A team can mix any ${input.gradeLabel}.`;
+  }
+
+  if (input.selectedCount > input.max) {
+    const extra = input.selectedCount - input.max;
+    return `Uncheck ${extra} student${extra === 1 ? "" : "s"}. This team takes ${size} students.`;
+  }
+
+  return null;
+}
+
+function teamSizeLabel(rules: EligibilityRule[]): string | null {
+  const mins = rules.map((rule) => rule.teamMinSize).filter((size): size is number => size != null && size > 0);
+  const maxes = rules.map((rule) => rule.teamMaxSize).filter((size): size is number => size != null && size > 0);
+  if (mins.length === 0 && maxes.length === 0) return null;
+  const min = Math.min(...(mins.length > 0 ? mins : maxes));
+  const max = Math.max(...(maxes.length > 0 ? maxes : mins));
+  return min === max ? `${min} members` : `${min}–${max} members`;
+}
+
+/** How a competition is entered: individual, team required (with size), or both. */
+export function entryFormatLabel(competition: Pick<CompetitionSummary, "supportsIndividual" | "supportsTeam" | "eligibility">): string {
+  const size = teamSizeLabel(competition.eligibility);
+  if (competition.supportsIndividual && competition.supportsTeam) {
+    return size ? `Individual + team · ${size}` : "Individual + team";
+  }
+  if (competition.supportsTeam) {
+    return size ? `Team required · ${size}` : "Team required";
+  }
+  return "Individual";
+}
+
 /** Statuses the public site shows. Draft (not ready yet) and Archived
  * (retired) competitions stay admin-only: they're left out of every public
  * listing and their public pages return 404. Signed-in dashboards still see

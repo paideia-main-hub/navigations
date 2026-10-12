@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
 import { createAdminClient } from "@/data/supabase/admin";
 import { adminListSchools, findSchoolByCoordinator, updateSchoolProfile } from "@/data/repositories/schools.repository";
 import type { School, SchoolProfileInput } from "./types";
@@ -14,8 +15,14 @@ export async function getCoordinatorSchoolName(profileId: string): Promise<strin
   return name || null;
 }
 
-export async function listAllSchools(admin: SupabaseClient): Promise<School[]> {
-  return adminListSchools(admin);
+const cachedAdminSchools = unstable_cache(
+  async () => adminListSchools(createAdminClient()),
+  ["admin-list-schools"],
+  { revalidate: 60, tags: ["admin-schools"] },
+);
+
+export async function listAllSchools(_admin?: SupabaseClient): Promise<School[]> {
+  return cachedAdminSchools();
 }
 
 export async function updateSchool(

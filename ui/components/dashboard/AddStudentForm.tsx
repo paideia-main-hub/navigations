@@ -4,7 +4,7 @@ import { useActionState, useCallback, useEffect, useId, useRef, useState, type C
 import { createPortal } from "react-dom";
 import { addStudentAction, updateSchoolStudentAction, type ActionState } from "@/domain/students/actions";
 import type { StudentProfile } from "@/domain/students/types";
-import { AnimatedModal, useAnimatedModalClose } from "@/ui/components/AnimatedModal";
+import { AnimatedModal, ModalCloseButton, useAnimatedModalClose } from "@/ui/components/AnimatedModal";
 import { FormField } from "@/ui/components/FormField";
 import { SelectField } from "@/ui/components/SelectField";
 import { UploadProgress, useFileFormProgress } from "@/ui/components/UploadProgress";
@@ -16,10 +16,14 @@ export function AddStudentForm({
   student,
   onClose,
   onAdded,
+  triggerClassName = "cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90",
+  triggerLabel = "+ Add student",
 }: {
   student?: StudentProfile;
   onClose?: () => void;
   onAdded?: (student: StudentProfile) => void;
+  triggerClassName?: string;
+  triggerLabel?: string;
 } = {}) {
   const editing = Boolean(student);
   const [open, setOpen] = useState(editing);
@@ -72,21 +76,35 @@ export function AddStudentForm({
 
   useEffect(() => {
     if (!state.success) return;
-    if (!editing && state.student) onAddedRef.current?.(state.student);
+    if (state.student) onAddedRef.current?.(state.student);
+    else if (editing && student && formRef.current) {
+      const data = new FormData(formRef.current);
+      const text = (field: string) => {
+        const value = String(data.get(field) ?? "").trim();
+        return value || null;
+      };
+      onAddedRef.current?.({
+        ...student,
+        fullName: String(data.get("full_name") ?? "").trim() || student.fullName,
+        grade: text("grade"),
+        dateOfBirth: text("date_of_birth"),
+        gender: text("gender"),
+        guardianName: text("guardian_name"),
+        guardianRelationship: text("guardian_relationship"),
+        guardianEmail: text("guardian_email"),
+        guardianMobile: text("guardian_mobile"),
+      });
+    }
     closeModal.current();
-  }, [editing, state.success, state.student]);
+  }, [editing, state.success, state.student, student]);
 
   useEffect(() => () => readerRef.current?.abort(), []);
 
   return (
     <>
       {editing ? null : (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90"
-        >
-          + Add student
+        <button type="button" onClick={() => setOpen(true)} className={triggerClassName}>
+          {triggerLabel}
         </button>
       )}
 
@@ -103,9 +121,12 @@ export function AddStudentForm({
                 onSubmitCapture={onSubmitCapture}
                 className="max-h-[min(92vh,860px)] space-y-3 overflow-y-auto p-5 text-left"
               >
-            <h3 id={titleId} className="text-lg font-extrabold tracking-tight text-foreground">
-              {editing ? "Edit student" : "Add student"}
-            </h3>
+            <div className="flex items-start justify-between gap-3">
+              <h3 id={titleId} className="text-lg font-extrabold tracking-tight text-foreground">
+                {editing ? "Edit student" : "Add student"}
+              </h3>
+              <ModalCloseButton />
+            </div>
             {editing ? <input type="hidden" name="student_id" value={student?.id} /> : null}
             <div className="grid gap-3 sm:grid-cols-2">
               <FormField label="Full name" name="full_name" required defaultValue={student?.fullName ?? ""} />

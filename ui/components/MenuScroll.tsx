@@ -12,6 +12,7 @@ function assignRef<T>(ref: Ref<T> | undefined, node: T | null) {
  * the right edge, with no arrow buttons. */
 export function MenuScroll({
   className = "",
+  frameClassName = "",
   children,
   scrollRef,
   id,
@@ -19,6 +20,7 @@ export function MenuScroll({
   "aria-label": ariaLabel,
 }: {
   className?: string;
+  frameClassName?: string;
   children: ReactNode;
   scrollRef?: Ref<HTMLDivElement>;
   id?: string;
@@ -51,7 +53,7 @@ export function MenuScroll({
   });
 
   return (
-    <div className="relative">
+    <div className={`relative ${frameClassName}`}>
       <div
         ref={(node) => {
           innerRef.current = node;
@@ -64,6 +66,7 @@ export function MenuScroll({
           if (event.currentTarget === innerRef.current) sync();
         }}
         className={`filter-dropdown-scroll overflow-y-auto ${className}`}
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {children}
       </div>

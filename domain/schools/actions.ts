@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { isSchoolType } from "./types";
@@ -34,6 +34,8 @@ export async function updateSchoolProfileAction(
 
   if (error) return { error };
 
+  updateTag("admin-schools");
   revalidatePath("/dashboard");
+  revalidatePath("/admin/schools");
   return { error: null, success: true };
 }

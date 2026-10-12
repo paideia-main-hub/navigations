@@ -6,6 +6,7 @@ import { getPublicCompetitionBySlug } from "@/domain/competitions/service";
 import { getPaymentAccount } from "@/domain/payments/service";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { listSchoolRoster, getOwnStudentProfile } from "@/domain/students/service";
+import { listSchoolTeams } from "@/domain/teams/service";
 import { RegistrationWizard } from "@/ui/components/registration/RegistrationWizard";
 import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
@@ -64,7 +65,10 @@ export default async function CompetitionRegisterPage({
       );
     }
 
-    const roster = await listSchoolRoster(supabase, school.id);
+    const [roster, teams] = await Promise.all([
+      listSchoolRoster(supabase, school.id),
+      listSchoolTeams(supabase, school.id),
+    ]);
 
     return (
       <>
@@ -82,6 +86,7 @@ export default async function CompetitionRegisterPage({
               schoolId={school.id}
               schoolName={school.officialName}
               roster={roster}
+              teams={teams}
               paymentAccount={paymentAccount}
             />
           </div>

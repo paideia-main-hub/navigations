@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Registration, DisplayStatus } from "@/domain/registrations/types";
 import { displayStatusLabels } from "@/domain/registrations/types";
-import { paymentStatusLabels } from "@/domain/payments/types";
+import { paymentStatusLabels, type PaymentStatus } from "@/domain/payments/types";
 import { finalEventDateOf, resultDateOf, submissionDeadlineOf } from "@/domain/competitions/service";
 import type { CompetitionSummary } from "@/domain/competitions/types";
 import type { ResultInfo } from "@/domain/results/types";
@@ -36,6 +36,8 @@ type CardProps = {
   status: DisplayStatus;
   /** School view: every student on this competition, instead of one entrant. */
   entrants?: CardEntrant[];
+  /** Overrides the lead registration when one card covers several payments. */
+  paymentStatus?: PaymentStatus | null;
 };
 
 function daysUntil(dateStr: string): number {
@@ -106,15 +108,16 @@ function ResultLine({ result }: { result: ResultInfo | undefined }) {
   );
 }
 
-export function RegistrationCard({ registration: r, competition: c, result, status, entrants }: CardProps) {
+export function RegistrationCard({ registration: r, competition: c, result, status, entrants, paymentStatus }: CardProps) {
+  const payment = paymentStatus === undefined ? r.paymentStatus : paymentStatus;
   const rows = scheduleOf(c).map((row) => ({ ...row, days: daysUntil(row.date) }));
   const upcoming = rows.map((row) => row.days).filter((days) => days >= 0);
   const nextIn = upcoming.length > 0 ? Math.min(...upcoming) : null;
 
   return (
     <article className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_20px_50px_-32px_rgba(31,32,65,0.55)]">
-      <div className="grid md:grid-cols-[minmax(18rem,22rem)_1fr]">
-        <div className="bg-brand-deep px-5 py-5 text-brand-deep-foreground">
+      <div className="grid md:grid-cols-[13rem_minmax(0,1fr)]">
+        <div className="bg-brand-deep px-4 py-5 text-brand-deep-foreground">
           {rows.length > 0 && (
             <ul className="space-y-3">
               {rows.map((row) => {
@@ -125,15 +128,10 @@ export function RegistrationCard({ registration: r, competition: c, result, stat
                       <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${next ? "bg-accent" : "bg-white/30"}`} />
                       {row.label}
                     </p>
-                    <p className="mt-0.5 pl-3.5 text-sm">
-                      {formatDate(row.date)}
-                      {row.days >= 0 && (
-                        <span className={next ? "font-semibold text-accent" : "text-brand-deep-muted"}>
-                          {" "}
-                          · {daysRemainingLabel(row.days)}
-                        </span>
-                      )}
-                    </p>
+                    <p className="mt-0.5 pl-3.5 text-sm">{formatDate(row.date)}</p>
+                    {row.days >= 0 && (
+                      <p className={`pl-3.5 text-sm ${next ? "text-accent" : "text-brand-deep-muted"}`}>{daysRemainingLabel(row.days)}</p>
+                    )}
                   </li>
                 );
               })}
@@ -143,41 +141,49 @@ export function RegistrationCard({ registration: r, competition: c, result, stat
 
         <div className="flex min-w-0 flex-col">
           <div className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5">
-            <div className="min-w-0">
-              <Link href={`/competitions/${r.competitionSlug}`} className="font-heading text-xl font-extrabold tracking-tight text-foreground hover:text-accent">
-                {r.competitionTitle}
-              </Link>
-              {entrants && entrants.length > 0 ? (
-                <ul className="mt-2 space-y-1.5">
-                  {entrants.map((entrant) => (
-                    <li key={`${entrant.registrationNumber}-${entrant.name}`} className="text-sm text-muted">
-                      <span className="font-medium text-foreground">{entrant.name}</span>
-                      <span className="capitalize"> ({entrant.entryType})</span>
-                      <span className="mx-1.5 text-border">·</span>
-                      <span className="font-mono text-xs">{entrant.registrationNumber}</span>
-                      <span className="mx-1.5 text-border">·</span>
-                      {entrant.standing === "registered" ? "Registered" : "Applied"}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <>
-                  <p className="mt-1 text-sm text-muted">
-                    {r.entrantName} <span className="capitalize">({r.entryType})</span>
-                    <span className="mx-1.5 text-border">·</span>
-                    <span className="font-mono text-xs">{r.registrationNumber}</span>
-                  </p>
-                  {r.entryType === "team" && r.teamMembers && r.teamMembers.length > 0 && (
-                    <p className="mt-1 text-xs text-muted">Team: {r.teamMembers.join(", ")}</p>
-                  )}
-                </>
-              )}
-            </div>
+            <Link href={`/competitions/${r.competitionSlug}`} className="font-heading text-xl font-extrabold tracking-tight text-foreground hover:text-accent">
+              {r.competitionTitle}
+            </Link>
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge tone={statusTone[status]}>{displayStatusLabels[status]}</Badge>
-              {!entrants && r.paymentStatus && <Badge tone={paymentTone[r.paymentStatus]}>{paymentStatusLabels[r.paymentStatus]}</Badge>}
+              {payment ? <Badge tone={paymentTone[payment] ?? "neutral"}>{paymentStatusLabels[payment]}</Badge> : null}
             </div>
           </div>
+          {entrants && entrants.length > 0 ? (
+            <div className="mt-3 px-5">
+              <table className="w-full table-fixed border-collapse text-left text-sm">
+                <thead>
+                  <tr className="text-xs font-semibold tracking-wide text-muted uppercase">
+                    <th className="w-[30%] pb-2 pr-3 font-semibold">Student</th>
+                    <th className="w-[16%] pb-2 pr-3 font-semibold">Entry</th>
+                    <th className="w-[36%] pb-2 pr-3 font-semibold">Registration number</th>
+                    <th className="w-[18%] pb-2 font-semibold">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entrants.map((entrant) => (
+                    <tr key={`${entrant.registrationNumber}-${entrant.name}`} className="border-t border-border">
+                      <td className="py-2 pr-3 font-medium break-words text-foreground">{entrant.name}</td>
+                      <td className="py-2 pr-3 capitalize break-words text-muted">{entrant.entryType}</td>
+                      <td className="py-2 pr-3 font-mono text-xs break-all text-foreground">{entrant.registrationNumber}</td>
+                      <td className="py-2 break-words text-muted">{entrant.standing === "registered" ? "Registered" : "Applied"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="px-5">
+              <p className="mt-1 text-sm text-muted">
+                {r.entrantName} <span className="capitalize">({r.entryType})</span>
+                <span className="mx-1.5 text-border">·</span>
+                <span className="font-mono text-xs">{r.registrationNumber}</span>
+              </p>
+              {r.entryType === "team" && r.teamMembers && r.teamMembers.length > 0 && (
+                <p className="mt-1 text-xs text-muted">Team: {r.teamMembers.join(", ")}</p>
+              )}
+            </div>
+          )}
 
           <div className="mt-auto space-y-3 px-5 pt-4 pb-5">
             <ResourceLinks slug={r.competitionSlug} />

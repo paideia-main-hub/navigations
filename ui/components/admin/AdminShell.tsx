@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { adminLogout } from "@/domain/admin-auth/actions";
 import { Logo } from "@/ui/components/Logo";
@@ -36,6 +36,17 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/account", label: "Account", icon: "🔐" },
 ];
 
+function NavLinkBody({ icon, label }: { icon: string; label: string }) {
+  const { pending } = useLinkStatus();
+  return (
+    <>
+      <span className="text-base">{icon}</span>
+      <span className="min-w-0 flex-1">{label}</span>
+      {pending ? <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-accent" aria-hidden /> : null}
+    </>
+  );
+}
+
 function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
   return (
     <nav className="space-y-1">
@@ -50,13 +61,13 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
           <Link
             key={item.href}
             href={item.href}
+            prefetch
             onClick={onNavigate}
             className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
               active ? "bg-accent-soft text-accent" : "text-muted hover:bg-surface-muted hover:text-foreground"
             }`}
           >
-            <span className="text-base">{item.icon}</span>
-            {item.label}
+            <NavLinkBody icon={item.icon} label={item.label} />
           </Link>
         );
       })}

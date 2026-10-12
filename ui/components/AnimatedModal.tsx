@@ -16,6 +16,36 @@ export function useAnimatedModalClose() {
   return useContext(AnimatedModalCloseContext);
 }
 
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" aria-hidden="true">
+      <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+const modalCloseClass =
+  "grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full text-muted transition-all duration-200 ease-out hover:rotate-90 hover:bg-accent-soft hover:text-accent motion-reduce:hover:rotate-0";
+
+/** Top-right X for AnimatedModal panels. Uses the modal close context. */
+export function ModalCloseButton({ className = "" }: { className?: string }) {
+  const requestClose = useAnimatedModalClose();
+  return (
+    <button type="button" onClick={requestClose} aria-label="Close" className={`${modalCloseClass} ${className}`}>
+      <CloseIcon />
+    </button>
+  );
+}
+
+/** Same X control when the panel is not an AnimatedModal (drawers, custom dialogs). */
+export function DialogCloseButton({ onClick, className = "" }: { onClick: () => void; className?: string }) {
+  return (
+    <button type="button" onClick={onClick} aria-label="Close" className={`${modalCloseClass} ${className}`}>
+      <CloseIcon />
+    </button>
+  );
+}
+
 /** Shared modal chrome with enter/exit motion for backdrop + panel. */
 export function AnimatedModal({
   onClose,

@@ -5,11 +5,11 @@ export default {
   slug: "worldview",
   title: "WorldView",
   shortDescription:
-    "Global Change → Pakistan Impact → Future Response: teams of three research, analyse, localise, adapt, present and defend.",
+    "Global Change → Pakistan Impact → Future Response: each student researches, analyses, localises, adapts, presents and defends.",
   domain: "Global & Intercultural Competence",
   competencies: ["C45"],
-  supportsIndividual: false,
-  supportsTeam: true,
+  supportsIndividual: true,
+  supportsTeam: false,
   status: "open",
   pathway: "applied_skills",
   image: null,
@@ -33,19 +33,15 @@ On sensitive topics: WorldView may include difficult global issues, but the comp
       category: "middle",
       minGrade: "8",
       maxGrade: "8",
-      teamMinSize: 3,
-      teamMaxSize: 3,
       notes:
-        "Senior category only — Grade 8 through O Level or equivalent. Junior and primary categories are not included in this edition. Teams are exactly 3 students, all registered through the same invited school unless the organizer publishes otherwise. A student may join only one WorldView team per edition, and all three registered students must attend the live presentation and panel defense. Recommended default language: English.",
+        "Senior category only — Grade 8 through O Level or equivalent. Junior and primary categories are not included in this edition. Individual entry only — one WorldView entry per student per edition. Candidates register through an invited school unless the organizer publishes otherwise. Recommended default language: English.",
     },
     {
       category: "secondary",
       minGrade: "9",
       maxGrade: "10",
-      teamMinSize: 3,
-      teamMaxSize: 3,
       notes:
-        "Senior category only — Grade 8 through O Level or equivalent. Junior and primary categories are not included in this edition. Teams are exactly 3 students, all registered through the same invited school unless the organizer publishes otherwise. A student may join only one WorldView team per edition, and all three registered students must attend the live presentation and panel defense. Recommended default language: English.",
+        "Senior category only — Grade 8 through O Level or equivalent. Junior and primary categories are not included in this edition. Individual entry only — one WorldView entry per student per edition. Candidates register through an invited school unless the organizer publishes otherwise. Recommended default language: English.",
     },
   ],
 

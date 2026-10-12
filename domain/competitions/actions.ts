@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/data/supabase/admin";
 import {
@@ -70,6 +70,7 @@ function slugify(input: string): string {
 }
 
 function revalidateCompetition(id: string, slug?: string) {
+  updateTag("admin-competitions");
   revalidatePath("/admin/competitions");
   revalidatePath(`/admin/competitions/${id}`);
   revalidatePath("/competitions");
@@ -694,6 +695,7 @@ export async function bulkSavePathwayScheduleAction(
     if (error) return { error };
   }
 
+  updateTag("admin-competitions");
   revalidatePath("/admin/bulk-dates");
   revalidatePath("/admin/competitions");
   revalidatePath("/competitions");
@@ -750,6 +752,7 @@ export async function bulkSaveEventsAction(_prevState: ActionState, formData: Fo
   });
   if (error) return { error };
 
+  updateTag("admin-competitions");
   revalidatePath("/admin/bulk-dates");
   revalidatePath("/admin/competitions");
   revalidatePath("/competitions");
@@ -807,6 +810,7 @@ export async function bulkSaveIndividualEventsAction(
   );
   if (error) return { error };
 
+  updateTag("admin-competitions");
   revalidatePath("/admin/bulk-dates");
   revalidatePath("/admin/competitions");
   revalidatePath("/competitions");

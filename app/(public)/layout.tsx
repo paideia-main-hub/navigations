@@ -6,12 +6,16 @@ import { createClient } from "@/data/supabase/server";
 import { getCoordinatorAvatarUrl } from "@/domain/profiles/avatar";
 import { getCoordinatorSchoolName } from "@/domain/schools/service";
 import { getOwnStudentProfile } from "@/domain/students/service";
+import { listHeaderNotices } from "@/domain/announcements/service";
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
-  const student = user?.role === "student" ? await getOwnStudentProfile(await createClient(), user.id) : null;
+  const supabase = user ? await createClient() : null;
+  const student = user?.role === "student" && supabase ? await getOwnStudentProfile(supabase, user.id) : null;
+  const notices = user?.role === "school_coordinator" && supabase ? await listHeaderNotices(supabase) : undefined;
   const headerUser = user
     ? {
+        id: user.id,
         fullName: user.fullName,
         role: user.role,
         photoUrl:
@@ -21,6 +25,7 @@ export default async function PublicLayout({ children }: { children: React.React
               ? await getCoordinatorAvatarUrl(user.id)
               : null,
         subtitle: user.role === "school_coordinator" ? await getCoordinatorSchoolName(user.id) : null,
+        notices,
       }
     : null;
 

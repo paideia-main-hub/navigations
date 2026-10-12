@@ -20,25 +20,27 @@ export function CreateTeamForm({ roster }: { roster: StudentProfile[] }) {
     }
   }, [state.success]);
 
-  if (roster.length < 2) {
-    return (
-      <p className="text-sm text-muted">Add at least 2 students to your roster before creating a team.</p>
-    );
-  }
-
-  if (!open) {
-    return (
+  const trigger =
+    roster.length < 2 ? (
+      <p className="max-w-xs text-right text-sm text-muted">Add at least 2 students to your roster before creating a team.</p>
+    ) : (
       <button
-        onClick={() => setOpen(true)}
-        className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground hover:border-accent"
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        className="shrink-0 cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90"
       >
         + Create team
       </button>
     );
-  }
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-3 rounded-xl border border-border bg-surface p-4">
+    <>
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">Teams</h2>
+        {trigger}
+      </div>
+      {open ? (
+    <form ref={formRef} action={formAction} className="mb-6 space-y-3 rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-5">
       <h3 className="font-semibold text-foreground">Create team</h3>
       <div>
         <label className="text-sm font-medium text-foreground">
@@ -83,5 +85,7 @@ export function CreateTeamForm({ roster }: { roster: StudentProfile[] }) {
         </button>
       </div>
     </form>
+      ) : null}
+    </>
   );
 }

@@ -5,8 +5,11 @@ import Link from "next/link";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { HeaderAccountMenu } from "@/ui/components/HeaderAccountMenu";
+import { AnnouncementBell } from "@/ui/components/AnnouncementBell";
+import { EntryListHeaderButton } from "@/ui/components/registration/SchoolEntryList";
 import { useLoginModal } from "@/ui/components/LoginModalContext";
 import type { UserRole } from "@/domain/auth/session";
+import type { HeaderNotice } from "@/domain/announcements/types";
 
 const navLinks = [
   { href: "/about-us", label: "About Us" },
@@ -19,11 +22,13 @@ const navLinks = [
 ];
 
 export type HeaderUser = {
+  id?: string;
   fullName: string;
   role: UserRole;
   photoUrl?: string | null;
   /** Replaces the role label under the name. Coordinators show their school. */
   subtitle?: string | null;
+  notices?: HeaderNotice[];
 };
 
 export function Header({ user = null }: { user?: HeaderUser | null }) {
@@ -48,6 +53,10 @@ export function Header({ user = null }: { user?: HeaderUser | null }) {
 
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <ThemeToggle />
+            {user?.role === "school_coordinator" && user.id && user.notices ? (
+              <AnnouncementBell userId={user.id} notices={user.notices} />
+            ) : null}
+            {user?.role === "school_coordinator" ? <EntryListHeaderButton /> : null}
             {user ? (
               <HeaderAccountMenu
                 fullName={user.fullName}

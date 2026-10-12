@@ -68,7 +68,7 @@ export default async function CompetitionPage({
                 </p>
                 {rule.teamMinSize && (
                   <p className={`text-sm ${muted}`}>
-                    Team size: {rule.teamMinSize}–{rule.teamMaxSize} members
+                    Team size: {rule.teamMaxSize && rule.teamMaxSize !== rule.teamMinSize ? `${rule.teamMinSize}–${rule.teamMaxSize}` : rule.teamMinSize} members
                   </p>
                 )}
                 {rule.notes && <p className={`text-sm ${muted}`}>{rule.notes}</p>}

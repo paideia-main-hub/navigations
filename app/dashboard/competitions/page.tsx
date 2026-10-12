@@ -4,24 +4,27 @@ import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { listMyRegistrations, listSchoolRegistrations, deriveDisplayStatus, isRegistrationConcluded } from "@/domain/registrations/service";
-import type { Registration } from "@/domain/registrations/types";
+import type { PaymentStatus } from "@/domain/payments/types";
+import { registrationListStatus, type Registration } from "@/domain/registrations/types";
 import { getPublishedResultsFor } from "@/domain/results/service";
 import { listCompetitions } from "@/domain/competitions/service";
 import { RegistrationCard, type CardEntrant } from "@/ui/components/dashboard/RegistrationCard";
 import { DashboardHero, dashboardHeroCtaClass } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
+function paymentStatusFor(registrations: Registration[]): PaymentStatus | null {
+  const statuses = registrations
+    .map((registration) => registration.paymentStatus)
+    .filter((status): status is PaymentStatus => status != null);
+  if (statuses.length === 0) return null;
+  if (statuses.includes("pending_review")) return "pending_review";
+  if (statuses.includes("rejected")) return "rejected";
+  return "approved";
+}
+
 function standingOf(registration: Registration): CardEntrant["standing"] {
-  if (registration.paymentStatus === "approved") return "registered";
-  if (
-    registration.status === "approved" ||
-    registration.status === "qualified" ||
-    registration.status === "finalist" ||
-    registration.status === "completed"
-  ) {
-    return "registered";
-  }
-  return "applied";
+  const standing = registrationListStatus(registration);
+  return standing.key === "pending" || standing.key === "rejected" ? "applied" : "registered";
 }
 
 function entrantsFor(registrations: Registration[]): CardEntrant[] {
@@ -175,6 +178,7 @@ async function SchoolCompetitions({ userId }: { userId: string }) {
                 competition={competition}
                 result={result}
                 status={deriveDisplayStatus(lead, competition)}
+                paymentStatus={paymentStatusFor(registrations)}
                 entrants={entrantsFor(registrations)}
               />
             );

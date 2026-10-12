@@ -2,8 +2,8 @@ import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getCoordinatorAvatarUrl } from "@/domain/profiles/avatar";
 import { getCoordinatorSchool } from "@/domain/schools/service";
-import { listSchoolRegistrations, listMyRegistrations } from "@/domain/registrations/service";
-import { deriveDisplayStatus } from "@/domain/registrations/service";
+import { deriveDisplayStatus, listSchoolRegistrations, listMyRegistrations } from "@/domain/registrations/service";
+import { registrationListStatus } from "@/domain/registrations/types";
 import { listSchoolRoster, getOwnStudentProfile } from "@/domain/students/service";
 import { listSchoolTeams } from "@/domain/teams/service";
 import { listAssignments } from "@/domain/judging/service";
@@ -54,7 +54,7 @@ export default async function DashboardOverviewPage() {
             studentCount={roster.length}
             teamCount={teams.length}
             registrationCount={registrations.length}
-            pendingCount={registrations.filter((r) => r.status === "pending").length}
+            pendingCount={registrations.filter((r) => registrationListStatus(r).key === "pending").length}
           />
         </DashboardPage>
       </>

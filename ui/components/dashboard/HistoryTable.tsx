@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import type { Registration } from "@/domain/registrations/types";
-import { registrationStatusLabels } from "@/domain/registrations/types";
+import { registrationListStatus } from "@/domain/registrations/types";
 import type { ResultInfo } from "@/domain/results/types";
 import { Badge } from "@/ui/components/Badge";
 import { DataTable } from "@/ui/components/DataTable";
 import { CsvDownloadButton } from "./CsvDownloadButton";
 
 const statusTone: Record<string, "success" | "warning" | "neutral"> = {
+  registered: "success",
   approved: "success",
   qualified: "success",
   finalist: "success",
@@ -16,6 +17,15 @@ const statusTone: Record<string, "success" | "warning" | "neutral"> = {
   pending: "warning",
   rejected: "neutral",
 };
+
+const shownStatusOptions = [
+  { value: "pending", label: "Pending review" },
+  { value: "registered", label: "Registered" },
+  { value: "qualified", label: "Qualified" },
+  { value: "finalist", label: "Finalist" },
+  { value: "completed", label: "Completed" },
+  { value: "rejected", label: "Rejected" },
+];
 
 /** A competition/team participation record with its outcome — the shared
  * table behind every "History & Results" page (student and school alike):
@@ -59,7 +69,7 @@ export function HistoryTable({
                   Entrant: r.entrantName,
                   "Entry type": r.entryType,
                   "Registration #": r.registrationNumber,
-                  Status: registrationStatusLabels[r.status],
+                  Status: registrationListStatus(r).label,
                   Result: result ? (result.customAwardLabel ?? result.award ?? "Released") : "",
                   Score: result?.score != null ? String(result.score) : "",
                   "Submitted at": new Date(r.submittedAt).toLocaleDateString("en-GB"),
@@ -72,8 +82,8 @@ export function HistoryTable({
         filters={[
           {
             label: "Status",
-            options: Object.entries(registrationStatusLabels).map(([value, label]) => ({ value, label })),
-            predicate: (r, value) => r.status === value,
+            options: shownStatusOptions,
+            predicate: (r, value) => registrationListStatus(r).key === value,
           },
         ]}
         emptyMessage={emptyMessage}
@@ -109,7 +119,7 @@ export function HistoryTable({
                       </td>
                       <td className="px-4 py-3 text-muted">{r.registrationNumber}</td>
                       <td className="px-4 py-3">
-                        <Badge tone={statusTone[r.status] ?? "neutral"}>{registrationStatusLabels[r.status]}</Badge>
+                        <Badge tone={statusTone[registrationListStatus(r).key] ?? "neutral"}>{registrationListStatus(r).label}</Badge>
                       </td>
                       <td className="px-4 py-3 text-muted">
                         {result ? (

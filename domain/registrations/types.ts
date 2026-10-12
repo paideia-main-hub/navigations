@@ -41,6 +41,24 @@ export const registrationStatusLabels: Record<RegistrationStatus, string> = {
   completed: "Completed",
 };
 
+/** Status shown to a coordinator or student. Approving the fee marks the
+ * entry registered even though the registration row itself stays pending. */
+export function registrationListStatus(registration: Pick<Registration, "status" | "paymentStatus">): {
+  key: "pending" | "registered" | "qualified" | "finalist" | "completed" | "rejected";
+  label: string;
+} {
+  if (registration.status === "qualified" || registration.status === "finalist" || registration.status === "completed") {
+    return { key: registration.status, label: registrationStatusLabels[registration.status] };
+  }
+  if (registration.paymentStatus === "approved" || registration.status === "approved") {
+    return { key: "registered", label: "Registered" };
+  }
+  if (registration.status === "rejected" || registration.paymentStatus === "rejected") {
+    return { key: "rejected", label: "Rejected" };
+  }
+  return { key: "pending", label: registrationStatusLabels.pending };
+}
+
 function joinNames(names: string[]): string {
   if (names.length <= 1) return names[0] ?? "This student";
   if (names.length === 2) return `${names[0]} and ${names[1]}`;
@@ -78,6 +96,8 @@ export interface SubmitRegistrationInput {
   studentId?: string;
   /** team entry */
   teamName?: string;
+  /** Existing school team. When set, registration uses it instead of creating another. */
+  teamId?: string;
   /** real students.id values already known (roster picks, or the registering student's own id) */
   existingMemberIds?: string[];
   /** free-typed teammate names to create as ad-hoc student rows (student self-registration only) */
