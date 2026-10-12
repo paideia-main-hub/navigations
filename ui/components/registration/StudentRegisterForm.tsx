@@ -42,11 +42,11 @@ export function StudentRegisterForm({ hideIntro = false }: { hideIntro?: boolean
                   label="Email"
                   name="email"
                   type="email"
-                  required
                   inputMode="email"
                   autoComplete="email"
                   placeholder="name@example.com"
                 />
+                <p className="text-xs text-muted">Optional. Add one if you want to sign back in later from another device.</p>
                 <FormField label="Password" name="password" type="password" required minLength={8} />
               </>
             ),

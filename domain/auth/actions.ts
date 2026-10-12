@@ -153,7 +153,10 @@ export async function signUpStudent(_prevState: ActionState, formData: FormData)
   const supabase = await createClient();
 
   const fullName = String(formData.get("full_name"));
-  const email = String(formData.get("email"));
+  const emailInput = String(formData.get("email") ?? "").trim();
+  // Auth still needs an address. When the student skips email, use a unique
+  // placeholder so the account can be created and they stay signed in here.
+  const email = emailInput || `student.${crypto.randomUUID().replace(/-/g, "")}@students.navigations.com.pk`;
   const password = String(formData.get("password"));
 
   const result = await createConfirmedUserAndSignIn(supabase, email, password, {
