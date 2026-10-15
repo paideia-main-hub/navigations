@@ -9,18 +9,20 @@ import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 export default async function DashboardAnnouncementsPage() {
   const user = await getCurrentUser();
   if (!user) return null;
-  if (user.role !== "school_coordinator") redirect("/dashboard");
+  if (user.role !== "student" && user.role !== "school_coordinator") {
+    redirect("/dashboard");
+  }
 
   const announcements = await listAllAnnouncements(await createClient());
 
   return (
     <>
       <DashboardHero
-        eyebrow="School"
-        title="Announcement"
+        eyebrow="Dashboard"
+        title="Announcements"
         subtitle="Site-wide and competition notices."
       />
-      <DashboardPage title="Announcement">
+      <DashboardPage title="Announcements">
         <AnnouncementsList announcements={announcements} />
       </DashboardPage>
     </>

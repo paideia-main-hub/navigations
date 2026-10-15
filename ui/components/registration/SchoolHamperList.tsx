@@ -236,7 +236,7 @@ export function AddToEntryListButton({
           type="button"
           onClick={add}
           disabled={disabled || pending}
-          className="min-w-0 flex-1 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
+          className="min-w-0 flex-1 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-50"
         >
           {pending ? "Checking…" : "Add to hamper"}
         </button>
@@ -397,7 +397,7 @@ function SchoolEntryDrawer() {
               href="/dashboard/register/pay"
               onClick={closeDrawer}
               aria-disabled={entries.length === 0 || total == null}
-              className={`block rounded-full bg-accent px-5 py-2.5 text-center text-sm font-semibold text-accent-foreground hover:opacity-90 ${
+              className={`block rounded-full bg-accent px-5 py-2.5 text-center text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white ${
                 entries.length === 0 || total == null ? "pointer-events-none opacity-50" : ""
               }`}
             >

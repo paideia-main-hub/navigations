@@ -127,7 +127,7 @@ export const AWARD_DETAILS: AwardDetail[] = [
     slug: "young-changemaker",
     title: "Young Changemaker Award",
     layer: "spotlight",
-    awardedTo: "A young person aged 5–25 who has influenced others to make a positive change",
+    awardedTo: "A young person aged 8–25 who has influenced others to make a positive change",
     description:
       "Show what you initiated, how you involved people and what improved as a result. Contributions within a team are welcome when your own role is clear. Submit two dated evidence items, a before-and-after measure or observable outcome, and one beneficiary or independent adult verifier. Likes, views and followers do not by themselves prove positive change.",
     criteria: [

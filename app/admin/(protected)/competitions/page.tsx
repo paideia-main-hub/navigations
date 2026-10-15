@@ -13,7 +13,7 @@ export default async function AdminCompetitionsPage() {
         <h1 className="text-2xl font-bold text-foreground">Competitions</h1>
         <Link
           href="/admin/competitions/new"
-          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90"
+          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
         >
           + New competition
         </Link>

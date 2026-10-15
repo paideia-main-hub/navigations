@@ -10,6 +10,7 @@ import {
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import type { UserRole } from "@/domain/auth/session";
+import { CopyButton } from "@/ui/components/CopyButton";
 import { NAV_BY_ROLE, ROLE_LABELS } from "@/ui/components/dashboard/navByRole";
 import { WaveCurvedBottom } from "@/ui/components/marketing/WaveCurvedBottom";
 
@@ -202,9 +203,18 @@ export function DashboardShell({
         </div>
         {frlId ? (
           <div className="mt-3">
-            <p className="text-[0.65rem] font-semibold tracking-[0.14em] text-accent-strong uppercase">Your League ID</p>
-            <p className="mt-0.5 font-mono text-sm font-bold text-foreground">{frlId}</p>
-            <p className="mt-1 text-xs text-muted">Used for every competition you enter.</p>
+            <p className="text-[0.65rem] font-semibold tracking-[0.14em] text-accent-strong uppercase">
+              {role === "school_coordinator" ? "School League ID" : "Your League ID"}
+            </p>
+            <div className="mt-0.5 flex items-center gap-1">
+              <p className="min-w-0 font-mono text-sm font-bold text-foreground">{frlId}</p>
+              <CopyButton text={frlId} label={role === "school_coordinator" ? "School League ID" : "League ID"} />
+            </div>
+            <p className="mt-1 text-xs text-muted">
+              {role === "school_coordinator"
+                ? "Used for your school across competitions."
+                : "Used for every competition you enter."}
+            </p>
           </div>
         ) : null}
       </div>

@@ -23,13 +23,13 @@ export default async function AccountPage() {
       />
       <DashboardPage>
         {student && (
-          <div className="mt-6 max-w-xl">
+          <div className="max-w-xl">
             <h2 className="mb-3 font-semibold text-foreground">Profile photo</h2>
             <ProfilePhotoCard name={student.fullName} photoUrl={student.photoUrl} />
           </div>
         )}
 
-        <div className="mt-8 max-w-md">
+        <div className={`${student ? "mt-8" : ""} max-w-md`}>
           <h2 className="mb-3 font-semibold text-foreground">Change password</h2>
           <ChangePasswordForm />
         </div>

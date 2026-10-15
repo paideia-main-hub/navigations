@@ -299,7 +299,9 @@ export async function submitCompetitionBasketAction(formData: FormData): Promise
     if (competition.feeAmount == null) {
       return { ok: false, error: `The entry fee for ${competition.title} has not been set yet.` };
     }
-    planned.push({ item, competition, rule, fee: competition.feeAmount });
+    const memberCount =
+      item.entryType === "team" ? 1 + (item.teammateNames ?? []).filter((name) => name.trim()).length : 1;
+    planned.push({ item, competition, rule, fee: competition.feeAmount * memberCount });
   }
 
   // --- Receipt first: nothing is created if the upload fails ----------------
@@ -363,7 +365,14 @@ export async function submitCompetitionBasketAction(formData: FormData): Promise
       submittedByName: student.frlId ? `${user.fullName} (${student.frlId})` : user.fullName,
       schoolId: null,
       schoolName: student.schoolName ?? null,
-      entryCount: lines.length,
+      entryCount: planned.reduce(
+        (sum, row) =>
+          sum +
+          (row.item.entryType === "team"
+            ? 1 + (row.item.teammateNames ?? []).filter((name) => name.trim()).length
+            : 1),
+        0,
+      ),
       amountExpected: total,
       receiptPath,
     },
@@ -376,6 +385,7 @@ export async function submitCompetitionBasketAction(formData: FormData): Promise
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/competitions");
+  revalidatePath("/dashboard/register");
   return { ok: true, frlId: student.frlId, lines, total };
 }
 

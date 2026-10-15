@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { resolveCompetitionCardImage } from "@/domain/competitions/cardImage";
 import type { Registration, DisplayStatus } from "@/domain/registrations/types";
 import { displayStatusLabels } from "@/domain/registrations/types";
 import { paymentStatusLabels, type PaymentStatus } from "@/domain/payments/types";
@@ -6,6 +7,13 @@ import { finalEventDateOf, resultDateOf, submissionDeadlineOf } from "@/domain/c
 import type { CompetitionSummary } from "@/domain/competitions/types";
 import type { ResultInfo } from "@/domain/results/types";
 import { Badge } from "@/ui/components/Badge";
+import {
+  dashboardCardEyebrowClass,
+  dashboardCardRuleClass,
+  dashboardCardTitleClass,
+  dashboardGlowCardClass,
+  dashboardGlowOrbClass,
+} from "@/ui/components/dashboard/dashboardGlowCard";
 
 const statusTone: Record<DisplayStatus, "success" | "warning" | "neutral" | "accent"> = {
   registered: "warning",
@@ -113,13 +121,17 @@ export function RegistrationCard({ registration: r, competition: c, result, stat
   const rows = scheduleOf(c).map((row) => ({ ...row, days: daysUntil(row.date) }));
   const upcoming = rows.map((row) => row.days).filter((days) => days >= 0);
   const nextIn = upcoming.length > 0 ? Math.min(...upcoming) : null;
+  const imageSrc = resolveCompetitionCardImage(c?.imageUrl);
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_20px_50px_-32px_rgba(31,32,65,0.55)]">
-      <div className="grid md:grid-cols-[13rem_minmax(0,1fr)]">
+    <article className={`${dashboardGlowCardClass}`}>
+      <div aria-hidden className={dashboardGlowOrbClass} />
+      <div className="relative grid md:grid-cols-[13rem_minmax(0,1fr)]">
         <div className="bg-brand-deep px-4 py-5 text-brand-deep-foreground">
-          {rows.length > 0 && (
-            <ul className="space-y-3">
+          <p className="text-[11px] font-bold tracking-[0.16em] text-white/55 uppercase">Schedule</p>
+          <span aria-hidden className="mt-2 block h-0.5 w-8 rounded-full bg-accent" />
+          {rows.length > 0 ? (
+            <ul className="mt-4 space-y-3">
               {rows.map((row) => {
                 const next = row.days === nextIn;
                 return (
@@ -136,58 +148,82 @@ export function RegistrationCard({ registration: r, competition: c, result, stat
                 );
               })}
             </ul>
+          ) : (
+            <p className="mt-4 text-sm text-brand-deep-muted">Dates coming soon.</p>
           )}
         </div>
 
-        <div className="flex min-w-0 flex-col">
-          <div className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5">
-            <Link href={`/competitions/${r.competitionSlug}`} className="font-heading text-xl font-extrabold tracking-tight text-foreground hover:text-accent">
-              {r.competitionTitle}
-            </Link>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Badge tone={statusTone[status]}>{displayStatusLabels[status]}</Badge>
-              {payment ? <Badge tone={paymentTone[payment] ?? "neutral"}>{paymentStatusLabels[payment]}</Badge> : null}
+        <div className="relative flex min-w-0 flex-col overflow-hidden">
+          {imageSrc ? (
+            <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-full overflow-hidden md:w-1/2">
+              {/* eslint-disable-next-line @next/next/no-img-element -- public Supabase Storage URL */}
+              <img
+                src={imageSrc}
+                alt=""
+                loading="lazy"
+                className="h-full w-full origin-right object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.04]"
+              />
+              {/* Mobile: lighter wash so the photo reads. Desktop: merge into white on the left, clearer image on the right. */}
+              <div className="absolute inset-0 bg-white/80 md:bg-gradient-to-r md:from-white md:via-white/55 md:to-transparent" />
             </div>
-          </div>
-          {entrants && entrants.length > 0 ? (
-            <div className="mt-3 px-5">
-              <table className="w-full table-fixed border-collapse text-left text-sm">
-                <thead>
-                  <tr className="text-xs font-semibold tracking-wide text-muted uppercase">
-                    <th className="w-[30%] pb-2 pr-3 font-semibold">Student</th>
-                    <th className="w-[16%] pb-2 pr-3 font-semibold">Entry</th>
-                    <th className="w-[36%] pb-2 pr-3 font-semibold">Registration number</th>
-                    <th className="w-[18%] pb-2 font-semibold">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {entrants.map((entrant) => (
-                    <tr key={`${entrant.registrationNumber}-${entrant.name}`} className="border-t border-border">
-                      <td className="py-2 pr-3 font-medium break-words text-foreground">{entrant.name}</td>
-                      <td className="py-2 pr-3 capitalize break-words text-muted">{entrant.entryType}</td>
-                      <td className="py-2 pr-3 font-mono text-xs break-all text-foreground">{entrant.registrationNumber}</td>
-                      <td className="py-2 break-words text-muted">{entrant.standing === "registered" ? "Registered" : "Applied"}</td>
+          ) : null}
+          <div className="relative flex min-h-0 flex-1 flex-col">
+            <div className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5">
+              <div className="min-w-0">
+                <p className={dashboardCardEyebrowClass}>Competition</p>
+                <span aria-hidden className={dashboardCardRuleClass} />
+                <Link
+                  href={`/competitions/${r.competitionSlug}`}
+                  className={`mt-3 block ${dashboardCardTitleClass} hover:text-accent`}
+                >
+                  {r.competitionTitle}
+                </Link>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Badge tone={statusTone[status]}>{displayStatusLabels[status]}</Badge>
+                {payment ? <Badge tone={paymentTone[payment] ?? "neutral"}>{paymentStatusLabels[payment]}</Badge> : null}
+              </div>
+            </div>
+            {entrants && entrants.length > 0 ? (
+              <div className="mt-3 px-5">
+                <table className="w-full table-fixed border-collapse text-left text-sm">
+                  <thead>
+                    <tr className="text-xs font-semibold tracking-wide text-muted uppercase">
+                      <th className="w-[30%] pb-2 pr-3 font-semibold">Student</th>
+                      <th className="w-[16%] pb-2 pr-3 font-semibold">Entry</th>
+                      <th className="w-[36%] pb-2 pr-3 font-semibold">Registration number</th>
+                      <th className="w-[18%] pb-2 font-semibold">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="px-5">
-              <p className="mt-1 text-sm text-muted">
-                {r.entrantName} <span className="capitalize">({r.entryType})</span>
-                <span className="mx-1.5 text-border">·</span>
-                <span className="font-mono text-xs">{r.registrationNumber}</span>
-              </p>
-              {r.entryType === "team" && r.teamMembers && r.teamMembers.length > 0 && (
-                <p className="mt-1 text-xs text-muted">Team: {r.teamMembers.join(", ")}</p>
-              )}
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {entrants.map((entrant) => (
+                      <tr key={`${entrant.registrationNumber}-${entrant.name}`} className="border-t border-border">
+                        <td className="py-2 pr-3 font-medium break-words text-foreground">{entrant.name}</td>
+                        <td className="py-2 pr-3 capitalize break-words text-muted">{entrant.entryType}</td>
+                        <td className="py-2 pr-3 font-mono text-xs break-all text-foreground">{entrant.registrationNumber}</td>
+                        <td className="py-2 break-words text-muted">{entrant.standing === "registered" ? "Registered" : "Applied"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="px-5">
+                <p className="mt-1 text-sm text-muted">
+                  {r.entrantName} <span className="capitalize">({r.entryType})</span>
+                  <span className="mx-1.5 text-border">·</span>
+                  <span className="font-mono text-xs">{r.registrationNumber}</span>
+                </p>
+                {r.entryType === "team" && r.teamMembers && r.teamMembers.length > 0 && (
+                  <p className="mt-1 text-xs text-muted">Team: {r.teamMembers.join(", ")}</p>
+                )}
+              </div>
+            )}
 
-          <div className="mt-auto space-y-3 px-5 pt-4 pb-5">
-            <ResourceLinks slug={r.competitionSlug} />
-            <ResultLine result={result} />
+            <div className="mt-auto space-y-3 px-5 pt-4 pb-5">
+              <ResourceLinks slug={r.competitionSlug} />
+              <ResultLine result={result} />
+            </div>
           </div>
         </div>
       </div>

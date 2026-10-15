@@ -50,7 +50,7 @@ export function SchoolProfileCard({
           </div>
           <button
             onClick={() => setOpen(true)}
-            className="cursor-pointer rounded-full bg-accent px-3 py-1.5 text-sm font-medium text-accent-foreground hover:opacity-90"
+            className="cursor-pointer rounded-full bg-accent px-3 py-1.5 text-sm font-medium text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
           >
             Edit profile
           </button>
@@ -129,7 +129,7 @@ export function SchoolProfileCard({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-60"
+            className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-60"
           >
             {pending ? "Saving…" : "Save changes"}
           </button>

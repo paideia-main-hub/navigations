@@ -33,7 +33,7 @@ export function AddTeamButton({
   onStudentAdded,
   onAdded,
   label = "+ Add team",
-  buttonClassName = "cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90",
+  buttonClassName = "cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white",
 }: {
   roster: StudentProfile[];
   eligibility: CompetitionSummary["eligibility"];
@@ -194,7 +194,7 @@ export function AddTeamButton({
                     type="button"
                     onClick={save}
                     disabled={pending || !name.trim() || !eligibleSelection || memberIds.length < min || memberIds.length > max}
-                    className="cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {pending ? "Adding…" : "Add team"}
                   </button>

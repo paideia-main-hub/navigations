@@ -306,7 +306,7 @@ export function LeagueSpotlight({
                 ref={closeRef}
                 type="button"
                 onClick={() => setShowNominationsClosed(false)}
-                className="rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-accent-foreground hover:opacity-90"
+                className="rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
               >
                 Got it
               </button>

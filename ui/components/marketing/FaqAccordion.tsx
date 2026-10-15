@@ -143,7 +143,7 @@ export function FaqAccordion({
             className={
               isSchools
                 ? "mt-4 inline-flex rounded-full bg-brand-deep px-4 py-2.5 text-sm font-semibold text-brand-deep-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                : "mt-4 inline-flex rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
+                : "mt-4 inline-flex rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
             }
           >
             {stuckLabel}

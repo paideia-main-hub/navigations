@@ -7,6 +7,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { HeaderAccountMenu } from "@/ui/components/HeaderAccountMenu";
 import { AnnouncementBell } from "@/ui/components/AnnouncementBell";
 import { EntryListHeaderButton } from "@/ui/components/registration/SchoolHamperList";
+import { StudentHamperHeaderButton } from "@/ui/components/registration/StudentHamperList";
 import { useLoginModal } from "@/ui/components/LoginModalContext";
 import type { UserRole } from "@/domain/auth/session";
 import type { HeaderNotice } from "@/domain/announcements/types";
@@ -57,6 +58,7 @@ export function Header({ user = null }: { user?: HeaderUser | null }) {
               <AnnouncementBell userId={user.id} notices={user.notices} />
             ) : null}
             {user?.role === "school_coordinator" ? <EntryListHeaderButton /> : null}
+            {user?.role === "student" ? <StudentHamperHeaderButton /> : null}
             {user ? (
               <HeaderAccountMenu
                 fullName={user.fullName}
@@ -79,7 +81,7 @@ export function Header({ user = null }: { user?: HeaderUser | null }) {
                 </button>
                 <Link
                   href="/register"
-                  className="rounded-full bg-accent px-3 py-2 text-xs font-semibold whitespace-nowrap text-accent-foreground hover:bg-accent/90 sm:px-4 sm:text-sm"
+                  className="rounded-full bg-accent px-3 py-2 text-xs font-semibold whitespace-nowrap text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white sm:px-4 sm:text-sm"
                 >
                   Register Now
                 </Link>

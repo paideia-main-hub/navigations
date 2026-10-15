@@ -76,7 +76,7 @@ export default async function AwardCategoryPage({ params }: { params: Promise<{ 
         </div>
 
         <div className="mt-6">
-          <Link href={`/dashboard/nominate/${category.slug}`} className="inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90">
+          <Link href={`/dashboard/nominate/${category.slug}`} className="inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white">
             Start a Nomination
           </Link>
           <p className="mt-2 text-xs text-muted">Sign in to submit — you&apos;ll be asked to log in first if you aren&apos;t already.</p>

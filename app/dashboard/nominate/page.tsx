@@ -59,7 +59,7 @@ export default async function NominateCategoryPickerPage() {
           </p>
           <Link
             href="/awards"
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-foreground hover:opacity-90"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
           >
             Browse awards
             <span aria-hidden="true">→</span>

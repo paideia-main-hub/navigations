@@ -224,7 +224,7 @@ export function EditSchoolEntry({
         type="button"
         onClick={save}
         disabled={pending || !teamReady || !individualReady}
-        className="cursor-pointer rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        className="cursor-pointer rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
         {pending ? "Saving…" : "Save changes"}
       </button>

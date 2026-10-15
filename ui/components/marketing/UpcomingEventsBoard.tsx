@@ -296,7 +296,7 @@ export function UpcomingEventsBoard({ dates }: { dates: UpcomingDate[] }) {
               </p>
               <Link
                 href="/calendar"
-                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-accent-foreground transition-colors hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:outline-none"
+                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:outline-none"
               >
                 View Competition Calendar
                 <span aria-hidden="true">→</span>

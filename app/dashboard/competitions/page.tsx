@@ -9,6 +9,7 @@ import { registrationListStatus, type Registration } from "@/domain/registration
 import { getPublishedResultsFor } from "@/domain/results/service";
 import { listCompetitions } from "@/domain/competitions/service";
 import { RegistrationCard, type CardEntrant } from "@/ui/components/dashboard/RegistrationCard";
+import { MyCompetitionsPanel } from "@/ui/components/dashboard/MyCompetitionsPanel";
 import { DashboardHero, dashboardHeroCtaClass } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
@@ -83,29 +84,21 @@ export default async function MyCompetitionsPage() {
         }
       />
       <DashboardPage>
-      <div className="mt-6 flex justify-end">
-        <Link href="/dashboard/register" prefetch className={dashboardHeroCtaClass}>
-          {hasRegistration ? "Register for more competitions" : "Register for competitions"}
-        </Link>
-      </div>
-      <div className="mt-4 space-y-4">
-        {registrations.map((r) => (
-          <RegistrationCard
-            key={r.id}
-            registration={r}
-            competition={competitionsBySlug.get(r.competitionSlug)}
-            result={results.get(r.id)}
-            status={deriveDisplayStatus(r, competitionsBySlug.get(r.competitionSlug))}
-          />
-        ))}
-        {registrations.length === 0 && (
-          <div className="rounded-xl border border-border bg-surface p-8 text-center text-muted">
-            {allRegistrations.length === 0
+        <MyCompetitionsPanel
+          registerLabel={hasRegistration ? "Register for more competitions" : "Register for competitions"}
+          emptyMessage={
+            allRegistrations.length === 0
               ? "You haven't registered for any competitions yet."
-              : "Nothing active right now — check History & Results for past competitions."}
-          </div>
-        )}
-      </div>
+              : "Nothing active right now — check History & Results for past competitions."
+          }
+          items={registrations.map((r) => ({
+            key: r.id,
+            registration: r,
+            competition: competitionsBySlug.get(r.competitionSlug),
+            result: results.get(r.id),
+            status: deriveDisplayStatus(r, competitionsBySlug.get(r.competitionSlug)),
+          }))}
+        />
       </DashboardPage>
     </>
   );

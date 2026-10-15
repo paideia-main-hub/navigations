@@ -3,6 +3,7 @@ import type { School, SchoolProfileInput } from "@/domain/schools/types";
 
 type Row = {
   id: string;
+  frl_id?: string | null;
   official_name: string;
   campus_branch: string | null;
   school_type: string | null;
@@ -17,6 +18,7 @@ type Row = {
 function toSchool(row: Row): School {
   return {
     id: row.id,
+    frlId: row.frl_id ?? null,
     officialName: row.official_name,
     campusBranch: row.campus_branch,
     schoolType: row.school_type,

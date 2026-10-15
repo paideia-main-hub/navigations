@@ -27,7 +27,7 @@ export function CreateTeamForm({ roster }: { roster: StudentProfile[] }) {
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="shrink-0 cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90"
+        className="shrink-0 cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
       >
         + Create team
       </button>
@@ -79,7 +79,7 @@ export function CreateTeamForm({ roster }: { roster: StudentProfile[] }) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-60"
+          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-60"
         >
           {pending ? "Creating…" : "Create team"}
         </button>

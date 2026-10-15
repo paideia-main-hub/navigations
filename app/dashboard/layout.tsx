@@ -12,6 +12,7 @@ import { Footer } from "@/ui/components/Footer";
 import { LoginModalProvider } from "@/ui/components/LoginModalContext";
 import { DashboardShell } from "@/ui/components/dashboard/DashboardShell";
 import { SchoolEntryListProvider } from "@/ui/components/registration/SchoolHamperList";
+import { StudentHamperProvider } from "@/ui/components/registration/StudentHamperList";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
@@ -56,7 +57,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       role={user.role}
       fullName={user.fullName}
       photoUrl={photoUrl}
-      frlId={student?.frlId ?? null}
+      frlId={student?.frlId ?? school?.frlId ?? null}
       subtitle={schoolName}
     >
       {children}
@@ -71,9 +72,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
     </>
   );
 
-  return (
-    <LoginModalProvider>
-      {isCoordinator ? <SchoolEntryListProvider storageKey={school?.id ?? user.id}>{frame}</SchoolEntryListProvider> : frame}
-    </LoginModalProvider>
-  );
+  const withHamper =
+    isCoordinator ? (
+      <SchoolEntryListProvider storageKey={school?.id ?? user.id}>{frame}</SchoolEntryListProvider>
+    ) : user.role === "student" ? (
+      <StudentHamperProvider storageKey={student?.frlId ?? user.id}>{frame}</StudentHamperProvider>
+    ) : (
+      frame
+    );
+
+  return <LoginModalProvider>{withHamper}</LoginModalProvider>;
 }

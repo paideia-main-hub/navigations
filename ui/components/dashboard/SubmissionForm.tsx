@@ -21,9 +21,9 @@ import { SelectField } from "@/ui/components/SelectField";
 import { UploadProgress } from "@/ui/components/UploadProgress";
 
 const control =
-  "mt-1 h-[38px] w-full rounded-md border border-border bg-background px-2 text-sm leading-[38px] text-foreground outline-none focus:border-accent disabled:opacity-70";
+  "mt-1.5 h-[38px] w-full rounded-lg border border-accent/25 bg-background px-3 text-sm leading-[38px] text-foreground outline-none transition-colors focus:border-accent disabled:opacity-70";
 const area =
-  "mt-1 min-h-20 w-full resize-y rounded-md border border-border bg-background px-2 py-2 text-sm leading-5 text-foreground outline-none focus:border-accent disabled:opacity-70";
+  "mt-1.5 min-h-24 w-full resize-y rounded-lg border border-accent/25 bg-background px-3 py-2.5 text-sm leading-5 text-foreground outline-none transition-colors focus:border-accent disabled:opacity-70";
 
 /** Uploads with the signed token only, so a missing browser session cannot
  * reject the file before it is stored. */
@@ -39,7 +39,7 @@ function formatSize(bytes: number): string {
 
 function FieldLabel({ children, required }: { children: string; required?: boolean }) {
   return (
-    <span className="text-xs font-semibold tracking-wide text-foreground">
+    <span className="text-[0.7rem] font-semibold tracking-[0.08em] text-muted uppercase">
       {children}
       {required ? <RequiredMark /> : null}
     </span>
@@ -67,11 +67,14 @@ export function SubmissionForm({
   registrationNumber,
   config,
   initial,
+  onComplete,
 }: {
   registrationId: string;
   registrationNumber: string;
   config: SubmissionCompetition;
   initial: WorkSubmission | null;
+  /** Called after a successful submit (not draft), e.g. to close a modal. */
+  onComplete?: () => void;
 }) {
   const router = useRouter();
   const [answers, setAnswers] = useState<Record<string, string>>(initial?.answers ?? {});
@@ -177,26 +180,35 @@ export function SubmissionForm({
         : "Draft saved.",
     });
     router.refresh();
+    if (submit && onComplete) window.setTimeout(onComplete, 1400);
   }
 
   if (locked && initial) {
     return (
       <div className="space-y-4">
-        <div className="rounded-xl border border-emerald-300 bg-surface px-4 py-3 dark:border-emerald-800">
-          <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">{submissionStatusLabels.scored}</p>
-          <p className="mt-1 text-2xl font-black text-foreground">
+        <div className="rounded-2xl border border-emerald-300/60 bg-emerald-50/80 px-5 py-4 shadow-sm dark:border-emerald-800 dark:bg-emerald-500/10">
+          <p className="text-[0.65rem] font-bold tracking-[0.14em] text-emerald-700 uppercase dark:text-emerald-400">
+            {submissionStatusLabels.scored}
+          </p>
+          <p className="mt-2 text-3xl font-extrabold tracking-tight text-foreground">
             {initial.totalScore} <span className="text-base font-semibold text-muted">/ {initial.maxScore}</span>
           </p>
-          {initial.feedback && <p className="mt-2 text-sm whitespace-pre-line text-foreground">{initial.feedback}</p>}
+          {initial.feedback ? (
+            <p className="mt-3 text-sm leading-relaxed whitespace-pre-line text-foreground">{initial.feedback}</p>
+          ) : null}
         </div>
-        <div className="overflow-hidden rounded-xl border border-border bg-surface">
+        <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
           {config.rubric.map((group, gi) => (
             <div key={gi}>
-              {group.title && <p className="bg-surface-muted px-3 py-1.5 text-xs font-semibold text-muted">{group.title}</p>}
+              {group.title ? (
+                <p className="bg-accent-soft/60 px-4 py-2 text-[0.65rem] font-bold tracking-[0.12em] text-accent-strong uppercase">
+                  {group.title}
+                </p>
+              ) : null}
               {group.criteria.map((c) => (
-                <div key={c.key} className="flex justify-between border-t border-border px-3 py-1.5 text-sm">
+                <div key={c.key} className="flex justify-between gap-3 border-t border-border px-4 py-2.5 text-sm">
                   <span className="text-foreground">{c.label}</span>
-                  <span className="font-semibold text-foreground">
+                  <span className="shrink-0 font-semibold text-foreground">
                     {initial.scores[c.key] ?? "—"} / {c.max}
                   </span>
                 </div>
@@ -211,10 +223,10 @@ export function SubmissionForm({
   const visible = config.fields.filter((f) => isFieldVisible(f, answers));
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-surface">
+    <div className="overflow-hidden rounded-2xl border border-accent/30 bg-surface shadow-sm">
       {status ? (
         <p
-          className={`border-b border-border px-4 py-2 text-xs font-medium ${
+          className={`border-b border-border px-5 py-2.5 text-xs font-semibold ${
             status === "submitted"
               ? "bg-sky-50 text-sky-800 dark:bg-sky-500/10 dark:text-sky-300"
               : "bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300"
@@ -225,17 +237,21 @@ export function SubmissionForm({
         </p>
       ) : null}
       {status === "submitted" && Object.keys(files).length > 0 ? (
-        <p className="border-b border-border px-4 py-2 text-xs text-muted">
+        <p className="border-b border-border px-5 py-2.5 text-xs text-muted">
           Files received: {Object.values(files).map((file) => file.name).join(", ")}
         </p>
       ) : null}
 
-      <div className="grid gap-x-4 gap-y-3 p-4 sm:grid-cols-2">
+      <div className="grid gap-x-4 gap-y-4 p-5 sm:grid-cols-2">
         {visible.map((field) => {
           const value = answers[field.id] ?? "";
           const required = "required" in field && field.required;
           const help = "help" in field && field.help ? <p className="mt-1 text-[11px] leading-4 text-muted">{field.help}</p> : null;
-          const wide = field.kind === "textarea" || field.kind === "file" || field.kind === "declaration" || field.kind === "url";
+          const wide =
+            field.kind === "textarea" ||
+            field.kind === "declaration" ||
+            field.kind === "url" ||
+            field.id === "ai_use";
 
           switch (field.kind) {
             case "text":
@@ -256,7 +272,7 @@ export function SubmissionForm({
               );
             case "select":
               return (
-                <div key={field.id} className="block">
+                <div key={field.id} className={wide ? "block sm:col-span-2" : "block"}>
                   <FieldLabel required={required}>{field.label}</FieldLabel>
                   <SelectField
                     name={field.id}
@@ -302,7 +318,7 @@ export function SubmissionForm({
                 <div key={field.id} className={wide ? "sm:col-span-2" : ""}>
                   <FieldLabel required={required}>{field.label}</FieldLabel>
                   {help}
-                  <div className="mt-1 flex h-[38px] items-center gap-2 rounded-md border border-dashed border-border bg-background px-2">
+                  <div className="mt-1.5 flex min-h-[42px] items-center gap-2 rounded-lg border border-dashed border-accent/35 bg-background px-3 py-1.5">
                     {shown ? (
                       <>
                         <span className="min-w-0 truncate text-sm text-foreground">{shown.name}</span>
@@ -311,7 +327,7 @@ export function SubmissionForm({
                           <button
                             type="button"
                             onClick={() => setFiles((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== field.id)))}
-                            className="ml-auto shrink-0 cursor-pointer text-[11px] font-semibold text-red-600 hover:underline dark:text-red-400"
+                            className="ml-auto shrink-0 cursor-pointer rounded-full border border-accent bg-white px-3 py-1 text-[11px] font-semibold text-accent-strong shadow-sm transition-colors duration-300 hover:bg-accent hover:text-white"
                           >
                             Remove
                           </button>
@@ -319,7 +335,7 @@ export function SubmissionForm({
                       </>
                     ) : (
                       <>
-                        <label className="inline-flex h-6 cursor-pointer items-center rounded-md bg-accent-soft px-2 text-xs font-semibold text-accent-strong hover:opacity-90">
+                        <label className="inline-flex h-7 cursor-pointer items-center rounded-full bg-accent-soft px-3 text-xs font-semibold text-accent-strong transition-colors duration-300 hover:bg-accent hover:text-white">
                           Choose file
                           <input
                             type="file"
@@ -348,8 +364,16 @@ export function SubmissionForm({
             }
             case "declaration":
               return (
-                <label key={field.id} className="flex items-start gap-2 rounded-md border border-border bg-background px-2 py-2.5 text-xs leading-5 text-foreground sm:col-span-2">
-                  <input type="checkbox" checked={value === "yes"} onChange={(e) => set(field.id, e.target.checked ? "yes" : "")} className="mt-0.5" />
+                <label
+                  key={field.id}
+                  className="flex items-start gap-3 rounded-xl border border-accent/25 bg-background px-3 py-3 text-sm leading-5 text-foreground sm:col-span-2"
+                >
+                  <input
+                    type="checkbox"
+                    checked={value === "yes"}
+                    onChange={(e) => set(field.id, e.target.checked ? "yes" : "")}
+                    className="mt-0.5"
+                  />
                   {field.label}
                 </label>
               );
@@ -358,7 +382,7 @@ export function SubmissionForm({
       </div>
 
       {problems.length > 0 ? (
-        <div className="border-t border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+        <div className="border-t border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
           <p className="font-semibold">Before you can submit:</p>
           <ul className="mt-1 list-disc pl-5 text-xs">
             {problems.map((p) => (
@@ -369,7 +393,7 @@ export function SubmissionForm({
       ) : null}
       {message ? (
         <p
-          className={`border-t border-border px-4 py-2 text-sm ${
+          className={`border-t border-border px-5 py-3 text-sm ${
             message.tone === "ok" ? "text-emerald-700 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
           }`}
         >
@@ -378,17 +402,17 @@ export function SubmissionForm({
       ) : null}
 
       {transfer && saving ? (
-        <div className="border-t border-border px-4 py-3">
+        <div className="border-t border-border px-5 py-3">
           <UploadProgress phase={transfer.phase} percent={transfer.percent} />
         </div>
       ) : null}
 
-      <div className="flex flex-wrap gap-2 border-t border-border px-4 py-3">
+      <div className="flex flex-wrap gap-2 border-t border-border bg-accent-soft/30 px-5 py-4">
         <button
           type="button"
           onClick={() => save(false)}
           disabled={saving !== null || uploading !== null}
-          className="form-action rounded-full border border-border px-4 text-sm font-semibold text-foreground hover:border-accent disabled:opacity-50"
+          className="form-action cursor-pointer rounded-full border border-accent/40 bg-white px-5 py-2 text-sm font-semibold text-foreground transition-colors duration-300 hover:border-accent hover:bg-accent-soft disabled:opacity-50"
         >
           {saving === "draft" ? "Saving…" : "Save draft"}
         </button>
@@ -396,7 +420,7 @@ export function SubmissionForm({
           type="button"
           onClick={() => save(true)}
           disabled={saving !== null || uploading !== null}
-          className="form-action rounded-full bg-accent px-4 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
+          className="form-action cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-50"
         >
           {saving === "submit" ? "Submitting…" : status === "submitted" ? "Update submission" : "Submit entry"}
         </button>

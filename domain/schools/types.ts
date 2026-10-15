@@ -12,6 +12,8 @@ export function isSchoolType(value: string): value is SchoolType {
 
 export interface School {
   id: string;
+  /** Future Ready League school ID (e.g. FRL-S-2026-00001). */
+  frlId: string | null;
   officialName: string;
   campusBranch: string | null;
   schoolType: string | null;

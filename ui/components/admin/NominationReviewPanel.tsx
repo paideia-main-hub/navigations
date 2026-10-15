@@ -26,7 +26,7 @@ function ActionButton({
   const [state, formAction, pending] = useActionState(action, initialState);
   const classes =
     tone === "accent"
-      ? "bg-accent text-accent-foreground hover:opacity-90"
+      ? "bg-accent text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
       : tone === "danger"
         ? "border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
         : "border border-border text-foreground hover:border-accent";

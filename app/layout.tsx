@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { geistMono, geistSans, plusJakarta } from "@/app/fonts";
 import { GoogleAnalytics } from "@/ui/components/GoogleAnalytics";
 import { OverlayScrollbar } from "@/ui/components/OverlayScrollbar";
+import { WhatsAppFloat } from "@/ui/components/WhatsAppFloat";
 import { ThemeInitScript } from "@/ui/theme/ThemeInitScript";
 import "./globals.css";
 
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body suppressHydrationWarning className="flex min-h-full flex-col bg-background text-foreground">
         {children}
+        <WhatsAppFloat />
         <GoogleAnalytics />
         <OverlayScrollbar />
       </body>

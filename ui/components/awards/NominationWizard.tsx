@@ -53,7 +53,7 @@ export function NominationWizard({
           Your nomination number is <span className="font-semibold text-foreground">{state.nominationNumber}</span>. Track
           its status from your dashboard.
         </p>
-        <Link href="/dashboard" className="inline-block rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90">
+        <Link href="/dashboard" className="inline-block rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white">
           Go to dashboard
         </Link>
       </div>
@@ -233,7 +233,7 @@ export function NominationWizard({
       <button
         type="submit"
         disabled={pending || !consentComplete}
-        className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
+        className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-50"
       >
         {pending ? "Submitting…" : "Submit nomination"}
       </button>

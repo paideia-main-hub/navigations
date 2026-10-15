@@ -57,14 +57,53 @@ export interface SubmittableRegistration {
  * competitions that already have a form stay available. */
 export async function listOnlineSubmissionCompetitions(
   supabase: SupabaseClient,
-): Promise<{ slug: string; pathway: CompetitionPathway | null }[]> {
-  const { data, error } = await supabase.from("competitions").select("slug, pathway, has_online_submission");
+): Promise<{ slug: string; pathway: CompetitionPathway | null; imageUrl: string | null }[]> {
+  const { data, error } = await supabase.from("competitions").select("slug, pathway, image_url, has_online_submission");
   if (error || !data) {
-    return SUBMISSION_SLUGS.map((slug) => ({ slug, pathway: "independent_submission" as const }));
+    return SUBMISSION_SLUGS.map((slug) => ({ slug, pathway: "independent_submission" as const, imageUrl: null }));
   }
-  return (data as { slug: string; pathway: CompetitionPathway | null; has_online_submission: boolean | null }[])
+  return (
+    data as {
+      slug: string;
+      pathway: CompetitionPathway | null;
+      image_url: string | null;
+      has_online_submission: boolean | null;
+    }[]
+  )
     .filter((row) => effectiveHasOnlineSubmission(row.pathway, Boolean(row.has_online_submission)))
-    .map((row) => ({ slug: row.slug, pathway: row.pathway }));
+    .map((row) => ({ slug: row.slug, pathway: row.pathway, imageUrl: row.image_url }));
+}
+
+const SUBMITTABLE_SELECT =
+  "id, registration_number, competition_slug, competition_title, entry_type, category, status, students(full_name, grade, school_name_input), teams(team_name, team_members(students(full_name))), schools(official_name)";
+
+type SubmittableRow = {
+  id: string;
+  registration_number: string;
+  competition_slug: string;
+  competition_title: string;
+  entry_type: "individual" | "team";
+  category: string | null;
+  students: { full_name: string; grade: string | null; school_name_input: string | null } | null;
+  teams: { team_name: string; team_members: { students: { full_name: string } | null }[] } | null;
+  schools: { official_name: string } | null;
+};
+
+function toSubmittableRegistration(r: SubmittableRow): SubmittableRegistration {
+  return {
+    registrationId: r.id,
+    registrationNumber: r.registration_number,
+    competitionSlug: r.competition_slug,
+    competitionTitle: r.competition_title,
+    entryType: r.entry_type,
+    entrantName: r.entry_type === "team" ? (r.teams?.team_name ?? "Team") : (r.students?.full_name ?? ""),
+    schoolName: r.schools?.official_name ?? r.students?.school_name_input ?? null,
+    grade: r.students?.grade ?? null,
+    category: r.category,
+    teamMembers: (r.teams?.team_members ?? [])
+      .map((member) => member.students?.full_name ?? "")
+      .filter((name) => name.length > 0),
+  };
 }
 
 /** The student's own registrations in the given competitions — ones they made
@@ -81,40 +120,31 @@ export async function listOwnRegistrationsIn(
   const owner = studentId ? `registered_by.eq.${profileId},student_id.eq.${studentId}` : `registered_by.eq.${profileId}`;
   const { data, error } = await supabase
     .from("registrations")
-    .select(
-      "id, registration_number, competition_slug, competition_title, entry_type, category, status, students(full_name, grade, school_name_input), teams(team_name, team_members(students(full_name))), schools(official_name)",
-    )
+    .select(SUBMITTABLE_SELECT)
     .in("competition_slug", slugs)
     .neq("status", "rejected")
     .or(owner)
     .order("submitted_at", { ascending: false });
   if (error || !data) return [];
-  return (
-    data as unknown as {
-      id: string;
-      registration_number: string;
-      competition_slug: string;
-      competition_title: string;
-      entry_type: "individual" | "team";
-      category: string | null;
-      students: { full_name: string; grade: string | null; school_name_input: string | null } | null;
-      teams: { team_name: string; team_members: { students: { full_name: string } | null }[] } | null;
-      schools: { official_name: string } | null;
-    }[]
-  ).map((r) => ({
-    registrationId: r.id,
-    registrationNumber: r.registration_number,
-    competitionSlug: r.competition_slug,
-    competitionTitle: r.competition_title,
-    entryType: r.entry_type,
-    entrantName: r.entry_type === "team" ? (r.teams?.team_name ?? "Team") : (r.students?.full_name ?? ""),
-    schoolName: r.schools?.official_name ?? r.students?.school_name_input ?? null,
-    grade: r.students?.grade ?? null,
-    category: r.category,
-    teamMembers: (r.teams?.team_members ?? [])
-      .map((member) => member.students?.full_name ?? "")
-      .filter((name) => name.length > 0),
-  }));
+  return (data as unknown as SubmittableRow[]).map(toSubmittableRegistration);
+}
+
+/** School registrations in competitions that take online work submissions. */
+export async function listSchoolRegistrationsIn(
+  supabase: SupabaseClient,
+  schoolId: string,
+  slugs: string[],
+): Promise<SubmittableRegistration[]> {
+  if (slugs.length === 0) return [];
+  const { data, error } = await supabase
+    .from("registrations")
+    .select(SUBMITTABLE_SELECT)
+    .eq("school_id", schoolId)
+    .in("competition_slug", slugs)
+    .neq("status", "rejected")
+    .order("submitted_at", { ascending: false });
+  if (error || !data) return [];
+  return (data as unknown as SubmittableRow[]).map(toSubmittableRegistration);
 }
 
 export async function listSubmissionsForRegistrations(supabase: SupabaseClient, registrationIds: string[]): Promise<WorkSubmission[]> {

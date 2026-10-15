@@ -204,7 +204,7 @@ export function StepForm({
           <button
             type="submit"
             disabled={pending}
-            className="flex-1 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-60"
+            className="flex-1 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-60"
           >
             {pending ? pendingLabel : submitLabel}
           </button>
@@ -212,7 +212,7 @@ export function StepForm({
           <button
             type="button"
             onClick={next}
-            className="flex-1 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90"
+            className="flex-1 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
           >
             Next
           </button>

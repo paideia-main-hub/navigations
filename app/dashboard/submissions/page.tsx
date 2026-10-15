@@ -1,32 +1,51 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
+import { categoryLabels, type AgeCategory } from "@/domain/competitions/types";
+import { getCoordinatorSchool } from "@/domain/schools/service";
 import { getOwnStudentProfile } from "@/domain/students/service";
-import { listOnlineSubmissionCompetitions, listOwnRegistrationsIn, listSubmissionsForRegistrations } from "@/data/repositories/submissions.repository";
-import { pathwayLabels, type CompetitionPathway } from "@/domain/competitions/types";
-import { submissionConfigFor, submissionStatusLabels } from "@/domain/submissions/config";
+import {
+  listOnlineSubmissionCompetitions,
+  listOwnRegistrationsIn,
+  listSchoolRegistrationsIn,
+  listSubmissionsForRegistrations,
+} from "@/data/repositories/submissions.repository";
+import { submissionConfigFor } from "@/domain/submissions/config";
 import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
+import { WorkSubmissionsPanel } from "@/ui/components/dashboard/WorkSubmissionsPanel";
 
-export default async function WorkSubmissionsPage() {
+export default async function WorkSubmissionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ open?: string }>;
+}) {
   const user = await getCurrentUser();
   if (!user) return null;
-  if (user.role !== "student") redirect("/dashboard");
+  if (user.role !== "student" && user.role !== "school_coordinator") redirect("/dashboard");
+  const { open: initialOpenId = null } = await searchParams;
 
   const supabase = await createClient();
-  const [student, online] = await Promise.all([
-    getOwnStudentProfile(supabase, user.id),
-    listOnlineSubmissionCompetitions(supabase),
-  ]);
-  const pathwayBySlug = new Map(online.map((competition) => [competition.slug, competition.pathway]));
-  const registrations = await listOwnRegistrationsIn(
+  const online = await listOnlineSubmissionCompetitions(supabase);
+  const onlineBySlug = new Map(online.map((competition) => [competition.slug, competition]));
+  const slugs = online.map((competition) => competition.slug);
+
+  const registrations =
+    user.role === "school_coordinator"
+      ? await (async () => {
+          const school = await getCoordinatorSchool(supabase, user.id);
+          if (!school) return [];
+          return listSchoolRegistrationsIn(supabase, school.id, slugs);
+        })()
+      : await (async () => {
+          const student = await getOwnStudentProfile(supabase, user.id);
+          return listOwnRegistrationsIn(supabase, user.id, student?.id ?? null, slugs);
+        })();
+
+  const submissions = await listSubmissionsForRegistrations(
     supabase,
-    user.id,
-    student?.id ?? null,
-    online.map((competition) => competition.slug),
+    registrations.map((r) => r.registrationId),
   );
-  const submissions = await listSubmissionsForRegistrations(supabase, registrations.map((r) => r.registrationId));
   const byRegistration = new Map(submissions.map((s) => [s.registrationId, s]));
 
   return (
@@ -34,67 +53,48 @@ export default async function WorkSubmissionsPage() {
       <DashboardHero
         eyebrow="Competitions"
         title="Work Submissions"
-        subtitle="Hand in your work for competitions that accept online submission."
+        subtitle={
+          user.role === "school_coordinator"
+            ? "Track online work submissions for your school’s competition entries."
+            : "Hand in your work for competitions that accept online submission."
+        }
       />
       <DashboardPage>
-      {registrations.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-border bg-surface p-8 text-center">
-          <p className="text-muted">You aren&apos;t registered in a competition that is open for online submission yet.</p>
-          <Link href="/dashboard/competitions#register" prefetch className="mt-3 inline-block text-sm font-semibold text-accent">
-            Register from My Competitions →
-          </Link>
-        </div>
-      ) : (
-        <ul className="mt-6 flex flex-wrap justify-center gap-3">
-          {registrations.map((r) => {
-            const s = byRegistration.get(r.registrationId);
-            const status = s?.status ?? null;
-            const hasForm = Boolean(submissionConfigFor(r.competitionSlug));
-            const pathway = pathwayBySlug.get(r.competitionSlug);
-            return (
-              <li key={r.registrationId} className="flex w-full max-w-xs flex-col rounded-xl border border-border bg-surface p-4">
-                <p className="text-[0.65rem] font-semibold tracking-[0.14em] text-accent-strong uppercase">
-                  {pathwayLabel(pathway)}
-                </p>
-                <p className="mt-1 text-base font-bold text-foreground">{r.competitionTitle}</p>
-                <p className="text-xs text-muted">
-                  {r.registrationNumber}
-                  {r.entryType === "team" ? ` · Team ${r.entrantName}` : ""}
-                </p>
-                <p
-                  className={`mt-2 inline-flex w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                    status === "scored"
-                      ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
-                      : status === "submitted"
-                        ? "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300"
-                        : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
-                  }`}
-                >
-                  {status ? submissionStatusLabels[status] : "Not started"}
-                  {status === "scored" && s?.totalScore != null ? ` · ${s.totalScore}/${s.maxScore}` : ""}
-                </p>
-                <Link
-                  href={`/dashboard/submissions/${r.registrationId}`}
-                  prefetch
-                  className="mt-3 inline-flex h-8 w-fit items-center rounded-full bg-accent px-4 text-sm font-semibold text-accent-foreground hover:opacity-90"
-                >
-                  {hasForm && status === "scored"
-                    ? "View score & feedback"
-                    : hasForm && status === "submitted"
-                      ? "View / update submission"
-                      : "Open & submit work"}
-                </Link>
-              </li>
-            );
+        <WorkSubmissionsPanel
+          mode={user.role === "school_coordinator" ? "school" : "student"}
+          initialOpenId={initialOpenId}
+          emptyMessage={
+            user.role === "school_coordinator"
+              ? "No school entries are in a competition that accepts online submission yet."
+              : "You aren't registered in a competition that is open for online submission yet."
+          }
+          items={registrations.map((r) => {
+            const s = byRegistration.get(r.registrationId) ?? null;
+            const competition = onlineBySlug.get(r.competitionSlug);
+            const config = submissionConfigFor(r.competitionSlug);
+            return {
+              registrationId: r.registrationId,
+              competitionSlug: r.competitionSlug,
+              competitionTitle: r.competitionTitle,
+              registrationNumber: r.registrationNumber,
+              entryType: r.entryType,
+              entrantName: r.entrantName,
+              schoolName: r.schoolName,
+              grade: r.grade,
+              categoryLabel: r.category ? (categoryLabels[r.category as AgeCategory] ?? r.category) : null,
+              teamMembers: r.teamMembers,
+              pathway: competition?.pathway,
+              imageUrl: competition?.imageUrl,
+              status: s?.status ?? null,
+              totalScore: s?.totalScore ?? null,
+              maxScore: s?.maxScore ?? null,
+              hasForm: Boolean(config),
+              config,
+              initial: s,
+            };
           })}
-        </ul>
-      )}
+        />
       </DashboardPage>
     </>
   );
-}
-
-function pathwayLabel(pathway: CompetitionPathway | null | undefined): string {
-  if (pathway && pathway in pathwayLabels) return pathwayLabels[pathway];
-  return "Online submission";
 }

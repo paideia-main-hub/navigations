@@ -57,7 +57,7 @@ function ScheduleInterviewForm({ applicationId }: { applicationId: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-60 sm:col-span-4"
+        className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-60 sm:col-span-4"
       >
         {pending ? "Scheduling…" : "Schedule interview"}
       </button>
@@ -71,7 +71,7 @@ function ApproveButton({ applicationId }: { applicationId: string }) {
   return (
     <form action={formAction}>
       <input type="hidden" name="application_id" value={applicationId} />
-      <button type="submit" disabled={pending} className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-60">
+      <button type="submit" disabled={pending} className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-60">
         {pending ? "Approving…" : "Approve"}
       </button>
       {state.error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{state.error}</p>}

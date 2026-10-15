@@ -9,7 +9,6 @@ import { listSchoolTeams } from "@/domain/teams/service";
 import { listAssignments } from "@/domain/judging/service";
 import { listMyApplications } from "@/domain/judge-applications/service";
 import { listCompetitions } from "@/domain/competitions/service";
-import { listAllAnnouncements } from "@/domain/announcements/service";
 import { StatCard } from "@/ui/components/dashboard/StatCard";
 import { StudentProfileCard } from "@/ui/components/dashboard/StudentProfileCard";
 import { SchoolOverview } from "@/ui/components/dashboard/SchoolOverview";
@@ -94,11 +93,10 @@ export default async function DashboardOverviewPage() {
   }
 
   // Student
-  const [profile, registrations, allCompetitions, announcements] = await Promise.all([
+  const [profile, registrations, allCompetitions] = await Promise.all([
     getOwnStudentProfile(supabase, user.id),
     listMyRegistrations(supabase, user.id),
     listCompetitions(supabase),
-    listAllAnnouncements(supabase),
   ]);
   const competitionsBySlug = new Map(allCompetitions.map((c) => [c.slug, c]));
 
@@ -119,39 +117,53 @@ export default async function DashboardOverviewPage() {
         subtitle="Your competitions, submissions, nominations, and results."
       />
       <DashboardPage>
-        {profile && (
-          <div className="mt-6">
-            <StudentProfileCard fullName={user.fullName} profile={profile} />
-          </div>
-        )}
+        <div className="space-y-8">
+          {profile ? <StudentProfileCard fullName={user.fullName} profile={profile} /> : null}
 
-        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
-          <StatCard label="Registered" value={counts.registered} />
-          <StatCard label="Upcoming" value={counts.upcoming} />
-          <StatCard label="In Progress" value={counts.in_progress} />
-          <StatCard label="Qualified" value={counts.qualified} />
-          <StatCard label="Completed" value={counts.completed} />
-        </div>
-
-        <section className="mt-8 grid gap-4 sm:grid-cols-3">
-          <QuickLink href="/dashboard/competitions" icon="🏆" title="My Competitions" body="Deadlines, manuals and practice resources." />
-          <QuickLink href="/dashboard/history" icon="📜" title="History & Results" body="Concluded competitions and results." />
-          <QuickLink href="/dashboard/register" icon="➕" title="Register" body="Sign up for a new competition." />
-        </section>
-
-        {announcements.length > 0 && (
-          <section className="mt-8">
-            <h2 className="mb-3 text-lg font-semibold text-foreground">Latest Announcements</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {announcements.slice(0, 4).map((a) => (
-                <div key={a.id} className="rounded-xl border border-border bg-surface p-4">
-                  <p className="font-medium text-foreground">{a.title}</p>
-                  <p className="mt-1 line-clamp-2 text-sm text-muted">{a.body}</p>
-                </div>
-              ))}
+          <section>
+            <div className="mb-4 flex items-end justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-bold tracking-[0.16em] text-accent-strong uppercase">This season</p>
+                <h2 className="mt-1 text-lg font-extrabold tracking-tight text-foreground">Your competition status</h2>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+              <StatCard label="Registered" value={counts.registered} />
+              <StatCard label="Upcoming" value={counts.upcoming} />
+              <StatCard label="In Progress" value={counts.in_progress} />
+              <StatCard label="Qualified" value={counts.qualified} />
+              <StatCard label="Completed" value={counts.completed} />
             </div>
           </section>
-        )}
+
+          <section>
+            <div className="mb-4">
+              <p className="text-[11px] font-bold tracking-[0.16em] text-accent-strong uppercase">Next steps</p>
+              <h2 className="mt-1 text-lg font-extrabold tracking-tight text-foreground">Jump back in</h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <QuickLink
+                href="/dashboard/competitions"
+                icon="🏆"
+                title="My Competitions"
+                body="Deadlines, manuals and practice resources."
+              />
+              <QuickLink
+                href="/dashboard/history"
+                icon="📜"
+                title="History & Results"
+                body="Concluded competitions and results."
+              />
+              <QuickLink
+                href="/dashboard/register"
+                icon="➕"
+                title="Register"
+                body="Sign up for a new competition."
+                emphasize
+              />
+            </div>
+          </section>
+        </div>
       </DashboardPage>
     </>
   );

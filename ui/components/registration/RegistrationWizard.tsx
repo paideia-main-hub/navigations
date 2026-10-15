@@ -22,6 +22,8 @@ import { AddStudentForm } from "@/ui/components/dashboard/AddStudentForm";
 import { AddTeamButton } from "@/ui/components/registration/AddTeamButton";
 import { EditTeamButton } from "@/ui/components/registration/EditTeamButton";
 import { AddToEntryListButton } from "@/ui/components/registration/SchoolHamperList";
+import { AddToStudentHamperButton } from "@/ui/components/registration/StudentHamperList";
+import type { StudentHamperDraft } from "@/domain/registrations/studentEntries";
 import { StudentMultiSelect } from "@/ui/components/registration/StudentMultiSelect";
 import { PaymentInstructions } from "@/ui/components/PaymentInstructions";
 import { RequiredMark } from "@/ui/components/RequiredMark";
@@ -371,11 +373,13 @@ export function RegistrationWizard({
     <p className="rounded-xl bg-amber-500/10 px-4 py-3 text-sm leading-relaxed text-amber-800 dark:text-amber-300">{journeyGuidance}</p>
   ) : null;
   /** The competition fee is per student. A team of 3 pays fee x 3. */
+  const studentTeamSize =
+    mode === "student" && entryType === "team" ? 1 + teamMemberNames.filter((name) => name.trim()).length : 1;
   const entryCount = isCoordinatorIndividualBatch
     ? Math.max(1, selectedIndividualIds.length)
     : schoolTeamStudentCount > 0
       ? schoolTeamStudentCount
-      : 1;
+      : studentTeamSize;
   const amountExpected = competition.feeAmount != null ? competition.feeAmount * entryCount : null;
 
   function checkEligibility() {
@@ -551,7 +555,40 @@ export function RegistrationWizard({
   }
 
   const steps: Step[] =
-    mode === "school" ? ["entry", "consent", "review"] : ["eligibility", "entry", "consent", "review", "payment"];
+    mode === "school" ? ["entry", "consent", "review"] : ["eligibility", "entry", "consent", "review"];
+
+  function buildStudentDraft(): StudentHamperDraft | null {
+    if (mode !== "student" || !consentComplete || !grade.trim() || !matchedRule) return null;
+    if (competition.feeAmount == null) return null;
+    if (entryType === "team") {
+      if (!teamName.trim()) return null;
+      const teammates = teamMemberNames.map((name) => name.trim()).filter(Boolean);
+      const size = 1 + teammates.length;
+      const min = matchedRule.teamMinSize ?? 2;
+      const max = matchedRule.teamMaxSize ?? 10;
+      if (size < min || size > max) return null;
+      return {
+        competitionSlug: competition.slug,
+        competitionTitle: competition.title,
+        feeAmount: competition.feeAmount,
+        entryType: "team",
+        teamName: teamName.trim(),
+        teammateNames: teammates,
+        grade: grade.trim(),
+        consent,
+      };
+    }
+    return {
+      competitionSlug: competition.slug,
+      competitionTitle: competition.title,
+      feeAmount: competition.feeAmount,
+      entryType: "individual",
+      teamName: null,
+      teammateNames: [],
+      grade: grade.trim(),
+      consent,
+    };
+  }
 
   function buildSchoolDrafts(): SchoolEntryDraft[] {
     if (mode !== "school" || !consentComplete) return [];
@@ -699,7 +736,7 @@ export function RegistrationWizard({
           <button
             onClick={checkEligibility}
             disabled={!grade.trim()}
-            className="cursor-pointer rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             Continue
           </button>
@@ -714,7 +751,7 @@ export function RegistrationWizard({
             <button
               onClick={() => moveTo("consent")}
               disabled={schoolEntryBlocked}
-              className="w-full rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
+              className="w-full rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-50"
             >
               Continue
             </button>
@@ -817,7 +854,7 @@ export function RegistrationWizard({
             <button
               onClick={() => moveTo("consent")}
               disabled={entryType === "team" && !teamName.trim()}
-              className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
+              className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-50"
             >
               Continue
             </button>
@@ -863,7 +900,7 @@ export function RegistrationWizard({
               <button
                 onClick={() => moveTo("review")}
                 disabled={!consentComplete || schoolEntryBlocked}
-                className="min-w-0 flex-1 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
+                className="min-w-0 flex-1 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-50"
               >
                 Continue
               </button>
@@ -876,7 +913,7 @@ export function RegistrationWizard({
         <div className="space-y-5 rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-5">
           {schoolEntryEditor}
           <div className="space-y-3 border-t border-border pt-5">
-            <h2 className="text-xl font-bold text-foreground">Review & submit</h2>
+            <h2 className="text-xl font-bold text-foreground">Review</h2>
             <div className="overflow-hidden rounded-2xl border border-border bg-background text-sm">
             <div className="grid sm:grid-cols-2">
               <div className="border-b border-border px-4 py-3 sm:border-r">
@@ -922,6 +959,7 @@ export function RegistrationWizard({
               )}
             </div>
             )}
+            {mode === "school" ? (
             <div className="flex items-center justify-between gap-3 border-t border-border bg-accent-soft px-4 py-3">
               <div>
                 <p className="text-xs font-semibold tracking-wide text-accent-strong uppercase">Fee due</p>
@@ -935,6 +973,7 @@ export function RegistrationWizard({
                 {amountExpected != null ? formatFee(amountExpected) : "To be confirmed"}
               </p>
             </div>
+            ) : null}
           </div>
           </div>
           <div className="space-y-3 border-t border-border pt-4">
@@ -947,26 +986,13 @@ export function RegistrationWizard({
               buildDrafts={buildSchoolDrafts}
             />
           ) : (
-            <>
-              <p className="text-xs text-muted">
-                Nothing is saved on this step. Continue to transfer the fee and submit the registration with your receipt.
-              </p>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => moveTo("consent")}
-                  className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={() => moveTo("payment")}
-                  disabled={!entrantName}
-                  className="min-w-0 flex-1 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
-                >
-                  Continue
-                </button>
-              </div>
-            </>
+            <AddToStudentHamperButton
+              disabled={!buildStudentDraft() || Boolean(alreadyEntered) || standingPending}
+              onBack={() => moveTo("consent")}
+              onAdded={onAddedToList}
+              buildDraft={buildStudentDraft}
+              studentId={studentId}
+            />
           )}
           </div>
         </div>
@@ -1036,7 +1062,7 @@ export function RegistrationWizard({
             <button
               onClick={handlePaymentSubmit}
               disabled={paymentSubmitting || !receiptFile}
-              className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
+              className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-50"
             >
               {paymentSubmitting ? "Submitting…" : "Submit registration"}
             </button>
@@ -1070,7 +1096,7 @@ export function RegistrationWizard({
           </div>
           <Link
             href="/dashboard"
-            className="inline-block rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90"
+            className="inline-block rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
           >
             Go to dashboard
           </Link>

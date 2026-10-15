@@ -106,7 +106,7 @@ const PUBLICATION = {
       "Share a true story of progress from home, school, work, personal life or the wider community — the starting point, the challenge, the actions taken, what changed and what you learned. Meaningful progress matters, even when it begins with a small step. Submit 600–1,000 words or an audio/video account of up to five minutes, with at least two supporting evidence items and one verifier. English and Urdu entries are welcome.",
   },
   "young-changemaker": {
-    description: "A young person aged 5–25 who has influenced others to make a positive change",
+    description: "A young person aged 8–25 who has influenced others to make a positive change",
     details:
       "Show what you initiated, how you involved people and what improved as a result. Contributions within a team are welcome when your own role is clear. Submit two dated evidence items, a before-and-after measure or observable outcome, and one beneficiary or independent adult verifier. Likes, views and followers do not by themselves prove positive change.",
   },
@@ -313,7 +313,7 @@ const CATEGORIES = [
     title: "Young Changemaker Award",
     layer: "spotlight",
     description:
-      "Recognises a young person aged 5–25 who has influenced others to make a positive change. Show what you initiated, how you involved people and what improved as a result. School-nominated or independent.",
+      "Recognises a young person aged 8–25 who has influenced others to make a positive change. Show what you initiated, how you involved people and what improved as a result. School-nominated or independent.",
     requiresSchool: false,
     allowsIndependent: true,
     rubricCriteria: [

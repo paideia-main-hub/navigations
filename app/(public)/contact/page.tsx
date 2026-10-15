@@ -1,13 +1,14 @@
+import {
+  CONTACT_ADDRESS,
+  CONTACT_EMAIL,
+  CONTACT_FACEBOOK,
+  CONTACT_INSTAGRAM,
+  CONTACT_PHONE_DISPLAY,
+  CONTACT_PHONE_HREF,
+} from "@/domain/site/contact";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 
 export const metadata = { title: "Contact | Navigations" };
-
-const EMAIL = "admin@navigations.com.pk";
-const PHONE_DISPLAY = "0320 7000760";
-const PHONE_HREF = "tel:+923207000760";
-const ADDRESS = "Plot 20, Block J 2, Wapda Town, Phase 1, Lahore, 54770, Pakistan";
-const FACEBOOK = "https://www.facebook.com/NAVIGATIONS.EDU";
-const INSTAGRAM = "https://www.instagram.com/navigations10/";
 
 function PhoneIcon({ className }: { className?: string }) {
   return (
@@ -85,7 +86,7 @@ export default function ContactPage() {
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
-                  href={FACEBOOK}
+                  href={CONTACT_FACEBOOK}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2.5 rounded-full border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-foreground/20 hover:bg-surface-muted"
@@ -96,7 +97,7 @@ export default function ContactPage() {
                   Facebook
                 </a>
                 <a
-                  href={INSTAGRAM}
+                  href={CONTACT_INSTAGRAM}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2.5 rounded-full border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-foreground/20 hover:bg-surface-muted"
@@ -111,7 +112,7 @@ export default function ContactPage() {
 
             <div className="overflow-hidden rounded-[1.75rem] border border-border bg-surface shadow-[0_24px_60px_-40px_rgba(31,32,65,0.45)]">
               <a
-                href={PHONE_HREF}
+                href={CONTACT_PHONE_HREF}
                 className="group flex items-start gap-4 border-b border-border px-5 py-5 transition-colors hover:bg-accent-soft/40 sm:gap-5 sm:px-6 sm:py-6"
               >
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground transition-transform duration-300 group-hover:scale-105">
@@ -119,12 +120,14 @@ export default function ContactPage() {
                 </span>
                 <span className="min-w-0">
                   <span className="block text-xs font-bold tracking-[0.14em] text-muted uppercase">Phone</span>
-                  <span className="mt-1 block text-lg font-bold tracking-tight text-foreground sm:text-xl">{PHONE_DISPLAY}</span>
+                  <span className="mt-1 block text-lg font-bold tracking-tight text-foreground sm:text-xl">
+                    {CONTACT_PHONE_DISPLAY}
+                  </span>
                 </span>
               </a>
 
               <a
-                href={`mailto:${EMAIL}`}
+                href={`mailto:${CONTACT_EMAIL}`}
                 className="group flex items-start gap-4 border-b border-border px-5 py-5 transition-colors hover:bg-accent-soft/40 sm:gap-5 sm:px-6 sm:py-6"
               >
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-deep text-brand-deep-foreground transition-transform duration-300 group-hover:scale-105">
@@ -132,7 +135,9 @@ export default function ContactPage() {
                 </span>
                 <span className="min-w-0">
                   <span className="block text-xs font-bold tracking-[0.14em] text-muted uppercase">Email</span>
-                  <span className="mt-1 block break-all text-lg font-bold tracking-tight text-foreground sm:text-xl">{EMAIL}</span>
+                  <span className="mt-1 block break-all text-lg font-bold tracking-tight text-foreground sm:text-xl">
+                    {CONTACT_EMAIL}
+                  </span>
                 </span>
               </a>
 
@@ -142,7 +147,9 @@ export default function ContactPage() {
                 </span>
                 <div className="min-w-0">
                   <p className="text-xs font-bold tracking-[0.14em] text-muted uppercase">Address</p>
-                  <p className="mt-1 text-base leading-relaxed font-semibold text-foreground sm:text-lg">{ADDRESS}</p>
+                  <p className="mt-1 text-base leading-relaxed font-semibold text-foreground sm:text-lg">
+                    {CONTACT_ADDRESS}
+                  </p>
                 </div>
               </div>
             </div>

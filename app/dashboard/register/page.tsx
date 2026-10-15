@@ -31,10 +31,10 @@ export default async function DashboardRegisterPage() {
         <DashboardHero
           eyebrow="Competitions"
           title="Register for competitions"
-          subtitle="Add as many competitions as you like, then check out once: confirm your details, give consent, and pay one total with a single receipt."
+          subtitle="Open a competition, complete the form, add it to your hamper, then pay once for everything with a single receipt."
         />
         <DashboardPage>
-          <div className="mt-6">
+          <div id="register">
             {student ? (
               <CompetitionBasket
                 competitions={competitions}
@@ -44,6 +44,7 @@ export default async function DashboardRegisterPage() {
                   frlId: student.frlId,
                   grade: student.grade,
                   schoolName: student.schoolName ?? null,
+                  studentId: student.id,
                 }}
                 paymentAccount={paymentAccount}
               />

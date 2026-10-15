@@ -20,7 +20,7 @@ export function RespondToClarificationForm({ nominationId, clarificationId }: { 
         <RequiredMark />
         <textarea name="response_text" required rows={2} placeholder="Your response…" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" />
       </label>
-      <button type="submit" disabled={pending} className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-60">
+      <button type="submit" disabled={pending} className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-60">
         {pending ? "Sending…" : "Send response"}
       </button>
       {state.error && <p className="text-xs text-red-600 dark:text-red-400">{state.error}</p>}

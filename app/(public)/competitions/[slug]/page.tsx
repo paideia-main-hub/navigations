@@ -14,6 +14,7 @@ import { CompetitionOverviewSections } from "@/ui/components/marketing/Competiti
 import { CompetitionResourceBody } from "@/ui/components/marketing/CompetitionResourceBody";
 import { CompetitionFaqAccordion } from "@/ui/components/marketing/CompetitionFaqAccordion";
 import { CompetitionRegisterPanel } from "@/ui/components/marketing/CompetitionRegisterPanel";
+import { CompetitionManualFloat } from "@/ui/components/marketing/CompetitionManualFloat";
 
 export default async function CompetitionPage({
   params,
@@ -383,7 +384,7 @@ export default async function CompetitionPage({
               href={completeManual.fileUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-4 inline-flex items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90"
+              className="mt-4 inline-flex items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
             >
               Download the complete competition manual
             </a>
@@ -668,8 +669,20 @@ export default async function CompetitionPage({
     <div className="bg-background">
       {/* Pull up under the floating header clearance on <main> (pt-24/28), same
           pattern as /competitions, /awards, /calendar, etc. */}
-      <div className="-mt-24 bg-brand-deep px-6 pt-28 pb-14 sm:-mt-28 sm:pt-32">
-        <div className="mx-auto max-w-7xl">
+      <div className="relative -mt-24 overflow-hidden bg-brand-deep px-6 pt-28 pb-14 sm:-mt-28 sm:pt-32">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
+          <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.1),transparent_70%)]" />
+          <div
+            className="absolute inset-0 opacity-40"
+            style={{
+              backgroundImage: [
+                "repeating-linear-gradient(32deg, transparent 0 20px, #2c2f4c 20px 21.5px)",
+                "repeating-linear-gradient(122deg, transparent 0 20px, #2c2f4c 20px 21.5px)",
+              ].join(", "),
+            }}
+          />
+        </div>
+        <div className="relative z-10 mx-auto max-w-7xl">
           <Link href="/competitions" className="text-sm font-medium text-accent transition-colors hover:text-brand-deep-foreground">
             ← All competitions
           </Link>
@@ -690,7 +703,7 @@ export default async function CompetitionPage({
             )}
             <a
               href="#register"
-              className="inline-flex shrink-0 items-center justify-center self-end rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 sm:self-auto"
+              className="inline-flex shrink-0 items-center justify-center self-end rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white sm:self-auto"
             >
               Register for {competition.title}
             </a>
@@ -701,6 +714,10 @@ export default async function CompetitionPage({
       <div className="mx-auto max-w-7xl px-6 py-10">
         <ArenaTabs tabs={tabs} />
       </div>
+
+      {completeManual ? (
+        <CompetitionManualFloat fileUrl={completeManual.fileUrl} title={completeManual.title} />
+      ) : null}
     </div>
   );
 }

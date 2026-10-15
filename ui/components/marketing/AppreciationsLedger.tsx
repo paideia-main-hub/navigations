@@ -367,7 +367,7 @@ export function AppreciationsLedger({ appreciations }: { appreciations: Apprecia
                 type="button"
                 aria-label="Next appreciation"
                 onClick={() => go(1)}
-                className="grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-accent text-accent-foreground shadow-sm transition-colors hover:bg-accent/90"
+                className="grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-accent text-accent-foreground shadow-sm transition-colors duration-300 hover:bg-accent-strong hover:text-white"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-3.5 w-3.5">
                   <path d="m9 6 6 6-6 6" />

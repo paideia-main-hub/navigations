@@ -159,7 +159,7 @@ export function ProfilePhotoCard({
                   type="button"
                   onClick={save}
                   disabled={busy !== null}
-                  className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
+                  className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-50"
                 >
                   {busy === "save" ? "Saving…" : "Save photo"}
                 </button>
@@ -178,7 +178,7 @@ export function ProfilePhotoCard({
                     View
                   </button>
                 )}
-                <label className="cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90">
+                <label className="cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white">
                   {current ? "Change photo" : "Upload photo"}
                   <input
                     ref={fileRef}
