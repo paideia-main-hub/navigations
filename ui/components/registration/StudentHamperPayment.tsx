@@ -180,7 +180,7 @@ export function StudentHamperPayment({ paymentAccount }: { paymentAccount: Payme
         <p className="text-xl font-extrabold text-foreground">{total != null ? formatFee(total) : "—"}</p>
       </div>
 
-      <PaymentInstructions account={paymentAccount} />
+      <PaymentInstructions account={paymentAccount} amount={total != null ? formatFee(total) : null} />
 
       <label className="block">
         <span className="text-sm font-medium text-foreground">
