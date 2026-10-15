@@ -5,7 +5,7 @@ import {
   CONTACT_INSTAGRAM,
   CONTACT_PHONE_DISPLAY,
   CONTACT_PHONE_HREF,
-} from "@/domain/site/contact";
+} from "@/domain/contact";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 
 export const metadata = { title: "Contact | Navigations" };

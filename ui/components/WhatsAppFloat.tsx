@@ -1,4 +1,4 @@
-import { CONTACT_WHATSAPP_HREF } from "@/domain/site/contact";
+import { CONTACT_WHATSAPP_HREF } from "@/domain/contact";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
