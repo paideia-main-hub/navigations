@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 
 const EXIT_MS = 220;
 
@@ -98,8 +99,15 @@ export function AnimatedModal({
 
   const requestClose = () => setPhase("leave");
   const open = phase === "open";
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-[80] flex items-end justify-center p-0 sm:items-center sm:p-6">
       <button
         type="button"
@@ -120,6 +128,7 @@ export function AnimatedModal({
       >
         <AnimatedModalCloseContext.Provider value={requestClose}>{children}</AnimatedModalCloseContext.Provider>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

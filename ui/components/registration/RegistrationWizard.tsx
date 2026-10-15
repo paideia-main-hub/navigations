@@ -21,7 +21,7 @@ import { CopyButton } from "@/ui/components/CopyButton";
 import { AddStudentForm } from "@/ui/components/dashboard/AddStudentForm";
 import { AddTeamButton } from "@/ui/components/registration/AddTeamButton";
 import { EditTeamButton } from "@/ui/components/registration/EditTeamButton";
-import { AddToEntryListButton } from "@/ui/components/registration/SchoolEntryList";
+import { AddToEntryListButton } from "@/ui/components/registration/SchoolHamperList";
 import { StudentMultiSelect } from "@/ui/components/registration/StudentMultiSelect";
 import { PaymentInstructions } from "@/ui/components/PaymentInstructions";
 import { RequiredMark } from "@/ui/components/RequiredMark";

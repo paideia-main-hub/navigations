@@ -6,7 +6,7 @@ import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { HeaderAccountMenu } from "@/ui/components/HeaderAccountMenu";
 import { AnnouncementBell } from "@/ui/components/AnnouncementBell";
-import { EntryListHeaderButton } from "@/ui/components/registration/SchoolEntryList";
+import { EntryListHeaderButton } from "@/ui/components/registration/SchoolHamperList";
 import { useLoginModal } from "@/ui/components/LoginModalContext";
 import type { UserRole } from "@/domain/auth/session";
 import type { HeaderNotice } from "@/domain/announcements/types";

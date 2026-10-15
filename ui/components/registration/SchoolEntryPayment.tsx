@@ -11,7 +11,7 @@ import { CopyButton } from "@/ui/components/CopyButton";
 import { PaymentInstructions } from "@/ui/components/PaymentInstructions";
 import { RequiredMark } from "@/ui/components/RequiredMark";
 import { UploadProgress } from "@/ui/components/UploadProgress";
-import { useSchoolEntryList } from "@/ui/components/registration/SchoolEntryList";
+import { useSchoolEntryList } from "@/ui/components/registration/SchoolHamperList";
 
 export function SchoolEntryPayment({ paymentAccount }: { paymentAccount: PaymentAccount }) {
   const { entries, clearEntries } = useSchoolEntryList();

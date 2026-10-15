@@ -11,7 +11,7 @@ import { teamVisibleForCompetition, type Team } from "@/domain/teams/types";
 import { Badge } from "@/ui/components/Badge";
 import { MenuScroll } from "@/ui/components/MenuScroll";
 import { AnimatedModal, ModalCloseButton } from "@/ui/components/AnimatedModal";
-import { useSchoolEntryList } from "@/ui/components/registration/SchoolEntryList";
+import { useSchoolEntryList } from "@/ui/components/registration/SchoolHamperList";
 import { EditSchoolEntry } from "@/ui/components/registration/EditSchoolEntry";
 import { RegistrationWizard } from "@/ui/components/registration/RegistrationWizard";
 

@@ -2,12 +2,8 @@
 
 import { useState } from "react";
 import { RegisterPathCard, type RegisterPath } from "@/ui/components/marketing/RegisterPathCard";
-import { StudentRegisterForm } from "@/ui/components/registration/StudentRegisterForm";
-import { SchoolRegisterForm } from "@/ui/components/registration/SchoolRegisterForm";
-import { JudgeRegisterForm } from "@/ui/components/registration/JudgeRegisterForm";
-import { NominatorRegisterForm } from "@/ui/components/registration/NominatorRegisterForm";
+import { RegisterFormModal, type RegisterModalKind } from "@/ui/components/marketing/RegisterFormModal";
 import { useLoginModal } from "@/ui/components/LoginModalContext";
-import { AnimatedModal, ModalCloseButton } from "@/ui/components/AnimatedModal";
 
 const paths: RegisterPath[] = [
   {
@@ -48,9 +44,7 @@ const paths: RegisterPath[] = [
   },
 ];
 
-type ModalKey = "student" | "school" | "judge" | "nominator";
-
-function pathToModal(href: string): ModalKey | null {
+function pathToModal(href: string): RegisterModalKind | null {
   if (href === "/register/student") return "student";
   if (href === "/register/school") return "school";
   if (href === "/register/judge") return "judge";
@@ -58,51 +52,8 @@ function pathToModal(href: string): ModalKey | null {
   return null;
 }
 
-const modalMeta: Record<
-  ModalKey,
-  { title: string; subtitle: string; headerClass: string; accentClass: string }
-> = {
-  student: {
-    title: "Student Registration",
-    subtitle: "Create your account, then select a competition from the directory to register.",
-    headerClass: "bg-accent-soft",
-    accentClass: "text-accent-strong",
-  },
-  school: {
-    title: "School Registration",
-    subtitle: "Register your school, then add students and teams from your school dashboard.",
-    headerClass: "bg-[#e8eaf8]",
-    accentClass: "text-brand-deep",
-  },
-  judge: {
-    title: "Judge Registration",
-    subtitle: "Create your account, then apply to judge competitions from your dashboard.",
-    headerClass: "bg-surface-alt",
-    accentClass: "text-foreground",
-  },
-  nominator: {
-    title: "Independent Nominator",
-    subtitle: "For Idea, Story and Young Changemaker nominations with no school involved.",
-    headerClass: "bg-[#e6f4f2]",
-    accentClass: "text-[#1f6b63]",
-  },
-};
-
-function ModalForm({ kind }: { kind: ModalKey }) {
-  switch (kind) {
-    case "student":
-      return <StudentRegisterForm hideIntro />;
-    case "school":
-      return <SchoolRegisterForm hideIntro />;
-    case "judge":
-      return <JudgeRegisterForm hideIntro />;
-    case "nominator":
-      return <NominatorRegisterForm hideIntro />;
-  }
-}
-
 export function RegisterPathsSection() {
-  const [modal, setModal] = useState<ModalKey | null>(null);
+  const [modal, setModal] = useState<RegisterModalKind | null>(null);
   const { openLogin } = useLoginModal();
   const topRow = paths.slice(0, 2);
   const bottomRow = paths.slice(2);
@@ -155,40 +106,6 @@ export function RegisterPathsSection() {
       </div>
 
       {modal ? <RegisterFormModal key={modal} kind={modal} onClose={() => setModal(null)} /> : null}
-    </>
-  );
-}
-
-function RegisterFormModal({ kind, onClose }: { kind: ModalKey; onClose: () => void }) {
-  return (
-    <AnimatedModal
-      onClose={onClose}
-      labelledBy="register-modal-title"
-      panelClassName="max-h-[min(92vh,52rem)] max-w-lg"
-    >
-      <RegisterFormModalBody kind={kind} />
-    </AnimatedModal>
-  );
-}
-
-function RegisterFormModalBody({ kind }: { kind: ModalKey }) {
-  const meta = modalMeta[kind];
-
-  return (
-    <>
-      <div className={`relative shrink-0 px-5 py-5 sm:px-7 sm:py-6 ${meta.headerClass}`}>
-        <ModalCloseButton className="absolute top-4 right-4 bg-surface/80 shadow-sm hover:bg-surface sm:top-5 sm:right-5" />
-
-        <p className={`pr-12 text-xs font-black tracking-[0.16em] uppercase ${meta.accentClass}`}>Register</p>
-        <h2 id="register-modal-title" className="mt-2 pr-12 text-2xl font-black tracking-tight text-foreground">
-          {meta.title}
-        </h2>
-        <p className="mt-2 max-w-sm pr-4 text-sm leading-relaxed text-muted">{meta.subtitle}</p>
-      </div>
-
-      <div className="overflow-y-auto px-5 py-5 sm:px-7 sm:py-6">
-        <ModalForm kind={kind} />
-      </div>
     </>
   );
 }

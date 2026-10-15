@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/data/supabase/admin";
 import { createClient } from "@/data/supabase/server";
@@ -10,11 +11,30 @@ import { Header } from "@/ui/components/Header";
 import { Footer } from "@/ui/components/Footer";
 import { LoginModalProvider } from "@/ui/components/LoginModalContext";
 import { DashboardShell } from "@/ui/components/dashboard/DashboardShell";
-import { SchoolEntryListProvider } from "@/ui/components/registration/SchoolEntryList";
+import { SchoolEntryListProvider } from "@/ui/components/registration/SchoolHamperList";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    const headerStore = await headers();
+    const next =
+      headerStore.get("next-url") ??
+      headerStore.get("x-url") ??
+      headerStore.get("x-invoke-path") ??
+      "/dashboard";
+    const path = next.startsWith("http")
+      ? (() => {
+          try {
+            return new URL(next).pathname;
+          } catch {
+            return "/dashboard";
+          }
+        })()
+      : next.startsWith("/")
+        ? next
+        : "/dashboard";
+    redirect(`/login?next=${encodeURIComponent(path)}`);
+  }
   // Admins use the separate /admin panel (its own login and session) — the
   // dashboard is only for students, schools, judges and nominators.
   if (user.role === "admin") redirect("/admin");
