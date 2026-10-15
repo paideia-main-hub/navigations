@@ -89,7 +89,7 @@ export default async function WorkSubmissionsPage({
               totalScore: s?.totalScore ?? null,
               maxScore: s?.maxScore ?? null,
               hasForm: Boolean(config),
-              config,
+              config: config ?? null,
               initial: s,
             };
           })}
