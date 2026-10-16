@@ -344,7 +344,7 @@ export async function answerSupportChat(
 
   return {
     reply: busy
-      ? "The assistant is busy right now (free AI limit). Please try again in a moment, or continue on WhatsApp."
+      ? "The assistant is busy right now. Please try again in a moment, or continue on WhatsApp."
       : "I could not reach the assistant just now. Please continue on WhatsApp and our team will help.",
     needsHuman: true,
     needsLogin: false,

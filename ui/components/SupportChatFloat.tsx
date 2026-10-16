@@ -50,8 +50,9 @@ const WELCOME_MESSAGE: ChatMessage = {
 
 function ChatIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
-      <path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 20l1.1-4.3A8.5 8.5 0 1 1 21 11.5Z" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <path d="M7 5h10a3 3 0 0 1 3 3v6.5a3 3 0 0 1-3 3h-4.1L8 20.25V17.5H7a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3Z" />
+      <path d="M8.5 10.25h7M8.5 13.25h4.5" />
     </svg>
   );
 }
@@ -247,7 +248,7 @@ export function SupportChatFloat() {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [open, messages, pending]);
 
-  // After an AI reply, auto-minimize in 5s unless the user uses mic / screenshot / text input.
+  // After an AI reply, auto-minimize in 10s unless the user uses mic / screenshot / text input.
   useEffect(() => {
     if (!open || pending || recording || transcribing || capturing) {
       if (pending || recording || transcribing || capturing) clearIdleMinimize();
@@ -260,7 +261,7 @@ export function SupportChatFloat() {
     idleMinimizeTimerRef.current = setTimeout(() => {
       idleMinimizeTimerRef.current = null;
       closePanel();
-    }, 5000);
+    }, 10000);
 
     return () => clearIdleMinimize();
   }, [open, pending, messages, recording, transcribing, capturing]);
@@ -468,13 +469,13 @@ export function SupportChatFloat() {
           id={panelId}
           role="dialog"
           aria-label="Navigations support chat"
-          className={`origin-bottom-right mb-3 flex h-[min(36rem,calc(100dvh-7rem))] w-[min(22rem,calc(100vw-3.5rem))] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-[0_18px_40px_-16px_rgba(31,32,65,0.45)] ${
+          className={`origin-bottom-right mb-3 flex h-[min(42rem,calc(100dvh-5.5rem))] w-[min(22rem,calc(100vw-3.5rem))] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-[0_18px_40px_-16px_rgba(31,32,65,0.45)] ${
             closing ? "animate-support-chat-out" : "animate-support-chat-in"
           }`}
         >
           <div className="flex items-start justify-between gap-3 border-b border-border bg-brand-deep px-4 py-3 text-white">
             <div>
-              <p className="text-sm font-extrabold tracking-tight">Ask Navigations</p>
+              <p className="mb-1.5 text-base font-extrabold tracking-tight">Ask Navigations</p>
               <p className="mt-0.5 text-xs text-white/75">
                 I&apos;m an AI assistant and can make mistakes. Check important details on the site or with our team.
               </p>
@@ -608,7 +609,7 @@ export function SupportChatFloat() {
                         : "Ask about competitions…"
                 }
                 disabled={pending || recording || transcribing || capturing}
-                className="min-h-11 min-w-0 flex-1 rounded-full border border-border bg-background px-4 py-2 text-sm text-foreground outline-none focus-visible:border-accent disabled:opacity-70"
+                className="h-[38px] min-w-0 flex-1 rounded-full border border-border bg-background px-4 text-sm text-foreground outline-none focus-visible:border-accent disabled:opacity-70"
               />
               {input.trim() || pendingImage ? (
                 <button
@@ -651,7 +652,7 @@ export function SupportChatFloat() {
         }`}
       >
         <span className="relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground shadow-[0_10px_22px_-8px_rgba(255,105,31,0.55)] transition-[transform,box-shadow] duration-300 ease-out group-hover:-translate-x-2 group-hover:shadow-[0_14px_28px_-8px_rgba(255,105,31,0.65)] group-focus-visible:-translate-x-2">
-          <ChatIcon className="h-5 w-5" />
+          <ChatIcon className="block h-5 w-5 translate-y-px" />
         </span>
         <span
           aria-hidden="true"

@@ -444,7 +444,7 @@ export default async function CalendarPage() {
         </section>
 
         <section id="final-event" className="mt-12 scroll-mt-24">
-          <SectionHeading title="Final event programme — 11 & 12 December" />
+          <SectionHeading title="Final event programme — 12 & 13 December" />
           <div className="grid gap-5 md:grid-cols-2">
             {FINAL_EVENT_PROGRAMME.map((p) => (
               <div key={p.date} className="overflow-hidden rounded-2xl border border-border bg-surface">

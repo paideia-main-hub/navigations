@@ -103,8 +103,8 @@ export interface FinalEventDay {
 
 export const FINAL_EVENT_PROGRAMME: FinalEventDay[] = [
   {
-    date: "11 December",
-    day: "Friday",
+    date: "12 December",
+    day: "Saturday",
     title: "Final competitions & showcases",
     summary: "Every final competition, project display and screening takes place and concludes on this day.",
     groups: [
@@ -125,8 +125,8 @@ export const FINAL_EVENT_PROGRAMME: FinalEventDay[] = [
     ],
   },
   {
-    date: "12 December",
-    day: "Saturday",
+    date: "13 December",
+    day: "Sunday",
     title: "Closing & awards ceremony",
     summary: "No competitions or screenings. The day is dedicated to the closing ceremony and presenting the awards.",
     groups: [
@@ -169,52 +169,52 @@ export const SUBMISSION_CALENDAR: SubmissionEntry[] = [
     presentation: "2 December live pitch",
   },
   {
-    date: "11 Dec",
-    day: "Friday",
+    date: "12 Dec",
+    day: "Saturday",
     competition: "CultureScript",
     requirement: "Original five-minute cultural film. Selected entries screen during the finale.",
     formats: ["Submission", "Screening"],
-    presentation: "Selected films screened 11 December",
+    presentation: "Selected films screened 12 December",
   },
   {
-    date: "11 Dec",
-    day: "Friday",
+    date: "12 Dec",
+    day: "Saturday",
     competition: "Message for Humanity",
     requirement: "Original positive message for humanity, no more than two minutes. Separate Junior, Senior and Teacher categories. Selected entries screen during the finale.",
     formats: ["Submission", "Screening"],
-    presentation: "Selected videos screened 11 December",
+    presentation: "Selected videos screened 12 December",
   },
   {
-    date: "11 Dec",
-    day: "Friday",
+    date: "12 Dec",
+    day: "Saturday",
     competition: "DigitalHorizon",
     requirement: "Environmental awareness poster with source list and design rationale. Upload the final poster file.",
     formats: ["Submission", "Project showcase"],
-    presentation: "Displayed 11 December",
+    presentation: "Displayed 12 December",
   },
   {
-    date: "11 Dec",
-    day: "Friday",
+    date: "12 Dec",
+    day: "Saturday",
     competition: "SciVanta",
     requirement: "Safe robotics model addressing environmental pollution. Upload the project record; demonstrate the model at the finale.",
     formats: ["Submission", "Project showcase"],
-    presentation: "Displayed and demonstrated 11 December",
+    presentation: "Displayed and demonstrated 12 December",
   },
   {
-    date: "11 Dec",
-    day: "Friday",
+    date: "12 Dec",
+    day: "Saturday",
     competition: "PixelProof",
     requirement: "One original photograph and caption for a curated display.",
     formats: ["Submission", "Project showcase"],
-    presentation: "Displayed 11 December",
+    presentation: "Displayed 12 December",
   },
   {
-    date: "11 Dec",
-    day: "Friday",
+    date: "12 Dec",
+    day: "Saturday",
     competition: "Think Masters Championship",
     requirement: "Researched school-life problem, evidence and a two-page summary.",
     formats: ["Submission", "Live performance"],
-    presentation: "11 December live final defence",
+    presentation: "12 December live final defence",
   },
   {
     date: "Online",
@@ -238,7 +238,7 @@ export interface AwardSubmissionEntry {
 }
 
 export const AWARD_SUBMISSION_INTRO =
-  "Register the Route 2 nomination from 8 October to 10 November 2026 and submit the complete nomination by 22 November. Spotlight contains three assessed categories and Sports contains two; Teacher and Parent recognition is nomination-only. Proposed review window: 23 November – 4 December, with recognition at the closing and awards ceremony on 12 December.";
+  "Register the Route 2 nomination from 8 October to 10 November 2026 and submit the complete nomination by 22 November. Spotlight contains three assessed categories and Sports contains two; Teacher and Parent recognition is nomination-only. Proposed review window: 23 November – 4 December, with recognition at the closing and awards ceremony on 13 December.";
 
 export const AWARD_SUBMISSIONS: AwardSubmissionEntry[] = [
   {
