@@ -324,6 +324,45 @@ h6 {
   }
 }
 
+/* Support chat — Mac-dock style pop from the corner trigger. */
+@keyframes support-chat-in {
+  0% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.28);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes support-chat-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.28);
+  }
+}
+
+@keyframes support-dock-press {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.88);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 @theme inline {
   --animate-podium-in: podium-in 0.55s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-podium-card-flip: podium-card-flip 0.65s cubic-bezier(0.22, 0.8, 0.24, 1) both;
@@ -332,6 +371,9 @@ h6 {
   --animate-place-drift: place-drift 4.5s ease-in-out infinite;
   --animate-faq-answer-in: faq-answer-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-modal-swap-in: modal-swap-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-support-chat-in: support-chat-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-support-chat-out: support-chat-out 0.28s cubic-bezier(0.4, 0, 1, 1) both;
+  --animate-support-dock-press: support-dock-press 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Confetti and streamers behind the Winners Showcase

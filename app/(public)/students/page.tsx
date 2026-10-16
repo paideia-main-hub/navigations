@@ -111,7 +111,7 @@ const items: FaqCardItem[] = [
       <>
         For the 2026 season: registration runs <strong>8 October – 10 November</strong>, advance submissions are due{" "}
         <strong>22 November</strong>, the activity period is <strong>23 November – 4 December</strong>, and finals
-        &amp; recognition happen <strong>5–6 December</strong>. Your specific competition&apos;s round and result
+        &amp; recognition happen <strong>12–13 December</strong>. Your specific competition&apos;s round and result
         dates are on its Important Dates tab, and the full season schedule is on the Competition Calendar page.
       </>
     ),

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack -p 1000",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
@@ -13,6 +13,7 @@
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.116.0",
     "geist": "^1.7.2",
+    "html-to-image": "^1.11.13",
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",

@@ -19,6 +19,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/bulk-dates", label: "Bulk changes to Competitions", icon: "📅" },
   { href: "/admin/bulk-dates-awards", label: "Set bulk dates for awards", icon: "🗓️" },
   { href: "/admin/announcements", label: "Announcements", icon: "📣" },
+  { href: "/admin/support-chats", label: "Support chats", icon: "💬" },
   { href: "/admin/appreciations", label: "Appreciations", icon: "✨" },
   { href: "/admin/judge-applications", label: "Judge Applications", icon: "📝" },
   { href: "/admin/schools", label: "Schools", icon: "🏫" },

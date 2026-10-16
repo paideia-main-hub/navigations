@@ -112,7 +112,7 @@ const items: FaqCardItem[] = [
       <>
         For the 2026 season: registration is open <strong>8 October – 10 November</strong>, submissions for advance
         work close <strong>22 November</strong>, the activity period runs <strong>23 November – 4 December</strong>,
-        and finals &amp; recognition take place <strong>5–6 December</strong>. Individual competitions can carry their own
+        and finals &amp; recognition take place <strong>12–13 December</strong>. Individual competitions can carry their own
         round and result dates on top of this — the full published schedule is on the Competition Calendar page, and
         each competition repeats its own dates on its Important Dates tab.
       </>

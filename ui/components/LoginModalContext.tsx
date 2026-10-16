@@ -35,6 +35,9 @@ export function useLoginModal() {
   return ctx;
 }
 
+/** Dispatched by SupportChatFloat (outside the provider tree) to open login in place. */
+export const OPEN_LOGIN_EVENT = "navigations:open-login";
+
 export function LoginModalProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [nextPath, setNextPath] = useState<string | null>(null);
@@ -57,6 +60,15 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
     setLinkError(error ?? null);
     setOpen(true);
   }, []);
+
+  useEffect(() => {
+    function onOpenLogin(event: Event) {
+      const detail = (event as CustomEvent<OpenLoginOptions | undefined>).detail;
+      openLogin(detail);
+    }
+    window.addEventListener(OPEN_LOGIN_EVENT, onOpenLogin);
+    return () => window.removeEventListener(OPEN_LOGIN_EVENT, onOpenLogin);
+  }, [openLogin]);
 
   const value = useMemo(() => ({ openLogin, closeLogin }), [openLogin, closeLogin]);
 
