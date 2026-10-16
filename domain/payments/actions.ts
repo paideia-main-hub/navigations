@@ -76,8 +76,8 @@ export async function updatePaymentAccountAction(
     accountNumber: String(formData.get("account_number") ?? "").trim(),
     iban: String(formData.get("iban") ?? "").trim(),
   };
-  if (!account.bankName || !account.accountTitle || !account.accountNumber || !account.iban) {
-    return { error: "Bank name, account title, account number and IBAN are all required.", saved: false };
+  if (!account.bankName || !account.accountTitle || !account.accountNumber) {
+    return { error: "Bank name, account title and account number are required.", saved: false };
   }
 
   const admin = createAdminClient();

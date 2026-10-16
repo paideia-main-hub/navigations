@@ -29,7 +29,7 @@ export function PaymentAccountForm({ account }: { account: PaymentAccount }) {
         autoComplete="off"
         inputMode="numeric"
       />
-      <FormField label="IBAN" name="iban" required defaultValue={account.iban} autoComplete="off" />
+      <FormField label="IBAN" name="iban" defaultValue={account.iban} autoComplete="off" />
       {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
       {state.saved && (
         <p className="text-sm text-emerald-700 dark:text-emerald-400">Saved. These details now appear on every receipt upload.</p>
