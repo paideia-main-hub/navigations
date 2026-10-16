@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { MenuScroll } from "@/ui/components/MenuScroll";
 
 export type StudentSelectOption = {
@@ -54,7 +53,73 @@ function EditIcon() {
   );
 }
 
-/** Searchable multi-select for students on a registration form. */
+function StudentOptions({
+  visible,
+  selectedIds,
+  onToggle,
+  onEdit,
+}: {
+  visible: StudentSelectOption[];
+  selectedIds: string[];
+  onToggle: (id: string) => void;
+  onEdit?: (id: string) => void;
+}) {
+  if (visible.length === 0) {
+    return <p className="px-3 py-2 text-sm text-muted">No matches</p>;
+  }
+  return (
+    <ul>
+      {visible.map((student) => {
+        const checked = selectedIds.includes(student.id);
+        return (
+          <li key={student.id} role="presentation">
+            <div className={`flex items-center gap-2 px-2 ${student.disabled ? "text-muted" : "text-foreground"}`}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={checked}
+                disabled={student.disabled}
+                className={`menu-item flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-2 text-left text-sm ${
+                  student.disabled ? "cursor-not-allowed" : "hover:bg-surface-muted"
+                } ${checked ? "text-accent-strong" : ""}`}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => onToggle(student.id)}
+              >
+                <span
+                  aria-hidden
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                    checked ? "border-accent bg-accent text-accent-foreground" : "border-border bg-background"
+                  }`}
+                >
+                  {checked ? (
+                    <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none">
+                      <path d="m3.5 8 3 3 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : null}
+                </span>
+                <StudentColumns name={student.name} grade={student.grade} note={student.note} />
+              </button>
+              {onEdit ? (
+                <button
+                  type="button"
+                  aria-label={`Edit ${student.name}`}
+                  className="menu-item inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-muted hover:bg-accent-soft hover:text-accent"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => onEdit(student.id)}
+                >
+                  <EditIcon />
+                </button>
+              ) : null}
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** Searchable multi-select for students on a registration form.
+ * `panel` keeps the list inline (modals). `dropdown` uses a compact trigger. */
 export function StudentMultiSelect({
   students,
   selectedIds,
@@ -62,6 +127,7 @@ export function StudentMultiSelect({
   ariaLabel,
   placeholder = "Search students",
   onEdit,
+  variant = "dropdown",
 }: {
   students: StudentSelectOption[];
   selectedIds: string[];
@@ -69,12 +135,11 @@ export function StudentMultiSelect({
   ariaLabel: string;
   placeholder?: string;
   onEdit?: (id: string) => void;
+  variant?: "dropdown" | "panel";
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(variant === "panel");
   const [query, setQuery] = useState("");
-  const [box, setBox] = useState<{ top: number; left: number; width: number; maxHeight: number; placement: "top" | "bottom" } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const listId = useId();
 
@@ -89,61 +154,38 @@ export function StudentMultiSelect({
     );
   }, [students, query]);
 
-  useLayoutEffect(() => {
-    if (!open || !rootRef.current) return;
-    const place = () => {
-      const rect = rootRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const gap = 6;
-      const spaceBelow = window.innerHeight - rect.bottom - gap;
-      const spaceAbove = rect.top - gap;
-      const placement = spaceBelow >= 220 || spaceBelow >= spaceAbove ? "bottom" : "top";
-      const room = placement === "bottom" ? spaceBelow : spaceAbove;
-      setBox({
-        top: placement === "bottom" ? rect.bottom + gap : rect.top - gap,
-        left: rect.left,
-        width: rect.width,
-        maxHeight: Math.max(160, Math.min(280, room)),
-        placement,
-      });
-    };
-    place();
-    window.addEventListener("resize", place);
-    window.addEventListener("scroll", place, true);
-    return () => {
-      window.removeEventListener("resize", place);
-      window.removeEventListener("scroll", place, true);
-    };
-  }, [open, visible.length]);
+  function closeMenu() {
+    if (variant === "panel") {
+      setQuery("");
+      return;
+    }
+    setOpen(false);
+    setQuery("");
+  }
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || variant === "panel") return;
     searchRef.current?.focus();
     function onPointerDown(event: MouseEvent) {
       const target = event.target as Node;
-      if (rootRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      if (rootRef.current?.contains(target)) return;
       setOpen(false);
       setQuery("");
     }
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpen(false);
-        setQuery("");
-      }
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      setOpen(false);
+      setQuery("");
     }
     document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKey);
+    document.addEventListener("keydown", onKey, true);
     return () => {
       document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("keydown", onKey, true);
     };
-  }, [open]);
-
-  function editStudent(id: string) {
-    setOpen(false);
-    setQuery("");
-    onEdit?.(id);
-  }
+  }, [open, variant]);
 
   function toggle(id: string) {
     const option = students.find((student) => student.id === id);
@@ -151,93 +193,63 @@ export function StudentMultiSelect({
     onChange(selectedIds.includes(id) ? selectedIds.filter((item) => item !== id) : [...selectedIds, id]);
   }
 
-  const menu =
-    open && box
-      ? createPortal(
-          <div
-            ref={menuRef}
-            id={listId}
-            role="listbox"
-            aria-multiselectable="true"
-            aria-label={ariaLabel}
-            className="fixed z-[100] overflow-hidden rounded-lg border border-border bg-surface shadow-[0_16px_40px_-20px_rgba(31,32,65,0.45)]"
-            style={{
-              top: box.top,
-              left: box.left,
-              width: box.width,
-              maxHeight: box.maxHeight,
-              transform: box.placement === "top" ? "translateY(-100%)" : undefined,
-            }}
+  function editStudent(id: string) {
+    closeMenu();
+    onEdit?.(id);
+  }
+
+  const list = (
+    <div
+      id={listId}
+      role="listbox"
+      aria-multiselectable="true"
+      aria-label={ariaLabel}
+      className={
+        variant === "panel"
+          ? "flex max-h-52 flex-col overflow-hidden rounded-lg border border-border bg-background"
+          : "absolute top-full right-0 left-0 z-20 mt-1.5 flex max-h-56 flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-[0_16px_40px_-20px_rgba(31,32,65,0.45)]"
+      }
+    >
+      <div className="shrink-0 border-b border-border p-2">
+        <input
+          ref={searchRef}
+          type="text"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search students"
+          aria-label="Search students"
+          autoComplete="off"
+          className="box-border h-[38px] w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none placeholder:text-muted focus:border-accent"
+        />
+      </div>
+      <MenuScroll className="min-h-0 flex-1 py-1">
+        <StudentOptions visible={visible} selectedIds={selectedIds} onToggle={toggle} onEdit={onEdit ? editStudent : undefined} />
+      </MenuScroll>
+      {variant === "dropdown" ? (
+        <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-3 py-2">
+          <p className="text-xs text-muted">
+            {selected.length === 0 ? "None selected" : `${selected.length} selected`}
+          </p>
+          <button
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={closeMenu}
+            className="cursor-pointer rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground transition-colors duration-200 hover:bg-accent-strong hover:text-white"
           >
-            <div className="border-b border-border p-2">
-              <input
-                ref={searchRef}
-                type="text"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search students"
-                aria-label="Search students"
-                autoComplete="off"
-                className="box-border h-[38px] w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none placeholder:text-muted focus:border-accent"
-              />
-            </div>
-            <MenuScroll className="max-h-52 py-1">
-            <ul>
-              {visible.length === 0 ? (
-                <li className="px-3 py-2 text-sm text-muted">No matches</li>
-              ) : (
-                visible.map((student) => {
-                  const checked = selectedIds.includes(student.id);
-                  return (
-                    <li key={student.id} role="presentation">
-                      <div className={`flex items-center gap-2 px-2 ${student.disabled ? "text-muted" : "text-foreground"}`}>
-                        <button
-                          type="button"
-                          role="option"
-                          aria-selected={checked}
-                          disabled={student.disabled}
-                          className={`menu-item flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-2 text-left text-sm ${
-                            student.disabled ? "cursor-not-allowed" : "hover:bg-surface-muted"
-                          } ${checked ? "text-accent-strong" : ""}`}
-                          onMouseDown={(event) => event.preventDefault()}
-                          onClick={() => toggle(student.id)}
-                        >
-                          <span
-                            aria-hidden
-                            className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-                              checked ? "border-accent bg-accent text-accent-foreground" : "border-border bg-background"
-                            }`}
-                          >
-                            {checked ? (
-                              <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none">
-                                <path d="m3.5 8 3 3 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            ) : null}
-                          </span>
-                          <StudentColumns name={student.name} grade={student.grade} note={student.note} />
-                        </button>
-                        {onEdit ? (
-                          <button
-                            type="button"
-                            aria-label={`Edit ${student.name}`}
-                            className="menu-item inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-muted hover:bg-accent-soft hover:text-accent"
-                            onMouseDown={(event) => event.preventDefault()}
-                            onClick={() => editStudent(student.id)}
-                          >
-                            <EditIcon />
-                          </button>
-                        ) : null}
-                      </div>
-                    </li>
-                  );
-                })
-              )}
-            </ul>
-            </MenuScroll>
-          </div>,
-          document.body,
-        )
-      : null;
+            Done
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+
+  if (variant === "panel") {
+    return (
+      <div ref={rootRef} className="relative">
+        {list}
+      </div>
+    );
+  }
 
   return (
     <div ref={rootRef} className="relative">
@@ -247,16 +259,19 @@ export function StudentMultiSelect({
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={listId}
-        onClick={() => {
-          setOpen((current) => !current);
-          if (open) setQuery("");
+        onMouseDown={(event) => {
+          event.preventDefault();
+          if (open) closeMenu();
+          else setOpen(true);
         }}
         className={triggerClass}
       >
-        <span className={`block w-full min-w-0 truncate text-left ${selected.length === 0 ? "text-muted" : "text-foreground"}`}>{triggerLabel}</span>
+        <span className={`block w-full min-w-0 truncate text-left ${selected.length === 0 ? "text-muted" : "text-foreground"}`}>
+          {triggerLabel}
+        </span>
         <Chevron open={open} />
       </button>
-      {menu}
+      {open ? list : null}
     </div>
   );
 }

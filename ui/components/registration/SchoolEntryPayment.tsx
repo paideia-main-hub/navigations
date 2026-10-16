@@ -13,8 +13,23 @@ import { RequiredMark } from "@/ui/components/RequiredMark";
 import { UploadProgress } from "@/ui/components/UploadProgress";
 import { useSchoolEntryList } from "@/ui/components/registration/SchoolHamperList";
 
-export function SchoolEntryPayment({ paymentAccount }: { paymentAccount: PaymentAccount }) {
+const sheetFooterClass = "border-t border-border bg-accent-soft px-5 py-4";
+const primaryBtnClass =
+  "w-full cursor-pointer rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:cursor-not-allowed disabled:opacity-50";
+const secondaryBtnClass =
+  "w-full rounded-full border border-border bg-surface px-5 py-2.5 text-center text-sm font-semibold text-foreground hover:border-accent";
+
+export function SchoolEntryPayment({
+  paymentAccount,
+  variant = "page",
+  onBack,
+}: {
+  paymentAccount: PaymentAccount;
+  variant?: "page" | "sheet";
+  onBack?: () => void;
+}) {
   const { entries, clearEntries } = useSchoolEntryList();
+  const sheet = variant === "sheet";
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptProgress, setReceiptProgress] = useState<number | null>(null);
   const [transfer, setTransfer] = useState<UploadProgressState | null>(null);
@@ -64,40 +79,71 @@ export function SchoolEntryPayment({ paymentAccount }: { paymentAccount: Payment
   }
 
   if (registrations) {
+    const successBody = (
+      <div className="rounded-2xl border border-accent/40 bg-accent-soft p-6 text-center shadow-sm">
+        <h2 className="text-xl font-extrabold tracking-tight text-accent-foreground">Registrations submitted</h2>
+        <ul className="mt-4 divide-y divide-accent/30 text-left">
+          {registrations.map((registration) => (
+            <li key={registration.registrationNumber} className="flex items-center justify-between gap-3 py-2.5">
+              <span className="min-w-0 truncate text-sm font-semibold text-foreground">{registration.competitionTitle}</span>
+              <span className="flex shrink-0 items-center gap-1">
+                <span className="font-mono text-xs font-bold text-foreground sm:text-sm">{registration.registrationNumber}</span>
+                <CopyButton text={registration.registrationNumber} label={`${registration.competitionTitle} registration number`} />
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 border-t border-accent/30 pt-4 text-sm font-medium leading-relaxed text-accent-foreground">
+          Your receipt has been submitted and is now under review. You&apos;ll see it marked approved on your dashboard once an
+          admin has checked it.
+        </p>
+      </div>
+    );
+    const successCta = (
+      <Link href="/dashboard" className={`inline-block text-center ${primaryBtnClass}`}>
+        Go to dashboard
+      </Link>
+    );
+    if (sheet) {
+      return (
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{successBody}</div>
+          <div className={sheetFooterClass}>{successCta}</div>
+        </div>
+      );
+    }
     return (
       <div className="mx-auto max-w-2xl space-y-4 text-center">
-        <div className="rounded-2xl border border-accent/40 bg-accent-soft p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold tracking-tight text-accent-foreground">Registrations submitted</h2>
-          <ul className="mt-4 divide-y divide-accent/30 text-left">
-            {registrations.map((registration) => (
-              <li key={registration.registrationNumber} className="flex items-center justify-between gap-3 py-2.5">
-                <span className="min-w-0 truncate text-sm font-semibold text-foreground">{registration.competitionTitle}</span>
-                <span className="flex shrink-0 items-center gap-1">
-                  <span className="font-mono text-xs font-bold text-foreground sm:text-sm">{registration.registrationNumber}</span>
-                  <CopyButton text={registration.registrationNumber} label={`${registration.competitionTitle} registration number`} />
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 border-t border-accent/30 pt-4 text-sm font-medium leading-relaxed text-accent-foreground">
-            Your receipt has been submitted and is now under review. You&apos;ll see it marked approved on your dashboard once an admin has checked it.
-          </p>
-        </div>
-        <Link
-          href="/dashboard"
-          className="inline-block rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
-        >
-          Go to dashboard
-        </Link>
+        {successBody}
+        {successCta}
       </div>
     );
   }
 
   if (entries.length === 0) {
-    return (
-      <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-surface p-6">
+    const emptyBody = (
+      <>
         <h2 className="text-xl font-extrabold tracking-tight text-foreground">Hamper is empty</h2>
         <p className="mt-2 text-sm text-muted">Add competitions first, then come back here to pay once for all of them.</p>
+      </>
+    );
+    if (sheet) {
+      return (
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{emptyBody}</div>
+          <div className={sheetFooterClass}>
+            {onBack ? (
+              <button type="button" onClick={onBack} className={secondaryBtnClass}>
+                Back to hamper
+              </button>
+            ) : null}
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-surface p-6">
+        {emptyBody}
         <Link href="/dashboard/register" className="mt-4 inline-block text-sm font-semibold text-accent-strong">
           ← Back to competitions
         </Link>
@@ -105,35 +151,47 @@ export function SchoolEntryPayment({ paymentAccount }: { paymentAccount: Payment
     );
   }
 
-  return (
-    <div className="mx-auto max-w-2xl space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-2xl font-extrabold tracking-tight text-foreground">Register - Checkout</h2>
-        <Link href="/dashboard/register" className="shrink-0 text-sm font-semibold text-accent-strong">
-          ← Back to competitions
-        </Link>
-      </div>
-      <div className="space-y-3">
+  const body = (
+    <>
+      {!sheet ? (
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-2xl font-extrabold tracking-tight text-foreground">Register - Checkout</h2>
+          <Link href="/dashboard/register" className="shrink-0 text-sm font-semibold text-accent-strong">
+            ← Back to competitions
+          </Link>
+        </div>
+      ) : null}
+      <div className="space-y-2">
         {entries.map((entry) => {
           const fee = schoolEntryFee(entry);
           return (
-            <article key={entry.id ?? entry.competitionSlug} className="rounded-2xl border border-border bg-surface p-4">
-              <h3 className="font-extrabold tracking-tight text-foreground">{entry.competitionTitle}</h3>
+            <article key={entry.id ?? entry.competitionSlug} className="rounded-xl border border-border bg-surface px-3 py-2.5">
+              <h3 className="truncate text-sm font-extrabold tracking-tight text-foreground">{entry.competitionTitle}</h3>
               {entry.entryType === "team" && entry.teamName ? (
-                <p className="mt-1 text-xs font-semibold tracking-wide text-muted uppercase">{entry.teamName}</p>
+                <p className="mt-0.5 truncate text-xs font-semibold tracking-wide text-muted uppercase">{entry.teamName}</p>
               ) : null}
-              <ul className="mt-3 divide-y divide-border text-sm">
+              <ul className="mt-1.5 text-xs">
                 {entry.students.map((student) => (
-                  <li key={student.id} className="grid grid-cols-[minmax(0,1fr)_5.5rem_6.75rem] items-center gap-3 py-2">
-                    <span className="truncate font-medium text-foreground">{student.fullName}</span>
-                    <span className="text-xs text-muted">{student.grade ? `Grade ${student.grade}` : ""}</span>
-                    <span className="text-right font-normal text-foreground">
+                  <li
+                    key={student.id}
+                    className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-center gap-2 border-t border-border/70 py-1 first:border-t-0 first:pt-0"
+                  >
+                    <span className="truncate font-medium text-foreground">
+                      {student.fullName}
+                      {student.grade ? <span className="font-normal text-muted"> · Grade {student.grade}</span> : null}
+                    </span>
+                    <span className="text-right text-foreground">
                       {entry.feeAmount != null ? formatFee(entry.feeAmount) : "—"}
                     </span>
                   </li>
                 ))}
+                <li className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-center gap-2 border-t border-border pt-1.5">
+                  <span className="text-muted" aria-hidden="true" />
+                  <span className="text-right text-sm font-semibold text-foreground">
+                    {fee != null ? formatFee(fee) : "Fee not set"}
+                  </span>
+                </li>
               </ul>
-              <p className="mt-2 text-right text-sm font-semibold text-foreground">{fee != null ? formatFee(fee) : "Fee not set"}</p>
             </article>
           );
         })}
@@ -146,6 +204,7 @@ export function SchoolEntryPayment({ paymentAccount }: { paymentAccount: Payment
         account={paymentAccount}
         amount={total != null ? formatFee(total) : null}
         prominent
+        horizontal={sheet}
         note="One receipt covers every student in this hamper. An admin reviews it before the registrations are approved."
       />
       <div>
@@ -157,7 +216,7 @@ export function SchoolEntryPayment({ paymentAccount }: { paymentAccount: Payment
           type="file"
           accept="image/*,application/pdf"
           onChange={onReceiptChange}
-          className="student-photo-file mt-1 block w-full cursor-pointer rounded-lg border border-border bg-background px-1.5 text-sm text-foreground outline-none file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-accent-soft file:px-3 file:text-sm file:font-semibold file:text-accent-strong hover:file:bg-accent-soft/80 focus:border-accent"
+          className="student-photo-file mt-1 block h-[38px] w-full cursor-pointer rounded-lg border border-border bg-background px-1.5 text-sm text-foreground outline-none file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-accent-soft file:px-3 file:text-sm file:font-semibold file:text-accent-strong hover:file:bg-accent-soft/80 focus:border-accent"
         />
         {transfer ? (
           <div className="mt-2">
@@ -173,15 +232,44 @@ export function SchoolEntryPayment({ paymentAccount }: { paymentAccount: Payment
           </div>
         ) : null}
       </div>
-      {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
-      <button
-        type="button"
-        onClick={submit}
-        disabled={submitting || !receiptFile || total == null}
-        className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-50"
-      >
-        {submitting ? "Submitting…" : "Submit registration"}
-      </button>
+      {!sheet && error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+    </>
+  );
+
+  const actions = (
+    <>
+      {sheet && error ? <p className="mb-3 text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+      <div className="flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={submit}
+          disabled={submitting || !receiptFile || total == null}
+          className={primaryBtnClass}
+        >
+          {submitting ? "Submitting…" : "Submit registration"}
+        </button>
+        {sheet && onBack ? (
+          <button type="button" onClick={onBack} className={secondaryBtnClass}>
+            Back to hamper
+          </button>
+        ) : null}
+      </div>
+    </>
+  );
+
+  if (sheet) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">{body}</div>
+        <div className={sheetFooterClass}>{actions}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-4">
+      {body}
+      {actions}
     </div>
   );
 }

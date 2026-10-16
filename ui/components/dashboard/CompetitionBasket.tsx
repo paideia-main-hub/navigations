@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { resolveCompetitionCardImage } from "@/domain/competitions/cardImage";
@@ -13,8 +13,7 @@ import {
 } from "@/domain/competitions/types";
 import type { PaymentAccount } from "@/domain/payments/types";
 import { Badge } from "@/ui/components/Badge";
-import { AnimatedModal, ModalCloseButton } from "@/ui/components/AnimatedModal";
-import { MenuScroll } from "@/ui/components/MenuScroll";
+import { RegistrationFormDialog } from "@/ui/components/registration/RegistrationFormDialog";
 import { RegistrationWizard } from "@/ui/components/registration/RegistrationWizard";
 import { useStudentHamper } from "@/ui/components/registration/StudentHamperList";
 import { dashboardHeroCtaClass } from "@/ui/components/dashboard/DashboardHero";
@@ -42,22 +41,29 @@ function gradeRange(c: CompetitionSummary): string {
 
 /** Browse open competitions → complete the form → add to hamper → pay once.
  * Mirrors the school coordinator hamper flow. */
+export type CompetitionCardStanding = "registered" | "pending";
+
 export function CompetitionBasket({
   competitions,
-  registeredSlugs,
+  standingBySlug,
   student,
   paymentAccount,
 }: {
   competitions: CompetitionSummary[];
-  registeredSlugs: string[];
+  /** Per competition: registered only after payment approval; otherwise pending review. */
+  standingBySlug: Record<string, CompetitionCardStanding>;
   student: StudentInfo;
   paymentAccount: PaymentAccount;
 }) {
-  const registered = useMemo(() => new Set(registeredSlugs), [registeredSlugs]);
   const hamper = useStudentHamper();
   const [query, setQuery] = useState("");
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const titleId = useId();
+  const editing = hamper.editing;
+
+  useEffect(() => {
+    if (editing) setActiveSlug(editing.competitionSlug);
+  }, [editing]);
 
   const needle = query.trim().toLowerCase();
   const shownCompetitions = needle
@@ -71,9 +77,11 @@ export function CompetitionBasket({
     : competitions;
 
   const active = competitions.find((c) => c.slug === activeSlug) ?? null;
+  const editingActive = editing?.competitionSlug === active?.slug ? editing : null;
 
   function closeModal() {
     setActiveSlug(null);
+    hamper.clearEditing();
   }
 
   return (
@@ -103,13 +111,13 @@ export function CompetitionBasket({
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {shownCompetitions.map((c) => {
-            const isRegistered = registered.has(c.slug);
+            const standing = standingBySlug[c.slug] ?? null;
             const inHamper = hamper.hasEntry(c.slug);
             const imageSrc = resolveCompetitionCardImage(c.imageUrl);
             return (
               <li
                 key={c.slug}
-                className={`${dashboardGlowCardClass} flex flex-col p-4 ${inHamper ? "ring-accent hover:ring-accent" : ""}`}
+                className={`${dashboardGlowCardClass} flex flex-col p-4 ${inHamper && !standing ? "ring-accent hover:ring-accent" : ""}`}
               >
                 {imageSrc ? (
                   <>
@@ -142,9 +150,13 @@ export function CompetitionBasket({
                   </div>
                   <div className="mt-auto flex items-center justify-between gap-3 pt-4">
                     <span className="text-sm font-semibold text-foreground">{feeLabel(c)}</span>
-                    {isRegistered ? (
+                    {standing === "registered" ? (
                       <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                         Registered ✓
+                      </span>
+                    ) : standing === "pending" ? (
+                      <span className="rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
+                        Review pending
                       </span>
                     ) : inHamper ? (
                       <button
@@ -157,7 +169,10 @@ export function CompetitionBasket({
                     ) : (
                       <button
                         type="button"
-                        onClick={() => setActiveSlug(c.slug)}
+                        onClick={() => {
+                          hamper.clearEditing();
+                          setActiveSlug(c.slug);
+                        }}
                         className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
                       >
                         Add
@@ -174,28 +189,25 @@ export function CompetitionBasket({
 
       {active
         ? createPortal(
-            <AnimatedModal onClose={closeModal} labelledBy={titleId} panelClassName="max-h-[min(92vh,900px)] max-w-3xl">
-              <MenuScroll className="max-h-[min(92vh,900px)] p-5 sm:p-6">
-                <div className="mb-4 flex items-start justify-between gap-3">
-                  <h2 id={titleId} className="text-xl font-extrabold tracking-tight text-foreground">
-                    Register for {active.title}
-                  </h2>
-                  <ModalCloseButton />
-                </div>
-                <RegistrationWizard
-                  key={active.slug}
-                  competition={active}
-                  mode="student"
-                  studentName={student.fullName}
-                  studentId={student.studentId ?? undefined}
-                  paymentAccount={paymentAccount}
-                  onAddedToList={() => {
-                    closeModal();
-                    hamper.openDrawer();
-                  }}
-                />
-              </MenuScroll>
-            </AnimatedModal>,
+            <RegistrationFormDialog
+              titleId={titleId}
+              title={editingActive ? `Edit ${active.title}` : `Register for ${active.title}`}
+              onClose={closeModal}
+            >
+              <RegistrationWizard
+                key={editingActive ? `edit-${active.slug}` : active.slug}
+                competition={active}
+                mode="student"
+                studentName={student.fullName}
+                studentId={student.studentId ?? undefined}
+                paymentAccount={paymentAccount}
+                initialDraft={editingActive}
+                onAddedToList={() => {
+                  closeModal();
+                  hamper.openDrawer();
+                }}
+              />
+            </RegistrationFormDialog>,
             document.body,
           )
         : null}

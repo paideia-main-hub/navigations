@@ -1,4 +1,11 @@
-/** Public contact details — single source for Contact page and WhatsApp CTA. */
+/**
+ * Public contact details — single source for Contact page and WhatsApp CTA.
+ *
+ * Canonical import path is `@/domain/site/contact` (see tsconfig paths).
+ * This file is the on-disk home while MEGA keeps `domain/site/` locked locally;
+ * after that folder is deleted/unlocked, move this content to
+ * `domain/site/contact.ts` and remove the tsconfig path override.
+ */
 export const CONTACT_EMAIL = "admin@navigations.com.pk";
 export const CONTACT_PHONE_DISPLAY = "0320 7000760";
 /** E.164 digits only (no +) for tel: and wa.me links. */

@@ -7,14 +7,17 @@ import type { ReactNode } from "react";
 export function StepMotion({
   step,
   direction,
+  className = "",
   children,
 }: {
   step: string | number;
   direction: "forward" | "back";
+  className?: string;
   children: ReactNode;
 }) {
+  const motion = direction === "back" ? "step-motion step-enter-back" : "step-motion step-enter-forward";
   return (
-    <div key={`${step}:${direction}`} className={direction === "back" ? "step-motion step-enter-back" : "step-motion step-enter-forward"}>
+    <div key={`${step}:${direction}`} className={`${motion} ${className}`.trim()}>
       {children}
     </div>
   );

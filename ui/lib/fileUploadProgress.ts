@@ -52,7 +52,11 @@ function trackedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Res
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open(method, requestUrl(input));
-    xhr.withCredentials = init?.credentials === "include";
+    // Next server actions use credentials: "same-origin" (the fetch default).
+    // Only checking for "include" left withCredentials false, so the session
+    // cookie was omitted and auth looked logged-out during receipt uploads.
+    const credentials = init?.credentials ?? "same-origin";
+    xhr.withCredentials = credentials !== "omit";
     xhr.responseType = "text";
 
     for (const [key, value] of headerEntries(init?.headers)) {

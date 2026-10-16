@@ -7,6 +7,7 @@ import { getCoordinatorAvatarUrl } from "@/domain/profiles/avatar";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { getOwnStudentProfile } from "@/domain/students/service";
 import { listHeaderNotices } from "@/domain/announcements/service";
+import { getPaymentAccount } from "@/domain/payments/service";
 import { Header } from "@/ui/components/Header";
 import { Footer } from "@/ui/components/Footer";
 import { LoginModalProvider } from "@/ui/components/LoginModalContext";
@@ -50,7 +51,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
         : null;
   const school = isCoordinator ? await getCoordinatorSchool(createAdminClient(), user.id) : null;
   const schoolName = school?.officialName.trim() || null;
-  const notices = isCoordinator ? await listHeaderNotices(await createClient()) : undefined;
+  const notices =
+    isCoordinator || user.role === "student" ? await listHeaderNotices(await createClient()) : undefined;
+  const paymentAccount =
+    isCoordinator || user.role === "student" ? await getPaymentAccount(await createClient()) : null;
   const headerUser = { id: user.id, fullName: user.fullName, role: user.role, photoUrl, subtitle: schoolName, notices };
   const shell = (
     <DashboardShell
@@ -73,10 +77,18 @@ export default async function DashboardLayout({ children }: { children: React.Re
   );
 
   const withHamper =
-    isCoordinator ? (
-      <SchoolEntryListProvider storageKey={school?.id ?? user.id}>{frame}</SchoolEntryListProvider>
-    ) : user.role === "student" ? (
-      <StudentHamperProvider storageKey={student?.frlId ?? user.id}>{frame}</StudentHamperProvider>
+    isCoordinator && paymentAccount ? (
+      <SchoolEntryListProvider storageKey={school?.id ?? user.id} paymentAccount={paymentAccount}>
+        {frame}
+      </SchoolEntryListProvider>
+    ) : user.role === "student" && paymentAccount ? (
+      <StudentHamperProvider
+        storageKey={student?.frlId ?? user.id}
+        paymentAccount={paymentAccount}
+        studentName={user.fullName}
+      >
+        {frame}
+      </StudentHamperProvider>
     ) : (
       frame
     );

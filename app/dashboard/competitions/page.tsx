@@ -8,9 +8,9 @@ import type { PaymentStatus } from "@/domain/payments/types";
 import { registrationListStatus, type Registration } from "@/domain/registrations/types";
 import { getPublishedResultsFor } from "@/domain/results/service";
 import { listCompetitions } from "@/domain/competitions/service";
-import { RegistrationCard, type CardEntrant } from "@/ui/components/dashboard/RegistrationCard";
+import type { CardEntrant } from "@/ui/components/dashboard/RegistrationCard";
 import { MyCompetitionsPanel } from "@/ui/components/dashboard/MyCompetitionsPanel";
-import { DashboardHero, dashboardHeroCtaClass } from "@/ui/components/dashboard/DashboardHero";
+import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
 function paymentStatusFor(registrations: Registration[]): PaymentStatus | null {
@@ -104,6 +104,12 @@ export default async function MyCompetitionsPage() {
   );
 }
 
+/** Review pending or payment approved — exclude rejected entries from the list/search. */
+function isOpenStanding(registration: Registration): boolean {
+  const standing = registrationListStatus(registration);
+  return standing.key === "pending" || standing.key === "registered";
+}
+
 async function SchoolCompetitions({ userId }: { userId: string }) {
   const supabase = await createClient();
   const school = await getCoordinatorSchool(supabase, userId);
@@ -122,7 +128,9 @@ async function SchoolCompetitions({ userId }: { userId: string }) {
   const competitionsBySlug = new Map(allCompetitions.map((competition) => [competition.slug, competition]));
   const results = await getPublishedResultsFor(supabase, allRegistrations.map((registration) => registration.id));
   const active = allRegistrations.filter(
-    (registration) => !isRegistrationConcluded(registration, competitionsBySlug.get(registration.competitionSlug), results.has(registration.id)),
+    (registration) =>
+      isOpenStanding(registration) &&
+      !isRegistrationConcluded(registration, competitionsBySlug.get(registration.competitionSlug), results.has(registration.id)),
   );
 
   const bySlug = new Map<string, Registration[]>();
@@ -132,12 +140,22 @@ async function SchoolCompetitions({ userId }: { userId: string }) {
     bySlug.set(registration.competitionSlug, list);
   }
 
-  const cards = [...bySlug.entries()]
-    .map(([slug, registrations]) => ({
-      registrations,
-      competition: competitionsBySlug.get(slug),
-    }))
-    .sort((a, b) => a.registrations[0].competitionTitle.localeCompare(b.registrations[0].competitionTitle));
+  const items = [...bySlug.entries()]
+    .map(([slug, registrations]) => {
+      const lead = registrations[0];
+      const entrants = entrantsFor(registrations);
+      return {
+        key: slug,
+        registration: lead,
+        competition: competitionsBySlug.get(slug),
+        result: registrations.map((registration) => results.get(registration.id)).find(Boolean),
+        status: deriveDisplayStatus(lead, competitionsBySlug.get(slug)),
+        paymentStatus: paymentStatusFor(registrations),
+        entrants,
+        searchText: entrants.map((entrant) => entrant.name).join(" "),
+      };
+    })
+    .sort((a, b) => a.registration.competitionTitle.localeCompare(b.registration.competitionTitle));
 
   return (
     <>
@@ -155,35 +173,15 @@ async function SchoolCompetitions({ userId }: { userId: string }) {
         }
       />
       <DashboardPage>
-        <div className="mt-6 flex justify-end">
-          <Link href="/dashboard/register" prefetch className={dashboardHeroCtaClass}>
-            {allRegistrations.length > 0 ? "Register for more competitions" : "Register for competitions"}
-          </Link>
-        </div>
-        <div className="mt-4 space-y-4">
-          {cards.map(({ registrations, competition }) => {
-            const lead = registrations[0];
-            const result = registrations.map((registration) => results.get(registration.id)).find(Boolean);
-            return (
-              <RegistrationCard
-                key={lead.competitionSlug}
-                registration={lead}
-                competition={competition}
-                result={result}
-                status={deriveDisplayStatus(lead, competition)}
-                paymentStatus={paymentStatusFor(registrations)}
-                entrants={entrantsFor(registrations)}
-              />
-            );
-          })}
-          {cards.length === 0 && (
-            <div className="rounded-xl border border-border bg-surface p-8 text-center text-muted">
-              {allRegistrations.length === 0
-                ? "No students have been registered for a competition yet."
-                : "Nothing active right now — check History & Results for past competitions."}
-            </div>
-          )}
-        </div>
+        <MyCompetitionsPanel
+          registerLabel={allRegistrations.length > 0 ? "Register for more competitions" : "Register for competitions"}
+          emptyMessage={
+            allRegistrations.length === 0
+              ? "No students have been registered for a competition yet."
+              : "Nothing active right now — check History & Results for past competitions."
+          }
+          items={items}
+        />
       </DashboardPage>
     </>
   );

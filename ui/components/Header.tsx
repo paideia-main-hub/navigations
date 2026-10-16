@@ -32,9 +32,14 @@ export type HeaderUser = {
   notices?: HeaderNotice[];
 };
 
+function canShowAnnouncements(role: UserRole) {
+  return role === "school_coordinator" || role === "student";
+}
+
 export function Header({ user = null }: { user?: HeaderUser | null }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { openLogin } = useLoginModal();
+  const showBell = Boolean(user?.id && user.notices && canShowAnnouncements(user.role));
 
   return (
     <header className="fixed inset-x-0 top-4 z-50 px-4 sm:top-6 sm:px-6">
@@ -54,7 +59,7 @@ export function Header({ user = null }: { user?: HeaderUser | null }) {
 
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <ThemeToggle />
-            {user?.role === "school_coordinator" && user.id && user.notices ? (
+            {showBell && user?.id && user.notices ? (
               <AnnouncementBell userId={user.id} notices={user.notices} />
             ) : null}
             {user?.role === "school_coordinator" ? <EntryListHeaderButton /> : null}

@@ -26,6 +26,13 @@ export function studentEntryMemberCount(entry: StudentHamperDraft): number {
   return 1 + entry.teammateNames.filter((name) => name.trim()).length;
 }
 
+/** Display rows for the hamper card table — student first, then teammates. */
+export function studentEntryEntrantNames(entry: StudentHamperDraft, studentName: string): string[] {
+  const self = studentName.trim() || "You";
+  if (entry.entryType !== "team") return [self];
+  return [self, ...entry.teammateNames.map((name) => name.trim()).filter(Boolean)];
+}
+
 export function studentEntryFee(entry: StudentHamperDraft): number | null {
   if (entry.feeAmount == null) return null;
   return entry.feeAmount * studentEntryMemberCount(entry);

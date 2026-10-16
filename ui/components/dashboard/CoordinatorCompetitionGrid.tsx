@@ -19,10 +19,9 @@ import type { SchoolEntryStudent } from "@/domain/registrations/schoolEntries";
 import type { StudentProfile } from "@/domain/students/types";
 import { teamVisibleForCompetition, type Team } from "@/domain/teams/types";
 import { Badge } from "@/ui/components/Badge";
-import { MenuScroll } from "@/ui/components/MenuScroll";
-import { AnimatedModal, ModalCloseButton } from "@/ui/components/AnimatedModal";
 import { useSchoolEntryList } from "@/ui/components/registration/SchoolHamperList";
 import { EditSchoolEntry } from "@/ui/components/registration/EditSchoolEntry";
+import { RegistrationFormDialog } from "@/ui/components/registration/RegistrationFormDialog";
 import { RegistrationWizard } from "@/ui/components/registration/RegistrationWizard";
 import { dashboardHeroCtaClass } from "@/ui/components/dashboard/DashboardHero";
 import { dashboardGlowCardClass, dashboardGlowOrbClass } from "@/ui/components/dashboard/dashboardGlowCard";
@@ -186,107 +185,94 @@ export function CoordinatorCompetitionGrid({
       ) : null}
       {active
         ? createPortal(
-            <AnimatedModal onClose={closeModal} labelledBy={titleId} panelClassName="max-h-[min(92vh,900px)] max-w-3xl">
-              <MenuScroll className="max-h-[min(92vh,900px)] p-5 sm:p-6">
-                <RegistrationDialogHeader
-                  titleId={titleId}
-                  title={editing?.competitionSlug === active.slug ? `Edit ${active.title}` : `Register for ${active.title}`}
-                />
-                {editing?.competitionSlug === active.slug ? (
-                  <EditSchoolEntry
-                    key={editing.id ?? editing.competitionSlug}
-                    competition={active}
-                    draft={editing}
-                    roster={roster}
-                    teams={schoolTeams.filter((team) =>
-                      teamVisibleForCompetition(
-                        team,
-                        active.id,
-                        entries
-                          .filter((entry) => entry.competitionSlug === active.slug)
-                          .flatMap((entry) =>
-                            [entry.teamId, entry.teamName?.trim().toLowerCase()].filter((value): value is string => Boolean(value)),
-                          ),
-                      ),
+            <RegistrationFormDialog
+              titleId={titleId}
+              title={editing?.competitionSlug === active.slug ? `Edit ${active.title}` : `Register for ${active.title}`}
+              onClose={closeModal}
+            >
+              {editing?.competitionSlug === active.slug ? (
+                <EditSchoolEntry
+                  key={editing.id ?? editing.competitionSlug}
+                  competition={active}
+                  draft={editing}
+                  roster={roster}
+                  teams={schoolTeams.filter((team) =>
+                    teamVisibleForCompetition(
+                      team,
+                      active.id,
+                      entries
+                        .filter((entry) => entry.competitionSlug === active.slug)
+                        .flatMap((entry) =>
+                          [entry.teamId, entry.teamName?.trim().toLowerCase()].filter((value): value is string => Boolean(value)),
+                        ),
+                    ),
+                  )}
+                  reservedTeamIds={entries
+                    .filter((entry) => entry.competitionSlug === active.slug)
+                    .flatMap((entry) =>
+                      [entry.teamId, entry.teamName?.trim().toLowerCase()].filter((value): value is string => Boolean(value)),
                     )}
-                    reservedTeamIds={entries
-                      .filter((entry) => entry.competitionSlug === active.slug)
-                      .flatMap((entry) =>
-                        [entry.teamId, entry.teamName?.trim().toLowerCase()].filter((value): value is string => Boolean(value)),
-                      )}
-                    reservedStudentIds={entries
-                      .filter(
-                        (entry) =>
-                          entry.competitionSlug === active.slug &&
-                          (entry.id ?? entry.competitionSlug) !== (editing.id ?? editing.competitionSlug),
-                      )
-                      .flatMap((entry) => entry.students.map((student) => student.id))}
-                    onTeamUpdated={(team) =>
-                      setSchoolTeams((current) => current.map((item) => (item.id === team.id ? team : item)))
-                    }
-                    onSaved={(entry) => {
-                      replaceEntry(editing.id ?? editing.competitionSlug, entry);
-                      closeModal();
-                      openDrawer();
-                    }}
-                  />
-                ) : (
-                  <RegistrationWizard
-                    key={active.slug}
-                    competition={active}
-                    mode="school"
-                    schoolId={schoolId}
-                    schoolName={schoolName}
-                    roster={roster}
-                    teams={schoolTeams}
-                    paymentAccount={paymentAccount}
-                    reservedStudentIds={entries
-                      .filter((entry) => entry.competitionSlug === active.slug)
-                      .flatMap((entry) => entry.students.map((student) => student.id))}
-                    reservedTeamIds={entries
-                      .filter((entry) => entry.competitionSlug === active.slug)
-                      .flatMap((entry) =>
-                        [entry.teamId, entry.teamName?.trim().toLowerCase()].filter((value): value is string => Boolean(value)),
-                      )}
-                    listedMembers={entries
-                      .filter((entry) => entry.competitionSlug === active.slug)
-                      .flatMap((entry) => entry.students.map((student) => ({ studentId: student.id, teamId: entry.teamId })))}
-                    onTeamUpdated={(team) => {
-                      setSchoolTeams((current) => current.map((item) => (item.id === team.id ? team : item)));
-                      const students: SchoolEntryStudent[] = team.members.flatMap((member) => {
-                        const grade = member.grade?.trim() ?? "";
-                        const rule = active.eligibility.find((item) => grade && isGradeEligible(item.minGrade, item.maxGrade, grade));
-                        if (!rule) return [];
-                        return [
-                          {
-                            id: member.studentId,
-                            fullName: member.studentName,
-                            grade: member.grade,
-                            category: rule.category as AgeCategory,
-                          },
-                        ];
-                      });
-                      updateListedTeam(team.id, team.name, students);
-                    }}
-                    onAddedToList={closeModal}
-                  />
-                )}
-              </MenuScroll>
-            </AnimatedModal>,
+                  reservedStudentIds={entries
+                    .filter(
+                      (entry) =>
+                        entry.competitionSlug === active.slug &&
+                        (entry.id ?? entry.competitionSlug) !== (editing.id ?? editing.competitionSlug),
+                    )
+                    .flatMap((entry) => entry.students.map((student) => student.id))}
+                  onTeamUpdated={(team) =>
+                    setSchoolTeams((current) => current.map((item) => (item.id === team.id ? team : item)))
+                  }
+                  onSaved={(entry) => {
+                    replaceEntry(editing.id ?? editing.competitionSlug, entry);
+                    closeModal();
+                    openDrawer();
+                  }}
+                />
+              ) : (
+                <RegistrationWizard
+                  key={active.slug}
+                  competition={active}
+                  mode="school"
+                  schoolId={schoolId}
+                  schoolName={schoolName}
+                  roster={roster}
+                  teams={schoolTeams}
+                  paymentAccount={paymentAccount}
+                  reservedStudentIds={entries
+                    .filter((entry) => entry.competitionSlug === active.slug)
+                    .flatMap((entry) => entry.students.map((student) => student.id))}
+                  reservedTeamIds={entries
+                    .filter((entry) => entry.competitionSlug === active.slug)
+                    .flatMap((entry) =>
+                      [entry.teamId, entry.teamName?.trim().toLowerCase()].filter((value): value is string => Boolean(value)),
+                    )}
+                  listedMembers={entries
+                    .filter((entry) => entry.competitionSlug === active.slug)
+                    .flatMap((entry) => entry.students.map((student) => ({ studentId: student.id, teamId: entry.teamId })))}
+                  onTeamUpdated={(team) => {
+                    setSchoolTeams((current) => current.map((item) => (item.id === team.id ? team : item)));
+                    const students: SchoolEntryStudent[] = team.members.flatMap((member) => {
+                      const grade = member.grade?.trim() ?? "";
+                      const rule = active.eligibility.find((item) => grade && isGradeEligible(item.minGrade, item.maxGrade, grade));
+                      if (!rule) return [];
+                      return [
+                        {
+                          id: member.studentId,
+                          fullName: member.studentName,
+                          grade: member.grade,
+                          category: rule.category as AgeCategory,
+                        },
+                      ];
+                    });
+                    updateListedTeam(team.id, team.name, students);
+                  }}
+                  onAddedToList={closeModal}
+                />
+              )}
+            </RegistrationFormDialog>,
             document.body,
           )
         : null}
     </>
-  );
-}
-
-function RegistrationDialogHeader({ titleId, title }: { titleId: string; title: string }) {
-  return (
-    <div className="mb-4 flex items-start justify-between gap-3">
-      <h2 id={titleId} className="pr-2 text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
-        {title}
-      </h2>
-      <ModalCloseButton />
-    </div>
   );
 }

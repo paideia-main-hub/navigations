@@ -12,7 +12,10 @@ export default async function PublicLayout({ children }: { children: React.React
   const user = await getCurrentUser();
   const supabase = user ? await createClient() : null;
   const student = user?.role === "student" && supabase ? await getOwnStudentProfile(supabase, user.id) : null;
-  const notices = user?.role === "school_coordinator" && supabase ? await listHeaderNotices(supabase) : undefined;
+  const notices =
+    (user?.role === "school_coordinator" || user?.role === "student") && supabase
+      ? await listHeaderNotices(supabase)
+      : undefined;
   const headerUser = user
     ? {
         id: user.id,

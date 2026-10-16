@@ -187,6 +187,7 @@ export function EditSchoolEntry({
         ) : (
           <div className="mt-1">
             <StudentMultiSelect
+              variant="panel"
               ariaLabel={draft.entryType === "team" ? "Team members" : "Students"}
               students={eligible.map((student) => {
                 const reserved = reservedStudentIds.includes(student.id);

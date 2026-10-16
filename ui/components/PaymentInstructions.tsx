@@ -17,11 +17,14 @@ export function PaymentInstructions({
   amount,
   note,
   prominent = false,
+  /** Label + value on one row each — fits the narrow hamper checkout sheet. */
+  horizontal = false,
 }: {
   account: PaymentAccount;
   amount: string | null;
   note?: string;
   prominent?: boolean;
+  horizontal?: boolean;
 }) {
   const rows = ROWS.flatMap(([label, key]) => {
     const value = account[key].trim();
@@ -46,11 +49,22 @@ export function PaymentInstructions({
             <p className="text-xs font-semibold tracking-wide text-muted uppercase">Bank details</p>
             <CopyButton text={rows.map((row) => `${row.label}: ${row.value}`).join("\n")} label="bank details" />
           </div>
-          <dl className="grid gap-3 sm:grid-cols-2">
+          <dl className={horizontal ? "divide-y divide-border/70" : "grid gap-3 sm:grid-cols-2"}>
             {rows.map((row) => (
-              <div key={row.label}>
-                <dt className="text-xs text-muted">{row.label}</dt>
-                <dd className="font-semibold break-all text-foreground">{row.value}</dd>
+              <div
+                key={row.label}
+                className={horizontal ? "flex items-baseline justify-between gap-3 py-2 first:pt-0 last:pb-0" : undefined}
+              >
+                <dt className={horizontal ? "shrink-0 text-xs text-muted" : "text-xs text-muted"}>{row.label}</dt>
+                <dd
+                  className={
+                    horizontal
+                      ? "min-w-0 text-right text-sm font-semibold break-all text-foreground"
+                      : "font-semibold break-all text-foreground"
+                  }
+                >
+                  {row.value}
+                </dd>
               </div>
             ))}
           </dl>

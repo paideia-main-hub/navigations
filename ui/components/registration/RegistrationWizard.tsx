@@ -142,6 +142,7 @@ export function RegistrationWizard({
   reservedStudentIds = [],
   reservedTeamIds = [],
   listedMembers = [],
+  initialDraft = null,
   onTeamUpdated,
   onAddedToList,
 }: {
@@ -164,6 +165,8 @@ export function RegistrationWizard({
   reservedTeamIds?: string[];
   /** Students already entered for this competition, with the team they belong to. */
   listedMembers?: { studentId: string; teamId?: string }[];
+  /** Prefill from a hamper entry when the student is editing an existing draft. */
+  initialDraft?: StudentHamperDraft | null;
   /** Called after a team is edited so the entry list can show the new members. */
   onTeamUpdated?: (team: Team) => void;
   /** School flow: called after the competition is added, so a popup can close. */
@@ -174,7 +177,12 @@ export function RegistrationWizard({
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
   const [alreadyEntered, setAlreadyEntered] = useState<string | null>(null);
   const [standingPending, setStandingPending] = useState(false);
-  const [step, setStep] = useState<Step>(mode === "school" ? "entry" : "eligibility");
+  const editingHamper = Boolean(initialDraft && initialDraft.competitionSlug === competition.slug);
+  const [step, setStep] = useState<Step>(() => {
+    if (mode === "school") return "entry";
+    if (editingHamper) return "review";
+    return "eligibility";
+  });
   const [direction, setDirection] = useState<"forward" | "back">("forward");
 
   function appendStudent(student: StudentProfile) {
@@ -225,14 +233,20 @@ export function RegistrationWizard({
     setDirection(order.indexOf(next) < order.indexOf(step) ? "back" : "forward");
     setStep(next);
   }
-  const [grade, setGrade] = useState("");
-  const [matchedRule, setMatchedRule] = useState<CompetitionSummary["eligibility"][number] | null>(null);
+  const seed = initialDraft && initialDraft.competitionSlug === competition.slug ? initialDraft : null;
+  const [grade, setGrade] = useState(seed?.grade ?? "");
+  const [matchedRule, setMatchedRule] = useState<CompetitionSummary["eligibility"][number] | null>(() => {
+    if (!seed?.grade) return null;
+    return competition.eligibility.find((rule) => isGradeEligible(rule.minGrade, rule.maxGrade, seed.grade)) ?? null;
+  });
   const [ineligible, setIneligible] = useState(false);
 
   const allowIndividual = competition.supportsIndividual;
   const allowTeam = competition.supportsTeam;
   const teamOnly = allowTeam && !allowIndividual;
-  const [entryType, setEntryType] = useState<"individual" | "team">(teamOnly ? "team" : "individual");
+  const [entryType, setEntryType] = useState<"individual" | "team">(
+    seed?.entryType ?? (teamOnly ? "team" : "individual"),
+  );
 
   /** mode="school" + entryType="individual" only: a coordinator can enter
    * more than one student from the roster at once, one registration each,
@@ -240,11 +254,16 @@ export function RegistrationWizard({
    * this is the "multiply by number of students" the coordinator flow needs
    * and the old single-select dropdown couldn't express. */
   const [selectedIndividualIds, setSelectedIndividualIds] = useState<string[]>([]);
-  const [teamName, setTeamName] = useState("");
-  const [teamMemberNames, setTeamMemberNames] = useState<string[]>([""]);
+  const [teamName, setTeamName] = useState(seed?.teamName ?? "");
+  const [teamMemberNames, setTeamMemberNames] = useState<string[]>(() => {
+    if (seed?.entryType === "team" && seed.teammateNames.length > 0) return seed.teammateNames;
+    return [""];
+  });
   const [selectedRosterIds, setSelectedRosterIds] = useState<string[]>([]);
 
-  const [consent, setConsent] = useState({ terms: false, privacy: false, results: false, photo: false });
+  const [consent, setConsent] = useState(
+    seed?.consent ?? { terms: false, privacy: false, results: false, photo: false },
+  );
   const [results, setResults] = useState<Registration[]>([]);
 
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
@@ -853,7 +872,11 @@ export function RegistrationWizard({
             ) : null}
             <button
               onClick={() => moveTo("consent")}
-              disabled={entryType === "team" && !teamName.trim()}
+              disabled={
+                entryType === "team" &&
+                mode === "student" &&
+                (!teamName.trim() || studentTeamSize < teamMin || studentTeamSize > teamMax)
+              }
               className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-50"
             >
               Continue
@@ -864,8 +887,7 @@ export function RegistrationWizard({
 
       {step === "consent" && (
         <div className="space-y-5 rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-5">
-          {schoolEntryEditor}
-          <div className="space-y-3 border-t border-border pt-5">
+          <div className="space-y-3">
             <h2 className="text-xl font-bold text-foreground">Consent</h2>
             <div className="space-y-2">
               {[
@@ -889,7 +911,6 @@ export function RegistrationWizard({
             </div>
           </div>
           <div className="space-y-3 border-t border-border pt-4">
-            {schoolJourneyNote}
             <div className="flex items-center gap-3">
               <button
                 onClick={() => moveTo("entry")}
@@ -913,7 +934,19 @@ export function RegistrationWizard({
         <div className="space-y-5 rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-5">
           {schoolEntryEditor}
           <div className="space-y-3 border-t border-border pt-5">
-            <h2 className="text-xl font-bold text-foreground">Review</h2>
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-xl font-bold text-foreground">Review</h2>
+              {mode === "student" ? (
+                <button
+                  type="button"
+                  onClick={() => moveTo("entry")}
+                  className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-accent hover:underline"
+                >
+                  <EditIcon />
+                  Edit details
+                </button>
+              ) : null}
+            </div>
             <div className="overflow-hidden rounded-2xl border border-border bg-background text-sm">
             <div className="grid sm:grid-cols-2">
               <div className="border-b border-border px-4 py-3 sm:border-r">
@@ -921,16 +954,74 @@ export function RegistrationWizard({
                 <p className="mt-1 font-semibold text-foreground">{competition.title}</p>
               </div>
               <div className="border-b border-border px-4 py-3">
-                <p className="text-xs font-semibold tracking-wide text-muted uppercase">Entry type</p>
-                <p className="mt-1 font-semibold text-foreground capitalize">{entryType}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-semibold tracking-wide text-muted uppercase">Entry type</p>
+                    <p className="mt-1 font-semibold text-foreground capitalize">{entryType}</p>
+                  </div>
+                  {mode === "student" && allowIndividual && allowTeam ? (
+                    <button
+                      type="button"
+                      onClick={() => moveTo("entry")}
+                      aria-label="Edit entry type"
+                      className={iconActionClass}
+                    >
+                      <EditIcon />
+                    </button>
+                  ) : null}
+                </div>
               </div>
             </div>
             {mode === "school" ? null : (
+            <div className="border-b border-border px-4 py-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold tracking-wide text-muted uppercase">Grade</p>
+                  <p className="mt-1 font-semibold text-foreground">{grade.trim() || "—"}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => moveTo("eligibility")}
+                  aria-label="Edit grade"
+                  className={iconActionClass}
+                >
+                  <EditIcon />
+                </button>
+              </div>
+            </div>
+            )}
+            {mode === "school" ? null : (
             <div className="px-4 py-3">
-              <p className="text-xs font-semibold tracking-wide text-muted uppercase">
-                {entryType === "team" ? (chosenTeams.length > 1 ? "Teams" : "Team") : isCoordinatorIndividualBatch && selectedIndividualIds.length > 1 ? "Students" : "Entrant"}
-              </p>
-              {isCoordinatorIndividualBatch ? (
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-xs font-semibold tracking-wide text-muted uppercase">
+                  {entryType === "team" ? "Team" : "Entrant"}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => moveTo("entry")}
+                  aria-label={entryType === "team" ? "Edit team details" : "Edit entrant"}
+                  className={iconActionClass}
+                >
+                  <EditIcon />
+                </button>
+              </div>
+              {entryType === "team" ? (
+                <div className="mt-2 space-y-1">
+                  <p className="font-semibold text-foreground">{teamName.trim() || "—"}</p>
+                  <ul className="divide-y divide-border text-sm">
+                    <li className="py-1.5 text-foreground">{studentName ?? "You"}</li>
+                    {teamMemberNames.map((name) => name.trim()).filter(Boolean).map((name) => (
+                      <li key={name} className="py-1.5 text-foreground">{name}</li>
+                    ))}
+                  </ul>
+                  {amountExpected != null && competition.feeAmount != null ? (
+                    <p className="pt-2 text-xs text-muted">
+                      {formatFee(competition.feeAmount)} × {entryCount} ={" "}
+                      <span className="font-semibold text-foreground">{formatFee(amountExpected)}</span>
+                    </p>
+                  ) : null}
+                </div>
+              ) : isCoordinatorIndividualBatch ? (
                 <ul className="mt-2 divide-y divide-border">
                   {selectedIndividualIds.map((id) => {
                     const student = roster.find((item) => item.id === id);
@@ -992,6 +1083,7 @@ export function RegistrationWizard({
               onAdded={onAddedToList}
               buildDraft={buildStudentDraft}
               studentId={studentId}
+              editing={editingHamper}
             />
           )}
           </div>

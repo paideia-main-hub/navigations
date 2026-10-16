@@ -168,77 +168,80 @@ export function EditTeamButton({
       </button>
       {open
         ? createPortal(
-            <AnimatedModal onClose={dismiss} labelledBy={titleId} panelClassName="max-h-[min(92vh,860px)] max-w-2xl">
-              <div className="max-h-[min(92vh,860px)] space-y-3 overflow-y-auto p-5 text-left">
-                <div className="flex items-start justify-between gap-3">
+            <AnimatedModal onClose={dismiss} labelledBy={titleId} panelClassName="max-w-2xl">
+              <div className="text-left">
+                <div className="flex items-start justify-between gap-3 px-5 pt-5">
                   <h3 id={titleId} className="text-lg font-extrabold tracking-tight text-foreground">
                     Edit team
                   </h3>
                   <ModalCloseButton />
                 </div>
-                {team ? null : (
+                <div className="space-y-3 px-5 py-4">
+                  {team ? null : (
+                    <div>
+                      <label className="text-sm font-medium text-foreground">
+                        Team
+                        <RequiredMark />
+                      </label>
+                      <div className="mt-1 max-h-40 space-y-2 overflow-y-auto rounded-lg border border-border p-3">
+                        {teams.map((item) => (
+                          <label key={item.id} className="flex items-center gap-2 text-sm text-foreground">
+                            <input type="radio" name="edit-existing-team" checked={item.id === teamId} onChange={() => loadTeam(item)} />
+                            {item.name}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <label className="text-sm font-medium text-foreground">
-                      Team
+                      Team name
                       <RequiredMark />
                     </label>
-                    <div className="mt-1 max-h-40 space-y-2 overflow-y-auto rounded-lg border border-border p-3">
-                      {teams.map((item) => (
-                        <label key={item.id} className="flex items-center gap-2 text-sm text-foreground">
-                          <input type="radio" name="edit-existing-team" checked={item.id === teamId} onChange={() => loadTeam(item)} />
-                          {item.name}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div>
-                  <label className="text-sm font-medium text-foreground">
-                    Team name
-                    <RequiredMark />
-                  </label>
-                  <input
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
-                  />
-                </div>
-                <div>
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <label className="text-sm font-medium text-foreground">
-                      Team members ({sizeLabel})
-                      <RequiredMark />
-                    </label>
-                    {onStudentAdded ? (
-                      <AddStudentForm
-                        onAdded={addStudent}
-                        triggerLabel="Add student"
-                        triggerClassName="cursor-pointer text-sm font-semibold text-accent hover:underline"
-                      />
-                    ) : null}
-                  </div>
-                  <div className="mt-1">
-                    <StudentMultiSelect
-                      ariaLabel="Team members"
-                      students={roster.map((student) => {
-                        const taken = takenStudentIds.has(student.id);
-                        const checked = memberIds.includes(student.id);
-                        return {
-                          id: student.id,
-                          name: student.fullName,
-                          grade: student.grade,
-                          note: taken ? "already on another team" : undefined,
-                          disabled: taken || (!checked && memberIds.length >= max),
-                        };
-                      })}
-                      selectedIds={memberIds}
-                      onChange={(ids) => setMemberIds(ids.slice(0, max))}
+                    <input
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
+                      className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
                     />
                   </div>
-                  {guidance ? <p className="mt-2 text-sm text-amber-700 dark:text-amber-400">{guidance}</p> : null}
+                  <div>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <label className="text-sm font-medium text-foreground">
+                        Team members ({sizeLabel})
+                        <RequiredMark />
+                      </label>
+                      {onStudentAdded ? (
+                        <AddStudentForm
+                          onAdded={addStudent}
+                          triggerLabel="Add student"
+                          triggerClassName="cursor-pointer text-sm font-semibold text-accent hover:underline"
+                        />
+                      ) : null}
+                    </div>
+                    <div className="mt-1">
+                      <StudentMultiSelect
+                        variant="panel"
+                        ariaLabel="Team members"
+                        students={roster.map((student) => {
+                          const taken = takenStudentIds.has(student.id);
+                          const checked = memberIds.includes(student.id);
+                          return {
+                            id: student.id,
+                            name: student.fullName,
+                            grade: student.grade,
+                            note: taken ? "already on another team" : undefined,
+                            disabled: taken || (!checked && memberIds.length >= max),
+                          };
+                        })}
+                        selectedIds={memberIds}
+                        onChange={(ids) => setMemberIds(ids.slice(0, max))}
+                      />
+                    </div>
+                    {guidance ? <p className="mt-2 text-sm text-amber-700 dark:text-amber-400">{guidance}</p> : null}
+                  </div>
+                  {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
                 </div>
-                {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
-                <div className="flex gap-3">
+                <div className="flex gap-3 border-t border-border px-5 py-4">
                   <ModalCancel closeModal={closeModal} />
                   <button
                     type="button"

@@ -1,11 +1,8 @@
-import { createClient } from "@/data/supabase/server";
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/domain/auth/session";
-import { getPaymentAccount } from "@/domain/payments/service";
-import { SchoolEntryPayment } from "@/ui/components/registration/SchoolEntryPayment";
-import { StudentHamperPayment } from "@/ui/components/registration/StudentHamperPayment";
-import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
+/** Checkout lives in the hamper sheet now — deep links land on Register with the sheet open. */
 export default async function RegisterPayPage() {
   const user = await getCurrentUser();
   if (!user || (user.role !== "school_coordinator" && user.role !== "student")) {
@@ -16,22 +13,5 @@ export default async function RegisterPayPage() {
     );
   }
 
-  const paymentAccount = await getPaymentAccount(await createClient());
-
-  return (
-    <>
-      <DashboardHero
-        eyebrow="Register"
-        title="Checkout"
-        subtitle="One receipt covers every competition in your hamper."
-      />
-      <DashboardPage>
-        {user.role === "student" ? (
-          <StudentHamperPayment paymentAccount={paymentAccount} />
-        ) : (
-          <SchoolEntryPayment paymentAccount={paymentAccount} />
-        )}
-      </DashboardPage>
-    </>
-  );
+  redirect("/dashboard/register?checkout=1");
 }

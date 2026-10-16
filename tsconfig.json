@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/domain/site/contact": ["./domain/contact.ts"]
     }
   },
   "include": [

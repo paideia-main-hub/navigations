@@ -1,20 +1,40 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useId, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatFee } from "@/domain/competitions/types";
+import type { PaymentAccount } from "@/domain/payments/types";
 import { DialogCloseButton } from "@/ui/components/AnimatedModal";
 import { MenuScroll } from "@/ui/components/MenuScroll";
+import { StepMotion } from "@/ui/components/StepMotion";
 import { alreadyEnteredMessage } from "@/domain/registrations/types";
 import { existingEntryStandingAction } from "@/domain/registrations/actions";
 import { isSchoolEntryDraft, schoolEntryFee, type SchoolEntryDraft, type SchoolEntryStudent } from "@/domain/registrations/schoolEntries";
+import { SchoolEntryPayment } from "@/ui/components/registration/SchoolEntryPayment";
+
+type DrawerView = "hamper" | "checkout";
+type ViewDirection = "forward" | "back";
 
 interface SchoolEntryListValue {
   entries: SchoolEntryDraft[];
   open: boolean;
+  drawerView: DrawerView;
+  viewDirection: ViewDirection;
   openDrawer: () => void;
+  openCheckout: () => void;
+  backToHamper: () => void;
   closeDrawer: () => void;
   addEntry: (entry: SchoolEntryDraft) => void;
   removeEntry: (slug: string) => void;
@@ -24,6 +44,7 @@ interface SchoolEntryListValue {
   beginEdit: (entry: SchoolEntryDraft) => void;
   clearEditing: () => void;
   clearEntries: () => void;
+  paymentAccount: PaymentAccount;
 }
 
 const SchoolEntryListContext = createContext<SchoolEntryListValue | null>(null);
@@ -41,9 +62,19 @@ function readEntries(storageKey: string): SchoolEntryDraft[] {
   }
 }
 
-export function SchoolEntryListProvider({ storageKey, children }: { storageKey: string; children: ReactNode }) {
+export function SchoolEntryListProvider({
+  storageKey,
+  paymentAccount,
+  children,
+}: {
+  storageKey: string;
+  paymentAccount: PaymentAccount;
+  children: ReactNode;
+}) {
   const [entries, setEntries] = useState<SchoolEntryDraft[]>([]);
   const [open, setOpen] = useState(false);
+  const [drawerView, setDrawerView] = useState<DrawerView>("hamper");
+  const [viewDirection, setViewDirection] = useState<ViewDirection>("forward");
   const [ready, setReady] = useState(false);
   const [editing, setEditing] = useState<SchoolEntryDraft | null>(null);
 
@@ -61,8 +92,25 @@ export function SchoolEntryListProvider({ storageKey, children }: { storageKey: 
     }
   }, [entries, ready, storageKey]);
 
-  const openDrawer = useCallback(() => setOpen(true), []);
-  const closeDrawer = useCallback(() => setOpen(false), []);
+  const openDrawer = useCallback(() => {
+    setViewDirection("back");
+    setDrawerView("hamper");
+    setOpen(true);
+  }, []);
+  const openCheckout = useCallback(() => {
+    setViewDirection("forward");
+    setDrawerView("checkout");
+    setOpen(true);
+  }, []);
+  const backToHamper = useCallback(() => {
+    setViewDirection("back");
+    setDrawerView("hamper");
+  }, []);
+  const closeDrawer = useCallback(() => {
+    setOpen(false);
+    setViewDirection("forward");
+    setDrawerView("hamper");
+  }, []);
   const addEntry = useCallback((entry: SchoolEntryDraft) => {
     setEntries((current) => {
       if (entry.entryType === "team") {
@@ -86,6 +134,7 @@ export function SchoolEntryListProvider({ storageKey, children }: { storageKey: 
   const beginEdit = useCallback((entry: SchoolEntryDraft) => {
     setEditing(entry);
     setOpen(false);
+    setDrawerView("hamper");
   }, []);
   const clearEditing = useCallback(() => setEditing(null), []);
   const clearEntries = useCallback(() => setEntries([]), []);
@@ -93,7 +142,11 @@ export function SchoolEntryListProvider({ storageKey, children }: { storageKey: 
     () => ({
       entries,
       open,
+      drawerView,
+      viewDirection,
       openDrawer,
+      openCheckout,
+      backToHamper,
       closeDrawer,
       addEntry,
       removeEntry,
@@ -103,16 +156,55 @@ export function SchoolEntryListProvider({ storageKey, children }: { storageKey: 
       beginEdit,
       clearEditing,
       clearEntries,
+      paymentAccount,
     }),
-    [entries, open, openDrawer, closeDrawer, addEntry, removeEntry, replaceEntry, updateListedTeam, editing, beginEdit, clearEditing, clearEntries],
+    [
+      entries,
+      open,
+      drawerView,
+      viewDirection,
+      openDrawer,
+      openCheckout,
+      backToHamper,
+      closeDrawer,
+      addEntry,
+      removeEntry,
+      replaceEntry,
+      updateListedTeam,
+      editing,
+      beginEdit,
+      clearEditing,
+      clearEntries,
+      paymentAccount,
+    ],
   );
 
   return (
     <SchoolEntryListContext.Provider value={value}>
       {children}
+      <Suspense fallback={null}>
+        <CheckoutQueryBridge onOpenCheckout={openCheckout} />
+      </Suspense>
       <SchoolEntryDrawer />
     </SchoolEntryListContext.Provider>
   );
+}
+
+function CheckoutQueryBridge({ onOpenCheckout }: { onOpenCheckout: () => void }) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (searchParams.get("checkout") !== "1") return;
+    onOpenCheckout();
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("checkout");
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [searchParams, pathname, router, onOpenCheckout]);
+
+  return null;
 }
 
 export function useSchoolEntryList() {
@@ -121,15 +213,11 @@ export function useSchoolEntryList() {
   return value;
 }
 
-function EntryListIcon() {
+function HamperIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4 sm:hidden">
-      <path d="M8 6h13" />
-      <path d="M8 12h13" />
-      <path d="M8 18h13" />
-      <path d="M3 6h.01" />
-      <path d="M3 12h.01" />
-      <path d="M3 18h.01" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-5 w-5">
+      <path d="M6 8h12l-1 11H7L6 8Z" />
+      <path d="M9 8V6a3 3 0 0 1 6 0v2" />
     </svg>
   );
 }
@@ -139,17 +227,17 @@ export function EntryListHeaderButton() {
   const value = useContext(SchoolEntryListContext);
   if (!value || value.entries.length === 0) return null;
   const count = value.entries.length;
+  const badge = count > 99 ? "99+" : String(count);
   return (
     <button
       type="button"
       onClick={value.openDrawer}
       aria-label={`Hamper, ${count}`}
-      className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-surface text-foreground hover:border-accent/50 sm:flex sm:h-auto sm:w-auto sm:items-center sm:gap-2 sm:px-3 sm:py-1.5"
+      className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-surface text-foreground hover:border-accent/50"
     >
-      <EntryListIcon />
-      <span className="hidden text-sm font-semibold sm:inline">Hamper</span>
-      <span className="absolute -top-1 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground sm:static sm:h-5 sm:min-w-5 sm:px-1.5 sm:text-xs">
-        {count}
+      <HamperIcon />
+      <span className="absolute -top-1 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
+        {badge}
       </span>
     </button>
   );
@@ -271,10 +359,23 @@ function DeleteIcon() {
 }
 
 function SchoolEntryDrawer() {
-  const { entries, open, closeDrawer, removeEntry, beginEdit } = useSchoolEntryList();
+  const {
+    entries,
+    open,
+    drawerView,
+    viewDirection,
+    openCheckout,
+    backToHamper,
+    closeDrawer,
+    removeEntry,
+    beginEdit,
+    paymentAccount,
+  } = useSchoolEntryList();
+  const router = useRouter();
   const titleId = useId();
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
+  const checkout = drawerView === "checkout";
 
   useEffect(() => setMounted(true), []);
 
@@ -301,7 +402,9 @@ function SchoolEntryDrawer() {
     html.style.overflow = "hidden";
     body.style.overflow = "hidden";
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeDrawer();
+      if (event.key !== "Escape") return;
+      if (checkout) backToHamper();
+      else closeDrawer();
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -309,12 +412,13 @@ function SchoolEntryDrawer() {
       body.style.overflow = prevBody;
       window.removeEventListener("keydown", onKey);
     };
-  }, [open, closeDrawer]);
+  }, [open, checkout, backToHamper, closeDrawer]);
 
   if (!mounted || !open) return null;
 
   const fees = entries.map(schoolEntryFee);
   const total = fees.every((fee) => fee != null) ? fees.reduce<number>((sum, fee) => sum + (fee ?? 0), 0) : null;
+  const canCheckout = entries.length > 0 && total != null;
 
   return createPortal(
     <div className="fixed inset-0 z-[80]">
@@ -332,85 +436,124 @@ function SchoolEntryDrawer() {
         className="absolute inset-y-0 right-0 flex w-full max-w-md flex-col bg-surface shadow-[0_24px_60px_-24px_rgba(31,32,65,0.55)] transition-transform duration-200 ease-out motion-reduce:transition-none"
         style={{ transform: visible ? "translateX(0)" : "translateX(100%)" }}
       >
-        <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
-          <div>
-            <h2 id={titleId} className="text-lg font-extrabold tracking-tight text-foreground">
-              Hamper
+        <div className="flex items-start justify-between gap-3 bg-brand-deep px-5 py-5">
+          <div key={drawerView} className="min-w-0 animate-modal-swap-in pr-2">
+            <h2 id={titleId} className="text-lg font-extrabold tracking-tight text-brand-deep-foreground">
+              {checkout ? "Checkout" : "Hamper"}
             </h2>
-            <p className="mt-1 text-sm text-muted">One receipt covers every competition here.</p>
+            <p className="mt-1 text-sm text-brand-deep-muted">
+              {checkout ? "One receipt covers every competition in your hamper." : "One receipt covers every competition here."}
+            </p>
           </div>
-          <DialogCloseButton onClick={closeDrawer} />
+          <DialogCloseButton
+            onClick={closeDrawer}
+            className="bg-white/10 text-brand-deep-foreground hover:bg-white/20 hover:text-brand-deep-foreground"
+          />
         </div>
-        <MenuScroll frameClassName="flex min-h-0 flex-1 flex-col" className="min-h-0 flex-1 space-y-3 px-5 py-4">
-          {entries.length === 0 ? (
-            <p className="text-sm text-muted">Add a competition to start a hamper.</p>
-          ) : (
-            entries.map((entry) => {
-              const fee = schoolEntryFee(entry);
-              return (
-                <article key={entry.id ?? entry.competitionSlug} className="rounded-2xl border border-border bg-background p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="font-extrabold tracking-tight text-foreground">{entry.competitionTitle}</h3>
-                    <div className="flex shrink-0 items-center gap-1">
-                      <button type="button" aria-label={`Edit ${entry.competitionTitle}`} onClick={() => beginEdit(entry)} className={iconActionClass}>
-                        <EditIcon />
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={`Remove ${entry.competitionTitle}`}
-                        onClick={() => removeEntry(entry.id ?? entry.competitionSlug)}
-                        className={iconDeleteClass}
-                      >
-                        <DeleteIcon />
-                      </button>
-                    </div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <StepMotion step={drawerView} direction={viewDirection} className="flex min-h-0 flex-1 flex-col">
+            {checkout ? (
+              <SchoolEntryPayment paymentAccount={paymentAccount} variant="sheet" onBack={backToHamper} />
+            ) : (
+              <>
+                <MenuScroll frameClassName="flex min-h-0 flex-1 flex-col" className="min-h-0 flex-1 space-y-2 px-5 py-4">
+                  {entries.length === 0 ? (
+                    <p className="text-sm text-muted">Add a competition to start a hamper.</p>
+                  ) : (
+                    entries.map((entry) => {
+                      const fee = schoolEntryFee(entry);
+                      return (
+                        <article key={entry.id ?? entry.competitionSlug} className="rounded-xl border border-border bg-background px-3 py-2.5">
+                          <div className="flex items-start gap-2">
+                            <div className="min-w-0 flex-1">
+                              <h3 className="truncate text-sm font-extrabold tracking-tight text-foreground">
+                                {entry.competitionTitle}
+                              </h3>
+                              {entry.entryType === "team" && entry.teamName ? (
+                                <p className="mt-0.5 truncate text-xs font-semibold tracking-wide text-muted uppercase">
+                                  {entry.teamName}
+                                </p>
+                              ) : null}
+                              <ul className="mt-1.5 text-xs">
+                                {entry.students.map((student) => (
+                                  <li
+                                    key={student.id}
+                                    className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-center gap-2 border-t border-border/70 py-1 first:border-t-0 first:pt-0"
+                                  >
+                                    <span className="truncate font-medium text-foreground">
+                                      {student.fullName}
+                                      {student.grade ? (
+                                        <span className="font-normal text-muted"> · Grade {student.grade}</span>
+                                      ) : null}
+                                    </span>
+                                    <span className="text-right text-foreground">
+                                      {entry.feeAmount != null ? formatFee(entry.feeAmount) : "—"}
+                                    </span>
+                                  </li>
+                                ))}
+                                <li className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-center gap-2 border-t border-border pt-1.5">
+                                  <span className="text-muted" aria-hidden="true" />
+                                  <span className="text-right text-sm font-semibold text-foreground">
+                                    {fee != null ? formatFee(fee) : "Fee not set"}
+                                  </span>
+                                </li>
+                              </ul>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-0.5">
+                              <button
+                                type="button"
+                                aria-label={`Edit ${entry.competitionTitle}`}
+                                onClick={() => {
+                                  beginEdit(entry);
+                                  if (window.location.pathname !== "/dashboard/register") {
+                                    router.push("/dashboard/register");
+                                  }
+                                }}
+                                className={iconActionClass}
+                              >
+                                <EditIcon />
+                              </button>
+                              <button
+                                type="button"
+                                aria-label={`Remove ${entry.competitionTitle}`}
+                                onClick={() => removeEntry(entry.id ?? entry.competitionSlug)}
+                                className={iconDeleteClass}
+                              >
+                                <DeleteIcon />
+                              </button>
+                            </div>
+                          </div>
+                        </article>
+                      );
+                    })
+                  )}
+                </MenuScroll>
+                <div className="border-t border-border bg-accent-soft px-5 py-4">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="text-xs font-semibold tracking-wide text-accent-strong uppercase">Total</p>
+                    <p className="text-lg font-extrabold text-foreground">{total != null ? formatFee(total) : "To be confirmed"}</p>
                   </div>
-                  {entry.entryType === "team" && entry.teamName ? (
-                    <p className="mt-1 text-xs font-semibold tracking-wide text-muted uppercase">{entry.teamName}</p>
-                  ) : null}
-                  <ul className="mt-3 divide-y divide-border text-sm">
-                    {entry.students.map((student) => (
-                      <li key={student.id} className="grid grid-cols-[minmax(0,1fr)_5.5rem_6.75rem] items-center gap-3 py-2">
-                        <span className="truncate font-medium text-foreground">{student.fullName}</span>
-                        <span className="text-xs text-muted">{student.grade ? `Grade ${student.grade}` : ""}</span>
-                        <span className="text-right font-normal text-foreground">
-                          {entry.feeAmount != null ? formatFee(entry.feeAmount) : "—"}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="mt-2 text-right text-sm font-semibold text-foreground">
-                    {fee != null ? formatFee(fee) : "Fee not set"}
-                  </p>
-                </article>
-              );
-            })
-          )}
-        </MenuScroll>
-        <div className="border-t border-border bg-accent-soft px-5 py-4">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold tracking-wide text-accent-strong uppercase">Total</p>
-            <p className="text-lg font-extrabold text-foreground">{total != null ? formatFee(total) : "To be confirmed"}</p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Link
-              href="/dashboard/register/pay"
-              onClick={closeDrawer}
-              aria-disabled={entries.length === 0 || total == null}
-              className={`block rounded-full bg-accent px-5 py-2.5 text-center text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white ${
-                entries.length === 0 || total == null ? "pointer-events-none opacity-50" : ""
-              }`}
-            >
-              Continue to register
-            </Link>
-            <Link
-              href="/dashboard/register"
-              onClick={closeDrawer}
-              className="block rounded-full border border-border bg-surface px-5 py-2.5 text-center text-sm font-semibold text-foreground hover:border-accent"
-            >
-              Add more
-            </Link>
-          </div>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={openCheckout}
+                      disabled={!canCheckout}
+                      className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:pointer-events-none disabled:opacity-50"
+                    >
+                      Continue to register
+                    </button>
+                    <Link
+                      href="/dashboard/register"
+                      onClick={closeDrawer}
+                      className="block rounded-full border border-border bg-surface px-5 py-2.5 text-center text-sm font-semibold text-foreground hover:border-accent"
+                    >
+                      Add more
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
+          </StepMotion>
         </div>
       </aside>
     </div>,

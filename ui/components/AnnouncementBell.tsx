@@ -2,22 +2,9 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import type { HeaderNotice } from "@/domain/announcements/types";
 import { MenuScroll } from "@/ui/components/MenuScroll";
-
-function storageKey(userId: string) {
-  return `frl-seen-announcements:${userId}`;
-}
-
-function readSeen(userId: string): string[] {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(storageKey(userId)) ?? "[]") as unknown;
-    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : [];
-  } catch {
-    return [];
-  }
-}
+import { useSeenAnnouncements } from "@/ui/components/useSeenAnnouncements";
 
 function BellIcon() {
   return (
@@ -29,28 +16,10 @@ function BellIcon() {
 }
 
 export function AnnouncementBell({ userId, notices }: { userId: string; notices: HeaderNotice[] }) {
-  const pathname = usePathname();
   const rootRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
   const [open, setOpen] = useState(false);
-  const [seen, setSeen] = useState<string[] | null>(null);
-
-  function remember(ids: string[]) {
-    const next = [...new Set([...(seen ?? readSeen(userId)), ...ids])];
-    localStorage.setItem(storageKey(userId), JSON.stringify(next));
-    setSeen(next);
-  }
-
-  useEffect(() => {
-    setSeen(readSeen(userId));
-  }, [userId]);
-
-  useEffect(() => {
-    if (seen == null) return;
-    if (pathname !== "/dashboard/announcements") return;
-    const unseen = notices.some((notice) => !seen.includes(notice.id));
-    if (unseen) remember(notices.map((notice) => notice.id));
-  }, [pathname, notices, seen, userId]);
+  const { unseenCount, markAllSeen } = useSeenAnnouncements(userId, notices);
 
   useEffect(() => {
     if (!open) return;
@@ -68,15 +37,15 @@ export function AnnouncementBell({ userId, notices }: { userId: string; notices:
     };
   }, [open]);
 
-  const unseenCount = seen == null ? 0 : notices.filter((notice) => !seen.includes(notice.id)).length;
-
   function toggle() {
     setOpen((current) => {
       const next = !current;
-      if (next) remember(notices.map((notice) => notice.id));
+      if (next) markAllSeen();
       return next;
     });
   }
+
+  const badge = unseenCount > 99 ? "99+" : String(unseenCount);
 
   return (
     <div ref={rootRef} className="relative">
@@ -91,7 +60,7 @@ export function AnnouncementBell({ userId, notices }: { userId: string; notices:
         <BellIcon />
         {unseenCount > 0 ? (
           <span className="absolute -top-1 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
-            {unseenCount}
+            {badge}
           </span>
         ) : null}
       </button>
@@ -116,9 +85,13 @@ export function AnnouncementBell({ userId, notices }: { userId: string; notices:
                       className="block px-4 py-3 hover:bg-surface-muted"
                     >
                       <p className="text-sm font-semibold text-foreground">{notice.title}</p>
-                      {notice.competitionTitle ? <p className="mt-0.5 text-xs text-accent-strong">{notice.competitionTitle}</p> : null}
+                      {notice.competitionTitle ? (
+                        <p className="mt-0.5 text-xs text-accent-strong">{notice.competitionTitle}</p>
+                      ) : null}
                       <p className="mt-1 line-clamp-2 text-xs text-muted">{notice.body}</p>
-                      <p className="mt-1 text-[11px] text-muted">{new Date(notice.publishDate).toLocaleDateString("en-GB")}</p>
+                      <p className="mt-1 text-[11px] text-muted">
+                        {new Date(notice.publishDate).toLocaleDateString("en-GB")}
+                      </p>
                     </Link>
                   </li>
                 ))}
@@ -126,7 +99,11 @@ export function AnnouncementBell({ userId, notices }: { userId: string; notices:
             </MenuScroll>
           )}
           <div className="border-t border-border px-4 py-2.5">
-            <Link href="/dashboard/announcements" onClick={() => setOpen(false)} className="text-sm font-semibold text-accent-strong hover:underline">
+            <Link
+              href="/dashboard/announcements"
+              onClick={() => setOpen(false)}
+              className="text-sm font-semibold text-accent-strong hover:underline"
+            >
               View all
             </Link>
           </div>

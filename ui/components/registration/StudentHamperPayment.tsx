@@ -5,6 +5,7 @@ import Link from "next/link";
 import { formatFee } from "@/domain/competitions/types";
 import { submitCompetitionBasketAction } from "@/domain/registrations/actions";
 import {
+  studentEntryEntrantNames,
   studentEntryFee,
   studentEntryMemberCount,
 } from "@/domain/registrations/studentEntries";
@@ -16,8 +17,23 @@ import { RequiredMark } from "@/ui/components/RequiredMark";
 import { UploadProgress } from "@/ui/components/UploadProgress";
 import { useStudentHamper } from "@/ui/components/registration/StudentHamperList";
 
-export function StudentHamperPayment({ paymentAccount }: { paymentAccount: PaymentAccount }) {
-  const { entries, clearEntries } = useStudentHamper();
+const sheetFooterClass = "border-t border-border bg-accent-soft px-5 py-4";
+const primaryBtnClass =
+  "w-full cursor-pointer rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:cursor-not-allowed disabled:opacity-50";
+const secondaryBtnClass =
+  "w-full rounded-full border border-border bg-surface px-5 py-2.5 text-center text-sm font-semibold text-foreground hover:border-accent";
+
+export function StudentHamperPayment({
+  paymentAccount,
+  variant = "page",
+  onBack,
+}: {
+  paymentAccount: PaymentAccount;
+  variant?: "page" | "sheet";
+  onBack?: () => void;
+}) {
+  const { entries, clearEntries, studentName } = useStudentHamper();
+  const sheet = variant === "sheet";
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptProgress, setReceiptProgress] = useState<number | null>(null);
   const [transfer, setTransfer] = useState<UploadProgressState | null>(null);
@@ -89,46 +105,76 @@ export function StudentHamperPayment({ paymentAccount }: { paymentAccount: Payme
   }
 
   if (result) {
+    const successBody = (
+      <div className="rounded-2xl border border-accent/40 bg-accent-soft p-6 text-center shadow-sm">
+        <h2 className="text-xl font-extrabold tracking-tight text-accent-foreground">You&apos;re registered</h2>
+        {result.frlId ? (
+          <p className="mt-2 text-sm text-accent-foreground">
+            All under League ID <span className="font-semibold">{result.frlId}</span>.
+          </p>
+        ) : null}
+        <ul className="mt-4 divide-y divide-accent/30 text-left">
+          {result.lines.map((line) => (
+            <li key={line.registrationNumber} className="flex items-center justify-between gap-3 py-2.5">
+              <span className="min-w-0 truncate text-sm font-semibold text-foreground">{line.competitionTitle}</span>
+              <span className="flex shrink-0 items-center gap-1">
+                <span className="font-mono text-xs font-bold text-foreground sm:text-sm">{line.registrationNumber}</span>
+                <CopyButton text={line.registrationNumber} label={`${line.competitionTitle} registration number`} />
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 border-t border-accent/30 pt-4 text-sm font-medium leading-relaxed text-accent-foreground">
+          Total paid {formatFee(result.total)}. Your receipt is under review — you&apos;ll see it approved on your
+          dashboard once an admin has checked it.
+        </p>
+      </div>
+    );
+    const successCta = (
+      <Link href="/dashboard/competitions" className={`inline-block text-center ${primaryBtnClass}`}>
+        Go to My Competitions
+      </Link>
+    );
+    if (sheet) {
+      return (
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{successBody}</div>
+          <div className={sheetFooterClass}>{successCta}</div>
+        </div>
+      );
+    }
     return (
       <div className="mx-auto max-w-2xl space-y-4 text-center">
-        <div className="rounded-2xl border border-accent/40 bg-accent-soft p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold tracking-tight text-accent-foreground">You&apos;re registered</h2>
-          {result.frlId ? (
-            <p className="mt-2 text-sm text-accent-foreground">
-              All under League ID <span className="font-semibold">{result.frlId}</span>.
-            </p>
-          ) : null}
-          <ul className="mt-4 divide-y divide-accent/30 text-left">
-            {result.lines.map((line) => (
-              <li key={line.registrationNumber} className="flex items-center justify-between gap-3 py-2.5">
-                <span className="min-w-0 truncate text-sm font-semibold text-foreground">{line.competitionTitle}</span>
-                <span className="flex shrink-0 items-center gap-1">
-                  <span className="font-mono text-xs font-bold text-foreground sm:text-sm">{line.registrationNumber}</span>
-                  <CopyButton text={line.registrationNumber} label={`${line.competitionTitle} registration number`} />
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 border-t border-accent/30 pt-4 text-sm font-medium leading-relaxed text-accent-foreground">
-            Total paid {formatFee(result.total)}. Your receipt is under review — you&apos;ll see it approved on your
-            dashboard once an admin has checked it.
-          </p>
-        </div>
-        <Link
-          href="/dashboard/competitions"
-          className="inline-block rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
-        >
-          Go to My Competitions
-        </Link>
+        {successBody}
+        {successCta}
       </div>
     );
   }
 
   if (entries.length === 0) {
-    return (
-      <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-surface p-6">
+    const emptyBody = (
+      <>
         <h2 className="text-xl font-extrabold tracking-tight text-foreground">Hamper is empty</h2>
         <p className="mt-2 text-sm text-muted">Add competitions first, then come back here to pay once for all of them.</p>
+      </>
+    );
+    if (sheet) {
+      return (
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{emptyBody}</div>
+          <div className={sheetFooterClass}>
+            {onBack ? (
+              <button type="button" onClick={onBack} className={secondaryBtnClass}>
+                Back to hamper
+              </button>
+            ) : null}
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-surface p-6">
+        {emptyBody}
         <Link href="/dashboard/register" className="mt-4 inline-block text-sm font-semibold text-accent-strong">
           ← Back to competitions
         </Link>
@@ -136,34 +182,46 @@ export function StudentHamperPayment({ paymentAccount }: { paymentAccount: Payme
     );
   }
 
-  return (
-    <div className="mx-auto max-w-2xl space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-2xl font-extrabold tracking-tight text-foreground">Register - Checkout</h2>
-        <Link href="/dashboard/register" className="shrink-0 text-sm font-semibold text-accent-strong">
-          ← Back to competitions
-        </Link>
-      </div>
+  const body = (
+    <>
+      {!sheet ? (
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-2xl font-extrabold tracking-tight text-foreground">Register - Checkout</h2>
+          <Link href="/dashboard/register" className="shrink-0 text-sm font-semibold text-accent-strong">
+            ← Back to competitions
+          </Link>
+        </div>
+      ) : null}
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {entries.map((entry) => {
           const fee = studentEntryFee(entry);
-          const members = studentEntryMemberCount(entry);
+          const names = studentEntryEntrantNames(entry, studentName);
           return (
-            <article key={entry.competitionSlug} className="rounded-2xl border border-border bg-surface p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h3 className="font-extrabold tracking-tight text-foreground">{entry.competitionTitle}</h3>
-                  {entry.entryType === "team" && entry.teamName ? (
-                    <p className="mt-1 text-xs font-semibold tracking-wide text-muted uppercase">{entry.teamName}</p>
-                  ) : null}
-                  <p className="mt-2 text-sm text-muted">
-                    {members} {members === 1 ? "entrant" : "entrants"}
-                    {entry.feeAmount != null ? ` · ${formatFee(entry.feeAmount)} each` : ""}
-                  </p>
-                </div>
-                <p className="shrink-0 text-sm font-semibold text-foreground">{fee != null ? formatFee(fee) : "—"}</p>
-              </div>
+            <article key={entry.competitionSlug} className="rounded-xl border border-border bg-surface px-3 py-2.5">
+              <h3 className="truncate text-sm font-extrabold tracking-tight text-foreground">{entry.competitionTitle}</h3>
+              {entry.entryType === "team" && entry.teamName ? (
+                <p className="mt-0.5 truncate text-xs font-semibold tracking-wide text-muted uppercase">{entry.teamName}</p>
+              ) : null}
+              <ul className="mt-1.5 text-xs">
+                {names.map((name) => (
+                  <li
+                    key={`${entry.competitionSlug}-${name}`}
+                    className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-center gap-2 border-t border-border/70 py-1 first:border-t-0 first:pt-0"
+                  >
+                    <span className="truncate font-medium text-foreground">{name}</span>
+                    <span className="text-right text-foreground">
+                      {entry.feeAmount != null ? formatFee(entry.feeAmount) : "—"}
+                    </span>
+                  </li>
+                ))}
+                <li className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-center gap-2 border-t border-border pt-1.5">
+                  <span className="text-muted" aria-hidden="true" />
+                  <span className="text-right text-sm font-semibold text-foreground">
+                    {fee != null ? formatFee(fee) : "Fee not set"}
+                  </span>
+                </li>
+              </ul>
             </article>
           );
         })}
@@ -180,7 +238,11 @@ export function StudentHamperPayment({ paymentAccount }: { paymentAccount: Payme
         <p className="text-xl font-extrabold text-foreground">{total != null ? formatFee(total) : "—"}</p>
       </div>
 
-      <PaymentInstructions account={paymentAccount} amount={total != null ? formatFee(total) : null} />
+      <PaymentInstructions
+        account={paymentAccount}
+        amount={total != null ? formatFee(total) : null}
+        horizontal={sheet}
+      />
 
       <label className="block">
         <span className="text-sm font-medium text-foreground">
@@ -191,23 +253,51 @@ export function StudentHamperPayment({ paymentAccount }: { paymentAccount: Payme
           type="file"
           accept="image/*,application/pdf"
           onChange={onReceiptChange}
-          className="mt-1 block w-full text-sm text-foreground file:mr-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-strong"
+          className="student-photo-file mt-1 block h-[38px] w-full cursor-pointer rounded-lg border border-border bg-background px-1.5 text-sm text-foreground outline-none file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-accent-soft file:px-3 file:text-sm file:font-semibold file:text-accent-strong hover:file:bg-accent-soft/80 focus:border-accent"
         />
       </label>
       {receiptProgress != null ? <p className="text-xs text-muted">File ready ({receiptProgress}%)</p> : null}
       {transfer ? <UploadProgress phase={transfer.phase} percent={transfer.percent} /> : null}
-      {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+      {!sheet && error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+    </>
+  );
 
-      <button
-        type="button"
-        onClick={submit}
-        disabled={submitting || !receiptFile || total == null}
-        className="w-full cursor-pointer rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {submitting
-          ? "Submitting…"
-          : `Submit ${entries.length} registration${entries.length === 1 ? "" : "s"} · ${total != null ? formatFee(total) : ""}`}
-      </button>
+  const actions = (
+    <>
+      {sheet && error ? <p className="mb-3 text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+      <div className="flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={submit}
+          disabled={submitting || !receiptFile || total == null}
+          className={primaryBtnClass}
+        >
+          {submitting
+            ? "Submitting…"
+            : `Submit ${entries.length} registration${entries.length === 1 ? "" : "s"} · ${total != null ? formatFee(total) : ""}`}
+        </button>
+        {sheet && onBack ? (
+          <button type="button" onClick={onBack} className={secondaryBtnClass}>
+            Back to hamper
+          </button>
+        ) : null}
+      </div>
+    </>
+  );
+
+  if (sheet) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">{body}</div>
+        <div className={sheetFooterClass}>{actions}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-4">
+      {body}
+      {actions}
     </div>
   );
 }

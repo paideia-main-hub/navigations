@@ -1,4 +1,4 @@
-import { CONTACT_WHATSAPP_HREF } from "@/domain/contact";
+import { CONTACT_WHATSAPP_HREF } from "@/domain/site/contact";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -15,11 +15,19 @@ export function WhatsAppFloat() {
       href={CONTACT_WHATSAPP_HREF}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Chat on WhatsApp"
-      className="fixed z-40 grid h-11 w-11 place-items-center rounded-full bg-[#25D366] text-white shadow-[0_10px_22px_-8px_rgba(37,211,102,0.65)] transition-[transform,box-shadow] duration-200 ease-out hover:scale-105 hover:shadow-[0_14px_28px_-8px_rgba(37,211,102,0.75)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      aria-label="Need help? Contact us now on WhatsApp"
+      className="group fixed z-40 flex h-11 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       style={{ right: 30, bottom: 30 }}
     >
-      <WhatsAppIcon className="h-5 w-5" />
+      <span className="relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#25D366] text-white shadow-[0_10px_22px_-8px_rgba(37,211,102,0.65)] transition-[transform,box-shadow] duration-300 ease-out group-hover:-translate-x-2 group-hover:shadow-[0_14px_28px_-8px_rgba(37,211,102,0.75)] group-focus-visible:-translate-x-2">
+        <WhatsAppIcon className="h-5 w-5" />
+      </span>
+      <span
+        aria-hidden="true"
+        className="-ml-11 flex h-11 max-w-11 items-center overflow-hidden rounded-full bg-[#25D366] pl-10 text-xs font-semibold whitespace-nowrap text-white shadow-[0_10px_22px_-8px_rgba(37,211,102,0.65)] transition-[max-width,padding] duration-300 ease-out group-hover:max-w-[13rem] group-hover:pr-3.5 group-focus-visible:max-w-[13rem] group-focus-visible:pr-3.5"
+      >
+        Need help? Contact us now
+      </span>
     </a>
   );
 }

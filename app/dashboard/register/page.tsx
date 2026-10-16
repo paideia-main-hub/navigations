@@ -4,9 +4,13 @@ import { listOpenAndUpcoming } from "@/domain/competitions/service";
 import { getPaymentAccount } from "@/domain/payments/service";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { listMyRegistrations } from "@/domain/registrations/service";
+import { registrationListStatus } from "@/domain/registrations/types";
 import { getOwnStudentProfile, listSchoolRoster } from "@/domain/students/service";
 import { listSchoolTeams } from "@/domain/teams/service";
-import { CompetitionBasket } from "@/ui/components/dashboard/CompetitionBasket";
+import {
+  CompetitionBasket,
+  type CompetitionCardStanding,
+} from "@/ui/components/dashboard/CompetitionBasket";
 import { CoordinatorCompetitionGrid } from "@/ui/components/dashboard/CoordinatorCompetitionGrid";
 import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
@@ -24,7 +28,17 @@ export default async function DashboardRegisterPage() {
       getOwnStudentProfile(supabase, user.id),
       getPaymentAccount(supabase),
     ]);
-    const registeredSlugs = registrations.filter((r) => r.status !== "rejected").map((r) => r.competitionSlug);
+    const standingBySlug: Record<string, CompetitionCardStanding> = {};
+    for (const registration of registrations) {
+      const standing = registrationListStatus(registration);
+      if (standing.key === "rejected") continue;
+      // Registered only once payment (or later stage) is approved; otherwise review pending.
+      const next: CompetitionCardStanding =
+        standing.key === "pending" ? "pending" : "registered";
+      const current = standingBySlug[registration.competitionSlug];
+      if (current === "registered") continue;
+      standingBySlug[registration.competitionSlug] = next;
+    }
 
     return (
       <>
@@ -38,7 +52,7 @@ export default async function DashboardRegisterPage() {
             {student ? (
               <CompetitionBasket
                 competitions={competitions}
-                registeredSlugs={registeredSlugs}
+                standingBySlug={standingBySlug}
                 student={{
                   fullName: student.fullName,
                   frlId: student.frlId,
