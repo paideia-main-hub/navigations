@@ -9,8 +9,8 @@ export type ActionState = { error: string | null };
  * the student/school/judge one (see domain/admin-auth/guard.ts) — so signing
  * in here never logs anyone out of the dashboard in another tab. Signing in
  * with a non-admin account is rejected outright rather than silently landing
- * them on /admin; see domain/auth/actions.ts's login() for the mirror-image
- * rejection on the general login page. */
+ * them on /admin. Public login hands admin credentials off to this cookie
+ * (see domain/auth/actions.ts login()). */
 export async function adminLogin(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const supabase = await createAdminSessionClient();
 

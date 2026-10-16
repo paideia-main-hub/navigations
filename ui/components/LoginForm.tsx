@@ -27,7 +27,9 @@ export function LoginForm({
   linkError?: string | null;
 } = {}) {
   const searchParams = useSearchParams();
-  const linkError = linkErrorProp ?? searchParams.get("error");
+  // Prefer an explicit prop (including null) over the URL so clearing the
+  // modal error does not revive a stale ?error= query value.
+  const linkError = linkErrorProp !== undefined ? linkErrorProp : searchParams.get("error");
   const next = nextPath ?? searchParams.get("next");
   const [state, formAction, pending] = useActionState(login, initialState);
 

@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createClient } from "@/data/supabase/server";
+import { createAdminSessionClient, createClient } from "@/data/supabase/server";
 import { createAdminClient } from "@/data/supabase/admin";
 import { isSchoolType } from "@/domain/schools/types";
 import { uploadOwnPhoto } from "@/domain/storage/actions";
@@ -20,18 +20,17 @@ async function currentOrigin(): Promise<string> {
 }
 
 export async function login(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const email = String(formData.get("email"));
+  const password = String(formData.get("password"));
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email: String(formData.get("email")),
-    password: String(formData.get("password")),
-  });
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) return { error: error.message };
 
-  // Admin has its own dedicated login at /admin/login (see
-  // domain/admin-auth/actions.ts) — reject an admin credential here rather
-  // than silently letting it through, so that's the only door in for admins.
+  // Admin uses a separate session cookie (see domain/admin-auth/actions.ts).
+  // If admin credentials land on the public form, hand them off instead of
+  // blocking with an error — same password, admin cookie, /admin.
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -41,7 +40,10 @@ export async function login(_prevState: ActionState, formData: FormData): Promis
 
   if (profile?.role === "admin") {
     await supabase.auth.signOut();
-    return { error: "Admin accounts sign in at /admin/login, not here." };
+    const adminClient = await createAdminSessionClient();
+    const { error: adminError } = await adminClient.auth.signInWithPassword({ email, password });
+    if (adminError) return { error: adminError.message };
+    redirect("/admin");
   }
 
   const next = String(formData.get("next") ?? "").trim();
