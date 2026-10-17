@@ -413,6 +413,10 @@ export function SupportChatFloat() {
     const text = input.trim();
     if ((!text && !pendingImage) || pending || recording || transcribing || capturing) return;
 
+    // Dismiss the mobile keyboard like Gemini — only reopen if the user taps the field again.
+    inputRef.current?.blur();
+    setComposerFocused(false);
+
     const imageForRequest = pendingImage;
     const usedVoice = voicePendingRef.current;
     voicePendingRef.current = false;
@@ -625,6 +629,8 @@ export function SupportChatFloat() {
                 ref={inputRef}
                 id={`${panelId}-input`}
                 value={input}
+                enterKeyHint="send"
+                autoComplete="off"
                 onChange={(event) => {
                   markComposerEngaged();
                   setInput(event.target.value);
