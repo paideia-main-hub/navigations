@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
-import { unbounded as dateNumeralFont } from "@/app/fonts";
+import { quantico as dateNumeralFont } from "@/app/fonts";
 import type { CompetitionSummary } from "@/domain/competitions/types";
 import { useSwipeNavigation } from "@/ui/hooks/useSwipeNavigation";
 import { BandDivider } from "./BandDivider";
@@ -322,15 +322,17 @@ function SpotlightFace({ item }: { item: CompetitionSummary }) {
         Contest Date
       </p>
       {parts ? (
-        <div className="mt-3 inline-flex items-stretch justify-center gap-3 text-accent text-[length:min(1.62rem,10.5cqi)]">
+        <div className="mt-3 inline-flex items-stretch justify-center gap-3 text-accent text-[length:min(1.9rem,12.5cqi)]">
           <p
-            className={`${dateNumeralFont.className} flex items-center leading-none font-extrabold text-[2em]`}
+            className={`${dateNumeralFont.className} flex items-center leading-none font-extrabold text-[2.15em]`}
           >
             {parts.day}
           </p>
-          <div className="flex flex-col items-start justify-between text-left leading-none text-[0.88em]">
-            <p className="font-heading font-extrabold">{parts.month}</p>
-            <p className={`${dateNumeralFont.className} w-full text-left font-bold`}>{parts.year}</p>
+          <div className="flex flex-col items-start justify-center gap-0.5 text-left text-[0.78em]">
+            <p className="font-heading font-extrabold leading-none">{parts.month}</p>
+            <p className={`${dateNumeralFont.className} w-full text-left font-bold leading-none`}>
+              {parts.year}
+            </p>
           </div>
         </div>
       ) : (

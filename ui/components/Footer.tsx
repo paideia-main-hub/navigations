@@ -57,7 +57,7 @@ export function Footer() {
           </div>
         ))}
       </div>
-      <div className="border-t border-white/10 px-6 py-6 text-xs text-muted">
+      <div className="border-t border-white/10 px-6 py-6 text-center text-xs text-muted">
         <p>
           © {new Date().getFullYear()} Navigations. Privacy, terms and safeguarding
           notices apply to all student data and photo publication.

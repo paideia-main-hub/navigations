@@ -41,7 +41,7 @@ export function QuickLink({
           </div>
         </div>
         <span
-          className={`mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-semibold ${
+          className={`mt-auto inline-flex items-center gap-1.5 self-end pt-4 text-sm font-semibold sm:self-start ${
             emphasize ? "text-accent-strong" : "text-foreground"
           }`}
         >

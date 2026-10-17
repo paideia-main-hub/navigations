@@ -132,7 +132,7 @@ export default async function DashboardOverviewPage() {
               <StatCard label="Upcoming" value={counts.upcoming} />
               <StatCard label="In Progress" value={counts.in_progress} />
               <StatCard label="Qualified" value={counts.qualified} />
-              <StatCard label="Completed" value={counts.completed} />
+              <StatCard label="Completed" value={counts.completed} className="col-span-2 sm:col-span-1" />
             </div>
           </section>
 

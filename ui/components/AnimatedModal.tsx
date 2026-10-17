@@ -25,8 +25,9 @@ function CloseIcon() {
   );
 }
 
+/** Hover styles only from `sm` up — touch devices keep a stable resting look. */
 const modalCloseClass =
-  "grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full text-muted transition-all duration-200 ease-out hover:rotate-90 hover:bg-accent-soft hover:text-accent motion-reduce:hover:rotate-0";
+  "grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full text-muted transition-all duration-200 ease-out sm:hover:rotate-90 sm:hover:bg-accent-soft sm:hover:text-accent motion-reduce:sm:hover:rotate-0";
 
 /** Top-right X for AnimatedModal panels. Uses the modal close context. */
 export function ModalCloseButton({ className = "" }: { className?: string }) {
@@ -42,6 +43,21 @@ export function ModalCloseButton({ className = "" }: { className?: string }) {
 export function DialogCloseButton({ onClick, className = "" }: { onClick: () => void; className?: string }) {
   return (
     <button type="button" onClick={onClick} aria-label="Close" className={`${modalCloseClass} ${className}`}>
+      <CloseIcon />
+    </button>
+  );
+}
+
+/** Hamper drawer close — solid bright circle always; rotated X locked on mobile (no hover flip). */
+export function HamperCloseButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Close"
+      className="grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full text-white transition-transform duration-200 ease-out rotate-90 sm:rotate-0 sm:hover:rotate-90 motion-reduce:rotate-0 motion-reduce:sm:hover:rotate-0"
+      style={{ backgroundColor: "rgba(255, 255, 255, 0.45)" }}
+    >
       <CloseIcon />
     </button>
   );

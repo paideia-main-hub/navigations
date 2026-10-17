@@ -495,8 +495,20 @@ h6 {
   }
 }
 
+/* Smaller travel on phones so neighbouring cards in a tight grid never collide. */
+@keyframes wave-float-mobile {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -6px;
+  }
+}
+
 @theme inline {
   --animate-wave-float: wave-float 3.2s ease-in-out infinite;
+  --animate-wave-float-mobile: wave-float-mobile 3.2s ease-in-out infinite;
 }
 
 /* Slowly slides an oversized background-image across its box — used on the
@@ -528,6 +540,7 @@ h6 {
   .animate-orbit,
   .animate-orbit-reverse,
   .animate-wave-float,
+  .animate-wave-float-mobile,
   .animate-gradient-travel,
   .animate-spotlight-text-in,
   .animate-place-drift,

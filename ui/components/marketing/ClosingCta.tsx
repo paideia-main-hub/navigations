@@ -32,7 +32,7 @@ export function ClosingCta({
         <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-6 sm:gap-y-4">
           <Link
             href={primaryHref}
-            className="group inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 text-sm font-bold text-accent-foreground shadow-[0_0_0_0_rgba(255,105,31,0)] transition-all duration-300 hover:scale-105 hover:bg-accent-strong hover:text-white hover:shadow-[0_0_0_10px_rgba(255,105,31,0.16)]"
+            className="group inline-flex h-[38px] items-center gap-2 rounded-full bg-accent px-7 text-sm font-bold text-accent-foreground shadow-[0_0_0_0_rgba(255,105,31,0)] transition-all duration-300 hover:scale-105 hover:bg-accent-strong hover:text-white hover:shadow-[0_0_0_10px_rgba(255,105,31,0.16)]"
           >
             {primaryLabel}
             <span aria-hidden="true" className="inline-block transition-transform duration-300 group-hover:translate-x-1">
@@ -42,7 +42,7 @@ export function ClosingCta({
           {showSecondary ? (
             <Link
               href={secondaryHref}
-              className="rounded-full border border-white/20 px-7 py-3.5 text-sm font-bold text-white transition-colors hover:border-white/40 hover:bg-white/5"
+              className="inline-flex h-[38px] items-center rounded-full border border-white/20 px-7 text-sm font-bold text-white transition-colors hover:border-white/40 hover:bg-white/5"
             >
               {secondaryLabel}
             </Link>

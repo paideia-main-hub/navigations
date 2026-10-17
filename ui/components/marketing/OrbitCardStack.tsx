@@ -133,9 +133,9 @@ function useResponsiveSpread(stageWidth: number | null): number {
 
 /** How far up the fanned layout is shifted from the stage's vertical centre,
  * so the outermost cards' rotation-induced sag (see the position-formula
- * comment below) still lands inside the stage. The wrapper does not clip:
- * a clip was slicing the fan's shadow into a hard edge on the top and on
- * the outer left and right cards. */
+ * comment below) still lands inside the stage. The stage stays
+ * overflow-visible on every breakpoint — clipping sliced the fan's glow
+ * into a hard edge on the left and right (especially on phones). */
 const FAN_VERTICAL_SHIFT = 60;
 
 /** True from the moment the stage first scrolls into view, and stays true —
@@ -286,6 +286,10 @@ function DesktopOrbitStage({
     const itemIndex = ((centerIndex - offset) % total + total) % total;
     slots.push({ offset, item: items[itemIndex]!, itemIndex });
   }
+  // Keep DOM order stable by item identity. Mapping in offset order reorders
+  // siblings on every advance; browsers then cancel CSS transforms, which
+  // made one arrow direction look like a hard cut instead of a fan slide.
+  const renderSlots = [...slots].sort((a, b) => a.itemIndex - b.itemIndex);
 
   // Phone keeps the same fan formula, with a slightly tighter vertical step
   // so the ~50%-wide centre card and side peeks fit the shorter stage.
@@ -310,7 +314,7 @@ function DesktopOrbitStage({
     >
       <div
         ref={stageRef}
-        className="relative h-[480px] w-full max-w-[980px] overflow-x-clip sm:h-[620px] sm:overflow-visible lg:h-[640px]"
+        className="relative h-[480px] w-full max-w-[980px] overflow-visible sm:h-[620px] lg:h-[640px]"
         onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
           if (event.key === "ArrowRight" || event.key === "ArrowDown") {
             event.preventDefault();
@@ -324,7 +328,7 @@ function DesktopOrbitStage({
         role="list"
         aria-label={ariaLabel}
       >
-        {slots.map(({ offset, item, itemIndex }) => {
+        {renderSlots.map(({ offset, item, itemIndex }) => {
           const active = offset === 0;
           const visible = Math.abs(offset) <= visibleRadius;
           const y = Math.abs(offset) * yStep + Math.max(0, Math.abs(offset) - 1) * yExtra - fanShift;
@@ -338,6 +342,7 @@ function DesktopOrbitStage({
             }px)) rotate(${rotation}deg) scale(0.985)`,
             transitionProperty: "transform, opacity",
             transitionDuration: reduceMotion ? "0ms" : "900ms",
+            transitionTimingFunction: "cubic-bezier(.2,.8,.2,1)",
           };
 
           return (
@@ -347,7 +352,7 @@ function DesktopOrbitStage({
               role="listitem"
               aria-current={active ? "true" : undefined}
               aria-hidden={visible ? undefined : true}
-              className="absolute top-1/2 left-1/2 w-[90%] origin-bottom transition-[transform,opacity] ease-[cubic-bezier(.2,.8,.2,1)] sm:w-64 lg:w-[21rem]"
+              className="absolute top-1/2 left-1/2 w-[90%] origin-bottom sm:w-64 lg:w-[21rem]"
               style={style}
             >
               <Link

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import type { HeaderNotice } from "@/domain/announcements/types";
 import { MenuScroll } from "@/ui/components/MenuScroll";
@@ -17,9 +17,43 @@ function BellIcon() {
 
 export function AnnouncementBell({ userId, notices }: { userId: string; notices: HeaderNotice[] }) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
   const [open, setOpen] = useState(false);
+  const [panelStyle, setPanelStyle] = useState<CSSProperties | undefined>();
   const { unseenCount, markAllSeen } = useSeenAnnouncements(userId, notices);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+
+    function placePanel() {
+      const button = buttonRef.current;
+      if (!button) return;
+      const rect = button.getBoundingClientRect();
+      const gutter = 8;
+      const width = Math.min(22 * 16, window.innerWidth - gutter * 2);
+      // Prefer aligning the panel's right edge to the bell; clamp so it stays on-screen.
+      let left = rect.right - width;
+      if (left < gutter) left = gutter;
+      if (left + width > window.innerWidth - gutter) {
+        left = Math.max(gutter, window.innerWidth - gutter - width);
+      }
+      setPanelStyle({
+        position: "fixed",
+        top: rect.bottom + 8,
+        left,
+        width,
+      });
+    }
+
+    placePanel();
+    window.addEventListener("resize", placePanel);
+    window.addEventListener("scroll", placePanel, true);
+    return () => {
+      window.removeEventListener("resize", placePanel);
+      window.removeEventListener("scroll", placePanel, true);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -50,6 +84,7 @@ export function AnnouncementBell({ userId, notices }: { userId: string; notices:
   return (
     <div ref={rootRef} className="relative">
       <button
+        ref={buttonRef}
         type="button"
         aria-expanded={open}
         aria-controls={menuId}
@@ -67,7 +102,8 @@ export function AnnouncementBell({ userId, notices }: { userId: string; notices:
       {open ? (
         <div
           id={menuId}
-          className="absolute right-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-border bg-background shadow-lg shadow-black/10"
+          style={panelStyle}
+          className="z-50 overflow-hidden rounded-2xl border border-border bg-background shadow-lg shadow-black/10"
         >
           <div className="border-b border-border px-4 py-3">
             <p className="text-sm font-extrabold tracking-tight text-foreground">Announcements</p>

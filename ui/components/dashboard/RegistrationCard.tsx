@@ -10,7 +10,6 @@ import { Badge } from "@/ui/components/Badge";
 import {
   dashboardCardEyebrowClass,
   dashboardCardRuleClass,
-  dashboardCardTitleClass,
   dashboardGlowCardClass,
   dashboardGlowOrbClass,
 } from "@/ui/components/dashboard/dashboardGlowCard";
@@ -127,29 +126,50 @@ export function RegistrationCard({ registration: r, competition: c, result, stat
     <article className={`${dashboardGlowCardClass}`}>
       <div aria-hidden className={dashboardGlowOrbClass} />
       <div className="relative grid md:grid-cols-[13rem_minmax(0,1fr)]">
-        <div className="bg-brand-deep px-4 py-5 text-brand-deep-foreground">
-          <p className="text-[11px] font-bold tracking-[0.16em] text-white/55 uppercase">Schedule</p>
-          <span aria-hidden className="mt-2 block h-0.5 w-8 rounded-full bg-accent" />
+        {/* Mobile: compact strip so schedule doesn't outweigh competition content. Desktop: side panel unchanged. */}
+        <div className="bg-brand-deep px-3 py-2.5 text-brand-deep-foreground md:px-4 md:py-5">
+          <p className="text-[10px] font-bold tracking-[0.16em] text-white/55 uppercase md:text-[11px]">Schedule</p>
+          <span aria-hidden className="mt-1.5 block h-0.5 w-6 rounded-full bg-accent md:mt-2 md:w-8" />
           {rows.length > 0 ? (
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 md:mt-4 md:grid-cols-1 md:gap-y-0 md:space-y-3">
               {rows.map((row) => {
                 const next = row.days === nextIn;
                 return (
                   <li key={row.label}>
-                    <p className={`flex items-center gap-2 text-sm ${next ? "font-semibold" : "text-brand-deep-muted"}`}>
-                      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${next ? "bg-accent" : "bg-white/30"}`} />
+                    <p
+                      className={`flex items-center gap-1.5 text-xs md:gap-2 md:text-sm ${
+                        next ? "font-semibold" : "text-brand-deep-muted"
+                      }`}
+                    >
+                      <span
+                        className={`h-1 w-1 shrink-0 rounded-full md:h-1.5 md:w-1.5 ${next ? "bg-accent" : "bg-white/30"}`}
+                      />
                       {row.label}
                     </p>
-                    <p className="mt-0.5 pl-3.5 text-sm">{formatDate(row.date)}</p>
+                    <p className="mt-0.5 pl-2.5 text-xs md:pl-3.5 md:text-sm">
+                      {formatDate(row.date)}
+                      {row.days >= 0 ? (
+                        <span className={`md:hidden ${next ? "text-accent" : "text-brand-deep-muted"}`}>
+                          {" "}
+                          · {daysRemainingLabel(row.days)}
+                        </span>
+                      ) : null}
+                    </p>
                     {row.days >= 0 && (
-                      <p className={`pl-3.5 text-sm ${next ? "text-accent" : "text-brand-deep-muted"}`}>{daysRemainingLabel(row.days)}</p>
+                      <p
+                        className={`hidden pl-3.5 text-sm md:block ${
+                          next ? "text-accent" : "text-brand-deep-muted"
+                        }`}
+                      >
+                        {daysRemainingLabel(row.days)}
+                      </p>
                     )}
                   </li>
                 );
               })}
             </ul>
           ) : (
-            <p className="mt-4 text-sm text-brand-deep-muted">Dates coming soon.</p>
+            <p className="mt-2 text-xs text-brand-deep-muted md:mt-4 md:text-sm">Dates coming soon.</p>
           )}
         </div>
 
@@ -163,8 +183,8 @@ export function RegistrationCard({ registration: r, competition: c, result, stat
                 loading="lazy"
                 className="h-full w-full origin-right object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.04]"
               />
-              {/* Mobile: lighter wash so the photo reads. Desktop: merge into white on the left, clearer image on the right. */}
-              <div className="absolute inset-0 bg-white/80 md:bg-gradient-to-r md:from-white md:via-white/55 md:to-transparent" />
+              {/* Mobile: stronger wash so the photo stays dim behind content. Desktop unchanged. */}
+              <div className="absolute inset-0 bg-white/92 md:bg-gradient-to-r md:from-white md:via-white/55 md:to-transparent" />
             </div>
           ) : null}
           <div className="relative flex min-h-0 flex-1 flex-col">
@@ -174,7 +194,7 @@ export function RegistrationCard({ registration: r, competition: c, result, stat
                 <span aria-hidden className={dashboardCardRuleClass} />
                 <Link
                   href={`/competitions/${r.competitionSlug}`}
-                  className={`mt-3 block ${dashboardCardTitleClass} hover:text-accent`}
+                  className="mt-3 block text-2xl font-extrabold tracking-tight text-foreground hover:text-accent sm:text-[1.65rem]"
                 >
                   {r.competitionTitle}
                 </Link>

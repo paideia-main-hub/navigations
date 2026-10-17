@@ -74,7 +74,7 @@ export function RouteCard({
 
   return (
     <div
-      className={`hover:[animation-play-state:paused] animate-wave-float ${className}`}
+      className={`hover:[animation-play-state:paused] animate-wave-float-mobile sm:animate-wave-float ${className}`}
       style={{ animationDelay: `${floatDelay}s` }}
     >
       <Link
@@ -83,12 +83,12 @@ export function RouteCard({
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{ transform: "perspective(800px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg))" }}
-        className={`group relative flex h-full w-full flex-col items-center gap-4 overflow-hidden rounded-[1.75rem] border border-white/10 px-5 py-7 text-center shadow-[0_18px_38px_-20px_rgba(0,0,0,0.55)] transition-[transform,box-shadow,border-color] duration-150 ease-out will-change-transform hover:border-accent/50 hover:shadow-[0_30px_60px_-22px_rgba(255,105,31,0.4)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep focus-visible:outline-none ${bgClassName}`}
+        className={`group relative flex h-full w-full flex-col items-center gap-4 overflow-hidden rounded-[1.75rem] border border-accent/50 px-5 py-7 text-center shadow-[0_30px_60px_-22px_rgba(255,105,31,0.4)] transition-[transform,box-shadow,border-color] duration-150 ease-out will-change-transform sm:border-white/10 sm:shadow-[0_18px_38px_-20px_rgba(0,0,0,0.55)] sm:hover:border-accent/50 sm:hover:shadow-[0_30px_60px_-22px_rgba(255,105,31,0.4)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep focus-visible:outline-none ${bgClassName}`}
       >
-        {/* Cursor-tracking spotlight. */}
+        {/* Cursor-tracking spotlight (desktop hover only). */}
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-0 opacity-[var(--glow,0)] transition-opacity duration-300"
+          className="pointer-events-none absolute inset-0 z-0 hidden opacity-[var(--glow,0)] transition-opacity duration-300 sm:block"
           style={{ background: "radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), rgba(255,105,31,0.18), transparent 70%)" }}
         />
         {/* Top edge sheen — a hairline of light across the card's top, as if it
@@ -99,24 +99,24 @@ export function RouteCard({
         />
         {/* Corner bubble — small and half-clipped by the card's own edge at
             rest, swells outward on hover with a slight overshoot so it reads
-            as "popping" rather than just scaling. */}
+            as "popping" rather than just scaling. On mobile the swell stays on. */}
         <span
           aria-hidden="true"
-          className={`pointer-events-none absolute -bottom-5 -left-5 z-0 h-14 w-14 rounded-full opacity-70 transition-transform duration-500 ease-[cubic-bezier(.34,1.56,.64,1)] group-hover:scale-150 ${bubbleClassName}`}
+          className={`pointer-events-none absolute -bottom-5 -left-5 z-0 h-14 w-14 scale-150 rounded-full opacity-70 transition-transform duration-500 ease-[cubic-bezier(.34,1.56,.64,1)] sm:scale-100 sm:group-hover:scale-150 ${bubbleClassName}`}
         />
 
-        <span className="relative z-10 grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-accent/10 text-brand-deep-accent transition-all duration-300 ease-out group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-accent group-hover:text-accent-foreground group-hover:shadow-[0_0_0_8px_rgba(255,105,31,0.14)]">
+        <span className="relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground shadow-[0_0_0_6px_rgba(255,105,31,0.14)] transition-all duration-300 ease-out scale-110 -rotate-3 sm:h-14 sm:w-14 sm:rounded-2xl sm:scale-100 sm:rotate-0 sm:bg-accent/10 sm:text-brand-deep-accent sm:shadow-none sm:group-hover:scale-110 sm:group-hover:-rotate-3 sm:group-hover:bg-accent sm:group-hover:text-accent-foreground sm:group-hover:shadow-[0_0_0_8px_rgba(255,105,31,0.14)] [&_svg]:h-5 [&_svg]:w-5 sm:[&_svg]:h-6 sm:[&_svg]:w-6">
           {icon}
         </span>
-        <span className="relative z-10 flex-1 origin-center text-sm leading-snug font-semibold text-balance text-brand-deep transition-transform duration-300 ease-out group-hover:scale-110">
+        <span className="relative z-10 flex-1 origin-center scale-110 text-sm leading-snug font-semibold text-balance text-brand-deep transition-transform duration-300 ease-out sm:scale-100 sm:group-hover:scale-110">
           {label}
         </span>
         <span
           aria-hidden="true"
-          className="relative z-10 flex items-center gap-1.5 text-xs font-bold tracking-wide text-brand-deep-accent uppercase opacity-0 transition-all duration-300 ease-out group-hover:opacity-100"
+          className="relative z-10 flex items-center gap-1.5 text-[0.65rem] font-bold tracking-wide text-brand-deep-accent uppercase opacity-100 transition-all duration-300 ease-out sm:text-xs sm:opacity-0 sm:group-hover:opacity-100"
         >
           Explore
-          <span className="inline-block transition-transform duration-300 ease-out group-hover:translate-x-1">→</span>
+          <span className="inline-block translate-x-1 transition-transform duration-300 ease-out sm:translate-x-0 sm:group-hover:translate-x-1">→</span>
         </span>
 
         <span aria-hidden="true" className="absolute right-4 bottom-3 z-0 text-3xl font-bold text-foreground/20 tabular-nums">

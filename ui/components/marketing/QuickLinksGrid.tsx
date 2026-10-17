@@ -64,19 +64,25 @@ export function QuickLinksGrid() {
       <div className="relative mx-auto max-w-7xl">
         <SectionHeading eyebrow="Explore the Platform" title="Quick Links" />
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-6">
-          {PORTALS.map((p) => (
+        <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-6">
+          {PORTALS.map((p, index) => {
+            const isLast = index === PORTALS.length - 1;
+            return (
             <Link
               key={p.href}
               href={p.href}
-              className={`group relative flex flex-col overflow-hidden rounded-[1.6rem] border border-border/60 p-6 shadow-[0_18px_40px_-28px_rgba(31,32,65,0.4)] transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,0.8,0.24,1)] hover:-translate-y-1.5 hover:border-accent/50 hover:shadow-[0_28px_55px_-26px_rgba(255,105,31,0.32)] sm:p-7 ${p.bg} ${
-                p.wide ? "lg:col-span-3" : "lg:col-span-2"
+              className={`group relative flex flex-col overflow-hidden rounded-[1.6rem] border border-accent/50 p-4 shadow-[0_18px_40px_-28px_rgba(31,32,65,0.4)] sm:border-border/60 sm:p-7 sm:transition-[transform,translate,box-shadow,border-color,background-color] sm:duration-500 sm:ease-[cubic-bezier(0.22,0.8,0.24,1)] sm:hover:-translate-y-1.5 sm:hover:border-accent/50 sm:hover:shadow-[0_28px_55px_-26px_rgba(255,105,31,0.32)] motion-reduce:sm:transition-none ${p.bg} ${
+                p.wide
+                  ? "col-span-2 lg:col-span-3"
+                  : isLast
+                    ? "col-span-2 lg:col-span-2"
+                    : "col-span-1 lg:col-span-2"
               }`}
             >
               {/* Large watermark of the same icon — echoes the card’s purpose. */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute -right-5 -bottom-6 text-foreground/10 transition-[transform,color,opacity] duration-500 ease-[cubic-bezier(0.22,0.8,0.24,1)] group-hover:-translate-x-1.5 group-hover:-translate-y-2 group-hover:scale-110 group-hover:text-foreground/16 dark:text-foreground/15 dark:group-hover:text-foreground/25 [&_svg]:h-36 [&_svg]:w-36 sm:[&_svg]:h-40 sm:[&_svg]:w-40"
+                className="pointer-events-none absolute -right-5 -bottom-6 text-foreground/10 dark:text-foreground/15 sm:transition-[transform,translate,scale,color,opacity] sm:duration-500 sm:ease-[cubic-bezier(0.22,0.8,0.24,1)] motion-reduce:sm:transition-none sm:group-hover:-translate-x-1.5 sm:group-hover:-translate-y-2 sm:group-hover:scale-110 sm:group-hover:text-foreground/16 dark:sm:group-hover:text-foreground/25 [&_svg]:h-28 [&_svg]:w-28 sm:[&_svg]:h-40 sm:[&_svg]:w-40"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -91,7 +97,7 @@ export function QuickLinksGrid() {
               </div>
 
               <span
-                className={`relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-xl transition-[background-color,color,transform] duration-500 ease-[cubic-bezier(0.22,0.8,0.24,1)] group-hover:scale-105 group-hover:bg-accent group-hover:text-accent-foreground ${p.iconTile}`}
+                className={`relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-xl sm:h-12 sm:w-12 sm:transition-[background-color,color,transform,scale] sm:duration-500 sm:ease-[cubic-bezier(0.22,0.8,0.24,1)] motion-reduce:sm:transition-none sm:group-hover:scale-105 sm:group-hover:bg-accent sm:group-hover:text-accent-foreground ${p.iconTile}`}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -101,28 +107,29 @@ export function QuickLinksGrid() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   aria-hidden="true"
-                  className="h-6 w-6"
+                  className="h-5 w-5 sm:h-6 sm:w-6"
                 >
                   {icons[p.icon]}
                 </svg>
               </span>
-              <h3 className="relative z-10 mt-5 text-lg font-bold tracking-tight text-foreground transition-colors duration-500">
+              <h3 className="relative z-10 mt-3 text-base font-bold tracking-tight text-foreground sm:mt-5 sm:text-lg">
                 {p.label}
               </h3>
-              <p className="relative z-10 mt-2 flex-1 text-sm leading-relaxed text-muted transition-colors duration-500">
+              <p className="relative z-10 mt-1.5 line-clamp-2 flex-1 text-xs leading-relaxed text-muted sm:mt-2 sm:line-clamp-none sm:text-sm">
                 {p.detail}
               </p>
-              <span className="relative z-10 mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-strong transition-colors duration-500 ease-[cubic-bezier(0.22,0.8,0.24,1)] group-hover:text-accent">
+              <span className="relative z-10 mt-3 inline-flex items-center gap-1.5 self-end text-sm font-semibold text-accent-strong sm:mt-5 sm:self-start sm:transition-colors sm:duration-500 sm:ease-[cubic-bezier(0.22,0.8,0.24,1)] motion-reduce:sm:transition-none sm:group-hover:text-accent">
                 Open
                 <span
                   aria-hidden="true"
-                  className="inline-block transition-transform duration-500 ease-[cubic-bezier(0.22,0.8,0.24,1)] group-hover:translate-x-1"
+                  className="inline-block sm:transition-transform sm:duration-500 sm:ease-[cubic-bezier(0.22,0.8,0.24,1)] motion-reduce:sm:transition-none sm:group-hover:translate-x-1"
                 >
                   →
                 </span>
               </span>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

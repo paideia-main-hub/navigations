@@ -110,7 +110,7 @@ function PersistentHero({ hero }: { hero: DashboardHeroPayload | null }) {
           <h1 className="font-heading mt-1 line-clamp-2 min-h-[2.5rem] text-3xl font-extrabold text-white sm:min-h-[2.75rem] sm:text-4xl">
             {hero?.title ?? "\u00a0"}
           </h1>
-          <p className="mt-3 line-clamp-2 min-h-[2.75rem] max-w-2xl text-brand-deep-muted [&_a]:font-semibold [&_a]:text-accent [&_a]:hover:opacity-90">
+          <p className="mt-3 min-h-[2.75rem] max-w-2xl text-brand-deep-muted sm:line-clamp-2 [&_a]:font-semibold [&_a]:text-accent [&_a]:hover:opacity-90">
             {hero?.subtitle ?? "\u00a0"}
           </p>
         </div>
@@ -155,7 +155,6 @@ export function DashboardShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [hero, setHeroState] = useState<DashboardHeroPayload | null>(null);
   const items = NAV_BY_ROLE[role];
 
@@ -219,11 +218,7 @@ export function DashboardShell({
         ) : null}
       </div>
       <div className="px-3 py-4">
-        <NavLinks
-          items={items}
-          pathname={pathname}
-          onNavigate={() => setMobileOpen(false)}
-        />
+        <NavLinks items={items} pathname={pathname} />
       </div>
     </div>
   );
@@ -233,7 +228,8 @@ export function DashboardShell({
       <div className="bg-background">
         <PersistentHero hero={hero} />
 
-        {/* Sidebar + main share the same max-w-7xl column as the public site. */}
+        {/* Sidebar + main share the same max-w-7xl column as the public site.
+            Mobile nav is the header account menu — no separate dashboard menu bar. */}
         <div className="w-full py-8 sm:py-10 lg:py-12">
           <div className="mx-auto flex w-full max-w-7xl items-start gap-4 px-6 sm:gap-6">
             <aside
@@ -242,29 +238,7 @@ export function DashboardShell({
               {sidebarInner}
             </aside>
 
-            {mobileOpen ? (
-              <div className="fixed inset-0 z-40 lg:hidden">
-                <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
-                <aside
-                  className={`absolute top-4 left-4 max-h-[calc(100dvh-2rem)] w-[min(16rem,calc(100vw-2rem))] overflow-y-auto sm:top-6 sm:left-6 ${sidebarClass}`}
-                >
-                  {sidebarInner}
-                </aside>
-              </div>
-            ) : null}
-
             <div className="min-w-0 flex-1">
-              <div className={`mb-4 flex items-center gap-3 px-4 py-3 lg:hidden ${panelClass}`}>
-                <button
-                  type="button"
-                  onClick={() => setMobileOpen(true)}
-                  aria-label="Open dashboard menu"
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-border text-foreground"
-                >
-                  ☰
-                </button>
-                <p className="text-sm font-semibold text-foreground">Dashboard menu</p>
-              </div>
               <main className="min-h-[min(24rem,calc(100dvh-16rem))]">{children}</main>
             </div>
           </div>

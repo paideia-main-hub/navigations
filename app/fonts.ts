@@ -24,6 +24,24 @@ export const unbounded = localFont({
   display: "swap",
 });
 
+/** Square / tech numerals for Important Dates (and similar display digits). */
+export const orbitron = localFont({
+  src: [
+    { path: "./fonts/orbitron-latin-700-normal.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/orbitron-latin-800-normal.woff2", weight: "800", style: "normal" },
+  ],
+  display: "swap",
+});
+
+/** Quantico only ships 700 for bold; map 800 to the same file for extrabold usage. */
+export const quantico = localFont({
+  src: [
+    { path: "./fonts/quantico-latin-700-normal.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/quantico-latin-700-normal.woff2", weight: "800", style: "normal" },
+  ],
+  display: "swap",
+});
+
 export const sourceSerif = localFont({
   src: [
     { path: "./fonts/source-serif-4-latin-600-normal.woff2", weight: "600", style: "normal" },

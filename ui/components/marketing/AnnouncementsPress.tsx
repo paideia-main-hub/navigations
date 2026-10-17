@@ -88,8 +88,8 @@ export function AnnouncementsPress({ announcements }: { announcements: Announcem
                     >
                       <span className="min-w-0 flex-1">
                         {item.isImportant ? (
-                          <span className="text-[0.65rem] font-semibold tracking-[0.16em] text-accent-strong uppercase">
-                            <span className="rounded-full bg-accent px-2 py-0.5 tracking-[0.12em] text-accent-foreground">
+                          <span className="font-semibold text-accent-strong uppercase">
+                            <span className="inline-flex items-center justify-center rounded-full bg-accent px-2.5 py-1 text-[0.65rem] leading-none tracking-[0.12em] text-accent-foreground max-sm:pt-[5px] max-sm:pb-[3px] sm:py-0.5">
                               Pinned
                             </span>
                           </span>

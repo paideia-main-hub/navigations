@@ -25,7 +25,7 @@ import {
 } from "@/domain/registrations/studentEntries";
 import { alreadyEnteredMessage } from "@/domain/registrations/types";
 import { existingEntryStandingAction } from "@/domain/registrations/actions";
-import { DialogCloseButton } from "@/ui/components/AnimatedModal";
+import { HamperCloseButton } from "@/ui/components/AnimatedModal";
 import { MenuScroll } from "@/ui/components/MenuScroll";
 import { StepMotion } from "@/ui/components/StepMotion";
 import { StudentHamperPayment } from "@/ui/components/registration/StudentHamperPayment";
@@ -448,10 +448,7 @@ function StudentHamperDrawer() {
               {checkout ? "One receipt covers every competition in your hamper." : "One receipt covers every competition here."}
             </p>
           </div>
-          <DialogCloseButton
-            onClick={closeDrawer}
-            className="bg-white/10 text-brand-deep-foreground hover:bg-white/20 hover:text-brand-deep-foreground"
-          />
+          <HamperCloseButton onClick={closeDrawer} />
         </div>
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <StepMotion step={drawerView} direction={viewDirection} className="flex min-h-0 flex-1 flex-col">
@@ -552,7 +549,7 @@ function StudentHamperDrawer() {
                       onClick={closeDrawer}
                       className="block rounded-full border border-border bg-surface px-5 py-2.5 text-center text-sm font-semibold text-foreground hover:border-accent"
                     >
-                      Add more
+                      Add more competitions
                     </Link>
                   </div>
                 </div>
