@@ -171,6 +171,7 @@ export function SupportChatFloat() {
   const [panelHeightPx, setPanelHeightPx] = useState(520);
   const [composerFocused, setComposerFocused] = useState(false);
   const [keyboardLifted, setKeyboardLifted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const keyboardLiftedRef = useRef(false);
 
   function clearIdleMinimize() {
@@ -211,7 +212,7 @@ export function SupportChatFloat() {
       setPanelShown(false);
       setClosing(false);
       closeTimerRef.current = null;
-    }, 280);
+    }, isMobile ? 320 : 280);
   }
 
   function togglePanel() {
@@ -231,25 +232,64 @@ export function SupportChatFloat() {
     };
   }, []);
 
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const syncMobile = () => setIsMobile(mq.matches);
+    syncMobile();
+    mq.addEventListener("change", syncMobile);
+    return () => mq.removeEventListener("change", syncMobile);
+  }, []);
+
+  // Lock page scroll while the mobile fullscreen chat is open.
+  useEffect(() => {
+    if (!isMobile || !panelShown) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [isMobile, panelShown]);
+
   // Pixel height from the real visible viewport — reliable on mobile LAN browsers.
   useEffect(() => {
     function syncFrame() {
       const vv = window.visualViewport;
       const visibleHeight = vv?.height ?? window.innerHeight;
-      const overlap = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
+      const offsetTop = vv?.offsetTop ?? 0;
+      const overlap = vv ? Math.max(0, window.innerHeight - visibleHeight - offsetTop) : 0;
       // Stay lifted after send/blur until the keyboard has fully closed (smooth slide-out).
       const keyed = composerFocused
         ? overlap > 80
         : keyboardLiftedRef.current && overlap > 80;
       keyboardLiftedRef.current = keyed;
+      setKeyboardLifted(keyed);
+
+      if (isMobile && panelShown) {
+        // Gemini-style: fill the visible viewport; bottom rides up with the keyboard.
+        const height = Math.max(200, Math.floor(visibleHeight));
+        setPanelHeightPx(height);
+        setShellStyle({
+          top: offsetTop,
+          left: 0,
+          right: 0,
+          bottom: keyed ? Math.max(0, overlap) : 0,
+          width: "100%",
+          maxWidth: "100%",
+        });
+        return;
+      }
+
       const EDGE = keyed ? 12 : 30;
       const DOCK = keyed ? 0 : 56;
       const available = Math.max(240, Math.floor(visibleHeight - EDGE - DOCK - 12));
-      setKeyboardLifted(keyed);
       setPanelHeightPx(Math.min(672, available));
       setShellStyle({
+        top: "auto",
+        left: "auto",
         right: EDGE,
         bottom: keyed ? Math.max(12, overlap + 12) : 30,
+        width: "auto",
+        maxWidth: "none",
       });
     }
 
@@ -263,7 +303,7 @@ export function SupportChatFloat() {
       vv?.removeEventListener("scroll", syncFrame);
       window.removeEventListener("resize", syncFrame);
     };
-  }, [composerFocused]);
+  }, [composerFocused, isMobile, panelShown]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -286,7 +326,7 @@ export function SupportChatFloat() {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [open, messages, pending]);
 
-  // After an AI reply, auto-minimize in 10s unless the user uses mic / screenshot / text input.
+  // After an AI reply, auto-minimize in 30s unless the user uses mic / screenshot / text input.
   useEffect(() => {
     if (!open || pending || recording || transcribing || capturing) {
       if (pending || recording || transcribing || capturing) clearIdleMinimize();
@@ -299,7 +339,7 @@ export function SupportChatFloat() {
     idleMinimizeTimerRef.current = setTimeout(() => {
       idleMinimizeTimerRef.current = null;
       closePanel();
-    }, 10000);
+    }, 30000);
 
     return () => clearIdleMinimize();
   }, [open, pending, messages, recording, transcribing, capturing]);
@@ -503,10 +543,15 @@ export function SupportChatFloat() {
   const lastAssistant = [...messages].reverse().find((item) => item.role === "assistant");
   const suggestHandoff = Boolean(lastAssistant?.needsHuman);
   const suggestLogin = Boolean(lastAssistant?.needsLogin);
+  const mobileFullscreen = isMobile && panelShown;
+  const hideDock = keyboardLifted || mobileFullscreen;
+
   return (
     <div
       data-support-chat-float
-      className="fixed z-[60] flex flex-col items-end transition-[bottom,right] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+      className={`fixed z-[60] flex flex-col transition-[top,right,bottom,left,width] duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+        mobileFullscreen ? "items-stretch" : "items-end"
+      }`}
       style={shellStyle}
     >
       {panelShown ? (
@@ -514,12 +559,27 @@ export function SupportChatFloat() {
           id={panelId}
           role="dialog"
           aria-label="Navigations support chat"
+          aria-modal={mobileFullscreen || undefined}
           style={{ height: panelHeightPx }}
-          className={`origin-bottom-right mb-3 flex w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-[0_18px_40px_-16px_rgba(31,32,65,0.45)] transition-[height] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
-            closing ? "animate-support-chat-out" : "animate-support-chat-in"
+          className={`flex flex-col overflow-hidden bg-background transition-[height,border-radius] duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+            mobileFullscreen
+              ? "mb-0 w-full rounded-none border-0 shadow-none"
+              : "origin-bottom-right mb-3 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-border shadow-[0_18px_40px_-16px_rgba(31,32,65,0.45)]"
+          } ${
+            closing
+              ? mobileFullscreen
+                ? "animate-support-chat-sheet-out"
+                : "animate-support-chat-out"
+              : mobileFullscreen
+                ? "animate-support-chat-sheet-in"
+                : "animate-support-chat-in"
           }`}
         >
-          <div className="flex items-start justify-between gap-3 border-b border-border bg-brand-deep px-4 py-3 text-white">
+          <div
+            className={`flex items-start justify-between gap-3 border-b border-border bg-brand-deep px-4 py-3 text-white ${
+              mobileFullscreen ? "pt-[max(0.75rem,env(safe-area-inset-top))]" : ""
+            }`}
+          >
             <div>
               <p className="mb-1.5 text-base font-extrabold tracking-tight">Ask Navigations</p>
               <p className="mt-0.5 text-xs text-white/75">
@@ -607,7 +667,13 @@ export function SupportChatFloat() {
             </div>
           ) : null}
 
-          <div className="border-t border-border p-3">
+          <div
+            className={`border-t border-border p-3 ${
+              mobileFullscreen && !keyboardLifted
+                ? "pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+                : ""
+            }`}
+          >
             {pendingImage ? (
               <div className="mb-2 flex items-center gap-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -697,19 +763,19 @@ export function SupportChatFloat() {
         aria-expanded={open}
         aria-controls={panelId}
         aria-label={open ? "Close support chat" : "Open support chat"}
-        aria-hidden={keyboardLifted}
-        tabIndex={keyboardLifted ? -1 : undefined}
+        aria-hidden={hideDock}
+        tabIndex={hideDock ? -1 : undefined}
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
           togglePanel();
         }}
         onAnimationEnd={() => setDockPulse(false)}
-        className={`group relative z-[61] flex h-11 touch-manipulation items-center transition-[transform,opacity,max-height,margin] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
-          keyboardLifted
+        className={`group relative z-[61] flex h-11 touch-manipulation items-center transition-[transform,opacity,max-height,margin] duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+          hideDock
             ? "pointer-events-none mb-0 max-h-0 translate-y-3 opacity-0"
             : "max-h-11 translate-y-0 opacity-100"
-        } ${dockPulse && !keyboardLifted ? "animate-support-dock-press" : ""}`}
+        } ${dockPulse && !hideDock ? "animate-support-dock-press" : ""}`}
       >
         <span className="relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground shadow-[0_10px_22px_-8px_rgba(255,105,31,0.55)] transition-[transform,box-shadow] duration-300 ease-out group-hover:-translate-x-2 group-hover:shadow-[0_14px_28px_-8px_rgba(255,105,31,0.65)] group-focus-visible:-translate-x-2">
           <ChatIcon className="block h-5 w-5 translate-y-px" />

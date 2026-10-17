@@ -363,6 +363,29 @@ h6 {
   }
 }
 
+/* Mobile fullscreen chat — Gemini-style sheet from the bottom. */
+@keyframes support-chat-sheet-in {
+  0% {
+    opacity: 0.6;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes support-chat-sheet-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
 @theme inline {
   --animate-podium-in: podium-in 0.55s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-podium-card-flip: podium-card-flip 0.65s cubic-bezier(0.22, 0.8, 0.24, 1) both;
@@ -373,6 +396,8 @@ h6 {
   --animate-modal-swap-in: modal-swap-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-support-chat-in: support-chat-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-support-chat-out: support-chat-out 0.28s cubic-bezier(0.4, 0, 1, 1) both;
+  --animate-support-chat-sheet-in: support-chat-sheet-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-support-chat-sheet-out: support-chat-sheet-out 0.3s cubic-bezier(0.4, 0, 1, 1) both;
   --animate-support-dock-press: support-dock-press 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
