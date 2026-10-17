@@ -170,6 +170,8 @@ export function SupportChatFloat() {
   const [shellStyle, setShellStyle] = useState<CSSProperties>({ right: 30, bottom: 30 });
   const [panelHeightPx, setPanelHeightPx] = useState(520);
   const [composerFocused, setComposerFocused] = useState(false);
+  const [keyboardLifted, setKeyboardLifted] = useState(false);
+  const keyboardLiftedRef = useRef(false);
 
   function clearIdleMinimize() {
     if (idleMinimizeTimerRef.current) {
@@ -200,6 +202,8 @@ export function SupportChatFloat() {
     if (!panelShown || closing) return;
     clearIdleMinimize();
     setComposerFocused(false);
+    keyboardLiftedRef.current = false;
+    setKeyboardLifted(false);
     setDockPulse(true);
     setClosing(true);
     setOpen(false);
@@ -233,10 +237,15 @@ export function SupportChatFloat() {
       const vv = window.visualViewport;
       const visibleHeight = vv?.height ?? window.innerHeight;
       const overlap = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
-      const keyed = composerFocused && overlap > 80;
+      // Stay lifted after send/blur until the keyboard has fully closed (smooth slide-out).
+      const keyed = composerFocused
+        ? overlap > 80
+        : keyboardLiftedRef.current && overlap > 80;
+      keyboardLiftedRef.current = keyed;
       const EDGE = keyed ? 12 : 30;
       const DOCK = keyed ? 0 : 56;
       const available = Math.max(240, Math.floor(visibleHeight - EDGE - DOCK - 12));
+      setKeyboardLifted(keyed);
       setPanelHeightPx(Math.min(672, available));
       setShellStyle({
         right: EDGE,
@@ -497,7 +506,7 @@ export function SupportChatFloat() {
   return (
     <div
       data-support-chat-float
-      className="fixed z-[60] flex flex-col items-end"
+      className="fixed z-[60] flex flex-col items-end transition-[bottom,right] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
       style={shellStyle}
     >
       {panelShown ? (
@@ -506,7 +515,7 @@ export function SupportChatFloat() {
           role="dialog"
           aria-label="Navigations support chat"
           style={{ height: panelHeightPx }}
-          className={`origin-bottom-right mb-3 flex w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-[0_18px_40px_-16px_rgba(31,32,65,0.45)] ${
+          className={`origin-bottom-right mb-3 flex w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-[0_18px_40px_-16px_rgba(31,32,65,0.45)] transition-[height] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
             closing ? "animate-support-chat-out" : "animate-support-chat-in"
           }`}
         >
@@ -688,15 +697,19 @@ export function SupportChatFloat() {
         aria-expanded={open}
         aria-controls={panelId}
         aria-label={open ? "Close support chat" : "Open support chat"}
+        aria-hidden={keyboardLifted}
+        tabIndex={keyboardLifted ? -1 : undefined}
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
           togglePanel();
         }}
         onAnimationEnd={() => setDockPulse(false)}
-        className={`group relative z-[61] flex h-11 touch-manipulation items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
-          dockPulse ? "animate-support-dock-press" : ""
-        }`}
+        className={`group relative z-[61] flex h-11 touch-manipulation items-center transition-[transform,opacity,max-height,margin] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+          keyboardLifted
+            ? "pointer-events-none mb-0 max-h-0 translate-y-3 opacity-0"
+            : "max-h-11 translate-y-0 opacity-100"
+        } ${dockPulse && !keyboardLifted ? "animate-support-dock-press" : ""}`}
       >
         <span className="relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground shadow-[0_10px_22px_-8px_rgba(255,105,31,0.55)] transition-[transform,box-shadow] duration-300 ease-out group-hover:-translate-x-2 group-hover:shadow-[0_14px_28px_-8px_rgba(255,105,31,0.65)] group-focus-visible:-translate-x-2">
           <ChatIcon className="block h-5 w-5 translate-y-px" />

@@ -44,11 +44,15 @@ Formatting for the "reply" string (important):
 - Use **bold** only for short labels, not whole sentences.
 - Do NOT put an entire answer on one long line. Do NOT wrap list items inside a single paragraph.
 
-Flags (default BOTH to false):
+Flags (default BOTH to false — this is critical):
 - needsLogin=true ONLY when the user needs their private dashboard data (own registration/payment status, roster, League ID, etc.). Tell them to log in. Do not invent private data.
-- needsHuman=true ONLY when you cannot answer from the knowledge base and must send them to a human on WhatsApp. In that case the reply must clearly say they should continue on WhatsApp / talk to the Navigations team.
-- If you successfully answered the question from the knowledge base (fees, eligibility, how to register, competition info, etc.), BOTH flags MUST be false — even if you mention contact pages or dashboards in passing.
-- Never set needsHuman=true just because the topic is important or the answer is long.
+- needsHuman=true ONLY in these cases:
+  1) You cannot answer from the knowledge base, OR
+  2) The user explicitly asks to talk to a human / WhatsApp / real person.
+  When needsHuman=true, the reply MUST include the exact phrase "continue on WhatsApp".
+- If you answered the question (counts, fees, dates, eligibility, how to register, competition info, etc.), needsHuman MUST be false and needsLogin MUST be false.
+- Do NOT set needsHuman=true just because you also mention WhatsApp, /contact, or the team as optional extras.
+- Do NOT add a WhatsApp footer on successful answers.
 
 Return ONLY valid JSON: {"reply":"string","needsHuman":boolean,"needsLogin":boolean}
 
@@ -93,29 +97,45 @@ export function sanitizeHistory(raw: unknown): SupportChatMessage[] {
   return out;
 }
 
-/** Only keep WhatsApp handoff when the reply actually sends the user to a human. */
+/** True only when the reply is an explicit human / WhatsApp handoff — not a casual mention. */
 function replyRequestsHuman(reply: string): boolean {
   const text = reply.toLowerCase();
   return (
-    text.includes("whatsapp") ||
-    text.includes("talk to our team") ||
-    text.includes("contact our team") ||
-    text.includes("navigations team") ||
-    text.includes("speak to a human") ||
-    text.includes("speak with a human") ||
-    text.includes("could not reach the assistant") ||
+    text.includes("continue on whatsapp") ||
+    /\b(talk|speak|chat)\s+to\s+(a\s+)?(human|person|someone|our team)\b/.test(text) ||
+    /\b(talk|speak)\s+with\s+(a\s+)?(human|person|our team)\b/.test(text) ||
     text.includes("assistant is busy") ||
     text.includes("assistant is not configured") ||
+    text.includes("could not reach the assistant") ||
     text.includes("i could not answer") ||
-    text.includes("i am not sure") ||
-    text.includes("i'm not sure")
+    text.includes("i could not reach")
   );
 }
 
-function normalizeResult(result: SupportChatResult): SupportChatResult {
+/** User explicitly wants a human — show WhatsApp even if the model forgets the flag. */
+function userAsksForHuman(message: string): boolean {
+  const text = message.toLowerCase();
+  return (
+    /\b(whatsapp|wa\.me)\b/.test(text) ||
+    /\b(real person|real human|live agent|live support|live chat)\b/.test(text) ||
+    /\b(talk|speak|chat)\s+to\s+(a\s+)?(human|person|someone|agent)\b/.test(text) ||
+    /\b(talk|speak)\s+with\s+(a\s+)?(human|person|agent)\b/.test(text) ||
+    /\b(connect|transfer)\s+(me\s+)?(to\s+)?(a\s+)?(human|agent|person)\b/.test(text)
+  );
+}
+
+function normalizeResult(result: SupportChatResult, userMessage?: string): SupportChatResult {
+  const askedForHuman = userMessage ? userAsksForHuman(userMessage) : false;
+  const handoffInReply = replyRequestsHuman(result.reply);
+  // Model flag alone is not enough — require explicit handoff wording, unless the user asked for a human.
+  const needsHuman = askedForHuman || (result.needsHuman && handoffInReply);
   return {
     ...result,
-    needsHuman: result.needsHuman && replyRequestsHuman(result.reply),
+    needsHuman,
+    reply:
+      askedForHuman && !handoffInReply
+        ? `${result.reply.trim()}\n\nPlease continue on WhatsApp and our team will help you.`
+        : result.reply,
   };
 }
 
@@ -130,11 +150,11 @@ function parseModelJson(text: string): SupportChatResult | null {
       needsLogin?: unknown;
     };
     if (typeof parsed.reply !== "string" || !parsed.reply.trim()) return null;
-    return normalizeResult({
+    return {
       reply: parsed.reply.trim().slice(0, 2000),
       needsHuman: Boolean(parsed.needsHuman),
       needsLogin: Boolean(parsed.needsLogin),
-    });
+    };
   } catch {
     return null;
   }
@@ -332,21 +352,24 @@ export async function answerSupportChat(
 
   if (hasGroq) {
     const groq = await tryGroq(message, history, system, image);
-    if (groq.result) return groq.result;
+    if (groq.result) return normalizeResult(groq.result, message);
     busy = busy || groq.busy;
   }
 
   if (hasGemini) {
     const gemini = await tryGemini(message, history, system, image);
-    if (gemini.result) return gemini.result;
+    if (gemini.result) return normalizeResult(gemini.result, message);
     busy = busy || gemini.busy;
   }
 
-  return {
-    reply: busy
-      ? "The assistant is busy right now. Please try again in a moment, or continue on WhatsApp."
-      : "I could not reach the assistant just now. Please continue on WhatsApp and our team will help.",
-    needsHuman: true,
-    needsLogin: false,
-  };
+  return normalizeResult(
+    {
+      reply: busy
+        ? "The assistant is busy right now. Please try again in a moment, or continue on WhatsApp."
+        : "I could not reach the assistant just now. Please continue on WhatsApp and our team will help.",
+      needsHuman: true,
+      needsLogin: false,
+    },
+    message,
+  );
 }
