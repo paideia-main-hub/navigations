@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { toJpeg } from "html-to-image";
+import { useEffect, useId, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import { usePathname } from "next/navigation";
 import { CONTACT_PHONE_E164 } from "@/domain/site/contact";
 import { OPEN_LOGIN_EVENT } from "@/ui/components/LoginModalContext";
@@ -85,6 +84,7 @@ function ScreenshotIcon({ className }: { className?: string }) {
 }
 
 async function capturePageScreenshot(): Promise<PendingImage> {
+  const { toJpeg } = await import("html-to-image");
   const target = document.documentElement;
   const dataUrl = await toJpeg(target, {
     quality: 0.82,
@@ -166,6 +166,10 @@ export function SupportChatFloat() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  /** Keeps the float inside the visible area when the mobile keyboard opens. */
+  const [shellStyle, setShellStyle] = useState<CSSProperties>({ right: 30, bottom: 30 });
+  const [panelHeightPx, setPanelHeightPx] = useState(520);
+  const [composerFocused, setComposerFocused] = useState(false);
 
   function clearIdleMinimize() {
     if (idleMinimizeTimerRef.current) {
@@ -184,16 +188,18 @@ export function SupportChatFloat() {
       clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
     }
+    setComposerFocused(false);
     setDockPulse(true);
     setClosing(false);
     setPanelShown(true);
     setOpen(true);
-    requestAnimationFrame(() => inputRef.current?.focus());
+    // Never autofocus — on phones that opens the keyboard and hides the panel.
   }
 
   function closePanel() {
     if (!panelShown || closing) return;
     clearIdleMinimize();
+    setComposerFocused(false);
     setDockPulse(true);
     setClosing(true);
     setOpen(false);
@@ -205,27 +211,50 @@ export function SupportChatFloat() {
   }
 
   function togglePanel() {
-    if (open || (panelShown && !closing)) closePanel();
+    if (panelShown && !closing) closePanel();
     else openPanel();
   }
 
   useEffect(() => {
     sessionIdRef.current = getOrCreateSessionId();
     const stored = readStoredChat();
-    if (stored) {
-      setMessages(stored.messages);
-      if (stored.open) {
-        setOpen(true);
-        setPanelShown(true);
-        setClosing(false);
-      }
-    }
+    // Restore messages only — never reopen automatically (stuck open broke mobile).
+    if (stored?.messages?.length) setMessages(stored.messages);
     setHydrated(true);
     return () => {
       if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
       if (idleMinimizeTimerRef.current) clearTimeout(idleMinimizeTimerRef.current);
     };
   }, []);
+
+  // Pixel height from the real visible viewport — reliable on mobile LAN browsers.
+  useEffect(() => {
+    function syncFrame() {
+      const vv = window.visualViewport;
+      const visibleHeight = vv?.height ?? window.innerHeight;
+      const overlap = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
+      const keyed = composerFocused && overlap > 80;
+      const EDGE = keyed ? 12 : 30;
+      const DOCK = keyed ? 0 : 56;
+      const available = Math.max(240, Math.floor(visibleHeight - EDGE - DOCK - 12));
+      setPanelHeightPx(Math.min(672, available));
+      setShellStyle({
+        right: EDGE,
+        bottom: keyed ? Math.max(12, overlap + 12) : 30,
+      });
+    }
+
+    syncFrame();
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", syncFrame);
+    vv?.addEventListener("scroll", syncFrame);
+    window.addEventListener("resize", syncFrame);
+    return () => {
+      vv?.removeEventListener("resize", syncFrame);
+      vv?.removeEventListener("scroll", syncFrame);
+      window.removeEventListener("resize", syncFrame);
+    };
+  }, [composerFocused]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -461,15 +490,19 @@ export function SupportChatFloat() {
   const lastAssistant = [...messages].reverse().find((item) => item.role === "assistant");
   const suggestHandoff = Boolean(lastAssistant?.needsHuman);
   const suggestLogin = Boolean(lastAssistant?.needsLogin);
-
   return (
-    <div data-support-chat-float className="fixed z-40 flex flex-col items-end" style={{ right: 30, bottom: 30 }}>
+    <div
+      data-support-chat-float
+      className="fixed z-[60] flex flex-col items-end"
+      style={shellStyle}
+    >
       {panelShown ? (
         <div
           id={panelId}
           role="dialog"
           aria-label="Navigations support chat"
-          className={`origin-bottom-right mb-3 flex h-[min(42rem,calc(100dvh-5.5rem))] w-[min(22rem,calc(100vw-3.5rem))] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-[0_18px_40px_-16px_rgba(31,32,65,0.45)] ${
+          style={{ height: panelHeightPx }}
+          className={`origin-bottom-right mb-3 flex w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-[0_18px_40px_-16px_rgba(31,32,65,0.45)] ${
             closing ? "animate-support-chat-out" : "animate-support-chat-in"
           }`}
         >
@@ -505,7 +538,7 @@ export function SupportChatFloat() {
                 <div
                   className={`max-w-[90%] rounded-2xl px-3 py-2 ${
                     item.role === "user"
-                      ? "bg-accent text-sm leading-relaxed text-accent-foreground"
+                      ? "bg-accent-soft text-sm leading-relaxed text-foreground"
                       : "bg-surface text-foreground"
                   }`}
                 >
@@ -596,7 +629,11 @@ export function SupportChatFloat() {
                   markComposerEngaged();
                   setInput(event.target.value);
                 }}
-                onFocus={markComposerEngaged}
+                onFocus={() => {
+                  markComposerEngaged();
+                  setComposerFocused(true);
+                }}
+                onBlur={() => setComposerFocused(false)}
                 onPointerDown={markComposerEngaged}
                 maxLength={800}
                 placeholder={
@@ -645,9 +682,13 @@ export function SupportChatFloat() {
         aria-expanded={open}
         aria-controls={panelId}
         aria-label={open ? "Close support chat" : "Open support chat"}
-        onClick={togglePanel}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          togglePanel();
+        }}
         onAnimationEnd={() => setDockPulse(false)}
-        className={`group flex h-11 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+        className={`group relative z-[61] flex h-11 touch-manipulation items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
           dockPulse ? "animate-support-dock-press" : ""
         }`}
       >

@@ -309,16 +309,16 @@ async function tryGroq(
   return { busy };
 }
 
-/** Gemini first, then Groq fallback. Needs at least one of GEMINI_API_KEY / GROQ_API_KEY. */
+/** Groq first, then Gemini fallback. Needs at least one of GROQ_API_KEY / GEMINI_API_KEY. */
 export async function answerSupportChat(
   message: string,
   history: SupportChatMessage[],
   image?: SupportChatImage | null,
 ): Promise<SupportChatResult> {
-  const hasGemini = Boolean(process.env.GEMINI_API_KEY?.trim());
   const hasGroq = Boolean(process.env.GROQ_API_KEY?.trim());
+  const hasGemini = Boolean(process.env.GEMINI_API_KEY?.trim());
 
-  if (!hasGemini && !hasGroq) {
+  if (!hasGroq && !hasGemini) {
     return {
       reply:
         "The assistant is not configured yet. Please continue on WhatsApp and our team will help you.",
@@ -330,16 +330,16 @@ export async function answerSupportChat(
   const system = await systemPrompt();
   let busy = false;
 
-  if (hasGemini) {
-    const gemini = await tryGemini(message, history, system, image);
-    if (gemini.result) return gemini.result;
-    busy = busy || gemini.busy;
-  }
-
   if (hasGroq) {
     const groq = await tryGroq(message, history, system, image);
     if (groq.result) return groq.result;
     busy = busy || groq.busy;
+  }
+
+  if (hasGemini) {
+    const gemini = await tryGemini(message, history, system, image);
+    if (gemini.result) return gemini.result;
+    busy = busy || gemini.busy;
   }
 
   return {
