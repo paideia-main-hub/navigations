@@ -4,10 +4,15 @@ import { resolveCompetitionCardImage } from "@/domain/competitions/cardImage";
 import { competencyGroupsFor } from "@/domain/competitions/competencies";
 import { categoryLabels, type AgeCategory, type CompetitionSummary } from "@/domain/competitions/types";
 import { awardRank } from "@/domain/results/types";
+import { pageMetadata } from "@/lib/seo";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { ResultsExplorer, type ResultCard, type ResultWinner } from "./ResultsExplorer";
 
-export const metadata = { title: "Results & Recognition | Navigations" };
+export const metadata = pageMetadata({
+  title: "Results & Recognition",
+  description: "Published competition results, winners, and recognition from Navigations Future Ready League.",
+  path: "/results",
+});
 
 /** The three competition distinctions a card shows, in order. */
 const PLACES = ["gold", "silver", "bronze"] as const;

@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { createClient } from "@/data/supabase/server";
 import { listCompetitionIndex } from "@/domain/competitions/service";
+import { pageMetadata } from "@/lib/seo";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 
-export const metadata = { title: "Practice & Resource Centre | Navigations" };
+export const metadata = pageMetadata({
+  title: "Practice & Resource Centre",
+  description: "Practice questions, sample tasks, and resources to prepare for Navigations competitions.",
+  path: "/resources",
+});
 
 export default async function ResourcesPage() {
   const supabase = await createClient();

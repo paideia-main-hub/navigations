@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { listOpenAndUpcoming, listPublishedWinners, groupWinnersByCompetition, upcomingDates } from "@/domain/competitions/service";
@@ -18,9 +19,21 @@ import { QuickLinksGrid } from "@/ui/components/marketing/QuickLinksGrid";
 import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
 import { HeroOne } from "@/ui/components/marketing/HeroCollage";
 import { HeroTwo } from "@/ui/components/marketing/HeroTwo";
+import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_TAGLINE, pageMetadata } from "@/lib/seo";
 
 /** Flip between 1 (preserved collage) and 2 (ceremony + collage layered hero). */
 const HERO_VARIANT: 1 | 2 = 2;
+
+export const metadata: Metadata = {
+  ...pageMetadata({
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: DEFAULT_DESCRIPTION,
+    path: "/",
+  }),
+  title: {
+    absolute: `${SITE_NAME} — ${SITE_TAGLINE}`,
+  },
+};
 
 export default async function HomePage() {
   const supabase = await createClient();

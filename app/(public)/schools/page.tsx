@@ -7,7 +7,14 @@ import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
 import type { FaqCardItem } from "@/ui/components/marketing/FaqExpandGrid";
 import { FaqIcon } from "@/ui/components/marketing/faqIcons";
 
-export const metadata = { title: "For Schools | Navigations" };
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "For Schools",
+  description:
+    "How schools join the Future Ready League — registration, fees, team entries, and coordinator accounts.",
+  path: "/schools",
+});
 
 function feePolicyAnswer(fees: number[]) {
   const distinct = [...new Set(fees)];

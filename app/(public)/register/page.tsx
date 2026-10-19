@@ -1,7 +1,12 @@
+import { pageMetadata } from "@/lib/seo";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { RegisterPathsSection } from "@/ui/components/marketing/RegisterPathsSection";
 
-export const metadata = { title: "Register | Navigations" };
+export const metadata = pageMetadata({
+  title: "Register",
+  description: "Create a school, student, judge, or nominator account to join Navigations Future Ready League.",
+  path: "/register",
+});
 
 export default function RegisterChoicePage() {
   return (

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/data/supabase/admin";
@@ -14,6 +15,10 @@ import { LoginModalProvider } from "@/ui/components/LoginModalContext";
 import { DashboardShell } from "@/ui/components/dashboard/DashboardShell";
 import { SchoolEntryListProvider } from "@/ui/components/registration/SchoolHamperList";
 import { StudentHamperProvider } from "@/ui/components/registration/StudentHamperList";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
+};
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();

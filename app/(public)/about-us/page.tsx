@@ -1,3 +1,4 @@
+import { pageMetadata } from "@/lib/seo";
 import { AboutHero } from "@/ui/components/marketing/AboutHero";
 import { AboutIntro } from "@/ui/components/marketing/AboutIntro";
 import { AboutJourney } from "@/ui/components/marketing/AboutJourney";
@@ -7,10 +8,11 @@ import { AboutInitiative } from "@/ui/components/marketing/AboutInitiative";
 import { WhyTheLeague } from "@/ui/components/marketing/WhyTheLeague";
 import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
 
-export const metadata = {
-  title: "About Us | Navigations",
-  description: "More than a classroom — where opportunities lead.",
-};
+export const metadata = pageMetadata({
+  title: "About Us",
+  description: "More than a classroom — where opportunities lead. Learn about Navigations and the Future Ready League.",
+  path: "/about-us",
+});
 
 export default function AboutUsPage() {
   return (

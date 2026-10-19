@@ -4,10 +4,15 @@ import { awardLabels } from "@/domain/competitions/types";
 import { adminListCategories } from "@/domain/awards/service";
 import { listResults } from "@/domain/school-awards/service";
 import { listPublishedNominations } from "@/domain/award-nominations/service";
+import { pageMetadata } from "@/lib/seo";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
 
-export const metadata = { title: "Award Results | Navigations" };
+export const metadata = pageMetadata({
+  title: "Award Results",
+  description: "Published award outcomes across competition distinctions, school awards, and nominations.",
+  path: "/awards/results",
+});
 
 export default async function AwardResultsPage() {
   const supabase = await createClient();

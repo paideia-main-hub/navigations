@@ -1,9 +1,14 @@
 import { createClient } from "@/data/supabase/server";
 import { listAllAnnouncements } from "@/domain/announcements/service";
+import { pageMetadata } from "@/lib/seo";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { AnnouncementsList } from "./AnnouncementsList";
 
-export const metadata = { title: "Announcements | Navigations" };
+export const metadata = pageMetadata({
+  title: "Announcements",
+  description: "Official Navigations and Future Ready League notices for schools, students, and families.",
+  path: "/announcements",
+});
 
 export default async function AnnouncementsPage() {
   const supabase = await createClient();

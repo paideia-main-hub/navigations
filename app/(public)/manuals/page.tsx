@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { createClient } from "@/data/supabase/server";
 import { listCompetitionIndex } from "@/domain/competitions/service";
+import { pageMetadata } from "@/lib/seo";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 
-export const metadata = { title: "Manuals & Guidelines | Navigations" };
+export const metadata = pageMetadata({
+  title: "Manuals & Guidelines",
+  description: "Competition manuals, registration rules, and guiding principles for Future Ready League events.",
+  path: "/manuals",
+});
 
 export default async function ManualsPage() {
   const supabase = await createClient();

@@ -1,17 +1,23 @@
+import Link from "next/link";
+import { createClient } from "@/data/supabase/server";
+import { listSubmittableCategories, listCategories } from "@/domain/awards/service";
+import type { AwardLayer } from "@/domain/awards/types";
+import { layerLabels } from "@/domain/awards/types";
+import { pageMetadata } from "@/lib/seo";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { LayersRecognitionMark } from "@/ui/components/marketing/LayersRecognitionMark";
 import { AwardsLayerBand } from "@/ui/components/awards/AwardsLayerBand";
 import { AwardsExpandProvider } from "@/ui/components/awards/AwardExpandGrid";
 import { AwardsSectionJump } from "@/ui/components/awards/AwardsSectionJump";
 import { OpenNominationCard } from "@/ui/components/awards/OpenNominationCard";
-import type { AwardLayer } from "@/domain/awards/types";
-import { layerLabels } from "@/domain/awards/types";
 import { publicAwardsForLayer } from "@/ui/components/awards/publicCards";
-import { listSubmittableCategories, listCategories } from "@/domain/awards/service";
-import { createClient } from "@/data/supabase/server";
-import Link from "next/link";
 
-export const metadata = { title: "Awards | Navigations" };
+export const metadata = pageMetadata({
+  title: "Awards",
+  description:
+    "Competition distinctions, school awards, spotlight nominations, and recognition across the Future Ready League.",
+  path: "/awards",
+});
 
 const LAYER_ORDER: AwardLayer[] = ["competition_distinction", "school_award", "spotlight", "teacher_parent", "sports"];
 

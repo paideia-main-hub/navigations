@@ -10,13 +10,18 @@ import {
   type CompetitionPathway,
   type CompetitionStatus,
 } from "@/domain/competitions/types";
+import { pageMetadata } from "@/lib/seo";
 import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { CompetitionsDirectory } from "./CompetitionsDirectory";
 
-export const metadata = {
-  title: "Competitions | Navigations",
-};
+
+export const metadata = pageMetadata({
+  title: "Competitions",
+  description:
+    "Browse Future Ready League competitions — pathways, age categories, registration status, and how to enter.",
+  path: "/competitions",
+});
 
 const AGE_CATEGORIES: AgeCategory[] = ["primary", "middle", "secondary"];
 

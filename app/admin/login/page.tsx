@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
 import { AdminLoginForm } from "@/ui/components/admin/AdminLoginForm";
 import { Logo } from "@/ui/components/Logo";
 
-export const metadata = { title: "Admin Login | Navigations" };
+export const metadata: Metadata = {
+  title: "Admin Login",
+  robots: { index: false, follow: false },
+};
 
 export default function AdminLoginPage() {
   return (

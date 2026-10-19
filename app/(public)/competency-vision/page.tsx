@@ -1,10 +1,12 @@
+import { pageMetadata } from "@/lib/seo";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 
-export const metadata = {
-  title: "Competency Vision | Navigations",
+export const metadata = pageMetadata({
+  title: "Competency Vision",
   description:
     "Navigations creates purposeful opportunities for school-age learners to develop and demonstrate future competencies.",
-};
+  path: "/competency-vision",
+});
 
 export default function CompetencyVisionPage() {
   return (

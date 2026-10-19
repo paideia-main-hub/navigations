@@ -8,6 +8,7 @@ import {
   type CompetitionSummary,
   type EventType,
 } from "@/domain/competitions/types";
+import { pageMetadata } from "@/lib/seo";
 import { formatEventDateOnly } from "@/ui/components/admin/eventDateFormat";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
@@ -29,7 +30,12 @@ import {
   type SubmissionEntry,
 } from "@/ui/components/calendar/calendar2026";
 
-export const metadata = { title: "Competition Calendar 2026 | Navigations" };
+export const metadata = pageMetadata({
+  title: "Competition Calendar 2026",
+  description:
+    "Key dates, submission windows, and award timelines for the Future Ready League 2026 season.",
+  path: "/calendar",
+});
 
 const JUMP_SECTIONS = [
   { id: "key-dates", label: "Key dates" },

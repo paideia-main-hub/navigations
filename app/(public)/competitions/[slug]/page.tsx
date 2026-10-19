@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/data/supabase/server";
@@ -8,6 +9,7 @@ import { categoryLabels, statusLabels, awardLabels, eventTypeLabels, resourceTyp
 import { announcementsForCompetition } from "@/domain/announcements/service";
 import { listPublishedComputedWinners } from "@/domain/results/service";
 import { awardRank } from "@/domain/results/types";
+import { competitionJsonLd, pageMetadata } from "@/lib/seo";
 import { ArenaTabs } from "@/ui/components/marketing/ArenaTabs";
 import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
 import { CompetitionOverviewSections } from "@/ui/components/marketing/CompetitionOverviewSections";
@@ -15,6 +17,31 @@ import { CompetitionResourceBody } from "@/ui/components/marketing/CompetitionRe
 import { CompetitionFaqAccordion } from "@/ui/components/marketing/CompetitionFaqAccordion";
 import { CompetitionRegisterPanel } from "@/ui/components/marketing/CompetitionRegisterPanel";
 import { CompetitionManualFloat } from "@/ui/components/marketing/CompetitionManualFloat";
+import { JsonLd } from "@/ui/components/JsonLd";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const competition = await getPublicCompetitionBySlug(supabase, slug);
+  if (!competition) {
+    return pageMetadata({
+      title: "Competition",
+      description: "Competition details from Navigations Future Ready League.",
+      path: `/competitions/${slug}`,
+      noIndex: true,
+    });
+  }
+  return pageMetadata({
+    title: competition.title,
+    description: competition.shortDescription || competition.overview,
+    path: `/competitions/${competition.slug}`,
+    image: competition.imageUrl,
+  });
+}
 
 export default async function CompetitionPage({
   params,
@@ -33,6 +60,13 @@ export default async function CompetitionPage({
     getCurrentUser(),
   ]);
   if (!competition) notFound();
+
+  const structuredData = competitionJsonLd({
+    title: competition.title,
+    description: competition.shortDescription || competition.overview,
+    slug: competition.slug,
+    imageUrl: competition.imageUrl,
+  });
 
   const computedWinners = allComputedWinners
     .filter((w) => w.competitionSlug === slug)
@@ -667,6 +701,7 @@ export default async function CompetitionPage({
 
   return (
     <div className="bg-background">
+      <JsonLd data={structuredData} />
       {/* Pull up under the floating header clearance on <main> (pt-24/28), same
           pattern as /competitions, /awards, /calendar, etc. */}
       <div className="relative -mt-24 overflow-hidden bg-brand-deep px-6 pt-28 pb-14 sm:-mt-28 sm:pt-32">

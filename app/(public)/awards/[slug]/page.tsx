@@ -1,10 +1,36 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/data/supabase/server";
 import { getCategoryBySlug } from "@/domain/awards/service";
 import { layerLabels, isJudgedLayer } from "@/domain/awards/types";
+import { pageMetadata } from "@/lib/seo";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 import { ArenaBadge } from "@/ui/components/marketing/ArenaBadge";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const category = await getCategoryBySlug(supabase, slug);
+  if (!category || category.status === "draft") {
+    return pageMetadata({
+      title: "Award",
+      description: "Award category details from Navigations Future Ready League.",
+      path: `/awards/${slug}`,
+      noIndex: true,
+    });
+  }
+  return pageMetadata({
+    title: category.title,
+    description: category.description || category.details,
+    path: `/awards/${category.slug}`,
+    image: category.imageUrl,
+  });
+}
 
 export default async function AwardCategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

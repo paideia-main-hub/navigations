@@ -1,13 +1,21 @@
 import { SUPPORT_FAQS } from "@/domain/support/faqs";
+import { faqPageJsonLd, pageMetadata } from "@/lib/seo";
 import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
 import { FaqsPageAccordion } from "@/ui/components/marketing/FaqsPageAccordion";
+import { JsonLd } from "@/ui/components/JsonLd";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 
-export const metadata = { title: "FAQs | Navigations" };
+export const metadata = pageMetadata({
+  title: "FAQs",
+  description:
+    "Clear answers about Future Ready League — preparation, participation, competencies, and how schools and families take part.",
+  path: "/faqs",
+});
 
 export default function FAQsPage() {
   return (
     <div className="bg-background">
+      <JsonLd data={faqPageJsonLd(SUPPORT_FAQS)} />
       <PageBanner
         eyebrow="Support"
         title="FAQs"

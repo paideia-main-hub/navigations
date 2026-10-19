@@ -1,5 +1,6 @@
 import { Header } from "@/ui/components/Header";
 import { Footer } from "@/ui/components/Footer";
+import { JsonLd } from "@/ui/components/JsonLd";
 import { LoginModalProvider } from "@/ui/components/LoginModalContext";
 import { getCurrentUser } from "@/domain/auth/session";
 import { createClient } from "@/data/supabase/server";
@@ -7,6 +8,7 @@ import { getCoordinatorAvatarUrl } from "@/domain/profiles/avatar";
 import { getCoordinatorSchoolName } from "@/domain/schools/service";
 import { getOwnStudentProfile } from "@/domain/students/service";
 import { listHeaderNotices } from "@/domain/announcements/service";
+import { organizationJsonLd } from "@/lib/seo";
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
@@ -34,6 +36,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <LoginModalProvider>
+      <JsonLd data={organizationJsonLd()} />
       <Header user={headerUser} />
       <main className="flex-1 pt-24 sm:pt-28">{children}</main>
       <Footer />

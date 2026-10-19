@@ -4,7 +4,14 @@ import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
 import type { FaqCardItem } from "@/ui/components/marketing/FaqExpandGrid";
 import { FaqIcon } from "@/ui/components/marketing/faqIcons";
 
-export const metadata = { title: "For Students | Navigations" };
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "For Students",
+  description:
+    "How students take part in Future Ready League competitions — eligibility, registration, practice, and results.",
+  path: "/students",
+});
 
 const items: FaqCardItem[] = [
   {

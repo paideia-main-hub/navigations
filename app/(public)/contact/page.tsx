@@ -6,9 +6,14 @@ import {
   CONTACT_PHONE_DISPLAY,
   CONTACT_PHONE_HREF,
 } from "@/domain/site/contact";
+import { pageMetadata } from "@/lib/seo";
 import { PageBanner } from "@/ui/components/marketing/PageBanner";
 
-export const metadata = { title: "Contact | Navigations" };
+export const metadata = pageMetadata({
+  title: "Contact",
+  description: "Reach Navigations in Lahore — email, phone, WhatsApp, and social channels for schools and families.",
+  path: "/contact",
+});
 
 function PhoneIcon({ className }: { className?: string }) {
   return (
