@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getSiteUrl } from "@/lib/seo";
+import { getSiteHost, getSiteUrl } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
   const site = getSiteUrl();
@@ -12,6 +12,6 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: `${site}/sitemap.xml`,
-    host: site,
+    host: getSiteHost(),
   };
 }

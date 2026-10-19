@@ -8,6 +8,15 @@ export function getSiteUrl(): string {
   return "https://navigations.com.pk";
 }
 
+/** Hostname only (no protocol) — for robots.txt Host directive (Yandex). */
+export function getSiteHost(): string {
+  try {
+    return new URL(getSiteUrl()).host;
+  } catch {
+    return "navigations.com.pk";
+  }
+}
+
 export const SITE_NAME = "Navigations";
 export const SITE_TAGLINE = "Where opportunities lead";
 
