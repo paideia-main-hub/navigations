@@ -38,11 +38,21 @@ export default async function AdminDashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <QuickLink href="/admin/competitions" icon="🏆" title="Competitions" body="Create, edit and publish competition content." />
           <QuickLink href="/admin/results" icon="🏅" title="Results" body="Generate standings and publish winners." />
-          <QuickLink href="/admin/registrations" icon="📋" title="Registrations" body="View and export every registration." />
+          <QuickLink
+            href="/admin/directory?tab=registrations"
+            icon="📋"
+            title="Registrations"
+            body="View and export every registration."
+          />
           <QuickLink href="/admin/judge-applications" icon="📝" title="Judge Applications" body="Review and approve judge applicants." />
           <QuickLink href="/admin/announcements" icon="📣" title="Announcements" body="Publish site-wide or competition notices." />
           <QuickLink href="/admin/appreciations" icon="✨" title="Appreciations" body="Add appreciations shown under Announcements." />
-          <QuickLink href="/admin/schools" icon="🏫" title="Schools" body="View every registered school." />
+          <QuickLink
+            href="/admin/directory?tab=schools"
+            icon="🏫"
+            title="Directory"
+            body="Schools, students, teams, registrations, and payments."
+          />
         </div>
       </section>
     </div>

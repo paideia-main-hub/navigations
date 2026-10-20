@@ -37,5 +37,6 @@ export async function updateSchoolProfileAction(
   updateTag("admin-schools");
   revalidatePath("/dashboard");
   revalidatePath("/admin/schools");
+  revalidatePath("/admin/directory");
   return { error: null, success: true };
 }

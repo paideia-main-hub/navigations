@@ -61,6 +61,7 @@ export async function approvePaymentAction(paymentId: string): Promise<{ error: 
   if (!error) {
     revalidatePath("/admin/payments");
     revalidatePath("/admin/registrations");
+    revalidatePath("/admin/directory");
   }
   return { error };
 }
@@ -100,6 +101,7 @@ export async function rejectPaymentAction(paymentId: string, note: string | null
   if (!error) {
     revalidatePath("/admin/payments");
     revalidatePath("/admin/registrations");
+    revalidatePath("/admin/directory");
   }
   return { error };
 }

@@ -3,7 +3,7 @@ import { leagueDates } from "./_shared.mjs";
 
 export default {
   slug: "oratoris-cup",
-  title: "Oratoris — Orator Cup",
+  title: "Oratoris Cup",
   shortDescription:
     "Two-stage speaking competition: a prepared response from a fresh scenario, then adaptive speaking through a live audience shift.",
   domain: "Communication, Languages & Public Speaking",
@@ -16,19 +16,19 @@ export default {
   manualVersion: "v1.0",
   manualFile: "Oratoris_Orator_Cup_School_Pitch_Implementation_Manual_v1_0.docx",
 
-  overview: `Orator Cup is a live speaking competition designed to measure what traditional prepared-speech events often miss: whether a student can build a clear message from a fresh brief and then reshape that message for a different audience.
+  overview: `Oratoris Cup is a live speaking competition designed to measure what traditional prepared-speech events often miss: whether a student can build a clear message from a fresh brief and then reshape that message for a different audience.
 
 Students are not rewarded for memorising a pre-written speech. They are assessed on how quickly they can organise ideas from an unfamiliar prompt, speak with purpose, read an audience, and deliberately adapt tone, vocabulary, examples, emphasis and delivery when the audience changes.
 
 Stage 1 — Prepared Scenario Speech: 20 minutes of preparation from a fresh brief, then an approximately 4-minute speech (45 marks). Stage 2 — Adaptive Audience Speaking: 5 minutes of preparation with an Initial Audience Card, then an approximately 4-minute speech during which an Audience Shift Card is revealed at about the halfway point and the student must adapt without restarting (55 marks).
 
-Stage 2 carries more weight because audience adaptation is the distinctive feature of Orator Cup. The core principle: same message purpose, different communication choices.
+Stage 2 carries more weight because audience adaptation is the distinctive feature of Oratoris Cup. The core principle: same message purpose, different communication choices.
 
 What changes when the audience changes — vocabulary (technical vs simple, formal vs conversational), tone (reassuring, persuasive, urgent, respectful, inspiring, explanatory), evidence and examples (statistics for experts, relatable examples for younger students, implementation concerns for leaders), level of detail, delivery (pace, pauses, emphasis, energy, eye contact) and the call-to-action.
 
 Competency promise — C06 Verbal Communication (organises ideas, speaks coherently, uses suitable language, controls voice, communicates a clear purpose) and C08 Public Speaking & Audience Adaptation (reads audience characteristics, changes tone, formality and examples, maintains engagement, adjusts message without losing purpose).
 
-In one sentence: Orator Cup shows whether a student can think, structure, speak and adapt — not merely recite.`,
+In one sentence: Oratoris Cup shows whether a student can think, structure, speak and adapt — not merely recite.`,
 
   eligibility: [
     {
@@ -216,7 +216,7 @@ Remember: do not ask "What speech should I memorise?" Ask "How should I communic
     {
       question: "Which stage matters more?",
       answer:
-        "Stage 2, deliberately — it carries 55 of the 100 marks because audience adaptation is the distinctive feature of Orator Cup, and it is also the first tie-break criterion.",
+        "Stage 2, deliberately — it carries 55 of the 100 marks because audience adaptation is the distinctive feature of Oratoris Cup, and it is also the first tie-break criterion.",
     },
     {
       question: "Will my accent affect my score?",
