@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   serverExternalPackages: ["sharp"],
   experimental: {
+    // Hostinger build VMs hit OS thread limits when Next defaults to dozens of
+    // page-data workers ("Collecting page data using 63 workers" → os error 11).
+    cpus: 1,
     // Dashboard pages are personal, so they stay dynamic. Keep the last result
     // in this browser so the next click opens at once instead of waiting on
     // Supabase again. A save still refreshes the affected pages.
