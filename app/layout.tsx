@@ -85,7 +85,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <ThemeInitScript />
       </head>
-      <body suppressHydrationWarning className="flex min-h-full flex-col bg-background text-foreground">
+      <body
+        suppressHydrationWarning
+        className={`${geistSans.className} flex min-h-full flex-col bg-background text-foreground`}
+      >
         {children}
         <DeferredSupportChat />
         <GoogleAnalytics />

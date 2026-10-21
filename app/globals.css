@@ -248,26 +248,14 @@ h6 {
   }
 }
 
-/* Replay-on-key-change entrance for the League Spotlight's heading/body
-   (ui/components/marketing/LeagueSpotlight.tsx) — text starts blurred,
-   scaled down and shifted, sharpens to full focus early (60%), then keeps
-   settling into its final position/scale for the rest of the flight. The
-   blur-to-focus "materialising" read is what makes this feel more eye-
-   catching than a plain fade/slide — distinct from podium-in above. */
+/* League Spotlight slide title — transform-only (no opacity/blur) so the
+   first slide near the fold does not delay paint or risk layout churn. */
 @keyframes spotlight-text-in {
   0% {
-    opacity: 0;
-    transform: translateY(22px) scale(0.94);
-    filter: blur(6px);
-  }
-  60% {
-    opacity: 1;
-    filter: blur(0);
+    transform: translateY(14px) scale(0.97);
   }
   100% {
-    opacity: 1;
     transform: translateY(0) scale(1);
-    filter: blur(0);
   }
 }
 

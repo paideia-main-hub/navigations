@@ -44,9 +44,9 @@ export function Header({ user = null }: { user?: HeaderUser | null }) {
   return (
     <header className="fixed inset-x-0 top-4 z-50 px-4 sm:top-6 sm:px-6">
       <div className="mx-auto max-w-7xl">
-        <div className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-background/80 px-4 py-3 shadow-lg shadow-black/5 backdrop-blur-lg sm:px-6">
-          <Link href="/" className="flex shrink-0 items-center" onClick={() => setMobileOpen(false)}>
-            <Logo className="h-6 w-auto sm:h-7" />
+        <div className="flex min-h-12 items-center justify-between gap-4 rounded-2xl border border-border bg-background/80 px-4 py-3 shadow-lg shadow-black/5 backdrop-blur-lg sm:min-h-14 sm:px-6">
+          <Link href="/" className="flex h-6 w-[5.5rem] shrink-0 items-center sm:h-7 sm:w-[6.5rem]" onClick={() => setMobileOpen(false)}>
+            <Logo className="h-full w-auto max-w-full" />
           </Link>
 
           <nav className="hidden flex-1 items-center justify-center gap-4 text-sm font-medium text-muted lg:flex xl:gap-6">

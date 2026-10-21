@@ -156,7 +156,9 @@ export function LeagueSpotlight({
               alt="Future Ready League, a citywide initiative by Navigations. Lahore Edition 2026."
               width={1024}
               height={576}
+              loading="lazy"
               decoding="async"
+              fetchPriority="low"
               className="h-full w-full object-contain"
             />
           </div>
