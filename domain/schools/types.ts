@@ -23,6 +23,15 @@ export interface School {
   schoolPhone: string | null;
   website: string | null;
   studentStrength: number | null;
+  /** ISO timestamp; populated by admin-overview reads. */
+  createdAt?: string | null;
+  /** Populated by admin-overview reads (adminListSchools). */
+  coordinators?: SchoolCoordinatorSummary[];
+}
+
+export interface SchoolCoordinatorSummary {
+  name: string;
+  mobile: string | null;
 }
 
 export interface SchoolProfileInput {

@@ -12,6 +12,10 @@ export interface Team {
   competitionId?: string | null;
   /** Populated only by admin-overview reads (adminListAllTeams). */
   schoolName?: string | null;
+  /** Competition titles from the team's competition_id and/or registrations. */
+  competitionTitles?: string[];
+  /** ISO timestamp; populated by admin-overview reads. */
+  createdAt?: string | null;
 }
 
 /** True when another team already uses this name. Matching ignores case and surrounding spaces. */

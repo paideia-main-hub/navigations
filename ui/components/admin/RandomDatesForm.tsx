@@ -9,7 +9,6 @@ import {
   eventTypeAdminLabels,
   eventTypeHints,
   pathwayLabels,
-  statusLabels,
   type CompetitionSummary,
   type EventType,
 } from "@/domain/competitions/types";
@@ -25,6 +24,7 @@ export function RandomDatesForm({ competitions }: { competitions: CompetitionSum
   const router = useRouter();
   const [state, formAction, pending] = useActionState(bulkSaveIndividualEventsAction, initialState);
   const [query, setQuery] = useState("");
+  const [listOpen, setListOpen] = useState(false);
   const [type, setType] = useState<EventType>("registration_close");
   const [title, setTitle] = useState(eventTypeAdminLabels.registration_close);
   const [selected, setSelected] = useState<string[]>([]);
@@ -33,6 +33,7 @@ export function RandomDatesForm({ competitions }: { competitions: CompetitionSum
   const [flash, setFlash] = useState<string | null>(null);
   const [flashError, setFlashError] = useState<string | null>(null);
   const wasPending = useRef(false);
+  const searchWrapRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (pending) {
@@ -54,23 +55,40 @@ export function RandomDatesForm({ competitions }: { competitions: CompetitionSum
     setSelected([]);
     setDates({});
     setQuery("");
+    setListOpen(false);
     setType("registration_close");
     setTitle(eventTypeAdminLabels.registration_close);
     setFieldsKey((k) => k + 1);
     router.refresh();
   }, [pending, state.error, state.success, state.message, router]);
 
+  useEffect(() => {
+    function onPointerDown(event: MouseEvent) {
+      if (!searchWrapRef.current?.contains(event.target as Node)) {
+        setListOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, []);
+
   const byId = useMemo(() => new Map(competitions.map((c) => [c.id, c])), [competitions]);
+
+  const eligible = useMemo(
+    () =>
+      competitions.filter((c) =>
+        competitionAllowsEventType(c.pathway, c.hasOnlineSubmission, type),
+      ),
+    [competitions, type],
+  );
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return competitions.filter(
-      (c) =>
-        competitionAllowsEventType(c.pathway, c.hasOnlineSubmission, type) &&
-        (c.title.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q)),
+    if (!q) return eligible;
+    return eligible.filter(
+      (c) => c.title.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q),
     );
-  }, [competitions, query, type]);
+  }, [eligible, query]);
 
   const selectedCompetitions = useMemo(
     () => selected.map((id) => byId.get(id)).filter((c): c is CompetitionSummary => Boolean(c)),
@@ -134,22 +152,103 @@ export function RandomDatesForm({ competitions }: { competitions: CompetitionSum
       {flashError && <p className="text-sm text-red-600 dark:text-red-400">{flashError}</p>}
       {flash && <p className="text-sm text-emerald-600 dark:text-emerald-400">{flash}</p>}
 
-      <div className="max-w-2xl space-y-4 rounded-xl border border-border bg-surface p-4">
+      <div className="max-w-2xl space-y-6 rounded-xl border border-border bg-surface p-5">
         <p className="text-sm text-muted">
           Search and pick competitions, then give each one its own date for the same type — useful when dates
           differ and you do not want to open every competition editor.
         </p>
 
-        <div>
+        <div ref={searchWrapRef} className="relative">
           <label className="text-sm font-medium text-foreground">Live search</label>
           <input
             type="search"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type a competition title or slug…"
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setListOpen(true);
+            }}
+            onFocus={() => setListOpen(true)}
+            onClick={() => setListOpen(true)}
+            placeholder="Click to see all, or type a title / slug…"
             autoComplete="off"
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+            aria-expanded={listOpen}
+            aria-controls="competition-search-dropdown"
+            className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground"
           />
+          {listOpen ? (
+            <div
+              id="competition-search-dropdown"
+              role="listbox"
+              className="absolute z-20 mt-2 max-h-80 w-full overflow-y-auto rounded-lg border border-border bg-surface shadow-lg"
+            >
+              <div className="sticky top-0 flex items-center justify-between gap-2 border-b border-border bg-surface px-3 py-3">
+                <p className="text-xs text-muted">
+                  {query.trim()
+                    ? `${results.length} match${results.length === 1 ? "" : "es"}`
+                    : `${results.length} competition${results.length === 1 ? "" : "s"}`}
+                  {selected.length > 0 ? ` · ${selected.length} selected` : ""}
+                </p>
+                {results.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={toggleAllResults}
+                    className="text-xs font-semibold text-accent"
+                  >
+                    {allResultsSelected ? "Clear all" : "Select all"}
+                  </button>
+                ) : null}
+              </div>
+              {results.length === 0 ? (
+                <p className="px-3 py-5 text-sm text-muted">
+                  {query.trim()
+                    ? `No competitions match “${query.trim()}”.`
+                    : "No competitions available for this date type."}
+                </p>
+              ) : (
+                <ul className="divide-y divide-border py-1">
+                  {results.map((c) => {
+                    const existing = c.events.find((e) => e.type === type);
+                    const isSelected = selected.includes(c.id);
+                    return (
+                      <li key={c.id}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={isSelected}
+                          onClick={() => toggle(c.id)}
+                          className={`flex w-full items-start gap-3 px-3 py-3.5 text-left text-sm hover:bg-surface-muted ${
+                            isSelected ? "bg-accent-soft" : ""
+                          }`}
+                        >
+                          <span
+                            className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                              isSelected
+                                ? "border-accent bg-accent text-accent-foreground"
+                                : "border-border"
+                            }`}
+                            aria-hidden
+                          >
+                            {isSelected ? "✓" : null}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block font-medium text-foreground">{c.title}</span>
+                            <span className="mt-0.5 block text-xs text-muted">
+                              /{c.slug}
+                              {c.pathway ? ` · ${pathwayLabels[c.pathway]}` : ""}
+                              {" · "}
+                              {existing
+                                ? `Current: ${formatEventDateOnly(existing.eventDate)}`
+                                : "Not set"}
+                            </span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          ) : null}
         </div>
 
         <div>
@@ -191,83 +290,6 @@ export function RandomDatesForm({ competitions }: { competitions: CompetitionSum
             placeholder="Short note under the title"
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
           />
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">Search results</h2>
-            <p className="text-sm text-muted">
-              {query.trim()
-                ? `${results.length} match${results.length === 1 ? "" : "es"} · ${selected.length} selected`
-                : "Start typing to find competitions"}
-            </p>
-          </div>
-          {results.length > 0 && (
-            <button
-              type="button"
-              onClick={toggleAllResults}
-              className="text-sm font-semibold text-accent"
-            >
-              {allResultsSelected ? "Clear results selection" : "Select all results"}
-            </button>
-          )}
-        </div>
-
-        <div className="overflow-x-auto rounded-xl border border-border bg-surface">
-          {!query.trim() ? (
-            <p className="px-4 py-8 text-center text-sm text-muted">Type in the search box to list competitions.</p>
-          ) : results.length === 0 ? (
-            <p className="px-4 py-8 text-center text-sm text-muted">No competitions match “{query.trim()}”.</p>
-          ) : (
-            <table className="w-full min-w-[800px] text-left text-sm">
-              <thead>
-                <tr className="border-b border-border text-muted">
-                  <th className="px-4 py-3 font-medium">Select</th>
-                  <th className="px-4 py-3 font-medium">Competition</th>
-                  <th className="px-4 py-3 font-medium">Category</th>
-                  <th className="px-4 py-3 font-medium">Venue</th>
-                  <th className="px-4 py-3 font-medium">Online submission</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Current {eventTypeAdminLabels[type]}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.map((c) => {
-                  const existing = c.events.find((e) => e.type === type);
-                  const isSelected = selected.includes(c.id);
-                  return (
-                    <tr key={c.id} className="border-b border-border last:border-0">
-                      <td className="px-4 py-3">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggle(c.id)}
-                          className="rounded border-border"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-foreground">{c.title}</p>
-                        <p className="text-xs text-muted">/{c.slug}</p>
-                      </td>
-                      <td className="px-4 py-3 text-muted whitespace-nowrap">
-                        {c.pathway ? pathwayLabels[c.pathway] : "Not set"}
-                      </td>
-                      <td className="px-4 py-3 text-muted whitespace-nowrap">{c.venue || "—"}</td>
-                      <td className="px-4 py-3 text-muted whitespace-nowrap">
-                        {c.hasOnlineSubmission ? "Yes" : "No"}
-                      </td>
-                      <td className="px-4 py-3 text-muted">{statusLabels[c.status]}</td>
-                      <td className="px-4 py-3 text-muted">
-                        {existing ? formatEventDateOnly(existing.eventDate) : "Not set"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
         </div>
       </div>
 

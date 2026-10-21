@@ -17,11 +17,14 @@ export async function getCoordinatorSchoolName(profileId: string): Promise<strin
 
 const cachedAdminSchools = unstable_cache(
   async () => adminListSchools(createAdminClient()),
-  ["admin-list-schools"],
+  ["admin-list-schools-with-coordinators"],
   { revalidate: 60, tags: ["admin-schools"] },
 );
 
-export async function listAllSchools(_admin?: SupabaseClient): Promise<School[]> {
+/** Prefer the caller’s admin client (Directory) so coordinator names are fresh;
+ * fall back to the short-lived cache for other call sites. */
+export async function listAllSchools(admin?: SupabaseClient): Promise<School[]> {
+  if (admin) return adminListSchools(admin);
   return cachedAdminSchools();
 }
 

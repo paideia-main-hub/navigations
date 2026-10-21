@@ -371,6 +371,7 @@ export function PaymentsTable({ payments }: { payments: RegistrationPayment[] })
             predicate: (payment, value) => payment.status === value,
           },
         ]}
+        dateField={(payment) => payment.createdAt}
         emptyMessage="No fee receipts submitted yet."
       >
         {(pageRows) => (

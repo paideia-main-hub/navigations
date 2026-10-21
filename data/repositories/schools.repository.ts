@@ -13,6 +13,7 @@ type Row = {
   school_phone: string | null;
   website: string | null;
   student_strength: number | null;
+  created_at?: string | null;
 };
 
 function toSchool(row: Row): School {
@@ -28,15 +29,39 @@ function toSchool(row: Row): School {
     schoolPhone: row.school_phone,
     website: row.website,
     studentStrength: row.student_strength,
+    createdAt: row.created_at ?? null,
   };
 }
 
-/** Admin overview: every registered school, unscoped. Uses the service-role
- * client (RLS would otherwise restrict this to a coordinator's own school). */
+/** Admin overview: every registered school, unscoped, with coordinators.
+ * Uses the service-role client (RLS would otherwise restrict this to a
+ * coordinator's own school). */
 export async function adminListSchools(admin: SupabaseClient): Promise<School[]> {
-  const { data, error } = await admin.from("schools").select("*").order("official_name");
+  const { data, error } = await admin
+    .from("schools")
+    .select("*, school_coordinators(mobile, profiles(full_name))")
+    .order("official_name");
   if (error || !data) return [];
-  return (data as Row[]).map(toSchool);
+  return (
+    data as (Row & {
+      school_coordinators:
+        | { mobile: string | null; profiles: { full_name: string } | null }[]
+        | null;
+    })[]
+  ).map((row) => ({
+    ...toSchool(row),
+    coordinators: (row.school_coordinators ?? [])
+      .map((link) => {
+        const name = link.profiles?.full_name?.trim() ?? "";
+        if (!name) return null;
+        return {
+          name,
+          mobile: link.mobile?.trim() || null,
+        };
+      })
+      .filter((c): c is { name: string; mobile: string | null } => Boolean(c))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  }));
 }
 
 /** Finds the school a coordinator (by profile id) belongs to, via school_coordinators. */

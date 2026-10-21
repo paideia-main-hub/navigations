@@ -78,9 +78,8 @@ export function AdminShell({ fullName, children }: { fullName: string; children:
 
   const sidebarInner = (
     <div className="flex h-full flex-col">
-      <Link href="/admin" className="flex items-center gap-2 px-5 py-5 font-semibold tracking-tight text-foreground">
-        <Logo className="h-6 w-auto" />
-        <span className="text-muted">Admin Console</span>
+      <Link href="/admin" className="flex items-center px-5 py-5 font-semibold tracking-tight text-foreground">
+        <Logo className="h-9 w-auto" />
       </Link>
       <div className="flex-1 overflow-y-auto px-3">
         <NavLinks pathname={pathname} onNavigate={() => setMobileOpen(false)} />

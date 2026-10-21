@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createAdminSessionClient, createClient } from "@/data/supabase/server";
 import { createAdminClient } from "@/data/supabase/admin";
+import { isPakistanMobile } from "@/domain/phone";
 import { isSchoolType } from "@/domain/schools/types";
 import { uploadOwnPhoto } from "@/domain/storage/actions";
 
@@ -252,8 +253,12 @@ export async function signUpSchool(_prevState: ActionState, formData: FormData):
   const coordinatorName = String(formData.get("coordinator_name"));
   const email = String(formData.get("email"));
   const password = String(formData.get("password"));
+  const mobile = String(formData.get("mobile") ?? "").trim();
   const schoolType = String(formData.get("school_type") ?? "").trim();
   if (!isSchoolType(schoolType)) return { error: "Choose a school type." };
+  if (!isPakistanMobile(mobile)) {
+    return { error: "Enter a valid Pakistan mobile for the coordinator (e.g. 0300 1234567)." };
+  }
 
   const result = await createConfirmedUserAndSignIn(supabase, email, password, {
     full_name: coordinatorName,

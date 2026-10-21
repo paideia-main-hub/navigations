@@ -18,6 +18,7 @@ export function StudentsTable({ students }: { students: StudentProfile[] }) {
           predicate: (s, value) => (s.schoolName ?? "Independent") === value,
         },
       ]}
+      dateField={(s) => s.createdAt}
       emptyMessage="No students registered yet."
     >
       {(pageRows) => (

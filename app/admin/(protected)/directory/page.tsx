@@ -112,6 +112,9 @@ export default async function AdminDirectoryPage({
                 filename="schools.csv"
                 rows={schools.map((s) => ({
                   Name: s.officialName,
+                  Coordinators: (s.coordinators ?? [])
+                    .map((c) => (c.mobile ? `${c.name} (${c.mobile})` : c.name))
+                    .join("; "),
                   City: s.city ?? "",
                   Country: s.country ?? "",
                   "School type": s.schoolType ?? "",
@@ -157,6 +160,7 @@ export default async function AdminDirectoryPage({
                   Team: t.name,
                   School: t.schoolName ?? "Independent",
                   Members: t.members.map((m) => m.studentName).join("; "),
+                  Competitions: (t.competitionTitles ?? []).join("; "),
                 }))}
               />
             </div>

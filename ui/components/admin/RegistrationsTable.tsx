@@ -45,6 +45,7 @@ export function RegistrationsTable({
           predicate: (r, value) => r.status === value,
         },
       ]}
+      dateField={(r) => r.submittedAt}
       emptyMessage="No registrations yet."
     >
       {(pageRows) => (

@@ -11,6 +11,25 @@ export interface DataTableFilter<T> {
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
 
+/** YYYY-MM-DD from an ISO timestamp (or already a date string). */
+function toDateKey(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const key = value.slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(key) ? key : null;
+}
+
+function inDateRange(
+  value: string | null | undefined,
+  from: string,
+  to: string,
+): boolean {
+  const key = toDateKey(value);
+  if (!key) return false;
+  if (from && key < from) return false;
+  if (to && key > to) return false;
+  return true;
+}
+
 /** Shared search + filter-by + pagination shell for every admin/dashboard
  * table. Owns query/filter/page state and hands back only the current
  * page's slice — the caller still renders its own <table> (columns and row
@@ -23,6 +42,9 @@ export function DataTable<T>({
   searchPlaceholder = "Search…",
   searchFields,
   filters = [],
+  dateField,
+  dateFromLabel = "From",
+  dateToLabel = "To",
   pageSize: initialPageSize = 10,
   emptyMessage = "Nothing here yet.",
   actions,
@@ -33,6 +55,10 @@ export function DataTable<T>({
   /** Returns the row's searchable text fields; omit to disable the search box. */
   searchFields?: (row: T) => (string | null | undefined)[];
   filters?: DataTableFilter<T>[];
+  /** ISO / date string on each row for From–To date filtering. */
+  dateField?: (row: T) => string | null | undefined;
+  dateFromLabel?: string;
+  dateToLabel?: string;
   pageSize?: number;
   emptyMessage?: string;
   /** Sits on the top-right of the result count, above the filters. */
@@ -41,6 +67,8 @@ export function DataTable<T>({
 }) {
   const [query, setQuery] = useState("");
   const [filterValues, setFilterValues] = useState<Record<number, string>>({});
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(initialPageSize);
 
@@ -59,8 +87,12 @@ export function DataTable<T>({
       }
     });
 
+    if (dateField && (dateFrom || dateTo)) {
+      result = result.filter((row) => inDateRange(dateField(row), dateFrom, dateTo));
+    }
+
     return result;
-  }, [rows, query, filterValues, filters, searchFields]);
+  }, [rows, query, filterValues, filters, searchFields, dateField, dateFrom, dateTo]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -80,7 +112,7 @@ export function DataTable<T>({
     setPage(1);
   }
 
-  const hasControls = Boolean(searchFields) || filters.length > 0;
+  const hasControls = Boolean(searchFields) || filters.length > 0 || Boolean(dateField);
   const showPager = filtered.length > 0;
 
   return (
@@ -141,6 +173,51 @@ export function DataTable<T>({
               ]}
             />
           ))}
+          {dateField ? (
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+              <label className="flex min-w-[9.5rem] flex-1 items-center gap-2 text-sm text-muted sm:flex-none">
+                <span className="whitespace-nowrap">{dateFromLabel}</span>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  max={dateTo || undefined}
+                  onChange={(e) => {
+                    setDateFrom(e.target.value);
+                    setPage(1);
+                  }}
+                  aria-label={dateFromLabel}
+                  className={`${filterInputClass} min-w-0 flex-1 bg-surface! sm:w-36`}
+                />
+              </label>
+              <label className="flex min-w-[9.5rem] flex-1 items-center gap-2 text-sm text-muted sm:flex-none">
+                <span className="whitespace-nowrap">{dateToLabel}</span>
+                <input
+                  type="date"
+                  value={dateTo}
+                  min={dateFrom || undefined}
+                  onChange={(e) => {
+                    setDateTo(e.target.value);
+                    setPage(1);
+                  }}
+                  aria-label={dateToLabel}
+                  className={`${filterInputClass} min-w-0 flex-1 bg-surface! sm:w-36`}
+                />
+              </label>
+              {dateFrom || dateTo ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDateFrom("");
+                    setDateTo("");
+                    setPage(1);
+                  }}
+                  className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted hover:border-accent hover:text-foreground"
+                >
+                  Clear dates
+                </button>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       )}
 

@@ -21,6 +21,8 @@ export interface StudentProfile {
    * student's own profile read. */
   schoolId?: string | null;
   schoolName?: string | null;
+  /** ISO timestamp; populated by admin-overview reads. */
+  createdAt?: string | null;
 }
 
 export interface AddStudentInput {

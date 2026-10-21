@@ -67,7 +67,7 @@ export async function updateStudentGrade(supabase: SupabaseClient, studentId: st
 export async function adminListAllStudents(admin: SupabaseClient): Promise<StudentProfile[]> {
   const { data, error } = await admin
     .from("students")
-    .select("id, full_name, grade, guardian_name, school_id, schools(official_name)")
+    .select("id, full_name, grade, guardian_name, school_id, created_at, schools(official_name)")
     .order("full_name");
 
   if (error || !data) return [];
@@ -78,6 +78,7 @@ export async function adminListAllStudents(admin: SupabaseClient): Promise<Stude
       grade: string | null;
       guardian_name: string | null;
       school_id: string | null;
+      created_at: string | null;
       schools: { official_name: string } | null;
     }[]
   ).map((row) => ({
@@ -94,6 +95,7 @@ export async function adminListAllStudents(admin: SupabaseClient): Promise<Stude
     frlId: null,
     schoolId: row.school_id,
     schoolName: row.schools?.official_name ?? null,
+    createdAt: row.created_at,
   }));
 }
 

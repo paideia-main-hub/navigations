@@ -8,7 +8,6 @@ import { SelectField } from "@/ui/components/SelectField";
 import { StepForm } from "@/ui/components/StepForm";
 
 const initialState: ActionState = { error: null };
-const phonePattern = "^[+]?[0-9\\s()\\-]{7,20}$";
 const today = new Date().toISOString().slice(0, 10);
 
 export function StudentRegisterForm({ hideIntro = false }: { hideIntro?: boolean } = {}) {
@@ -126,10 +125,8 @@ export function StudentRegisterForm({ hideIntro = false }: { hideIntro?: boolean
                   name="guardian_mobile"
                   type="tel"
                   required
-                  inputMode="tel"
+                  phoneKind="pk-mobile"
                   autoComplete="tel"
-                  pattern={phonePattern}
-                  placeholder="+92 300 1234567"
                 />
               </>
             ),

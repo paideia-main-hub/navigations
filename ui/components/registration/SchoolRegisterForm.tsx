@@ -9,7 +9,6 @@ import { SelectField } from "@/ui/components/SelectField";
 import { StepForm } from "@/ui/components/StepForm";
 
 const initialState: ActionState = { error: null };
-const phonePattern = "^[+]?[0-9\\s()\\-]{7,20}$";
 
 export function SchoolRegisterForm({ hideIntro = false }: { hideIntro?: boolean } = {}) {
   const [state, formAction, pending] = useActionState(signUpSchool, initialState);
@@ -68,10 +67,9 @@ export function SchoolRegisterForm({ hideIntro = false }: { hideIntro?: boolean 
                   name="school_phone"
                   type="tel"
                   required
-                  inputMode="tel"
+                  phoneKind="pk-landline"
                   autoComplete="tel"
-                  pattern={phonePattern}
-                  placeholder="+92 21 1234567"
+                  placeholder="021 34567890"
                 />
                 <FormField
                   label="Website"
@@ -102,10 +100,8 @@ export function SchoolRegisterForm({ hideIntro = false }: { hideIntro?: boolean 
                   name="mobile"
                   type="tel"
                   required
-                  inputMode="tel"
+                  phoneKind="pk-mobile"
                   autoComplete="tel"
-                  pattern={phonePattern}
-                  placeholder="+92 300 1234567"
                 />
               </>
             ),
