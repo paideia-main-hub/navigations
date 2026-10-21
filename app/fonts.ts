@@ -14,7 +14,8 @@ export const plusJakarta = localFont({
   ],
   variable: "--font-plus-jakarta",
   display: "swap",
-  adjustFontFallback: true,
+  // localFont only accepts false | "Arial" | "Times New Roman" (not boolean true).
+  adjustFontFallback: "Arial",
   fallback: ["system-ui", "Segoe UI", "Arial", "sans-serif"],
 });
 
