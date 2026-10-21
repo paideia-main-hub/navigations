@@ -62,8 +62,12 @@ export function AnnouncementsPress({ announcements }: { announcements: Announcem
           <div className="grid items-stretch gap-4 lg:grid-cols-[22rem_minmax(0,1fr)]">
             <div className="relative min-h-[22rem] overflow-hidden rounded-3xl lg:min-h-full">
               <img
-                src="/announcement-pulse.jpg"
+                src="/announcement-pulse.webp?v=7"
                 alt="Pakistani students gathered around a digital display in a bright modern atrium"
+                width={864}
+                height={1152}
+                loading="lazy"
+                decoding="async"
                 className="absolute inset-0 h-full w-full object-cover"
               />
             </div>

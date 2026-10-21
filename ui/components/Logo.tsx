@@ -7,17 +7,44 @@
  * between both by CSS depending on the active theme, the same dark:
  * convention ThemeToggle's own icon already uses. */
 export function Logo({ className = "h-7 w-auto", onDark = false }: { className?: string; onDark?: boolean }) {
+  // Intrinsic size matches the WebP assets (resized from the originals).
+  const width = 800;
+  const height = 217;
+
   if (onDark) {
     // eslint-disable-next-line @next/next/no-img-element -- static asset in public/
-    return <img src="/logo-on-dark.png" alt="Navigations" className={className} />;
+    return (
+      <img
+        src="/logo-on-dark.webp?v=7"
+        alt="Navigations"
+        width={width}
+        height={height}
+        decoding="async"
+        className={className}
+      />
+    );
   }
 
   return (
     <>
       {/* eslint-disable-next-line @next/next/no-img-element -- static asset in public/ */}
-      <img src="/logo.png" alt="Navigations" className={`${className} dark:hidden`} />
+      <img
+        src="/logo.webp?v=7"
+        alt="Navigations"
+        width={width}
+        height={height}
+        decoding="async"
+        className={`${className} dark:hidden`}
+      />
       {/* eslint-disable-next-line @next/next/no-img-element -- static asset in public/ */}
-      <img src="/logo-on-dark.png" alt="Navigations" className={`${className} hidden dark:block`} />
+      <img
+        src="/logo-on-dark.webp?v=7"
+        alt="Navigations"
+        width={width}
+        height={height}
+        decoding="async"
+        className={`${className} hidden dark:block`}
+      />
     </>
   );
 }

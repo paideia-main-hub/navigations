@@ -152,8 +152,11 @@ export function LeagueSpotlight({
           {/* Static half — the League poster fills this card. */}
           <div className="relative grid min-h-[320px] place-items-center overflow-hidden rounded-2xl border border-white/10 bg-white shadow-[0_25px_60px_-25px_rgba(0,0,0,0.6)] sm:min-h-[420px] lg:h-full">
             <img
-              src="/future-ready-league.png"
+              src="/future-ready-league.webp?v=7"
               alt="Future Ready League, a citywide initiative by Navigations. Lahore Edition 2026."
+              width={1024}
+              height={576}
+              decoding="async"
               className="h-full w-full object-contain"
             />
           </div>

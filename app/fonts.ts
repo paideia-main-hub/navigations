@@ -14,6 +14,8 @@ export const plusJakarta = localFont({
   ],
   variable: "--font-plus-jakarta",
   display: "swap",
+  adjustFontFallback: true,
+  fallback: ["system-ui", "Segoe UI", "Arial", "sans-serif"],
 });
 
 export const unbounded = localFont({

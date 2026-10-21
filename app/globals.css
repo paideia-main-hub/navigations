@@ -271,21 +271,20 @@ h6 {
   }
 }
 
-/* Hero Two brush script — materialises after the ceremony photo is up. */
+/* Hero Two brush script — materialises after the ceremony photo is up.
+   Transform/opacity only (no blur filter) so the animation stays composited
+   and does not inflate main-thread work / CLS risk. */
 @keyframes hero-script-in {
   0% {
     opacity: 0;
     transform: translateY(18px) scale(0.92);
-    filter: blur(8px);
   }
   55% {
     opacity: 1;
-    filter: blur(0);
   }
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
-    filter: blur(0);
   }
 }
 

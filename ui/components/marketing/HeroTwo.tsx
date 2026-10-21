@@ -13,8 +13,8 @@ const BG_SRC = "/hero-two-bg.webp?v=6";
 const COLLAGE_SRC = "/hero-collage.webp?v=6";
 const COLLAGE_MOBILE_SRC = "/hero-collage-mobile.webp?v=6";
 const SCRIPT_SRC = "/hero-script.webp?v=6";
-const COLLAGE_W = 1024;
-const COLLAGE_H = 768;
+const COLLAGE_MOBILE_W = 900;
+const COLLAGE_MOBILE_H = 1680;
 const SCRIPT_W = 1600;
 const SCRIPT_H = 1169;
 const IMG_W = 1600;
@@ -94,29 +94,23 @@ export function HeroTwo() {
         style={{ backgroundColor: "rgba(255, 255, 255, 0.88)" }}
       />
 
-      {/* Layer 2 — B&W circular collage from the old hero (full strength, above dim bg) */}
+      {/* Layer 2 — one collage file only (picture picks mobile vs desktop). */}
       <div
         aria-hidden="true"
         className="absolute inset-0 z-[2] flex items-center justify-center px-4 pt-28 pb-6 sm:px-10 sm:pt-32 sm:pb-10"
       >
-        <img
-          src={COLLAGE_SRC}
-          alt=""
-          width={COLLAGE_W}
-          height={COLLAGE_H}
-          fetchPriority="high"
-          decoding="async"
-          className="hidden h-full max-h-full w-full object-contain sm:block"
-        />
-        <img
-          src={COLLAGE_MOBILE_SRC}
-          alt=""
-          width={900}
-          height={1680}
-          fetchPriority="high"
-          decoding="async"
-          className="h-full max-h-full w-full object-contain sm:hidden"
-        />
+        <picture className="contents">
+          <source media="(min-width: 640px)" srcSet={COLLAGE_SRC} type="image/webp" />
+          <img
+            src={COLLAGE_MOBILE_SRC}
+            alt=""
+            width={COLLAGE_MOBILE_W}
+            height={COLLAGE_MOBILE_H}
+            fetchPriority="high"
+            decoding="async"
+            className="h-full max-h-full w-full object-contain"
+          />
+        </picture>
       </div>
 
       {/* Layer 3 — brush script (sized from first paint; opacity-only reveal avoids CLS) */}
@@ -136,7 +130,6 @@ export function HeroTwo() {
                 }
               : {
                   opacity: 0,
-                  // Reserve the same box before the file finishes so layout does not jump.
                   aspectRatio: `${SCRIPT_W} / ${SCRIPT_H}`,
                 }
           }
