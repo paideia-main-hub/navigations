@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { listOpenAndUpcoming, listPublishedWinners, groupWinnersByCompetition, upcomingDates } from "@/domain/competitions/service";
@@ -19,16 +18,8 @@ import { QuickLinksGrid } from "@/ui/components/marketing/QuickLinksGrid";
 import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
 import { HeroOne } from "@/ui/components/marketing/HeroCollage";
 import { HeroTwo } from "@/ui/components/marketing/HeroTwo";
+import { DeferredCheerConfetti } from "@/ui/components/marketing/DeferredCheerConfetti";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_TAGLINE, pageMetadata } from "@/lib/seo";
-
-/** Decorative only — keep out of the critical homepage JS path. */
-const CheerConfetti = dynamic(
-  () =>
-    import("@/ui/components/marketing/CheerConfetti").then((m) => ({
-      default: m.CheerConfetti,
-    })),
-  { ssr: false },
-);
 
 /** Flip between 1 (preserved collage) and 2 (ceremony + collage layered hero). */
 const HERO_VARIANT: 1 | 2 = 2;
@@ -162,7 +153,7 @@ export default async function HomePage() {
 
         {/* 8. Champions podium — above appreciations. */}
         <div className="relative overflow-hidden bg-background py-20 sm:py-24">
-          <CheerConfetti />
+          <DeferredCheerConfetti />
           <div className="relative z-10 mx-auto max-w-7xl px-6">
             <div className="mb-14 text-center sm:mb-16">
               <h2 className="font-heading flex items-center justify-center gap-3 text-sm font-extrabold tracking-wider text-foreground uppercase">
