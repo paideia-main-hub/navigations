@@ -15,11 +15,11 @@ import { useEffect, useRef, useState } from "react";
 
 const COLLAGE_W = 1024;
 const COLLAGE_H = 768;
-const SCRIPT_W = 1600;
-const SCRIPT_H = 1169;
+const SCRIPT_W = 840;
+const SCRIPT_H = 614;
 
 const COLLAGE_SRC = "/hero-collage.webp?v=6";
-const SCRIPT_SRC = "/hero-script.webp?v=6";
+const SCRIPT_SRC = "/hero-script.webp?v=7";
 
 type Frame = { left: number; top: number; width: number; height: number };
 
