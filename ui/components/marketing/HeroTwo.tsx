@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 /**
  * Hero option 2 — three image layers:
  * 1) ceremony photo (split L/R, full height)
@@ -9,38 +7,26 @@ import { useEffect, useState } from "react";
  * 3) brand brush script on top
  */
 
-const BG_SRC = "/hero-two-bg.webp?v=6";
+const BG_SRC = "/hero-two-bg.webp?v=7";
 const COLLAGE_SRC = "/hero-collage.webp?v=6";
-const COLLAGE_MOBILE_SRC = "/hero-collage-mobile.webp?v=6";
-const SCRIPT_SRC = "/hero-script.webp?v=7";
-const COLLAGE_MOBILE_W = 900;
-const COLLAGE_MOBILE_H = 1680;
-const SCRIPT_W = 840;
-const SCRIPT_H = 614;
-const IMG_W = 1600;
-const IMG_H = 629;
+const COLLAGE_MOBILE_SRC = "/hero-collage-mobile.webp?v=7";
+const SCRIPT_SRC = "/hero-script.webp?v=8";
+const COLLAGE_MOBILE_W = 640;
+const COLLAGE_MOBILE_H = 1195;
+const SCRIPT_W = 640;
+const SCRIPT_H = 468;
+const IMG_W = 1200;
+const IMG_H = 472;
 const IMG_ASPECT = IMG_W / IMG_H;
 const HALF_ASPECT = IMG_W / 2 / IMG_H;
 
 export function HeroTwo() {
-  const [scriptReady, setScriptReady] = useState(false);
-
-  useEffect(() => {
-    const script = new Image();
-    script.src = SCRIPT_SRC;
-    if (script.complete && script.naturalWidth > 0) setScriptReady(true);
-    else {
-      script.onload = () => setScriptReady(true);
-      script.onerror = () => setScriptReady(true);
-    }
-  }, []);
-
   const fullWidth = `calc(100dvh * ${IMG_ASPECT})`;
   const halfWidth = `calc(100dvh * ${HALF_ASPECT})`;
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#fefffa]">
-      {/* Layer 1 — ceremony photo halves */}
+      {/* Layer 1 — ceremony photo halves (low priority: washed out, not LCP). */}
       <div
         aria-hidden="true"
         className="absolute left-0 top-0 z-0 h-full overflow-hidden"
@@ -57,7 +43,7 @@ export function HeroTwo() {
           alt=""
           width={IMG_W}
           height={IMG_H}
-          fetchPriority="high"
+          fetchPriority="low"
           decoding="async"
           className="h-full max-w-none"
           style={{ width: fullWidth }}
@@ -80,7 +66,7 @@ export function HeroTwo() {
           alt=""
           width={IMG_W}
           height={IMG_H}
-          fetchPriority="high"
+          fetchPriority="low"
           decoding="async"
           className="absolute right-0 h-full max-w-none"
           style={{ width: fullWidth }}
@@ -113,7 +99,7 @@ export function HeroTwo() {
         </picture>
       </div>
 
-      {/* Layer 3 — brush script (sized from first paint; opacity-only reveal avoids CLS) */}
+      {/* Layer 3 — brush script visible immediately (opacity stays 1 for LCP). */}
       <div className="absolute inset-0 z-10 flex items-center justify-center px-6">
         <img
           src={SCRIPT_SRC}
@@ -123,17 +109,9 @@ export function HeroTwo() {
           fetchPriority="high"
           decoding="async"
           className="relative h-auto w-[min(58vw,20rem)] translate-y-3 object-contain sm:w-[min(56vw,32rem)] sm:translate-y-0"
-          style={
-            scriptReady
-              ? {
-                  animation: "hero-script-in 1.05s cubic-bezier(0.22, 1, 0.36, 1) both",
-                }
-              : {
-                  opacity: 0,
-                  aspectRatio: `${SCRIPT_W} / ${SCRIPT_H}`,
-                }
-          }
-          onLoad={() => setScriptReady(true)}
+          style={{
+            animation: "hero-script-in 1.05s cubic-bezier(0.22, 1, 0.36, 1) both",
+          }}
         />
       </div>
     </div>

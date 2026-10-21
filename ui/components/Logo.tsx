@@ -7,9 +7,9 @@
  * between both by CSS depending on the active theme, the same dark:
  * convention ThemeToggle's own icon already uses. */
 export function Logo({ className = "h-7 w-auto", onDark = false }: { className?: string; onDark?: boolean }) {
-  // Intrinsic size matches the WebP assets (resized from the originals).
-  const width = 800;
-  const height = 217;
+  // Intrinsic size matches the WebP assets (resized for header display).
+  const width = 360;
+  const height = 98;
 
   if (onDark) {
     // eslint-disable-next-line @next/next/no-img-element -- static asset in public/
