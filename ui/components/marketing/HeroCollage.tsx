@@ -18,8 +18,8 @@ const COLLAGE_H = 768;
 const SCRIPT_W = 1600;
 const SCRIPT_H = 1169;
 
-const COLLAGE_SRC = "/hero-collage.png?v=5";
-const SCRIPT_SRC = "/hero-script.png?v=4";
+const COLLAGE_SRC = "/hero-collage.webp?v=6";
+const SCRIPT_SRC = "/hero-script.webp?v=6";
 
 type Frame = { left: number; top: number; width: number; height: number };
 
@@ -145,7 +145,10 @@ export function HeroOne() {
           fetchPriority="high"
           decoding="async"
           className="h-full max-h-full w-full object-contain transition-opacity duration-300 ease-out"
-          style={{ opacity: foregroundReady ? 1 : 0 }}
+          style={{
+            aspectRatio: `${COLLAGE_W} / ${COLLAGE_H}`,
+            opacity: foregroundReady ? 1 : 0,
+          }}
           onLoad={() => setCollageReady(true)}
         />
         <img
@@ -157,9 +160,15 @@ export function HeroOne() {
           decoding="async"
           className="pointer-events-none absolute z-10 object-contain transition-opacity duration-300 ease-out"
           style={{
-            ...(scriptStyle ?? { left: 0, top: 0, width: 0, height: 0 }),
+            // Keep a stable box even before measure completes (avoids CLS).
+            ...(scriptStyle ?? {
+              left: "24%",
+              top: "22.9%",
+              width: "52%",
+              aspectRatio: `${SCRIPT_W} / ${SCRIPT_H}`,
+              height: "auto",
+            }),
             opacity: foregroundReady ? 1 : 0,
-            visibility: scriptStyle ? "visible" : "hidden",
           }}
           onLoad={() => setScriptReady(true)}
         />

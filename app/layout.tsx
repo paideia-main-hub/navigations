@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { geistMono, geistSans, plusJakarta } from "@/app/fonts";
+import { DeferredSupportChat } from "@/ui/components/DeferredSupportChat";
 import { GoogleAnalytics } from "@/ui/components/GoogleAnalytics";
 import { OverlayScrollbar } from "@/ui/components/OverlayScrollbar";
-import { SupportChatFloat } from "@/ui/components/SupportChatFloat";
 import { ThemeInitScript } from "@/ui/theme/ThemeInitScript";
 import {
   DEFAULT_DESCRIPTION,
@@ -13,8 +13,6 @@ import {
   getSiteUrl,
 } from "@/lib/seo";
 import "./globals.css";
-
-const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
@@ -86,20 +84,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <ThemeInitScript />
-        {measurementId ? (
-          <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`} />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config','${measurementId}');`,
-              }}
-            />
-          </>
-        ) : null}
       </head>
       <body suppressHydrationWarning className="flex min-h-full flex-col bg-background text-foreground">
         {children}
-        <SupportChatFloat />
+        <DeferredSupportChat />
         <GoogleAnalytics />
         <OverlayScrollbar />
       </body>

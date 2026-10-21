@@ -9,10 +9,10 @@ import { useEffect, useState } from "react";
  * 3) brand brush script on top
  */
 
-const BG_SRC = "/hero-two-bg.jpg";
-const COLLAGE_SRC = "/hero-collage.png?v=5";
-const COLLAGE_MOBILE_SRC = "/hero-collage-mobile.png?v=3";
-const SCRIPT_SRC = "/hero-script.png?v=4";
+const BG_SRC = "/hero-two-bg.webp?v=6";
+const COLLAGE_SRC = "/hero-collage.webp?v=6";
+const COLLAGE_MOBILE_SRC = "/hero-collage-mobile.webp?v=6";
+const SCRIPT_SRC = "/hero-script.webp?v=6";
 const COLLAGE_W = 1024;
 const COLLAGE_H = 768;
 const SCRIPT_W = 1600;
@@ -119,7 +119,7 @@ export function HeroTwo() {
         />
       </div>
 
-      {/* Layer 3 — brush script */}
+      {/* Layer 3 — brush script (sized from first paint; opacity-only reveal avoids CLS) */}
       <div className="absolute inset-0 z-10 flex items-center justify-center px-6">
         <img
           src={SCRIPT_SRC}
@@ -134,7 +134,11 @@ export function HeroTwo() {
               ? {
                   animation: "hero-script-in 1.05s cubic-bezier(0.22, 1, 0.36, 1) both",
                 }
-              : { opacity: 0 }
+              : {
+                  opacity: 0,
+                  // Reserve the same box before the file finishes so layout does not jump.
+                  aspectRatio: `${SCRIPT_W} / ${SCRIPT_H}`,
+                }
           }
           onLoad={() => setScriptReady(true)}
         />

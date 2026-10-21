@@ -51,14 +51,30 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* Kick off hero LCP assets before the client collage hydrates. */}
-      <link rel="preload" as="image" href="/hero-script.png?v=4" fetchPriority="high" />
+      {/* Kick off hero LCP assets before the client collage hydrates.
+          Viewport-specific collage preloads avoid downloading both mobile and desktop files. */}
+      <link rel="preload" as="image" type="image/webp" href="/hero-script.webp?v=6" fetchPriority="high" />
       {HERO_VARIANT === 1 ? (
-        <link rel="preload" as="image" href="/hero-collage.png?v=5" fetchPriority="high" />
+        <link rel="preload" as="image" type="image/webp" href="/hero-collage.webp?v=6" fetchPriority="high" />
       ) : (
         <>
-          <link rel="preload" as="image" href="/hero-two-bg.jpg" fetchPriority="high" />
-          <link rel="preload" as="image" href="/hero-collage.png?v=5" fetchPriority="high" />
+          <link rel="preload" as="image" type="image/webp" href="/hero-two-bg.webp?v=6" fetchPriority="high" />
+          <link
+            rel="preload"
+            as="image"
+            type="image/webp"
+            href="/hero-collage-mobile.webp?v=6"
+            media="(max-width: 639px)"
+            fetchPriority="high"
+          />
+          <link
+            rel="preload"
+            as="image"
+            type="image/webp"
+            href="/hero-collage.webp?v=6"
+            media="(min-width: 640px)"
+            fetchPriority="high"
+          />
         </>
       )}
 
