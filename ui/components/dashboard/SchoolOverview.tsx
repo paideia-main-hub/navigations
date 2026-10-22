@@ -9,6 +9,7 @@ import { StatCard } from "@/ui/components/dashboard/StatCard";
 export function SchoolOverview({
   school,
   coordinatorName,
+  coordinatorEmail = null,
   avatarUrl,
   studentCount,
   teamCount,
@@ -17,6 +18,7 @@ export function SchoolOverview({
 }: {
   school: School;
   coordinatorName: string;
+  coordinatorEmail?: string | null;
   avatarUrl: string | null;
   studentCount: number;
   teamCount: number;
@@ -27,7 +29,13 @@ export function SchoolOverview({
 
   return (
     <>
-      <SchoolProfileCard school={school} coordinatorName={coordinatorName} avatarUrl={avatarUrl} onEditingChange={setEditing} />
+      <SchoolProfileCard
+        school={school}
+        coordinatorName={coordinatorName}
+        coordinatorEmail={coordinatorEmail}
+        avatarUrl={avatarUrl}
+        onEditingChange={setEditing}
+      />
       {editing ? null : (
         <>
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">

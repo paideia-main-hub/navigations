@@ -61,6 +61,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const paymentAccount =
     isCoordinator || user.role === "student" ? await getPaymentAccount(await createClient()) : null;
   const headerUser = { id: user.id, fullName: user.fullName, role: user.role, photoUrl, subtitle: schoolName, notices };
+  const accountEmail =
+    user.email && !user.email.endsWith("@students.navigations.com.pk") ? user.email : null;
   const shell = (
     <DashboardShell
       role={user.role}
@@ -68,6 +70,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       photoUrl={photoUrl}
       frlId={student?.frlId ?? school?.frlId ?? null}
       subtitle={schoolName}
+      email={accountEmail}
     >
       {children}
     </DashboardShell>

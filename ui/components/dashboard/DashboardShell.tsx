@@ -145,6 +145,7 @@ export function DashboardShell({
   photoUrl = null,
   frlId = null,
   subtitle = null,
+  email = null,
   children,
 }: {
   role: UserRole;
@@ -152,6 +153,7 @@ export function DashboardShell({
   photoUrl?: string | null;
   frlId?: string | null;
   subtitle?: string | null;
+  email?: string | null;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -198,6 +200,11 @@ export function DashboardShell({
             <p className="text-xs font-bold tracking-[0.16em] text-accent uppercase">Dashboard</p>
             <p className="mt-1 truncate text-sm font-semibold text-foreground">{fullName}</p>
             <p className="line-clamp-2 text-xs leading-snug break-words text-muted">{subtitle?.trim() || ROLE_LABELS[role]}</p>
+            {email ? (
+              <p className="mt-0.5 truncate text-xs leading-snug break-all text-muted" title={email}>
+                {email}
+              </p>
+            ) : null}
           </div>
         </div>
         {frlId ? (

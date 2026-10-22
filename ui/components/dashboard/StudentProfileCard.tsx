@@ -34,7 +34,15 @@ function formatDateOfBirth(value: string | null | undefined): string {
   return `${day}-${month}-${year}`;
 }
 
-export function StudentProfileCard({ fullName, profile }: { fullName: string; profile: StudentProfile }) {
+export function StudentProfileCard({
+  fullName,
+  email = null,
+  profile,
+}: {
+  fullName: string;
+  email?: string | null;
+  profile: StudentProfile;
+}) {
   const [editing, setEditing] = useState(false);
   const [state, formAction, pending] = useActionState(updateStudentProfileAction, initialState);
 
@@ -55,6 +63,12 @@ export function StudentProfileCard({ fullName, profile }: { fullName: string; pr
             <h2 className="mt-1 text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">{fullName}</h2>
             <p className="mt-1 text-sm font-medium text-muted">
               Grade <span className="text-foreground">{profile.grade ?? "—"}</span>
+              {email ? (
+                <>
+                  {" · "}
+                  <span className="break-all text-foreground">{email}</span>
+                </>
+              ) : null}
             </p>
           </div>
           <button
@@ -80,7 +94,11 @@ export function StudentProfileCard({ fullName, profile }: { fullName: string; pr
             </div>
           </div>
 
-          <dl className="grid gap-3 sm:grid-cols-3">
+          <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-accent/20 bg-background px-4 py-3">
+              <dt className="text-[11px] font-bold tracking-[0.12em] text-muted uppercase">Email</dt>
+              <dd className="mt-1.5 text-sm font-semibold break-all text-foreground">{email ?? "—"}</dd>
+            </div>
             <div className="rounded-xl border border-accent/20 bg-background px-4 py-3">
               <dt className="text-[11px] font-bold tracking-[0.12em] text-muted uppercase">Date of birth</dt>
               <dd className="mt-1.5 text-sm font-semibold text-foreground">

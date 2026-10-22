@@ -43,12 +43,17 @@ export default async function DashboardOverviewPage() {
         <DashboardHero
           eyebrow="Dashboard"
           title={`Welcome back, ${school.officialName}`}
-          subtitle="Registrations, roster, teams, and results for your school."
+          subtitle={
+            user.email
+              ? `${user.email} · Registrations, roster, teams, and results for your school.`
+              : "Registrations, roster, teams, and results for your school."
+          }
         />
         <DashboardPage title="Overview">
           <SchoolOverview
             school={school}
             coordinatorName={user.fullName}
+            coordinatorEmail={user.email}
             avatarUrl={await getCoordinatorAvatarUrl(user.id)}
             studentCount={roster.length}
             teamCount={teams.length}
@@ -114,11 +119,21 @@ export default async function DashboardOverviewPage() {
       <DashboardHero
         eyebrow="Dashboard"
         title={`Welcome back, ${user.fullName}`}
-        subtitle="Your competitions, submissions, nominations, and results."
+        subtitle={
+          user.email && !user.email.endsWith("@students.navigations.com.pk")
+            ? `${user.email} · Your competitions, submissions, nominations, and results.`
+            : "Your competitions, submissions, nominations, and results."
+        }
       />
       <DashboardPage>
         <div className="space-y-8">
-          {profile ? <StudentProfileCard fullName={user.fullName} profile={profile} /> : null}
+          {profile ? (
+            <StudentProfileCard
+              fullName={user.fullName}
+              email={user.email && !user.email.endsWith("@students.navigations.com.pk") ? user.email : null}
+              profile={profile}
+            />
+          ) : null}
 
           <section>
             <div className="mb-4 flex items-end justify-between gap-3">

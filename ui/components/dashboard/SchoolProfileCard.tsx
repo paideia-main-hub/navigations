@@ -15,11 +15,13 @@ const initialState: ActionState = { error: null };
 export function SchoolProfileCard({
   school,
   coordinatorName,
+  coordinatorEmail = null,
   avatarUrl,
   onEditingChange,
 }: {
   school: School;
   coordinatorName: string;
+  coordinatorEmail?: string | null;
   avatarUrl: string | null;
   onEditingChange?: (editing: boolean) => void;
 }) {
@@ -56,6 +58,14 @@ export function SchoolProfileCard({
           </button>
         </div>
         <dl className="mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
+          <div>
+            <dt className="text-muted">Coordinator</dt>
+            <dd className="text-foreground">{coordinatorName}</dd>
+          </div>
+          <div>
+            <dt className="text-muted">Email</dt>
+            <dd className="break-all text-foreground">{coordinatorEmail ?? "—"}</dd>
+          </div>
           <div>
             <dt className="text-muted">Principal</dt>
             <dd className="text-foreground">{school.principalName ?? "—"}</dd>
