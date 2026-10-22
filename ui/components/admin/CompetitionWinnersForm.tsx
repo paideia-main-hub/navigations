@@ -98,7 +98,7 @@ export function CompetitionWinnersForm({ competition }: { competition: Competiti
         {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
         <div className="flex gap-3">
           {editing && (
-            <button type="button" onClick={() => setEditing(null)} className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground">
+            <button type="button" onClick={() => setEditing(null)} className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong">
               Cancel
             </button>
           )}

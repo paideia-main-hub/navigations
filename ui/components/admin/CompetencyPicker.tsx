@@ -98,7 +98,7 @@ export function CompetencyPicker({ defaultValue = [] }: { defaultValue?: string[
         <button
           type="button"
           onClick={addCustom}
-          className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground hover:border-accent"
+          className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
         >
           Add
         </button>

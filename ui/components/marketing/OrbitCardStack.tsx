@@ -300,7 +300,7 @@ function DesktopOrbitStage({
   const activeLift = isPhone ? Math.round(lift * 0.55) : lift;
 
   const viewAllClassName =
-    "rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-foreground shadow-md transition-colors hover:border-accent hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none";
+    "rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-foreground shadow-md transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none";
 
   return (
     <div

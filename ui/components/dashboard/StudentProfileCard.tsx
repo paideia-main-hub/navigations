@@ -60,7 +60,7 @@ export function StudentProfileCard({ fullName, profile }: { fullName: string; pr
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-accent/35 bg-surface px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft"
+            className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
           >
             Edit profile
           </button>
@@ -130,7 +130,7 @@ export function StudentProfileCard({ fullName, profile }: { fullName: string; pr
         <button
           type="button"
           onClick={() => setEditing(false)}
-          className="cursor-pointer rounded-full border border-accent/30 px-4 py-2 text-sm font-semibold text-foreground hover:border-accent"
+          className="cursor-pointer rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
         >
           Cancel
         </button>

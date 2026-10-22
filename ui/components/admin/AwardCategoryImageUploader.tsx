@@ -158,7 +158,7 @@ export function AwardCategoryImageUploader({ category }: { category: AwardCatego
               <button
                 type="submit"
                 disabled={busy || !fileName}
-                className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:border-accent disabled:opacity-60"
+                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground hover:border-accent disabled:opacity-60 transition-colors hover:bg-accent-soft hover:text-accent-strong"
               >
                 {phase === "uploading"
                   ? "Uploading…"

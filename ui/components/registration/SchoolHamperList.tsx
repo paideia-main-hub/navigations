@@ -233,7 +233,7 @@ export function EntryListHeaderButton() {
       type="button"
       onClick={value.openDrawer}
       aria-label={`Hamper, ${count}`}
-      className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-surface text-foreground hover:border-accent/50"
+      className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-surface text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
     >
       <HamperIcon />
       <span className="absolute -top-1 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
@@ -316,7 +316,7 @@ export function AddToEntryListButton({
         <button
           type="button"
           onClick={onBack}
-          className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground"
+          className="rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
         >
           Back
         </button>
@@ -542,7 +542,7 @@ function SchoolEntryDrawer() {
                     <Link
                       href="/dashboard/register"
                       onClick={closeDrawer}
-                      className="block rounded-full border border-border bg-surface px-5 py-2.5 text-center text-sm font-semibold text-foreground hover:border-accent"
+                      className="block rounded-full border border-border bg-surface px-5 py-2.5 text-center text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
                     >
                       Add more competitions
                     </Link>

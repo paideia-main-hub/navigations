@@ -35,7 +35,7 @@ export function EditTeamButton({
   competitionSlug,
   label = "Edit team",
   ariaLabel,
-  buttonClassName = "cursor-pointer rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground hover:border-accent disabled:cursor-not-allowed disabled:opacity-50",
+  buttonClassName = "cursor-pointer rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong disabled:cursor-not-allowed disabled:opacity-50",
   onStudentAdded,
   onSaved,
 }: {
@@ -168,90 +168,96 @@ export function EditTeamButton({
       </button>
       {open
         ? createPortal(
-            <AnimatedModal onClose={dismiss} labelledBy={titleId} panelClassName="max-w-2xl">
-              <div className="text-left">
-                <div className="flex items-start justify-between gap-3 px-5 pt-5">
-                  <h3 id={titleId} className="text-lg font-extrabold tracking-tight text-foreground">
+            <AnimatedModal
+              onClose={dismiss}
+              labelledBy={titleId}
+              panelClassName="flex max-h-[min(92vh,720px)] max-w-2xl flex-col overflow-hidden"
+            >
+              <div className="flex shrink-0 items-start justify-between gap-3 bg-brand-deep px-5 py-5 sm:px-6">
+                <div className="min-w-0 pr-2">
+                  <p className="text-xs font-black tracking-[0.16em] text-accent uppercase">Register</p>
+                  <h3 id={titleId} className="mt-1 text-xl font-extrabold tracking-tight text-brand-deep-foreground sm:text-2xl">
                     Edit team
                   </h3>
-                  <ModalCloseButton />
+                  <p className="mt-1 text-sm text-brand-deep-muted">Update the team name and members for this competition.</p>
                 </div>
-                <div className="space-y-3 px-5 py-4">
-                  {team ? null : (
-                    <div>
-                      <label className="text-sm font-medium text-foreground">
-                        Team
-                        <RequiredMark />
-                      </label>
-                      <div className="mt-1 max-h-40 space-y-2 overflow-y-auto rounded-lg border border-border p-3">
-                        {teams.map((item) => (
-                          <label key={item.id} className="flex items-center gap-2 text-sm text-foreground">
-                            <input type="radio" name="edit-existing-team" checked={item.id === teamId} onChange={() => loadTeam(item)} />
-                            {item.name}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                <ModalCloseButton className="bg-white/10 text-brand-deep-foreground hover:bg-white/20 hover:text-brand-deep-foreground" />
+              </div>
+              <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4 sm:px-6">
+                {team ? null : (
                   <div>
                     <label className="text-sm font-medium text-foreground">
-                      Team name
+                      Team
                       <RequiredMark />
                     </label>
-                    <input
-                      value={name}
-                      onChange={(event) => setName(event.target.value)}
-                      className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
+                    <div className="mt-1 max-h-40 space-y-2 overflow-y-auto rounded-lg border border-border p-3">
+                      {teams.map((item) => (
+                        <label key={item.id} className="flex items-center gap-2 text-sm text-foreground">
+                          <input type="radio" name="edit-existing-team" checked={item.id === teamId} onChange={() => loadTeam(item)} />
+                          {item.name}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <label className="text-sm font-medium text-foreground">
+                    Team name
+                    <RequiredMark />
+                  </label>
+                  <input
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
+                  />
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <label className="text-sm font-medium text-foreground">
+                      Team members ({sizeLabel})
+                      <RequiredMark />
+                    </label>
+                    {onStudentAdded ? (
+                      <AddStudentForm
+                        onAdded={addStudent}
+                        triggerLabel="Add student"
+                        triggerClassName="cursor-pointer text-sm font-semibold text-accent hover:underline"
+                      />
+                    ) : null}
+                  </div>
+                  <div className="mt-1">
+                    <StudentMultiSelect
+                      variant="panel"
+                      ariaLabel="Team members"
+                      students={roster.map((student) => {
+                        const taken = takenStudentIds.has(student.id);
+                        const checked = memberIds.includes(student.id);
+                        return {
+                          id: student.id,
+                          name: student.fullName,
+                          grade: student.grade,
+                          note: taken ? "already on another team" : undefined,
+                          disabled: taken || (!checked && memberIds.length >= max),
+                        };
+                      })}
+                      selectedIds={memberIds}
+                      onChange={(ids) => setMemberIds(ids.slice(0, max))}
                     />
                   </div>
-                  <div>
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <label className="text-sm font-medium text-foreground">
-                        Team members ({sizeLabel})
-                        <RequiredMark />
-                      </label>
-                      {onStudentAdded ? (
-                        <AddStudentForm
-                          onAdded={addStudent}
-                          triggerLabel="Add student"
-                          triggerClassName="cursor-pointer text-sm font-semibold text-accent hover:underline"
-                        />
-                      ) : null}
-                    </div>
-                    <div className="mt-1">
-                      <StudentMultiSelect
-                        variant="panel"
-                        ariaLabel="Team members"
-                        students={roster.map((student) => {
-                          const taken = takenStudentIds.has(student.id);
-                          const checked = memberIds.includes(student.id);
-                          return {
-                            id: student.id,
-                            name: student.fullName,
-                            grade: student.grade,
-                            note: taken ? "already on another team" : undefined,
-                            disabled: taken || (!checked && memberIds.length >= max),
-                          };
-                        })}
-                        selectedIds={memberIds}
-                        onChange={(ids) => setMemberIds(ids.slice(0, max))}
-                      />
-                    </div>
-                    {guidance ? <p className="mt-2 text-sm text-amber-700 dark:text-amber-400">{guidance}</p> : null}
-                  </div>
-                  {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+                  {guidance ? <p className="mt-2 text-sm text-amber-700 dark:text-amber-400">{guidance}</p> : null}
                 </div>
-                <div className="flex gap-3 border-t border-border px-5 py-4">
-                  <ModalCancel closeModal={closeModal} />
-                  <button
-                    type="button"
-                    onClick={save}
-                    disabled={pending || !name.trim() || !eligibleSelection || memberIds.length < min || memberIds.length > max}
-                    className="cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {pending ? "Saving…" : "Save team"}
-                  </button>
-                </div>
+                {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+              </div>
+              <div className="flex shrink-0 gap-3 border-t border-border px-5 py-4">
+                <ModalCancel closeModal={closeModal} />
+                <button
+                  type="button"
+                  onClick={save}
+                  disabled={pending || !name.trim() || !eligibleSelection || memberIds.length < min || memberIds.length > max}
+                  className="cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {pending ? "Saving…" : "Save team"}
+                </button>
               </div>
             </AnimatedModal>,
             document.body,
@@ -272,7 +278,7 @@ function ModalCancel({ closeModal }: { closeModal: { current: () => void } }) {
     <button
       type="button"
       onClick={() => closeModal.current()}
-      className="cursor-pointer rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground"
+      className="cursor-pointer rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
     >
       Cancel
     </button>

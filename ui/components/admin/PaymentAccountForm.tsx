@@ -30,6 +30,22 @@ export function PaymentAccountForm({ account }: { account: PaymentAccount }) {
         inputMode="numeric"
       />
       <FormField label="IBAN" name="iban" defaultValue={account.iban} autoComplete="off" />
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-background px-4 py-3">
+        <input
+          type="checkbox"
+          name="require_receipt_ocr"
+          value="on"
+          defaultChecked={account.requireReceiptOcr}
+          className="mt-1"
+        />
+        <span>
+          <span className="block text-sm font-semibold text-foreground">Require OCR checks on fee receipts</span>
+          <span className="mt-0.5 block text-sm text-muted">
+            When enabled, Submit stays disabled until the receipt image or PDF clearly shows the hamper amount,
+            Paideia Ventures (Private), and account digits 1953.
+          </span>
+        </span>
+      </label>
       {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
       {state.saved && (
         <p className="text-sm text-emerald-700 dark:text-emerald-400">Saved. These details now appear on every receipt upload.</p>

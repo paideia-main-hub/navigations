@@ -116,6 +116,7 @@ type AccountRow = {
   account_title: string;
   account_number: string;
   iban: string;
+  require_receipt_ocr?: boolean | null;
 };
 
 function toAccount(row: AccountRow): PaymentAccount {
@@ -124,6 +125,7 @@ function toAccount(row: AccountRow): PaymentAccount {
     accountTitle: row.account_title ?? "",
     accountNumber: row.account_number ?? "",
     iban: row.iban ?? "",
+    requireReceiptOcr: row.require_receipt_ocr !== false,
   };
 }
 
@@ -132,7 +134,7 @@ function toAccount(row: AccountRow): PaymentAccount {
 export async function getPaymentAccount(supabase: SupabaseClient): Promise<PaymentAccount> {
   const { data, error } = await supabase
     .from("payment_account")
-    .select("bank_name, account_title, account_number, iban")
+    .select("bank_name, account_title, account_number, iban, require_receipt_ocr")
     .eq("id", 1)
     .maybeSingle();
   if (error || !data) return emptyPaymentAccount;
@@ -146,6 +148,7 @@ export async function savePaymentAccount(admin: SupabaseClient, account: Payment
     account_title: account.accountTitle,
     account_number: account.accountNumber,
     iban: account.iban,
+    require_receipt_ocr: account.requireReceiptOcr,
     updated_at: new Date().toISOString(),
   });
   return { error: error?.message ?? null };

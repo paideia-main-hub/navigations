@@ -32,7 +32,7 @@ export function ScoreCard({ assignment }: { assignment: JudgeAssignment }) {
           {!assignment.locked && (
             <button
               onClick={() => setOpen((v) => !v)}
-              className="rounded-full border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:border-accent"
+              className="rounded-full border border-border bg-surface px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
             >
               {open ? "Close" : assignment.status === "scored" ? "Review" : "Score"}
             </button>

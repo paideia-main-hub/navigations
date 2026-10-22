@@ -32,6 +32,7 @@ export function StepForm({
   error,
   submitLabel,
   pendingLabel,
+  submitDisabled = false,
 }: {
   action: (formData: FormData) => void;
   steps: FormStep[];
@@ -39,6 +40,8 @@ export function StepForm({
   error: string | null;
   submitLabel: string;
   pendingLabel: string;
+  /** Extra gate on the final submit (e.g. consent checkbox not yet ticked). */
+  submitDisabled?: boolean;
 }) {
   const [current, setCurrent] = useState(0);
   const [motion, setMotion] = useState<{ id: number; direction: "forward" | "back" }>({ id: 0, direction: "forward" });
@@ -195,7 +198,7 @@ export function StepForm({
             type="button"
             onClick={() => goTo(current - 1)}
             disabled={pending}
-            className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:border-accent disabled:opacity-60"
+            className="rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong disabled:opacity-60"
           >
             Back
           </button>
@@ -203,8 +206,9 @@ export function StepForm({
         {last ? (
           <button
             type="submit"
-            disabled={pending}
-            className="flex-1 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-60"
+            disabled={pending || submitDisabled}
+            aria-disabled={pending || submitDisabled}
+            className="flex-1 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pending ? pendingLabel : submitLabel}
           </button>

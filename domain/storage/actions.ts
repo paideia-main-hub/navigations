@@ -183,6 +183,14 @@ export async function uploadReceiptFile(file: File, pathPrefix: string): Promise
   if (!user) return { path: null, error: "You must be logged in to upload a receipt." };
   if (!file || file.size === 0) return { path: null, error: "A receipt file is required." };
 
+  const type = (file.type || "").toLowerCase();
+  const name = file.name.toLowerCase();
+  const allowed =
+    type.startsWith("image/") ||
+    type === "application/pdf" ||
+    /\.(png|jpe?g|gif|webp|bmp|pdf)$/.test(name);
+  if (!allowed) return { path: null, error: "Only image or PDF receipts are accepted." };
+
   const supabase = await createClient();
   const path = `${pathPrefix}/${crypto.randomUUID()}-${file.name}`;
 

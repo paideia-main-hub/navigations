@@ -18,12 +18,12 @@ function gradeLabel(grade: string | null): string {
 
 function StudentColumns({ name, grade, note }: { name: string; grade: string | null; note?: string }) {
   return (
-    <span className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_5.5rem] items-center gap-3 text-left">
+    <span className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 text-left">
       <span className="min-w-0">
         <span className="block truncate">{name}</span>
         {note ? <span className="block truncate text-xs font-normal text-muted">{note}</span> : null}
       </span>
-      <span className="text-muted">{gradeLabel(grade)}</span>
+      <span className="shrink-0 whitespace-nowrap text-right text-muted">{gradeLabel(grade)}</span>
     </span>
   );
 }
@@ -73,13 +73,15 @@ function StudentOptions({
         const checked = selectedIds.includes(student.id);
         return (
           <li key={student.id} role="presentation">
-            <div className={`flex items-center gap-2 px-2 ${student.disabled ? "text-muted" : "text-foreground"}`}>
+            <div
+              className={`flex items-center gap-1 py-0.5 pl-2 pr-2 ${student.disabled ? "text-muted" : "text-foreground"}`}
+            >
               <button
                 type="button"
                 role="option"
                 aria-selected={checked}
                 disabled={student.disabled}
-                className={`menu-item flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-2 text-left text-sm ${
+                className={`menu-item flex min-w-0 flex-1 items-center gap-2.5 rounded-md px-1.5 py-2 text-left text-sm ${
                   student.disabled ? "cursor-not-allowed" : "hover:bg-surface-muted"
                 } ${checked ? "text-accent-strong" : ""}`}
                 onMouseDown={(event) => event.preventDefault()}
@@ -198,34 +200,47 @@ export function StudentMultiSelect({
     onEdit?.(id);
   }
 
-  const list = (
-    <div
-      id={listId}
-      role="listbox"
-      aria-multiselectable="true"
-      aria-label={ariaLabel}
-      className={
-        variant === "panel"
-          ? "flex max-h-52 flex-col overflow-hidden rounded-lg border border-border bg-background"
-          : "absolute top-full right-0 left-0 z-20 mt-1.5 flex max-h-56 flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-[0_16px_40px_-20px_rgba(31,32,65,0.45)]"
-      }
-    >
-      <div className="shrink-0 border-b border-border p-2">
-        <input
-          ref={searchRef}
-          type="text"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search students"
-          aria-label="Search students"
-          autoComplete="off"
-          className="box-border h-[38px] w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none placeholder:text-muted focus:border-accent"
-        />
+  const searchField = (
+    <div className="shrink-0 border-b border-border p-2">
+      <input
+        ref={searchRef}
+        type="text"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="Search students"
+        aria-label="Search students"
+        autoComplete="off"
+        className="box-border h-[38px] w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none placeholder:text-muted focus:border-accent"
+      />
+    </div>
+  );
+
+  const options = (
+    <StudentOptions visible={visible} selectedIds={selectedIds} onToggle={toggle} onEdit={onEdit ? editStudent : undefined} />
+  );
+
+  const list =
+    variant === "panel" ? (
+      <div
+        id={listId}
+        role="listbox"
+        aria-multiselectable="true"
+        aria-label={ariaLabel}
+        className="overflow-hidden rounded-lg border border-border bg-background"
+      >
+        {searchField}
+        <MenuScroll className="h-52 py-1 pr-1">{options}</MenuScroll>
       </div>
-      <MenuScroll className="min-h-0 flex-1 py-1">
-        <StudentOptions visible={visible} selectedIds={selectedIds} onToggle={toggle} onEdit={onEdit ? editStudent : undefined} />
-      </MenuScroll>
-      {variant === "dropdown" ? (
+    ) : (
+      <div
+        id={listId}
+        role="listbox"
+        aria-multiselectable="true"
+        aria-label={ariaLabel}
+        className="absolute top-full right-0 left-0 z-20 mt-1.5 flex max-h-56 flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-[0_16px_40px_-20px_rgba(31,32,65,0.45)]"
+      >
+        {searchField}
+        <MenuScroll className="max-h-44 py-1 pr-1">{options}</MenuScroll>
         <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-3 py-2">
           <p className="text-xs text-muted">
             {selected.length === 0 ? "None selected" : `${selected.length} selected`}
@@ -239,9 +254,8 @@ export function StudentMultiSelect({
             Done
           </button>
         </div>
-      ) : null}
-    </div>
-  );
+      </div>
+    );
 
   if (variant === "panel") {
     return (

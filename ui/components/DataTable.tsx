@@ -241,7 +241,7 @@ export function DataTable<T>({
                 type="button"
                 disabled={currentPage <= 1}
                 onClick={() => setPage(currentPage - 1)}
-                className="rounded-full border border-border px-3 py-1.5 font-semibold text-foreground hover:border-accent disabled:opacity-40 disabled:hover:border-border"
+                className="rounded-full border border-border bg-surface px-3 py-1.5 font-semibold text-foreground hover:border-accent disabled:opacity-40 disabled:hover:border-border transition-colors hover:bg-accent-soft hover:text-accent-strong"
               >
                 Prev
               </button>
@@ -262,7 +262,7 @@ export function DataTable<T>({
                 type="button"
                 disabled={currentPage >= totalPages}
                 onClick={() => setPage(currentPage + 1)}
-                className="rounded-full border border-border px-3 py-1.5 font-semibold text-foreground hover:border-accent disabled:opacity-40 disabled:hover:border-border"
+                className="rounded-full border border-border bg-surface px-3 py-1.5 font-semibold text-foreground hover:border-accent disabled:opacity-40 disabled:hover:border-border transition-colors hover:bg-accent-soft hover:text-accent-strong"
               >
                 Next
               </button>

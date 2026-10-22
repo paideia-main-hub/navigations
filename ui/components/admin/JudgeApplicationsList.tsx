@@ -85,7 +85,7 @@ function RejectForm({ applicationId }: { applicationId: string }) {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground hover:border-accent">
+      <button onClick={() => setOpen(true)} className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground hover:border-accent transition-colors hover:bg-accent-soft hover:text-accent-strong">
         Reject
       </button>
     );
@@ -132,7 +132,7 @@ export function JudgeApplicationsList({ applications }: { applications: AdminJud
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => setSchedulingId(schedulingId === a.id ? null : a.id)}
-                className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground hover:border-accent"
+                className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground hover:border-accent transition-colors hover:bg-accent-soft hover:text-accent-strong"
               >
                 {a.status === "interview_scheduled" ? "Reschedule" : "Schedule interview"}
               </button>

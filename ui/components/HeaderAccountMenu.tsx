@@ -213,7 +213,7 @@ export function HeaderAccountMenu({
         aria-controls={menuId}
         aria-haspopup="menu"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-9 max-w-[12rem] cursor-pointer items-center gap-1 rounded-full border border-border bg-surface p-0 pr-1.5 text-left transition-colors hover:border-accent/50 sm:h-auto sm:max-w-[16rem] sm:gap-2 sm:px-2.5 sm:py-1.5 sm:pr-2.5"
+        className="flex h-9 max-w-[12rem] cursor-pointer items-center gap-1 rounded-full border border-border bg-surface p-0 pr-1.5 text-left transition-colors hover:border-accent hover:bg-accent-soft sm:h-auto sm:max-w-[16rem] sm:gap-2 sm:px-2.5 sm:py-1.5 sm:pr-2.5"
       >
         {photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- public Supabase Storage URL

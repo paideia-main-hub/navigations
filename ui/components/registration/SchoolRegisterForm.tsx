@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { signUpSchool, type ActionState } from "@/domain/auth/actions";
 import { SCHOOL_TYPES } from "@/domain/schools/types";
 import { FormField } from "@/ui/components/FormField";
@@ -12,12 +12,14 @@ const initialState: ActionState = { error: null };
 
 export function SchoolRegisterForm({ hideIntro = false }: { hideIntro?: boolean } = {}) {
   const [state, formAction, pending] = useActionState(signUpSchool, initialState);
+  const [consentAccepted, setConsentAccepted] = useState(false);
 
   return (
     <div>
       {!hideIntro ? (
         <>
-          <h2 className="text-2xl font-bold text-foreground">School Registration</h2>
+          <p className="text-xs font-black tracking-[0.16em] text-accent uppercase">Register</p>
+          <h2 className="mt-2 text-2xl font-bold text-foreground">School Registration</h2>
           <p className="mt-1 text-sm text-muted">
             Register your school, then add students and teams from your school dashboard.
           </p>
@@ -30,6 +32,7 @@ export function SchoolRegisterForm({ hideIntro = false }: { hideIntro?: boolean 
         error={state.error}
         submitLabel="Register school"
         pendingLabel="Creating school account…"
+        submitDisabled={!consentAccepted}
         steps={[
           {
             title: "School identity",
@@ -122,7 +125,14 @@ export function SchoolRegisterForm({ hideIntro = false }: { hideIntro?: boolean 
                 />
                 <FormField label="Password" name="password" type="password" required minLength={8} />
                 <label className="flex items-start gap-2 text-sm text-muted">
-                  <input type="checkbox" required className="mt-0.5" />
+                  <input
+                    type="checkbox"
+                    name="consent"
+                    required
+                    checked={consentAccepted}
+                    onChange={(e) => setConsentAccepted(e.target.checked)}
+                    className="mt-0.5"
+                  />
                   <span>
                     I confirm this information is accurate and accept the competition rules and result/media publication
                     consent terms on behalf of the school.

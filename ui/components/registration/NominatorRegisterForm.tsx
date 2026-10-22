@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { signUpNominator, type ActionState } from "@/domain/auth/actions";
 import { FormField } from "@/ui/components/FormField";
 import { RequiredMark } from "@/ui/components/RequiredMark";
@@ -10,12 +10,14 @@ const initialState: ActionState = { error: null };
 
 export function NominatorRegisterForm({ hideIntro = false }: { hideIntro?: boolean } = {}) {
   const [state, formAction, pending] = useActionState(signUpNominator, initialState);
+  const [consentAccepted, setConsentAccepted] = useState(false);
 
   return (
     <div>
       {!hideIntro ? (
         <>
-          <h2 className="text-2xl font-bold text-foreground">Independent Nominator Registration</h2>
+          <p className="text-xs font-black tracking-[0.16em] text-accent uppercase">Register</p>
+          <h2 className="mt-2 text-2xl font-bold text-foreground">Independent Nominator Registration</h2>
           <p className="mt-1 text-sm text-muted">
             For Idea of the Year, Story of the Year and Young Changemaker submissions with no school involved.
           </p>
@@ -28,6 +30,7 @@ export function NominatorRegisterForm({ hideIntro = false }: { hideIntro?: boole
         error={state.error}
         submitLabel="Create nominator account"
         pendingLabel="Creating account…"
+        submitDisabled={!consentAccepted}
         steps={[
           {
             title: "Account",
@@ -53,7 +56,14 @@ export function NominatorRegisterForm({ hideIntro = false }: { hideIntro?: boole
             description: "One last step before your account is created.",
             content: (
               <label className="flex items-start gap-2 text-sm text-muted">
-                <input type="checkbox" required className="mt-0.5" />
+                <input
+                  type="checkbox"
+                  name="consent"
+                  required
+                  checked={consentAccepted}
+                  onChange={(e) => setConsentAccepted(e.target.checked)}
+                  className="mt-0.5"
+                />
                 <span>
                   I accept the award category rules and the site&apos;s privacy and data-consent terms.
                   <RequiredMark />

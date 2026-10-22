@@ -53,7 +53,7 @@ export function AdminAppreciationsList({ appreciations }: { appreciations: Appre
       ) : (
         <button
           onClick={() => setCreating(true)}
-          className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground hover:border-accent"
+          className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground hover:border-accent transition-colors hover:bg-accent-soft hover:text-accent-strong"
         >
           + New appreciation
         </button>

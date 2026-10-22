@@ -163,7 +163,7 @@ export function ProfilePhotoCard({
                 >
                   {busy === "save" ? "Saving…" : "Save photo"}
                 </button>
-                <button type="button" onClick={cancel} disabled={busy !== null} className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground">
+                <button type="button" onClick={cancel} disabled={busy !== null} className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong disabled:opacity-50">
                   Cancel
                 </button>
               </>
@@ -173,7 +173,7 @@ export function ProfilePhotoCard({
                   <button
                     type="button"
                     onClick={() => setViewing(true)}
-                    className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground hover:border-accent"
+                    className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
                   >
                     View
                   </button>

@@ -240,7 +240,7 @@ export function LeagueSpotlight({
             isLoggedIn ? (
               <Link
                 href="/dashboard/nominate"
-                className={`${CTA} border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
+                className={`${CTA} border border-border bg-surface text-foreground hover:border-accent hover:bg-accent-soft hover:text-accent-strong`}
               >
                 Nominate Now
                 <span aria-hidden="true">→</span>
@@ -249,7 +249,7 @@ export function LeagueSpotlight({
               <button
                 type="button"
                 onClick={() => openLogin({ next: "/dashboard/nominate" })}
-                className={`${CTA} cursor-pointer border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
+                className={`${CTA} cursor-pointer border border-border bg-surface text-foreground hover:border-accent hover:bg-accent-soft hover:text-accent-strong`}
               >
                 Nominate Now
                 <span aria-hidden="true">→</span>
@@ -259,7 +259,7 @@ export function LeagueSpotlight({
             <button
               type="button"
               onClick={() => setShowNominationsClosed(true)}
-              className={`${CTA} cursor-pointer border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
+              className={`${CTA} cursor-pointer border border-border bg-surface text-foreground hover:border-accent hover:bg-accent-soft hover:text-accent-strong`}
             >
               Nominate Now
               <span aria-hidden="true">→</span>
@@ -269,7 +269,7 @@ export function LeagueSpotlight({
           {isLoggedIn ? (
             <Link
               href="/dashboard/submissions"
-              className={`${CTA} border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
+              className={`${CTA} border border-border bg-surface text-foreground hover:border-accent hover:bg-accent-soft hover:text-accent-strong`}
             >
               Submit Now
               <span aria-hidden="true">→</span>
@@ -278,7 +278,7 @@ export function LeagueSpotlight({
             <button
               type="button"
               onClick={() => openLogin({ next: "/dashboard/submissions" })}
-              className={`${CTA} cursor-pointer border border-border bg-surface text-foreground hover:border-accent hover:text-accent`}
+              className={`${CTA} cursor-pointer border border-border bg-surface text-foreground hover:border-accent hover:bg-accent-soft hover:text-accent-strong`}
             >
               Submit Now
               <span aria-hidden="true">→</span>

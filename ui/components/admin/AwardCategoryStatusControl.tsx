@@ -22,7 +22,7 @@ export function AwardCategoryStatusControl({ categoryId, status }: { categoryId:
       <button
         type="submit"
         disabled={pending}
-        className="rounded-full border border-border px-3 py-1.5 text-sm font-semibold text-foreground hover:border-accent disabled:opacity-60"
+        className="rounded-full border border-border bg-surface px-3 py-1.5 text-sm font-semibold text-foreground hover:border-accent disabled:opacity-60 transition-colors hover:bg-accent-soft hover:text-accent-strong"
       >
         {pending ? "…" : "Set"}
       </button>

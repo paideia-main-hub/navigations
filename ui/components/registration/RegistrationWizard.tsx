@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { AgeCategory, CompetitionSummary } from "@/domain/competitions/types";
 import { categoryLabels, competitionGradeLabel, formatFee } from "@/domain/competitions/types";
@@ -25,7 +25,10 @@ import { AddToEntryListButton } from "@/ui/components/registration/SchoolHamperL
 import { AddToStudentHamperButton } from "@/ui/components/registration/StudentHamperList";
 import type { StudentHamperDraft } from "@/domain/registrations/studentEntries";
 import { StudentMultiSelect } from "@/ui/components/registration/StudentMultiSelect";
+import { SCHOOL_ENTRY_FLOW } from "@/ui/components/registration/schoolEntryFlow";
+import { SchoolEntryEditorFlow2 } from "@/ui/components/registration/SchoolEntryEditorFlow2";
 import { PaymentInstructions } from "@/ui/components/PaymentInstructions";
+import { ReceiptFileField, type ReceiptValidation } from "@/ui/components/ReceiptFileField";
 import { RequiredMark } from "@/ui/components/RequiredMark";
 import { StepMotion } from "@/ui/components/StepMotion";
 import { UploadProgress } from "@/ui/components/UploadProgress";
@@ -268,6 +271,11 @@ export function RegistrationWizard({
 
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptProgress, setReceiptProgress] = useState<number | null>(null);
+  const [receiptValidation, setReceiptValidation] = useState<ReceiptValidation>({
+    canSubmit: false,
+    busy: false,
+    message: null,
+  });
   const receiptReaderRef = useRef<FileReader | null>(null);
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
   const [transfer, setTransfer] = useState<UploadProgressState | null>(null);
@@ -342,6 +350,9 @@ export function RegistrationWizard({
       return;
     }
     let cancelled = false;
+    // Clear stale conflict so Continue is not held by a previous selection while
+    // the new standing check is in flight.
+    setAlreadyEntered(null);
     setStandingPending(true);
     existingEntryStandingAction(standingIds.split(","), competition.slug).then(({ lines, error }) => {
       if (cancelled) return;
@@ -353,10 +364,10 @@ export function RegistrationWizard({
     };
   }, [mode, standingIds, competition.slug, competition.title]);
 
+  // standingPending is only for review "Add to hamper" — not Entry Continue.
   const schoolEntryBlocked =
     mode === "school" &&
     (Boolean(alreadyEntered) ||
-      standingPending ||
       (entryType === "team" &&
         (chosenTeams.length === 0 || chosenFits.some((item) => !item.fit.ok) || Boolean(schoolTeamOverlap))) ||
       (isCoordinatorIndividualBatch && selectedIndividualIds.length === 0));
@@ -509,11 +520,10 @@ export function RegistrationWizard({
     return { registrations: [registration], error: null };
   }
 
-  function onReceiptChange(event: ChangeEvent<HTMLInputElement>) {
+  function onReceiptFileChange(file: File | null) {
     receiptReaderRef.current?.abort();
     receiptReaderRef.current = null;
     setReceiptProgress(null);
-    const file = event.target.files?.[0] ?? null;
     setReceiptFile(file);
     if (!file || file.size === 0) return;
 
@@ -659,35 +669,39 @@ export function RegistrationWizard({
   };
   const stepIndex = steps.indexOf(step);
 
+  const schoolEntryEditorProps = {
+        competition,
+        entryType,
+        roster,
+        eligibleRoster,
+        teams: competitionTeams,
+        selectedTeamIds,
+        selectedIndividualIds,
+        reservedStudentIds,
+        reservedTeamIds,
+        listedMembers,
+        schoolTeamStudentCount,
+        schoolTeamOverlap,
+        alreadyEntered,
+        onToggleTeam: (id: string, selected: boolean) =>
+          setSelectedTeamIds((current) => (selected ? [...current, id] : current.filter((item) => item !== id))),
+        onToggleStudent: (id: string, selected: boolean) =>
+          setSelectedIndividualIds((current) => (selected ? [...current, id] : current.filter((item) => item !== id))),
+        onRemoveTeam: (id: string) => setSelectedTeamIds((current) => current.filter((item) => item !== id)),
+        onRemoveStudent: (id: string) => setSelectedIndividualIds((current) => current.filter((item) => item !== id)),
+        onStudentAdded: appendStudent,
+        onStudentUpdated: replaceStudent,
+        onTeamAdded: appendTeam,
+        onTeamUpdated: applyTeamUpdate,
+  } as const;
+
   const schoolEntryEditor =
     mode === "school" ? (
-      <SchoolEntryEditor
-        competition={competition}
-        entryType={entryType}
-        roster={roster}
-        eligibleRoster={eligibleRoster}
-        teams={competitionTeams}
-        selectedTeamIds={selectedTeamIds}
-        selectedIndividualIds={selectedIndividualIds}
-        reservedStudentIds={reservedStudentIds}
-        reservedTeamIds={reservedTeamIds}
-        listedMembers={listedMembers}
-        schoolTeamStudentCount={schoolTeamStudentCount}
-        schoolTeamOverlap={schoolTeamOverlap}
-        alreadyEntered={alreadyEntered}
-        onToggleTeam={(id, selected) =>
-          setSelectedTeamIds((current) => (selected ? [...current, id] : current.filter((item) => item !== id)))
-        }
-        onToggleStudent={(id, selected) =>
-          setSelectedIndividualIds((current) => (selected ? [...current, id] : current.filter((item) => item !== id)))
-        }
-        onRemoveTeam={(id) => setSelectedTeamIds((current) => current.filter((item) => item !== id))}
-        onRemoveStudent={(id) => setSelectedIndividualIds((current) => current.filter((item) => item !== id))}
-        onStudentAdded={appendStudent}
-        onStudentUpdated={replaceStudent}
-        onTeamAdded={appendTeam}
-        onTeamUpdated={applyTeamUpdate}
-      />
+      SCHOOL_ENTRY_FLOW === 2 ? (
+        <SchoolEntryEditorFlow2 {...schoolEntryEditorProps} />
+      ) : (
+        <SchoolEntryEditorFlow1 {...schoolEntryEditorProps} />
+      )
     ) : null;
 
   return (
@@ -865,7 +879,7 @@ export function RegistrationWizard({
             {mode === "student" ? (
               <button
                 onClick={() => moveTo("eligibility")}
-                className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground"
+                className="rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
               >
                 Back
               </button>
@@ -914,7 +928,7 @@ export function RegistrationWizard({
             <div className="flex items-center gap-3">
               <button
                 onClick={() => moveTo("entry")}
-                className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground"
+                className="rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
               >
                 Back
               </button>
@@ -1117,43 +1131,32 @@ export function RegistrationWizard({
             prominent
             note="An admin reviews every receipt. The registration stays under review until the payment is approved."
           />
-          <div>
-            <label className="text-sm font-medium text-foreground">
-              Fee receipt
-              <RequiredMark />
-            </label>
-            <input
-              type="file"
-              accept="image/*,application/pdf"
-              onChange={onReceiptChange}
-              className="student-photo-file mt-1 block w-full cursor-pointer rounded-lg border border-border bg-background px-1.5 text-sm text-foreground outline-none file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-accent-soft file:px-3 file:text-sm file:font-semibold file:text-accent-strong hover:file:bg-accent-soft/80 focus:border-accent"
-            />
-            {transfer ? (
-              <div className="mt-2">
-                <UploadProgress phase={transfer.phase} percent={transfer.percent} uploadingLabel="Uploading receipt…" savingLabel="Saving receipt…" />
-              </div>
-            ) : receiptProgress != null ? (
-              <div className="mt-2">
-                <UploadProgress
-                  phase="uploading"
-                  percent={receiptProgress}
-                  uploadingLabel={receiptProgress >= 100 ? "Receipt ready" : "Preparing receipt…"}
-                />
-              </div>
-            ) : null}
-          </div>
+          <ReceiptFileField
+            amountExpected={amountExpected}
+            requireOcr={paymentAccount.requireReceiptOcr}
+            file={receiptFile}
+            onFileChange={onReceiptFileChange}
+            onValidationChange={setReceiptValidation}
+            prepareProgress={transfer ? null : receiptProgress}
+            disabled={paymentSubmitting}
+          />
+          {transfer ? (
+            <div>
+              <UploadProgress phase={transfer.phase} percent={transfer.percent} uploadingLabel="Uploading receipt…" savingLabel="Saving receipt…" />
+            </div>
+          ) : null}
           {paymentError && <p className="text-sm text-red-600 dark:text-red-400">{paymentError}</p>}
           <div className="flex gap-3">
             <button
               onClick={() => moveTo("review")}
               disabled={paymentSubmitting}
-              className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground disabled:opacity-50"
+              className="rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong disabled:opacity-50"
             >
               Back
             </button>
             <button
               onClick={handlePaymentSubmit}
-              disabled={paymentSubmitting || !receiptFile}
+              disabled={paymentSubmitting || !receiptFile || !receiptValidation.canSubmit}
               className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:opacity-50"
             >
               {paymentSubmitting ? "Submitting…" : "Submit registration"}
@@ -1226,7 +1229,8 @@ function DeleteIcon() {
   );
 }
 
-function SchoolEntryEditor({
+/** Flow-1 — original Entry UI (kept for A/B comparison). */
+function SchoolEntryEditorFlow1({
   competition,
   entryType,
   roster,
@@ -1312,6 +1316,7 @@ function SchoolEntryEditor({
           ) : (
             <div className="mt-1">
               <StudentMultiSelect
+                variant="panel"
                 ariaLabel="Select students"
                 students={eligibleRoster.map((student) => ({
                   id: student.id,
@@ -1428,7 +1433,13 @@ function SchoolEntryEditor({
                           {status ? <span className="text-muted">{status}</span> : null}
                         </span>
                         <span className="mt-0.5 block text-muted">
-                          {team.members.map((member) => member.studentName).join(", ") || "No members"}
+                          {team.members.length === 0
+                            ? "No members"
+                            : team.members.map((member) => (
+                                <span key={member.studentId} className="block">
+                                  {member.studentName}
+                                </span>
+                              ))}
                         </span>
                       </span>
                     </label>

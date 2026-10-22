@@ -68,7 +68,7 @@ function LinkArrow() {
 }
 
 const resourceLinkClass =
-  "inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-background px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-accent hover:text-accent-strong";
+  "inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-background px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong";
 
 function scheduleOf(competition: CompetitionSummary | undefined) {
   if (!competition) return [];

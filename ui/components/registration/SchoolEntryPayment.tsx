@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ChangeEvent } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { formatFee } from "@/domain/competitions/types";
 import { submitSchoolEntriesAction } from "@/domain/registrations/actions";
@@ -8,8 +8,9 @@ import { schoolEntryFee } from "@/domain/registrations/schoolEntries";
 import type { PaymentAccount } from "@/domain/payments/types";
 import { withFileUploadProgress, type UploadProgressState } from "@/ui/lib/fileUploadProgress";
 import { CopyButton } from "@/ui/components/CopyButton";
+import { MenuScroll } from "@/ui/components/MenuScroll";
 import { PaymentInstructions } from "@/ui/components/PaymentInstructions";
-import { RequiredMark } from "@/ui/components/RequiredMark";
+import { ReceiptFileField, type ReceiptValidation } from "@/ui/components/ReceiptFileField";
 import { UploadProgress } from "@/ui/components/UploadProgress";
 import { useSchoolEntryList } from "@/ui/components/registration/SchoolHamperList";
 
@@ -17,7 +18,7 @@ const sheetFooterClass = "border-t border-border bg-accent-soft px-5 py-4";
 const primaryBtnClass =
   "w-full cursor-pointer rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white disabled:cursor-not-allowed disabled:opacity-50";
 const secondaryBtnClass =
-  "w-full rounded-full border border-border bg-surface px-5 py-2.5 text-center text-sm font-semibold text-foreground hover:border-accent";
+  "w-full rounded-full border border-border bg-surface px-5 py-2.5 text-center text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong";
 
 export function SchoolEntryPayment({
   paymentAccount,
@@ -32,6 +33,11 @@ export function SchoolEntryPayment({
   const sheet = variant === "sheet";
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptProgress, setReceiptProgress] = useState<number | null>(null);
+  const [receiptValidation, setReceiptValidation] = useState<ReceiptValidation>({
+    canSubmit: false,
+    busy: false,
+    message: null,
+  });
   const [transfer, setTransfer] = useState<UploadProgressState | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,11 +47,10 @@ export function SchoolEntryPayment({
   const fees = entries.map(schoolEntryFee);
   const total = fees.every((fee) => fee != null) ? fees.reduce<number>((sum, fee) => sum + (fee ?? 0), 0) : null;
 
-  function onReceiptChange(event: ChangeEvent<HTMLInputElement>) {
+  function onReceiptFileChange(file: File | null) {
     readerRef.current?.abort();
     readerRef.current = null;
     setReceiptProgress(null);
-    const file = event.target.files?.[0] ?? null;
     setReceiptFile(file);
     if (!file || file.size === 0) return;
     const reader = new FileReader();
@@ -107,7 +112,9 @@ export function SchoolEntryPayment({
     if (sheet) {
       return (
         <div className="flex min-h-0 flex-1 flex-col">
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{successBody}</div>
+          <MenuScroll frameClassName="flex min-h-0 flex-1 flex-col" className="min-h-0 flex-1 px-5 py-4">
+            {successBody}
+          </MenuScroll>
           <div className={sheetFooterClass}>{successCta}</div>
         </div>
       );
@@ -130,7 +137,9 @@ export function SchoolEntryPayment({
     if (sheet) {
       return (
         <div className="flex min-h-0 flex-1 flex-col">
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{emptyBody}</div>
+          <MenuScroll frameClassName="flex min-h-0 flex-1 flex-col" className="min-h-0 flex-1 px-5 py-4">
+            {emptyBody}
+          </MenuScroll>
           <div className={sheetFooterClass}>
             {onBack ? (
               <button type="button" onClick={onBack} className={secondaryBtnClass}>
@@ -207,31 +216,20 @@ export function SchoolEntryPayment({
         horizontal={sheet}
         note="One receipt covers every student in this hamper. An admin reviews it before the registrations are approved."
       />
-      <div>
-        <label className="text-sm font-medium text-foreground">
-          Fee receipt
-          <RequiredMark />
-        </label>
-        <input
-          type="file"
-          accept="image/*,application/pdf"
-          onChange={onReceiptChange}
-          className="student-photo-file mt-1 block h-[38px] w-full cursor-pointer rounded-lg border border-border bg-background px-1.5 text-sm text-foreground outline-none file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-accent-soft file:px-3 file:text-sm file:font-semibold file:text-accent-strong hover:file:bg-accent-soft/80 focus:border-accent"
-        />
-        {transfer ? (
-          <div className="mt-2">
-            <UploadProgress phase={transfer.phase} percent={transfer.percent} uploadingLabel="Uploading receipt…" savingLabel="Saving receipt…" />
-          </div>
-        ) : receiptProgress != null ? (
-          <div className="mt-2">
-            <UploadProgress
-              phase="uploading"
-              percent={receiptProgress}
-              uploadingLabel={receiptProgress >= 100 ? "Receipt ready" : "Preparing receipt…"}
-            />
-          </div>
-        ) : null}
-      </div>
+      <ReceiptFileField
+        amountExpected={total}
+        requireOcr={paymentAccount.requireReceiptOcr}
+        file={receiptFile}
+        onFileChange={onReceiptFileChange}
+        onValidationChange={setReceiptValidation}
+        prepareProgress={transfer ? null : receiptProgress}
+        disabled={submitting}
+      />
+      {transfer ? (
+        <div>
+          <UploadProgress phase={transfer.phase} percent={transfer.percent} uploadingLabel="Uploading receipt…" savingLabel="Saving receipt…" />
+        </div>
+      ) : null}
       {!sheet && error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
     </>
   );
@@ -243,7 +241,7 @@ export function SchoolEntryPayment({
         <button
           type="button"
           onClick={submit}
-          disabled={submitting || !receiptFile || total == null}
+          disabled={submitting || !receiptFile || total == null || !receiptValidation.canSubmit}
           className={primaryBtnClass}
         >
           {submitting ? "Submitting…" : "Submit registration"}
@@ -260,7 +258,9 @@ export function SchoolEntryPayment({
   if (sheet) {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">{body}</div>
+        <MenuScroll frameClassName="flex min-h-0 flex-1 flex-col" className="min-h-0 flex-1 space-y-4 px-5 py-4">
+          {body}
+        </MenuScroll>
         <div className={sheetFooterClass}>{actions}</div>
       </div>
     );

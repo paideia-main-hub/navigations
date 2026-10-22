@@ -90,7 +90,7 @@ export function AnnouncementBell({ userId, notices }: { userId: string; notices:
         aria-controls={menuId}
         aria-label={unseenCount > 0 ? `Announcements, ${unseenCount} new` : "Announcements"}
         onClick={toggle}
-        className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-surface text-foreground hover:border-accent/50"
+        className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-surface text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
       >
         <BellIcon />
         {unseenCount > 0 ? (

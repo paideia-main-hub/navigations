@@ -76,6 +76,7 @@ export async function updatePaymentAccountAction(
     accountTitle: String(formData.get("account_title") ?? "").trim(),
     accountNumber: String(formData.get("account_number") ?? "").trim(),
     iban: String(formData.get("iban") ?? "").trim(),
+    requireReceiptOcr: formData.get("require_receipt_ocr") === "on" || formData.get("require_receipt_ocr") === "true",
   };
   if (!account.bankName || !account.accountTitle || !account.accountNumber) {
     return { error: "Bank name, account title and account number are required.", saved: false };

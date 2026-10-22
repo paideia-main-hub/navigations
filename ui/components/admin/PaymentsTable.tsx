@@ -297,7 +297,7 @@ function ReceiptReviewBody({
             type="button"
             onClick={print}
             disabled={!url || pending !== null}
-            className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground hover:border-accent disabled:opacity-50"
+            className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong disabled:opacity-50"
           >
             Print receipt
           </button>
@@ -311,7 +311,7 @@ function ReceiptReviewBody({
                     setActionError(null);
                   }}
                   disabled={pending !== null}
-                  className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground disabled:opacity-50"
+                  className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong disabled:opacity-50"
                 >
                   Cancel
                 </button>

@@ -14,6 +14,8 @@ export interface PaymentAccount {
   accountTitle: string;
   accountNumber: string;
   iban: string;
+  /** When true, checkout OCR must pass before Submit is enabled. */
+  requireReceiptOcr: boolean;
 }
 
 export const emptyPaymentAccount: PaymentAccount = {
@@ -21,6 +23,7 @@ export const emptyPaymentAccount: PaymentAccount = {
   accountTitle: "",
   accountNumber: "",
   iban: "",
+  requireReceiptOcr: true,
 };
 
 export const paymentStatusLabels: Record<PaymentStatus, string> = {
