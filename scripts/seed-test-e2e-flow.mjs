@@ -353,8 +353,7 @@ async function main() {
         city: s.city,
         province: s.city,
         country: "Pakistan",
-        school_type: "Private",
-        curriculums: ["National Curriculum"],
+        school_type: "Private with National Curriculum",
         website: WEBSITE_MARKER,
         created_by: profileId,
       })

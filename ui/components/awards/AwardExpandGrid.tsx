@@ -74,24 +74,35 @@ function CardFace({
           />
         )}
       </div>
-      <div className={`flex items-start gap-3 p-5 ${equalizeBody ? "min-h-0 flex-1" : ""}`}>
-        <span className="flex-1">
-          <span className="block leading-snug font-bold text-foreground">{award.title}</span>
-          {award.awardedTo ? <span className="mt-1.5 block text-sm text-muted">{award.awardedTo}</span> : null}
-          {award.layer === "competition_distinction" || award.layer === "school_award" ? (
-            <span className="mt-2 block text-xs font-medium text-muted italic">
-              No submission needed — published with the season&apos;s results.
-            </span>
-          ) : null}
-        </span>
-        <span
-          aria-hidden="true"
-          className={`relative mt-1 grid h-6 w-6 shrink-0 place-items-center rounded-full border transition-colors duration-300 ${
-            expanded ? "border-accent text-accent" : "border-border text-muted"
-          }`}
-        >
-          <span className={`absolute h-2.5 w-px bg-current transition-transform duration-300 ${expanded ? "rotate-90" : ""}`} />
-          <span className="absolute h-px w-2.5 bg-current" />
+      <div className={`flex flex-col p-5 ${equalizeBody ? "min-h-0 flex-1" : ""}`}>
+        <div className="flex items-start gap-3">
+          <span className="flex-1">
+            <span className="block leading-snug font-bold text-foreground">{award.title}</span>
+            {award.awardedTo ? <span className="mt-1.5 block text-sm text-muted">{award.awardedTo}</span> : null}
+            {award.layer === "competition_distinction" || award.layer === "school_award" ? (
+              <span className="mt-2 block text-xs font-medium text-muted italic">
+                No submission needed — published with the season&apos;s results.
+              </span>
+            ) : null}
+          </span>
+          {/* Desktop: expand affordance. Mobile uses Show more / Show less below. */}
+          <span
+            aria-hidden="true"
+            className={`relative mt-1 hidden h-6 w-6 shrink-0 place-items-center rounded-full border transition-colors duration-300 lg:grid ${
+              expanded ? "border-accent text-accent" : "border-border text-muted"
+            }`}
+          >
+            <span
+              className={`absolute h-2.5 w-px bg-current transition-transform duration-300 ${expanded ? "rotate-90" : ""}`}
+            />
+            <span className="absolute h-px w-2.5 bg-current" />
+          </span>
+        </div>
+        <span className="mt-auto self-end pt-4 text-sm font-semibold text-accent-strong lg:hidden">
+          {expanded ? "Show less" : "Show more"}
+          <span aria-hidden="true" className="ml-1">
+            {expanded ? "↑" : "→"}
+          </span>
         </span>
       </div>
     </div>

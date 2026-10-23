@@ -378,25 +378,42 @@ export const getCompetitionSummaries = cache(async (supabase: SupabaseClient): P
   return [];
 });
 
-/** Just enough to render a name and link to the competition — for index pages
- * that only list titles. */
+export type CompetitionIndexRow = {
+  slug: string;
+  title: string;
+  domain: string;
+  status: CompetitionStatus;
+  completeManual: { title: string; fileUrl: string } | null;
+};
+
+/** Titles + complete-manual download for public index pages (e.g. /manuals). */
 export const getCompetitionIndex = cache(
-  async (
-    supabase: SupabaseClient,
-  ): Promise<{ slug: string; title: string; domain: string; status: CompetitionStatus }[]> => {
+  async (supabase: SupabaseClient): Promise<CompetitionIndexRow[]> => {
     const { data, error } = await supabase
       .from("competitions")
-      .select("slug, title, domain_competency_area, status")
+      .select("slug, title, domain_competency_area, status, manuals(type, title, file_url)")
       .order("created_at");
     if (error || !data) return [];
     return (
-      data as { slug: string; title: string; domain_competency_area: string | null; status: CompetitionStatus }[]
-    ).map((r) => ({
-      slug: r.slug,
-      title: r.title,
-      domain: r.domain_competency_area ?? "",
-      status: r.status,
-    }));
+      data as {
+        slug: string;
+        title: string;
+        domain_competency_area: string | null;
+        status: CompetitionStatus;
+        manuals: { type: string; title: string; file_url: string }[] | null;
+      }[]
+    ).map((r) => {
+      const complete = (r.manuals ?? []).find((m) => m.type === "complete_manual");
+      return {
+        slug: r.slug,
+        title: r.title,
+        domain: r.domain_competency_area ?? "",
+        status: r.status,
+        completeManual: complete
+          ? { title: complete.title, fileUrl: complete.file_url }
+          : null,
+      };
+    });
   },
 );
 

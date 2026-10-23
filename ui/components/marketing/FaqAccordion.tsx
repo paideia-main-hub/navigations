@@ -298,7 +298,7 @@ export function FaqAccordion({
                   >
                     {active.icon}
                   </span>
-                  <h3 className="pt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+                  <h3 className="pt-1 text-lg font-bold tracking-tight text-foreground sm:text-xl">
                     {active.question}
                   </h3>
                 </div>

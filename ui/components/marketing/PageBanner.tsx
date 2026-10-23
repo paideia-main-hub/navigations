@@ -7,6 +7,7 @@ export function PageBanner({
   subtitle,
   watermark,
   children,
+  aside,
   className = "",
   showNet = false,
   /** Awards page only — tilted lattice; other pages keep axis-aligned. */
@@ -20,6 +21,8 @@ export function PageBanner({
   watermark?: ReactNode;
   /** Extra content under the subtitle (CTAs, notes). */
   children?: ReactNode;
+  /** Optional right column (e.g. manuals document stack). */
+  aside?: ReactNode;
   className?: string;
   /** Same dotted grid used on Ways to Participate / Important Dates. */
   showNet?: boolean;
@@ -27,6 +30,21 @@ export function PageBanner({
   /** Wave cut into the next band, with a light shadow on the curve only. */
   curvedBottom?: boolean;
 }) {
+  const copy = (
+    <>
+      {eyebrow ? (
+        <p className="text-xs font-semibold tracking-wider text-accent uppercase">{eyebrow}</p>
+      ) : null}
+      <h1 className="font-heading mt-1 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">{title}</h1>
+      {subtitle ? (
+        <p className="mt-3 max-w-2xl text-brand-deep-muted [&_a]:font-semibold [&_a]:text-accent [&_a]:hover:opacity-90">
+          {subtitle}
+        </p>
+      ) : null}
+      {children}
+    </>
+  );
+
   return (
     <div
       className={`relative bg-brand-deep px-6 ${
@@ -81,16 +99,14 @@ export function PageBanner({
       {/* Above the net (z-0), below hero copy (z-10). */}
       {watermark ? <div className="pointer-events-none absolute inset-0 z-[8]">{watermark}</div> : null}
       <div className="relative z-10 mx-auto max-w-7xl">
-        {eyebrow ? (
-          <p className="text-xs font-semibold tracking-wider text-accent uppercase">{eyebrow}</p>
-        ) : null}
-        <h1 className="font-heading mt-1 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">{title}</h1>
-        {subtitle ? (
-          <p className="mt-3 max-w-2xl text-brand-deep-muted [&_a]:font-semibold [&_a]:text-accent [&_a]:hover:opacity-90">
-            {subtitle}
-          </p>
-        ) : null}
-        {children}
+        {aside ? (
+          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,18.5rem)] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
+            <div>{copy}</div>
+            <div className="mt-6 justify-self-center sm:mt-8 lg:mt-10 lg:justify-self-end">{aside}</div>
+          </div>
+        ) : (
+          copy
+        )}
       </div>
       {curvedBottom ? (
         <WaveCurvedBottom id="awards-hero" nextColor="text-background" fill="#1f2041" showShadow />

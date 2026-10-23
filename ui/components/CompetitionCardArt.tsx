@@ -20,7 +20,7 @@ export function CompetitionCardArt({ imageUrl, title }: { imageUrl: string | nul
           aria-hidden="true"
           loading="lazy"
           onError={() => setFailed(true)}
-          className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.04]"
+          className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-300 ease-out lg:group-hover:scale-[1.04]"
         />
       ) : (
         <span className="absolute inset-0 grid place-items-center px-6 text-center text-sm font-semibold text-brand-deep-foreground/70">
