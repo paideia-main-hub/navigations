@@ -32,7 +32,7 @@ const STAGGER = 0.38;
 
 function Connector() {
   return (
-    <span aria-hidden="true" className="mt-9 hidden shrink-0 items-center px-1 sm:flex lg:px-2">
+    <span aria-hidden="true" className="mt-7 hidden shrink-0 items-center px-1 sm:flex lg:px-2">
       <svg
         viewBox="0 0 64 24"
         fill="none"
@@ -100,11 +100,11 @@ export function AboutJourney() {
 
       <div className="relative mx-auto max-w-7xl text-center">
         <p className="text-xs font-bold tracking-[0.25em] text-accent uppercase">Why we exist</p>
-        <h2 className="mt-3 text-3xl font-black tracking-tight text-balance text-brand-deep-foreground sm:text-4xl lg:text-5xl">
+        <h2 className="mt-3 text-2xl font-black tracking-tight text-balance text-brand-deep-foreground sm:text-4xl lg:text-5xl">
           Learning needs room to grow.
         </h2>
 
-        <ol className="mx-auto mt-16 flex max-w-5xl flex-col items-center gap-10 sm:flex-row sm:items-start sm:justify-between sm:gap-0">
+        <ol className="mx-auto mt-16 grid max-w-5xl grid-cols-2 gap-x-4 gap-y-8 sm:flex sm:flex-row sm:items-start sm:justify-between sm:gap-0">
           {STEPS.map((step, i) => (
             <Fragment key={step.line1}>
               <li className="group flex shrink-0 flex-col items-center text-center sm:flex-1">
@@ -114,7 +114,7 @@ export function AboutJourney() {
                   className="animate-wave-float group-hover:[animation-play-state:paused]"
                   style={{ animationDelay: `${i * STAGGER}s` }}
                 >
-                  <span className="grid h-[4.5rem] w-[4.5rem] place-items-center rounded-full border-2 border-accent/45 bg-accent/10 text-accent shadow-[0_0_0_0_rgba(255,105,31,0)] transition-[scale,background-color,color,border-color,box-shadow] duration-300 ease-out group-hover:scale-115 group-hover:border-accent group-hover:bg-accent group-hover:text-accent-foreground group-hover:shadow-[0_0_0_12px_rgba(255,105,31,0.16)]">
+                  <span className="grid h-14 w-14 place-items-center rounded-full border-2 border-accent/45 bg-accent/10 text-accent shadow-[0_0_0_0_rgba(255,105,31,0)] transition-[scale,background-color,color,border-color,box-shadow] duration-300 ease-out group-hover:scale-115 group-hover:border-accent group-hover:bg-accent group-hover:text-accent-foreground group-hover:shadow-[0_0_0_12px_rgba(255,105,31,0.16)] sm:h-16 sm:w-16">
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
@@ -123,14 +123,14 @@ export function AboutJourney() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       aria-hidden="true"
-                      className="h-7 w-7"
+                      className="h-5 w-5 sm:h-6 sm:w-6"
                     >
                       {icons[step.icon]}
                     </svg>
                   </span>
                 </div>
 
-                <p className="mt-5 text-base leading-snug font-bold text-brand-deep-foreground transition-colors duration-300 group-hover:text-accent sm:text-lg">
+                <p className="mt-3 text-sm leading-snug font-bold text-brand-deep-foreground transition-colors duration-300 group-hover:text-accent sm:mt-5 sm:text-base">
                   {step.line1}
                   <br />
                   {step.line2}

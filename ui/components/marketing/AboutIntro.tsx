@@ -72,7 +72,7 @@ export function AboutIntro() {
           <div className="p-8 sm:p-10 lg:p-14">
             <p className="text-xs font-bold tracking-[0.22em] text-accent-strong uppercase">What is Navigations?</p>
 
-            <p className="mt-5 text-xl leading-snug font-semibold text-balance text-foreground sm:text-2xl">
+            <p className="mt-5 text-base leading-snug font-semibold text-balance text-foreground sm:text-xl">
               Navigations connects school-age students with meaningful co-curricular opportunities, competitions and
               challenges beyond classroom learning.
             </p>

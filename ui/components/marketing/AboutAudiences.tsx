@@ -109,7 +109,7 @@ export function AboutAudiences() {
       <div className="relative mx-auto max-w-7xl">
         <div className="max-w-2xl">
           <p className="text-xs font-bold tracking-[0.22em] text-accent-strong uppercase">Who it is for</p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-balance text-foreground sm:text-4xl">
+          <h2 className="mt-3 text-2xl font-black tracking-tight text-balance text-foreground sm:text-4xl">
             A stronger ecosystem for greater possibilities.
           </h2>
         </div>

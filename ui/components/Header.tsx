@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { HeaderAccountMenu } from "@/ui/components/HeaderAccountMenu";
@@ -36,22 +37,80 @@ function canShowAnnouncements(role: UserRole) {
   return role === "school_coordinator" || role === "student";
 }
 
+function linkIsActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function Header({ user = null }: { user?: HeaderUser | null }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const headerShellRef = useRef<HTMLDivElement>(null);
   const { openLogin } = useLoginModal();
+  const pathname = usePathname();
+  const menuId = useId();
   const showBell = Boolean(user?.id && user.notices && canShowAnnouncements(user.role));
+
+  useEffect(() => {
+    setMobileOpen(false);
+    setAccountOpen(false);
+  }, [pathname]);
+
+  function toggleMobileMenu() {
+    setMobileOpen((open) => {
+      if (!open) setAccountOpen(false);
+      return !open;
+    });
+  }
+
+  function setAccountMenuOpen(open: boolean) {
+    setAccountOpen(open);
+    if (open) setMobileOpen(false);
+  }
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileOpen(false);
+    };
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflow;
+    const prevBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      html.style.overflow = prevHtml;
+      body.style.overflow = prevBody;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [mobileOpen]);
 
   return (
     <header className="fixed inset-x-0 top-4 z-50 px-4 sm:top-6 sm:px-6">
-      <div className="mx-auto max-w-7xl">
-        <div className="flex min-h-12 items-center justify-between gap-4 rounded-2xl border border-border bg-background/80 px-4 py-3 shadow-lg shadow-black/5 backdrop-blur-lg sm:min-h-14 sm:px-6">
-          <Link href="/" className="flex h-6 w-[5.5rem] shrink-0 items-center sm:h-7 sm:w-[6.5rem]" onClick={() => setMobileOpen(false)}>
+      <div ref={headerShellRef} className="relative z-50 mx-auto max-w-7xl">
+        <div className="relative z-20 flex min-h-12 items-center justify-between gap-4 rounded-2xl border border-border bg-background px-4 py-3 shadow-lg shadow-black/5 sm:min-h-14 sm:px-6">
+          <Link
+            href="/"
+            className="flex h-6 w-[5.5rem] shrink-0 items-center sm:h-7 sm:w-[6.5rem]"
+            onClick={() => {
+              setMobileOpen(false);
+              setAccountOpen(false);
+            }}
+          >
             <Logo className="h-full w-auto max-w-full" />
           </Link>
 
           <nav className="hidden flex-1 items-center justify-center gap-4 text-sm font-medium text-muted lg:flex xl:gap-6">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="whitespace-nowrap hover:text-accent">
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`whitespace-nowrap transition-colors hover:text-accent ${
+                  linkIsActive(pathname, link.href) ? "text-accent-strong" : ""
+                }`}
+              >
                 {link.label}
               </Link>
             ))}
@@ -70,7 +129,13 @@ export function Header({ user = null }: { user?: HeaderUser | null }) {
                 role={user.role}
                 photoUrl={user.photoUrl}
                 subtitle={user.subtitle}
-                onNavigate={() => setMobileOpen(false)}
+                open={accountOpen}
+                onOpenChange={setAccountMenuOpen}
+                dropdownHostRef={headerShellRef}
+                onNavigate={() => {
+                  setMobileOpen(false);
+                  setAccountOpen(false);
+                }}
               />
             ) : (
               <>
@@ -94,58 +159,80 @@ export function Header({ user = null }: { user?: HeaderUser | null }) {
             )}
             <button
               type="button"
-              onClick={() => setMobileOpen((v) => !v)}
+              onClick={toggleMobileMenu}
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-surface text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong lg:hidden"
+              aria-controls={menuId}
+              className="relative z-30 grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-surface text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong lg:hidden"
             >
-              {mobileOpen ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="size-4.5">
-                  <path d="M6 6l12 12M18 6 6 18" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="size-4.5">
-                  <path d="M4 7h16M4 12h16M4 17h16" />
-                </svg>
-              )}
+              <span className="relative block h-3.5 w-3.5">
+                <span
+                  className={`absolute left-0 block h-0.5 w-3.5 origin-center rounded-full bg-current transition-transform duration-300 ease-out ${
+                    mobileOpen ? "top-[6px] rotate-45" : "top-0.5 rotate-0"
+                  }`}
+                />
+                <span
+                  className={`absolute top-[6px] left-0 block h-0.5 w-3.5 rounded-full bg-current transition-opacity duration-200 ${
+                    mobileOpen ? "opacity-0" : "opacity-100"
+                  }`}
+                />
+                <span
+                  className={`absolute left-0 block h-0.5 w-3.5 origin-center rounded-full bg-current transition-transform duration-300 ease-out ${
+                    mobileOpen ? "top-[6px] -rotate-45" : "top-[11px] rotate-0"
+                  }`}
+                />
+              </span>
             </button>
           </div>
         </div>
 
-        <div
-          className="grid transition-[grid-template-rows] duration-200 ease-out lg:hidden"
-          style={{ gridTemplateRows: mobileOpen ? "1fr" : "0fr" }}
+        <nav
+          id={menuId}
+          aria-hidden={!mobileOpen}
+          className={`absolute inset-x-0 top-full z-10 mt-2.5 origin-top rounded-2xl border border-border bg-background shadow-[0_20px_40px_-24px_rgba(31,32,65,0.45)] transition-[translate,opacity,visibility] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden ${
+            mobileOpen
+              ? "visible translate-y-0 opacity-100"
+              : "pointer-events-none invisible -translate-y-4 opacity-0"
+          }`}
         >
-          <div className="min-h-0 overflow-hidden">
-            <nav className="mt-2 flex flex-col gap-1 rounded-2xl border border-border bg-background/95 p-3 shadow-lg shadow-black/5 backdrop-blur-lg">
-              {navLinks.map((link) => (
+          <div className="flex flex-col gap-0.5 p-2.5">
+            {navLinks.map((link) => {
+              const active = linkIsActive(pathname, link.href);
+              return (
                 <Link
                   key={link.href}
                   href={link.href}
+                  tabIndex={mobileOpen ? 0 : -1}
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-surface-muted"
+                  aria-current={active ? "page" : undefined}
+                  className={`rounded-xl px-3.5 py-3 text-sm font-semibold tracking-tight transition-colors duration-200 ${
+                    active
+                      ? "bg-accent-soft text-accent-strong"
+                      : "text-foreground hover:bg-surface-muted hover:text-accent-strong"
+                  }`}
                 >
                   {link.label}
                 </Link>
-              ))}
-              {!user ? (
-                <>
-                  <div className="my-1 border-t border-border" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileOpen(false);
-                      openLogin();
-                    }}
-                    className="cursor-pointer rounded-lg px-3 py-2.5 text-left text-sm font-medium text-foreground hover:bg-surface-muted"
-                  >
-                    Login
-                  </button>
-                </>
-              ) : null}
-            </nav>
+              );
+            })}
+            {!user ? (
+              <>
+                <div className="my-1.5 border-t border-border" />
+                <button
+                  type="button"
+                  tabIndex={mobileOpen ? 0 : -1}
+                  onClick={() => {
+                    setMobileOpen(false);
+                    openLogin();
+                  }}
+                  className="cursor-pointer rounded-xl bg-accent px-3.5 py-3 text-center text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
+                >
+                  Login
+                </button>
+              </>
+            ) : null}
           </div>
-        </div>
+        </nav>
       </div>
     </header>
   );

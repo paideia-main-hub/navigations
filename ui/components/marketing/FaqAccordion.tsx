@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import type { FaqCardItem } from "@/ui/components/marketing/FaqExpandGrid";
 
 type FaqVariant = "schools" | "students";
 
-/** Split FAQ: questions on the left, sticky answer on the right. */
+/** Desktop: questions left + sticky answer right. Mobile: inline accordion. */
 export function FaqAccordion({
   items,
   variant = "schools",
@@ -26,6 +26,7 @@ export function FaqAccordion({
 }) {
   const [query, setQuery] = useState("");
   const [activeId, setActiveId] = useState<string | null>(items[0]?.id ?? null);
+  const groupId = useId();
   const isSchools = variant === "schools";
 
   const visible = useMemo(() => {
@@ -39,7 +40,9 @@ export function FaqAccordion({
       setActiveId(null);
       return;
     }
-    if (!activeId || !visible.some((item) => item.id === activeId)) {
+    // Only auto-pick when the current selection left the filtered list (not when
+    // the user intentionally collapsed an accordion item on mobile).
+    if (activeId && !visible.some((item) => item.id === activeId)) {
       setActiveId(visible[0]!.id);
     }
   }, [visible, activeId]);
@@ -47,154 +50,266 @@ export function FaqAccordion({
   const active = visible.find((item) => item.id === activeId) ?? null;
   const activeIndex = active ? visible.findIndex((item) => item.id === active.id) + 1 : 0;
 
-  return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
-      <aside className="space-y-4">
-        {searchable ? (
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={searchPlaceholder}
-            aria-label="Search questions"
-            className={
-              isSchools
-                ? "w-full rounded-full border border-border bg-surface px-5 py-3 text-sm text-foreground outline-none focus:border-brand-deep"
-                : "w-full rounded-full border border-border bg-surface px-5 py-3 text-sm text-foreground outline-none focus:border-accent"
-            }
-          />
-        ) : null}
+  function toggleMobile(id: string) {
+    setActiveId((current) => (current === id ? null : id));
+  }
 
-        <div>
-          {visible.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted">
-              No questions match your search.
-            </p>
-          ) : (
-            <ul className="space-y-2.5">
-              {visible.map((item, i) => {
-                const selected = item.id === activeId;
-                const index = String(i + 1).padStart(2, "0");
-                return (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      onClick={() => setActiveId(item.id)}
-                      aria-current={selected ? "true" : undefined}
+  const searchInput = searchable ? (
+    <input
+      type="search"
+      value={query}
+      onChange={(e) => setQuery(e.target.value)}
+      placeholder={searchPlaceholder}
+      aria-label="Search questions"
+      className={
+        isSchools
+          ? "w-full rounded-full border border-border bg-surface px-5 py-3 text-sm text-foreground outline-none focus:border-brand-deep"
+          : "w-full rounded-full border border-border bg-surface px-5 py-3 text-sm text-foreground outline-none focus:border-accent"
+      }
+    />
+  ) : null;
+
+  const stuckCard = (
+    <div
+      className={
+        isSchools
+          ? "rounded-2xl border border-brand-deep/15 bg-surface-alt p-5"
+          : "rounded-2xl border border-accent/25 bg-accent-soft/50 p-5"
+      }
+    >
+      <p className="text-sm font-bold text-foreground">Still stuck?</p>
+      <p className="mt-1 text-sm text-muted">{stuckDescription}</p>
+      <Link
+        href={stuckHref}
+        className={
+          isSchools
+            ? "mt-4 inline-flex rounded-full bg-brand-deep px-4 py-2.5 text-sm font-semibold text-brand-deep-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            : "mt-4 inline-flex rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
+        }
+      >
+        {stuckLabel}
+      </Link>
+    </div>
+  );
+
+  const emptyState = (
+    <p className="rounded-2xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted">
+      No questions match your search.
+    </p>
+  );
+
+  return (
+    <>
+      {/* Mobile: accordion */}
+      <div className="space-y-4 lg:hidden">
+        {searchInput}
+        {visible.length === 0 ? (
+          emptyState
+        ) : (
+          <ul className="space-y-2.5">
+            {visible.map((item, i) => {
+              const open = item.id === activeId;
+              const index = String(i + 1).padStart(2, "0");
+              const panelId = `${groupId}-mobile-${item.id}`;
+              return (
+                <li
+                  key={item.id}
+                  className={
+                    isSchools
+                      ? `overflow-hidden rounded-2xl border transition-colors duration-300 ${
+                          open
+                            ? "border-brand-deep bg-surface shadow-[0_14px_32px_-20px_rgba(31,32,65,0.55)]"
+                            : "border-border bg-surface"
+                        }`
+                      : `overflow-hidden rounded-2xl border transition-colors duration-300 ${
+                          open
+                            ? "border-accent bg-surface shadow-[0_10px_28px_-18px_rgba(196,64,10,0.45)]"
+                            : "border-border bg-surface"
+                        }`
+                  }
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleMobile(item.id)}
+                    aria-expanded={open}
+                    aria-controls={panelId}
+                    className="flex w-full cursor-pointer items-center gap-3 px-4 py-3.5 text-left"
+                  >
+                    <span
+                      className={`shrink-0 text-[0.7rem] font-black tracking-[0.14em] ${
+                        open ? "text-accent" : "text-muted"
+                      }`}
+                    >
+                      {index}
+                    </span>
+                    <span
                       className={
                         isSchools
-                          ? `flex w-full cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-all duration-300 ${
-                              selected
-                                ? "border-brand-deep bg-brand-deep text-brand-deep-foreground shadow-[0_14px_32px_-20px_rgba(31,32,65,0.7)]"
-                                : "border-border bg-surface text-foreground hover:border-brand-deep/35"
+                          ? `min-w-0 flex-1 text-sm font-semibold leading-snug ${
+                              open ? "text-brand-deep" : "text-foreground"
                             }`
-                          : `flex w-full cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-all duration-300 ${
-                              selected
-                                ? "border-accent bg-accent-soft shadow-[0_10px_28px_-18px_rgba(196,64,10,0.55)]"
-                                : "border-border bg-surface hover:border-accent/40"
+                          : `min-w-0 flex-1 text-sm font-semibold leading-snug ${
+                              open ? "text-accent-strong" : "text-foreground"
                             }`
                       }
                     >
+                      {item.question}
+                    </span>
+                    <span
+                      aria-hidden
+                      className={`relative grid h-6 w-6 shrink-0 place-items-center rounded-full border transition-colors duration-300 ${
+                        open
+                          ? isSchools
+                            ? "border-brand-deep text-brand-deep"
+                            : "border-accent text-accent"
+                          : "border-border text-muted"
+                      }`}
+                    >
                       <span
+                        className={`absolute h-2.5 w-px bg-current transition-transform duration-300 ${
+                          open ? "rotate-90" : ""
+                        }`}
+                      />
+                      <span className="absolute h-px w-2.5 bg-current" />
+                    </span>
+                  </button>
+                  <div
+                    id={panelId}
+                    className="grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                    style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+                  >
+                    <div className="min-h-0 overflow-hidden">
+                      <div className="border-t border-border px-4 pt-3 pb-4">
+                        <div className="flex items-start gap-3">
+                          <span
+                            className={
+                              isSchools
+                                ? "grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-deep text-brand-deep-foreground"
+                                : "grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground"
+                            }
+                          >
+                            {item.icon}
+                          </span>
+                          <div className="min-w-0 flex-1 text-sm leading-relaxed text-muted">{item.answer}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {stuckCard}
+      </div>
+
+      {/* Desktop: question list + sticky answer */}
+      <div className="hidden gap-8 lg:grid lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
+        <aside className="space-y-4">
+          {searchInput}
+          <div>
+            {visible.length === 0 ? (
+              emptyState
+            ) : (
+              <ul className="space-y-2.5">
+                {visible.map((item, i) => {
+                  const selected = item.id === activeId;
+                  const index = String(i + 1).padStart(2, "0");
+                  return (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        onClick={() => setActiveId(item.id)}
+                        aria-current={selected ? "true" : undefined}
                         className={
                           isSchools
-                            ? `shrink-0 text-[0.7rem] font-black tracking-[0.14em] ${
-                                selected ? "text-accent" : "text-muted"
+                            ? `flex w-full cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-all duration-300 ${
+                                selected
+                                  ? "border-brand-deep bg-brand-deep text-brand-deep-foreground shadow-[0_14px_32px_-20px_rgba(31,32,65,0.7)]"
+                                  : "border-border bg-surface text-foreground hover:border-brand-deep/35"
                               }`
-                            : `shrink-0 text-[0.7rem] font-black tracking-[0.14em] ${
-                                selected ? "text-accent" : "text-muted"
+                            : `flex w-full cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-all duration-300 ${
+                                selected
+                                  ? "border-accent bg-accent-soft shadow-[0_10px_28px_-18px_rgba(196,64,10,0.55)]"
+                                  : "border-border bg-surface hover:border-accent/40"
                               }`
                         }
                       >
-                        {index}
-                      </span>
-                      <span
-                        className={
-                          isSchools
-                            ? `min-w-0 flex-1 text-sm font-semibold leading-snug ${
-                                selected ? "text-brand-deep-foreground" : "text-foreground"
-                              }`
-                            : `min-w-0 flex-1 text-sm font-semibold leading-snug ${
-                                selected ? "text-accent-strong" : "text-foreground"
-                              }`
-                        }
-                      >
-                        {item.question}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
+                        <span
+                          className={`shrink-0 text-[0.7rem] font-black tracking-[0.14em] ${
+                            selected ? "text-accent" : "text-muted"
+                          }`}
+                        >
+                          {index}
+                        </span>
+                        <span
+                          className={
+                            isSchools
+                              ? `min-w-0 flex-1 text-sm font-semibold leading-snug ${
+                                  selected ? "text-brand-deep-foreground" : "text-foreground"
+                                }`
+                              : `min-w-0 flex-1 text-sm font-semibold leading-snug ${
+                                  selected ? "text-accent-strong" : "text-foreground"
+                                }`
+                          }
+                        >
+                          {item.question}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+          {stuckCard}
+        </aside>
 
-        <div
-          className={
-            isSchools
-              ? "rounded-2xl border border-brand-deep/15 bg-surface-alt p-5"
-              : "rounded-2xl border border-accent/25 bg-accent-soft/50 p-5"
-          }
-        >
-          <p className="text-sm font-bold text-foreground">Still stuck?</p>
-          <p className="mt-1 text-sm text-muted">{stuckDescription}</p>
-          <Link
-            href={stuckHref}
-            className={
-              isSchools
-                ? "mt-4 inline-flex rounded-full bg-brand-deep px-4 py-2.5 text-sm font-semibold text-brand-deep-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                : "mt-4 inline-flex rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition-colors duration-300 hover:bg-accent-strong hover:text-white"
-            }
-          >
-            {stuckLabel}
-          </Link>
-        </div>
-      </aside>
-
-      <section className="lg:sticky lg:top-28 lg:pl-4 xl:pl-8">
-        {active ? (
-          <div
-            key={active.id}
-            className="animate-faq-answer-in overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_22px_50px_-36px_rgba(31,32,65,0.45)]"
-          >
+        <section className="lg:sticky lg:top-28 lg:pl-4 xl:pl-8">
+          {active ? (
             <div
-              className={
-                isSchools
-                  ? "h-1.5 w-full bg-gradient-to-r from-brand-deep via-brand-deep/70 to-brand-deep/20"
-                  : "h-1.5 w-full bg-gradient-to-r from-accent via-accent/70 to-accent/20"
-              }
-            />
-            <div className="px-6 py-6 sm:px-8 sm:py-8">
-              <p
+              key={active.id}
+              className="animate-faq-answer-in overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_22px_50px_-36px_rgba(31,32,65,0.45)]"
+            >
+              <div
                 className={
                   isSchools
-                    ? "text-xs font-black tracking-[0.18em] text-brand-deep uppercase"
-                    : "text-xs font-black tracking-[0.18em] text-accent uppercase"
+                    ? "h-1.5 w-full bg-gradient-to-r from-brand-deep via-brand-deep/70 to-brand-deep/20"
+                    : "h-1.5 w-full bg-gradient-to-r from-accent via-accent/70 to-accent/20"
                 }
-              >
-                Question {String(activeIndex).padStart(2, "0")}
-              </p>
-              <div className="mt-4 flex items-start gap-4">
-                <span
+              />
+              <div className="px-6 py-6 sm:px-8 sm:py-8">
+                <p
                   className={
                     isSchools
-                      ? "grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand-deep text-brand-deep-foreground"
-                      : "grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground"
+                      ? "text-xs font-black tracking-[0.18em] text-brand-deep uppercase"
+                      : "text-xs font-black tracking-[0.18em] text-accent uppercase"
                   }
                 >
-                  {active.icon}
-                </span>
-                <h3 className="pt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-                  {active.question}
-                </h3>
+                  Question {String(activeIndex).padStart(2, "0")}
+                </p>
+                <div className="mt-4 flex items-start gap-4">
+                  <span
+                    className={
+                      isSchools
+                        ? "grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand-deep text-brand-deep-foreground"
+                        : "grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-accent text-accent-foreground"
+                    }
+                  >
+                    {active.icon}
+                  </span>
+                  <h3 className="pt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+                    {active.question}
+                  </h3>
+                </div>
+                <div className="mt-6 text-sm leading-relaxed text-muted sm:text-base">{active.answer}</div>
               </div>
-              <div className="mt-6 text-sm leading-relaxed text-muted sm:text-base">{active.answer}</div>
             </div>
-          </div>
-        ) : (
-          <p className="px-6 text-sm text-muted sm:px-8">Select a question to read the answer.</p>
-        )}
-      </section>
-    </div>
+          ) : (
+            <p className="px-6 text-sm text-muted sm:px-8">Select a question to read the answer.</p>
+          )}
+        </section>
+      </div>
+    </>
   );
 }

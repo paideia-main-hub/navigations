@@ -1,17 +1,24 @@
 "use client";
 
-import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/domain/auth/actions";
 import type { UserRole } from "@/domain/auth/session";
 import { NAV_BY_ROLE, ROLE_LABELS } from "@/ui/components/dashboard/navByRole";
-import { MenuScroll } from "@/ui/components/MenuScroll";
 
-const MENU_WIDTH = 288;
-const VIEW_PAD = 12;
-const MOBILE_MQ = "(max-width: 639px)";
+/** Same under-header shell + motion as the main mobile nav. */
+const mobilePanelClass =
+  "absolute inset-x-0 top-full z-10 mt-2.5 origin-top rounded-2xl border border-border bg-background shadow-[0_20px_40px_-24px_rgba(31,32,65,0.45)] transition-[translate,opacity,visibility] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden";
+
+const desktopPanelClass =
+  "absolute top-full right-0 z-50 mt-2 w-72 origin-top rounded-2xl border border-border bg-background py-2 shadow-[0_20px_40px_-24px_rgba(31,32,65,0.45)] transition-[translate,opacity,visibility] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]";
+
+const openMotion = "visible translate-y-0 opacity-100";
+const closedMotion = "pointer-events-none invisible -translate-y-4 opacity-0";
+
+const MOBILE_MQ = "(max-width: 1023px)";
 
 function MenuBody({
   items,
@@ -20,6 +27,7 @@ function MenuBody({
   secondary,
   showIdentity,
   onSelect,
+  linkClassName,
 }: {
   items: { href: string; label: string; icon: string }[];
   pathname: string;
@@ -27,16 +35,17 @@ function MenuBody({
   secondary: string;
   showIdentity: boolean;
   onSelect: () => void;
+  linkClassName: (active: boolean) => string;
 }) {
   return (
     <>
       {showIdentity ? (
-        <div className="border-b border-border px-4 py-3">
+        <div className="border-b border-border px-3.5 py-3">
           <p className="truncate text-sm font-semibold text-foreground">{fullName}</p>
           <p className="truncate text-xs text-muted">{secondary}</p>
         </div>
       ) : null}
-      <MenuScroll className="max-h-[min(24rem,60vh)] py-1">
+      <div className={showIdentity ? "flex flex-col gap-0.5 p-2.5" : "py-1"}>
         {items.map((item) => {
           const active =
             item.href === "/dashboard"
@@ -50,23 +59,25 @@ function MenuBody({
               role="menuitem"
               aria-current={active ? "page" : undefined}
               onClick={onSelect}
-              className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium ${
-                active ? "bg-accent-soft text-accent-strong" : "text-foreground hover:bg-surface-muted"
-              }`}
+              className={linkClassName(active)}
             >
               <span aria-hidden="true">{item.icon}</span>
               {item.label}
             </Link>
           );
         })}
-      </MenuScroll>
-      <div className="border-t border-border pt-1">
+      </div>
+      <div className={showIdentity ? "border-t border-border px-2.5 pb-2.5" : "border-t border-border pt-1"}>
         <form action={logout}>
           <input type="hidden" name="from" value={pathname || "/"} />
           <button
             type="submit"
             role="menuitem"
-            className="menu-item flex w-full cursor-pointer items-center justify-start gap-3 px-4 py-2.5 text-left text-sm font-medium text-muted hover:bg-surface-muted hover:text-foreground"
+            className={
+              showIdentity
+                ? "menu-item flex w-full cursor-pointer items-center justify-start gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold text-muted hover:bg-surface-muted hover:text-foreground"
+                : "menu-item flex w-full cursor-pointer items-center justify-start gap-3 px-4 py-2.5 text-left text-sm font-medium text-muted hover:bg-surface-muted hover:text-foreground"
+            }
           >
             <svg viewBox="0 0 16 16" className="h-4 w-4 shrink-0" fill="none" aria-hidden="true">
               <path d="M6.5 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -85,21 +96,25 @@ export function HeaderAccountMenu({
   role,
   photoUrl = null,
   subtitle = null,
+  open,
+  onOpenChange,
   onNavigate,
+  dropdownHostRef,
 }: {
   fullName: string;
   role: UserRole;
   photoUrl?: string | null;
   subtitle?: string | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onNavigate?: () => void;
+  /** Relative header shell — mobile panel portals here to match main menu placement. */
+  dropdownHostRef: RefObject<HTMLElement | null>;
 }) {
-  const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const pathname = usePathname();
   const rootRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
   const items = NAV_BY_ROLE[role];
@@ -115,41 +130,15 @@ export function HeaderAccountMenu({
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  useLayoutEffect(() => {
-    if (!open || !isMobile || !buttonRef.current) {
-      setPos(null);
-      return;
-    }
-
-    function place() {
-      const button = buttonRef.current;
-      if (!button) return;
-      const rect = button.getBoundingClientRect();
-      const width = Math.min(MENU_WIDTH, window.innerWidth - VIEW_PAD * 2);
-      // Mobile only: under the avatar, shifted toward the right of the screen.
-      const maxLeft = window.innerWidth - VIEW_PAD - width;
-      const left = Math.max(VIEW_PAD, Math.min(rect.left, maxLeft));
-      setPos({ top: rect.bottom + 8, left, width });
-    }
-
-    place();
-    window.addEventListener("resize", place);
-    window.addEventListener("scroll", place, true);
-    return () => {
-      window.removeEventListener("resize", place);
-      window.removeEventListener("scroll", place, true);
-    };
-  }, [open, isMobile]);
-
   useEffect(() => {
     if (!open) return;
     const onPointer = (event: MouseEvent) => {
       const target = event.target as Node;
       if (rootRef.current?.contains(target) || menuRef.current?.contains(target)) return;
-      setOpen(false);
+      onOpenChange(false);
     };
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") onOpenChange(false);
     };
     document.addEventListener("mousedown", onPointer);
     document.addEventListener("keydown", onKey);
@@ -157,62 +146,83 @@ export function HeaderAccountMenu({
       document.removeEventListener("mousedown", onPointer);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open]);
+  }, [open, onOpenChange]);
 
   function select() {
-    setOpen(false);
+    onOpenChange(false);
     onNavigate?.();
   }
 
-  const body = (
+  const mobileBody = (
     <MenuBody
       items={items}
       pathname={pathname}
       fullName={fullName}
       secondary={secondary}
-      showIdentity={isMobile}
+      showIdentity
       onSelect={select}
+      linkClassName={(active) =>
+        `flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold tracking-tight ${
+          active
+            ? "bg-accent-soft text-accent-strong"
+            : "text-foreground hover:bg-surface-muted hover:text-accent-strong"
+        }`
+      }
+    />
+  );
+
+  const desktopBody = (
+    <MenuBody
+      items={items}
+      pathname={pathname}
+      fullName={fullName}
+      secondary={secondary}
+      showIdentity={false}
+      onSelect={select}
+      linkClassName={(active) =>
+        `flex items-center gap-3 px-4 py-2.5 text-sm font-medium ${
+          active ? "bg-accent-soft text-accent-strong" : "text-foreground hover:bg-surface-muted"
+        }`
+      }
     />
   );
 
   let menu: ReactNode = null;
-  if (open) {
-    if (isMobile && mounted && pos) {
-      menu = createPortal(
-        <div
-          ref={menuRef}
-          id={menuId}
-          role="menu"
-          className="fixed z-[90] overflow-hidden rounded-2xl border border-border bg-background py-2 shadow-lg shadow-black/10"
-          style={{ top: pos.top, left: pos.left, width: pos.width }}
-        >
-          {body}
-        </div>,
-        document.body,
-      );
-    } else if (!isMobile) {
-      menu = (
-        <div
-          ref={menuRef}
-          id={menuId}
-          role="menu"
-          className="absolute top-full right-0 z-50 mt-2 w-72 origin-top-right overflow-hidden rounded-2xl border border-border bg-background py-2 shadow-lg shadow-black/10"
-        >
-          {body}
-        </div>
-      );
-    }
+  if (mounted && isMobile === true && dropdownHostRef.current) {
+    menu = createPortal(
+      <div
+        ref={menuRef}
+        id={menuId}
+        role="menu"
+        aria-hidden={!open}
+        className={`${mobilePanelClass} ${open ? openMotion : closedMotion}`}
+      >
+        {mobileBody}
+      </div>,
+      dropdownHostRef.current,
+    );
+  } else if (isMobile === false) {
+    menu = (
+      <div
+        ref={menuRef}
+        id={menuId}
+        role="menu"
+        aria-hidden={!open}
+        className={`${desktopPanelClass} ${open ? openMotion : closedMotion}`}
+      >
+        {desktopBody}
+      </div>
+    );
   }
 
   return (
     <div ref={rootRef} className="relative">
       <button
-        ref={buttonRef}
         type="button"
         aria-expanded={open}
         aria-controls={menuId}
         aria-haspopup="menu"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => onOpenChange(!open)}
         className="flex h-9 max-w-[12rem] cursor-pointer items-center gap-1 rounded-full border border-border bg-surface p-0 pr-1.5 text-left transition-colors hover:border-accent hover:bg-accent-soft sm:h-auto sm:max-w-[16rem] sm:gap-2 sm:px-2.5 sm:py-1.5 sm:pr-2.5"
       >
         {photoUrl ? (

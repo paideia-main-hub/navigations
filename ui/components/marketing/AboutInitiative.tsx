@@ -56,7 +56,7 @@ export function AboutInitiative() {
           <div className="max-w-2xl">
             <p className="text-xs font-bold tracking-[0.3em] text-accent uppercase">Our current initiative</p>
 
-            <h2 className="mt-5 text-4xl leading-[0.95] font-black tracking-tight text-brand-deep-foreground sm:text-6xl lg:text-7xl">
+            <h2 className="mt-5 text-2xl leading-[0.95] font-black tracking-tight text-brand-deep-foreground sm:text-6xl lg:text-7xl">
               Future Ready
               <br />
               League

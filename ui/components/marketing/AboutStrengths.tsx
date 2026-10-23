@@ -128,7 +128,7 @@ export function AboutStrengths() {
           <p className="text-xs font-bold tracking-[0.22em] text-accent-strong uppercase">
             What we offer
           </p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-balance text-foreground sm:text-4xl">
+          <h2 className="mt-3 text-2xl font-black tracking-tight text-balance text-foreground sm:text-4xl">
             Opportunities to Develop and Demonstrate Future Competencies
           </h2>
           <div className="mt-4 space-y-4 text-base leading-relaxed text-muted">
@@ -146,20 +146,20 @@ export function AboutStrengths() {
         <ul className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">
           {STRENGTHS.map((strength) => (
             <li key={strength.label}>
-              <article className="group h-full overflow-hidden rounded-3xl border border-border bg-surface transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1.5 hover:border-accent/40 hover:shadow-[0_28px_60px_-36px_rgba(31,32,65,0.65)]">
+              <article className="group h-full overflow-hidden rounded-3xl border border-accent/40 bg-surface shadow-[0_28px_60px_-36px_rgba(31,32,65,0.65)] transition-[transform,box-shadow,border-color,translate] duration-300 max-lg:-translate-y-1.5 lg:translate-y-0 lg:border-border lg:shadow-none lg:hover:-translate-y-1.5 lg:hover:border-accent/40 lg:hover:shadow-[0_28px_60px_-36px_rgba(31,32,65,0.65)]">
                 <div className="aspect-[4/3] overflow-hidden bg-surface-muted">
                   {/* eslint-disable-next-line @next/next/no-img-element -- remote placeholder host, not in next.config's image remotePatterns */}
                   <img
                     src={strength.src}
                     alt={strength.alt}
                     loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="h-full w-full scale-105 object-cover transition-transform duration-500 lg:scale-100 lg:group-hover:scale-105"
                   />
                 </div>
 
                 <div className="p-7">
                   <div className="flex items-center gap-3">
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent-strong transition-colors duration-300 group-hover:bg-accent group-hover:text-accent-foreground">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground transition-colors duration-300 lg:bg-accent-soft lg:text-accent-strong lg:group-hover:bg-accent lg:group-hover:text-accent-foreground">
                       <svg
                         viewBox="0 0 24 24"
                         fill="none"

@@ -84,7 +84,7 @@ export function AboutHero() {
         <div>
           <p className="text-xs font-bold tracking-[0.25em] text-accent-strong uppercase">Beyond the classroom</p>
 
-          <h1 className="mt-5 text-5xl leading-[0.95] font-black tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+          <h1 className="mt-5 text-3xl leading-[0.95] font-black tracking-tight text-foreground sm:text-6xl lg:text-7xl">
             About
             <br />
             Navigations
@@ -92,7 +92,7 @@ export function AboutHero() {
 
           <p className="mt-5 text-xl font-semibold text-foreground sm:text-2xl">Where opportunities lead.</p>
 
-          <span aria-hidden="true" className="mt-7 block h-1 w-16 rounded-full bg-accent" />
+          <span aria-hidden="true" className="mt-2 block h-1 w-16 rounded-full bg-accent" />
 
           <ul className="mt-7 space-y-1.5">
             {WORDS.map((word) => (
