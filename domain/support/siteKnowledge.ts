@@ -6,11 +6,8 @@ import {
   competitionGradeLabel,
   entryFormatLabel,
   formatFee,
-  isPubliclyVisible,
-  manualTypeLabels,
   pathwayLabels,
   statusLabels,
-  type Competition,
   type CompetitionSummary,
 } from "@/domain/competitions/types";
 import {
@@ -66,102 +63,27 @@ function formatSummary(competition: CompetitionSummary): string {
   ].join("\n");
 }
 
-function formatFull(competition: Competition): string {
-  const lines = [formatSummary(competition)];
-
-  if (competition.overview) {
-    lines.push(`  Overview: ${truncate(competition.overview, 500)}`);
-  }
-
-  if (competition.stages.length > 0) {
-    lines.push(
-      `  Stages: ${competition.stages
-        .map(
-          (stage) =>
-            `#${stage.stageNumber} ${stage.title} (${stage.format}, ${stage.duration}) — ${truncate(stage.taskDescription, 120)}`,
-        )
-        .join(" | ")}`,
-    );
-  }
-
-  if (competition.manuals.length > 0) {
-    lines.push(
-      `  Manuals: ${competition.manuals
-        .map((manual) => `${manualTypeLabels[manual.type]}: ${manual.title} (${manual.fileUrl})`)
-        .join(" | ")}`,
-    );
-  }
-
-  const publicRubrics = competition.rubrics.filter((rubric) => rubric.isPublic);
-  if (publicRubrics.length > 0) {
-    lines.push(
-      `  Public rubrics: ${publicRubrics
-        .map(
-          (rubric) =>
-            rubric.criteria.map((criterion) => `${criterion.name} ${criterion.weight}%`).join(", ") +
-            (rubric.tieBreakRule ? ` (tie-break: ${truncate(rubric.tieBreakRule, 80)})` : ""),
-        )
-        .join(" | ")}`,
-    );
-  }
-
-  if (competition.resources.length > 0) {
-    lines.push(
-      `  Resources: ${competition.resources
-        .map((resource) => `${resource.title}${resource.videoUrl ? ` [video]` : ""}`)
-        .join("; ")}`,
-    );
-  }
-
-  if (competition.faqs.length > 0) {
-    lines.push(
-      `  Competition FAQs: ${competition.faqs
-        .map((faq) => `Q: ${faq.question} A: ${truncate(faq.answer, 180)}`)
-        .join(" || ")}`,
-    );
-  }
-
-  const winners = competition.winners.filter((winner) => winner.published);
-  if (winners.length > 0) {
-    lines.push(
-      `  Published winners: ${winners
-        .map(
-          (winner) =>
-            `${winner.studentName} (${winner.schoolName}) — ${winner.customAwardLabel || winner.award}`,
-        )
-        .join("; ")}`,
-    );
-  }
-
-  return lines.join("\n");
-}
-
 function createPublicSupabase() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }
 
+/** Keep under Groq free-tier request limits (~8k tokens). Full competition dumps blow past this. */
+const MAX_KNOWLEDGE_CHARS = 14_000;
+
 async function buildSiteKnowledgeUncached(): Promise<string> {
   const supabase = createPublicSupabase();
-  const [summaries, full] = await Promise.all([
-    competitionService.listPublicCompetitions(supabase),
-    competitionService.listCompetitionsFull(supabase),
-  ]);
+  const summaries = await competitionService.listPublicCompetitions(supabase);
 
-  const publicFull = full.filter((competition) => isPubliclyVisible(competition.status));
-  const bySlug = new Map(publicFull.map((competition) => [competition.slug, competition]));
-
-  const competitionBlocks = summaries.map((summary) => {
-    const detailed = bySlug.get(summary.slug);
-    return detailed ? formatFull(detailed) : formatSummary(summary);
-  });
+  // Summaries only — full overview/stages/rubrics/FAQs made prompts ~30k tokens and broke Groq.
+  const competitionBlocks = summaries.map((summary) => formatSummary(summary));
 
   const faqs = SUPPORT_FAQS.map((item, index) => `${index + 1}. Q: ${item.question}\nA: ${item.answer}`).join(
     "\n\n",
   );
 
-  return `
+  const knowledge = `
 Navigations / Future Ready League (FRL) — public site assistant knowledge base.
 Use this for public facts. Never invent fees, dates, winners, or rules missing below.
 Prefer linking visitors to /competitions/{slug} for the full page.
@@ -201,9 +123,12 @@ ${DASHBOARD_ONLY_KNOWLEDGE}
 Live competitions (${summaries.length} public)
 ${competitionBlocks.join("\n\n") || "No public competitions published yet."}
 `.trim();
+
+  if (knowledge.length <= MAX_KNOWLEDGE_CHARS) return knowledge;
+  return `${knowledge.slice(0, MAX_KNOWLEDGE_CHARS - 1)}…`;
 }
 
 /** Cached ~5 minutes so chat requests do not reload every competition on each message. */
-export const getSiteKnowledge = unstable_cache(buildSiteKnowledgeUncached, ["support-chat-site-knowledge-v3"], {
+export const getSiteKnowledge = unstable_cache(buildSiteKnowledgeUncached, ["support-chat-site-knowledge-v4"], {
   revalidate: 300,
 });

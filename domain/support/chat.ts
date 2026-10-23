@@ -19,15 +19,14 @@ export type SupportChatResult = {
 const MAX_HISTORY = 8;
 const MAX_MESSAGE_CHARS = 800;
 
-const GEMINI_MODELS = [
-  "gemini-3.8-flash",
-  "gemini-flash-latest",
-  "gemini-3.5-flash-lite",
-  "gemini-3.1-flash-lite",
-  "gemini-flash-lite-latest",
-];
+const GEMINI_MODELS = ["gemini-3.5-flash-lite", "gemini-flash-latest"];
 
-const GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+/** Groq free/developer tier retired llama-3.1/3.3 in Aug 2026 — use current production IDs. */
+const GROQ_MODELS = ["openai/gpt-oss-20b", "openai/gpt-oss-120b"];
+const GROQ_VISION_MODELS = ["qwen/qwen3.8-27b"];
+
+/** Keep each upstream call short so nginx/Hostinger (~60s) never returns HTML 504. */
+const PROVIDER_TIMEOUT_MS = 12_000;
 
 async function systemPrompt(): Promise<string> {
   const knowledge = await getSiteKnowledge();
@@ -169,6 +168,10 @@ async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function providerSignal(): AbortSignal {
+  return AbortSignal.timeout(PROVIDER_TIMEOUT_MS);
+}
+
 type ProviderAttempt = {
   result?: SupportChatResult;
   busy: boolean;
@@ -214,11 +217,19 @@ async function tryGemini(
   for (const model of models) {
     for (let attempt = 0; attempt < 2; attempt++) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body,
-      });
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+          signal: providerSignal(),
+        });
+      } catch (error) {
+        console.error("[support-chat] Gemini fetch failed", model, error);
+        // Timeout / network — do not burn the gateway budget on more models.
+        return { busy: true };
+      }
 
       if (response.ok) {
         const payload = (await response.json()) as {
@@ -242,7 +253,7 @@ async function tryGemini(
 
       if (response.status === 503 || response.status === 429) {
         busy = true;
-        await sleep(500 * (attempt + 1));
+        await sleep(400 * (attempt + 1));
         continue;
       }
       break;
@@ -275,27 +286,34 @@ async function tryGroq(
   ];
 
   const models = image
-    ? uniqueModels(process.env.GROQ_VISION_MODEL?.trim(), ["meta-llama/llama-4-scout-17b-16e-instruct"])
+    ? uniqueModels(process.env.GROQ_VISION_MODEL?.trim(), GROQ_VISION_MODELS)
     : uniqueModels(process.env.GROQ_MODEL?.trim(), GROQ_MODELS);
 
   let busy = false;
 
   for (const model of models) {
     for (let attempt = 0; attempt < 2; attempt++) {
-      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model,
-          temperature: 0.3,
-          max_tokens: 700,
-          ...(image ? {} : { response_format: { type: "json_object" } }),
-          messages,
-        }),
-      });
+      let response: Response;
+      try {
+        response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model,
+            temperature: 0.3,
+            max_tokens: 700,
+            ...(image ? {} : { response_format: { type: "json_object" } }),
+            messages,
+          }),
+          signal: providerSignal(),
+        });
+      } catch (error) {
+        console.error("[support-chat] Groq fetch failed", model, error);
+        return { busy: true };
+      }
 
       if (response.ok) {
         const payload = (await response.json()) as {
@@ -317,9 +335,14 @@ async function tryGroq(
       const detail = await response.text().catch(() => "");
       console.error("[support-chat] Groq error", model, response.status, detail.slice(0, 300));
 
+      // Prompt too large for this tier — same body will fail on every Groq model.
+      if (response.status === 413) {
+        return { busy: false };
+      }
+
       if (response.status === 503 || response.status === 429) {
         busy = true;
-        await sleep(500 * (attempt + 1));
+        await sleep(400 * (attempt + 1));
         continue;
       }
       break;

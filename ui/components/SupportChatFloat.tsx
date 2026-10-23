@@ -504,12 +504,22 @@ export function SupportChatFloat() {
             : undefined,
         }),
       });
-      const data = (await response.json()) as {
+      const raw = await response.text();
+      let data: {
         reply?: string;
         needsHuman?: boolean;
         needsLogin?: boolean;
         error?: string;
-      };
+      } = {};
+      try {
+        data = raw ? (JSON.parse(raw) as typeof data) : {};
+      } catch {
+        throw new Error(
+          response.status === 504 || response.status === 502
+            ? "The assistant timed out. Please try again in a moment."
+            : "Could not get a reply.",
+        );
+      }
       if (!response.ok || !data.reply) {
         throw new Error(data.error || "Could not get a reply.");
       }
