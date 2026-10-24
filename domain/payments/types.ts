@@ -41,10 +41,21 @@ export interface RegistrationPayment {
   entryCount: number;
   amountExpected: number | null;
   /** Storage path in the private `fee-receipts` bucket, not a viewable URL —
-   * resolve with getReceiptSignedUrl() when an admin needs to look at it. */
-  receiptPath: string;
+   * resolve with getReceiptSignedUrl() when an admin needs to look at it.
+   * Null when the school was exempt from uploading a receipt. */
+  receiptPath: string | null;
+  /** True when checkout skipped receipt upload for an exempt school. */
+  receiptWaived: boolean;
   status: PaymentStatus;
   reviewNote: string | null;
+  createdAt: string;
+}
+
+/** A school whose coordinator may complete fee checkout without a receipt. */
+export interface ReceiptExemption {
+  schoolId: string;
+  schoolName: string;
+  coordinatorName: string | null;
   createdAt: string;
 }
 
@@ -63,5 +74,8 @@ export interface SubmitPaymentInput {
   /** The registrations this payment applies to — every id gets its
    * payment_id set to the new payment's id. */
   registrationIds: string[];
-  receiptFile: File;
+  /** Required unless `receiptWaived` is true and the school is exempt. */
+  receiptFile?: File | null;
+  /** When true, no receipt file is uploaded (school must be exempt). */
+  receiptWaived?: boolean;
 }

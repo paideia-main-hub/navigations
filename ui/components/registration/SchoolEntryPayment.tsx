@@ -22,10 +22,13 @@ const secondaryBtnClass =
 
 export function SchoolEntryPayment({
   paymentAccount,
+  receiptWaived = false,
   variant = "page",
   onBack,
 }: {
   paymentAccount: PaymentAccount;
+  /** When true, skip bank details, receipt upload, and OCR. */
+  receiptWaived?: boolean;
   variant?: "page" | "sheet";
   onBack?: () => void;
 }) {
@@ -46,6 +49,9 @@ export function SchoolEntryPayment({
 
   const fees = entries.map(schoolEntryFee);
   const total = fees.every((fee) => fee != null) ? fees.reduce<number>((sum, fee) => sum + (fee ?? 0), 0) : null;
+  const canSubmit = receiptWaived
+    ? total != null && entries.length > 0
+    : Boolean(receiptFile) && total != null && receiptValidation.canSubmit;
 
   function onReceiptFileChange(file: File | null) {
     readerRef.current?.abort();
@@ -66,13 +72,20 @@ export function SchoolEntryPayment({
   }
 
   async function submit() {
-    if (!receiptFile || entries.length === 0) return;
+    if (entries.length === 0 || total == null) return;
+    if (!receiptWaived && !receiptFile) return;
     setSubmitting(true);
     setError(null);
     const formData = new FormData();
     formData.set("entries", JSON.stringify(entries));
-    formData.set("receipt", receiptFile);
-    const result = await withFileUploadProgress(setTransfer, () => submitSchoolEntriesAction(formData));
+    if (receiptWaived) {
+      formData.set("receipt_waived", "on");
+    } else if (receiptFile) {
+      formData.set("receipt", receiptFile);
+    }
+    const result = receiptWaived
+      ? await submitSchoolEntriesAction(formData)
+      : await withFileUploadProgress(setTransfer, () => submitSchoolEntriesAction(formData));
     setTransfer(null);
     setSubmitting(false);
     if (!result.ok) {
@@ -99,8 +112,9 @@ export function SchoolEntryPayment({
           ))}
         </ul>
         <p className="mt-4 border-t border-accent/30 pt-4 text-sm font-medium leading-relaxed text-accent-foreground">
-          Your receipt has been submitted and is now under review. You&apos;ll see it marked approved on your dashboard once an
-          admin has checked it.
+          {receiptWaived
+            ? "Your registration is under review. An admin will approve the payment without a receipt upload for your school."
+            : "Your receipt has been submitted and is now under review. You'll see it marked approved on your dashboard once an admin has checked it."}
         </p>
       </div>
     );
@@ -209,27 +223,40 @@ export function SchoolEntryPayment({
         <p className="text-xs font-semibold tracking-wide text-accent-strong uppercase">Total</p>
         <p className="text-lg font-extrabold text-foreground">{total != null ? formatFee(total) : "To be confirmed"}</p>
       </div>
-      <PaymentInstructions
-        account={paymentAccount}
-        amount={total != null ? formatFee(total) : null}
-        prominent
-        horizontal={sheet}
-        note="One receipt covers every student in this hamper. An admin reviews it before the registrations are approved."
-      />
-      <ReceiptFileField
-        amountExpected={total}
-        requireOcr={paymentAccount.requireReceiptOcr}
-        file={receiptFile}
-        onFileChange={onReceiptFileChange}
-        onValidationChange={setReceiptValidation}
-        prepareProgress={transfer ? null : receiptProgress}
-        disabled={submitting}
-      />
-      {transfer ? (
-        <div>
-          <UploadProgress phase={transfer.phase} percent={transfer.percent} uploadingLabel="Uploading receipt…" savingLabel="Saving receipt…" />
-        </div>
-      ) : null}
+      {receiptWaived ? (
+        <p className="rounded-xl border border-border bg-background px-4 py-3 text-sm text-muted">
+          Receipt upload is not required for your school. Submit to place the registrations under admin review.
+        </p>
+      ) : (
+        <>
+          <PaymentInstructions
+            account={paymentAccount}
+            amount={total != null ? formatFee(total) : null}
+            prominent
+            horizontal={sheet}
+            note="One receipt covers every student in this hamper. An admin reviews it before the registrations are approved."
+          />
+          <ReceiptFileField
+            amountExpected={total}
+            requireOcr={paymentAccount.requireReceiptOcr}
+            file={receiptFile}
+            onFileChange={onReceiptFileChange}
+            onValidationChange={setReceiptValidation}
+            prepareProgress={transfer ? null : receiptProgress}
+            disabled={submitting}
+          />
+          {transfer ? (
+            <div>
+              <UploadProgress
+                phase={transfer.phase}
+                percent={transfer.percent}
+                uploadingLabel="Uploading receipt…"
+                savingLabel="Saving receipt…"
+              />
+            </div>
+          ) : null}
+        </>
+      )}
       {!sheet && error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
     </>
   );
@@ -241,7 +268,7 @@ export function SchoolEntryPayment({
         <button
           type="button"
           onClick={submit}
-          disabled={submitting || !receiptFile || total == null || !receiptValidation.canSubmit}
+          disabled={submitting || !canSubmit}
           className={primaryBtnClass}
         >
           {submitting ? "Submitting…" : "Submit registration"}

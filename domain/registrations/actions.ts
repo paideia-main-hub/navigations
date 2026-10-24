@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/domain/auth/session";
 import { getPublicCompetitionBySlug, isGradeEligible } from "@/domain/competitions/service";
 import { categoryLabels, competitionTeamSize, type AgeCategory, type Competition } from "@/domain/competitions/types";
 import { submitPaymentAction } from "@/domain/payments/actions";
-import { insertPaymentAndLink } from "@/domain/payments/service";
+import { insertPaymentAndLink, isSchoolReceiptWaived } from "@/domain/payments/service";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { isSchoolEntryDraft, schoolEntryFee, type SchoolEntryDraft } from "./schoolEntries";
 import { uploadReceiptFile } from "@/domain/storage/actions";
@@ -413,7 +413,8 @@ export async function submitSchoolEntriesAction(formData: FormData): Promise<Sch
   }
 
   const receipt = formData.get("receipt");
-  if (!(receipt instanceof File) || receipt.size === 0) return { ok: false, error: "Attach the fee receipt." };
+  const requestWaived =
+    formData.get("receipt_waived") === "on" || formData.get("receipt_waived") === "true";
   const seenStudents = new Set<string>();
   for (const entry of entries) {
     for (const student of entry.students) {
@@ -428,6 +429,12 @@ export async function submitSchoolEntriesAction(formData: FormData): Promise<Sch
   const supabase = await createClient();
   const school = await getCoordinatorSchool(supabase, user.id);
   if (!school) return { ok: false, error: "No school found for this coordinator account." };
+
+  const schoolWaived = await isSchoolReceiptWaived(supabase, school.id);
+  const receiptWaived = requestWaived && schoolWaived;
+  if (!receiptWaived && (!(receipt instanceof File) || receipt.size === 0)) {
+    return { ok: false, error: "Attach the fee receipt." };
+  }
 
   const createdIds: string[] = [];
   const registrations: { registrationNumber: string; competitionTitle: string }[] = [];
@@ -535,7 +542,8 @@ export async function submitSchoolEntriesAction(formData: FormData): Promise<Sch
     entryCount: entries.reduce((sum, entry) => sum + Math.max(entry.students.length, 1), 0),
     amountExpected: total,
     registrationIds: createdIds,
-    receiptFile: receipt,
+    receiptFile: receiptWaived ? null : (receipt as File),
+    receiptWaived,
   });
   if (paymentError) {
     await rollback();

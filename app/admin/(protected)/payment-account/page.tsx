@@ -1,9 +1,22 @@
 import { createAdminClient } from "@/data/supabase/admin";
-import { getPaymentAccount } from "@/domain/payments/service";
+import { getPaymentAccount, listReceiptExemptions } from "@/domain/payments/service";
+import { listAllSchools } from "@/domain/schools/service";
 import { PaymentAccountForm } from "@/ui/components/admin/PaymentAccountForm";
+import { ReceiptExemptionPanel } from "@/ui/components/admin/ReceiptExemptionPanel";
 
 export default async function AdminPaymentAccountPage() {
-  const account = await getPaymentAccount(createAdminClient());
+  const admin = createAdminClient();
+  const [account, exemptions, schools] = await Promise.all([
+    getPaymentAccount(admin),
+    listReceiptExemptions(admin),
+    listAllSchools(admin),
+  ]);
+
+  const schoolOptions = schools.map((school) => ({
+    id: school.id,
+    name: school.officialName,
+    coordinatorLabel: school.coordinators?.[0]?.name ?? null,
+  }));
 
   return (
     <div>
@@ -13,6 +26,7 @@ export default async function AdminPaymentAccountPage() {
       </p>
       <div className="mt-6">
         <PaymentAccountForm account={account} />
+        <ReceiptExemptionPanel exemptions={exemptions} schools={schoolOptions} />
       </div>
     </div>
   );

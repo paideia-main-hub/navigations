@@ -45,6 +45,7 @@ interface SchoolEntryListValue {
   clearEditing: () => void;
   clearEntries: () => void;
   paymentAccount: PaymentAccount;
+  receiptWaived: boolean;
 }
 
 const SchoolEntryListContext = createContext<SchoolEntryListValue | null>(null);
@@ -65,10 +66,12 @@ function readEntries(storageKey: string): SchoolEntryDraft[] {
 export function SchoolEntryListProvider({
   storageKey,
   paymentAccount,
+  receiptWaived = false,
   children,
 }: {
   storageKey: string;
   paymentAccount: PaymentAccount;
+  receiptWaived?: boolean;
   children: ReactNode;
 }) {
   const [entries, setEntries] = useState<SchoolEntryDraft[]>([]);
@@ -157,6 +160,7 @@ export function SchoolEntryListProvider({
       clearEditing,
       clearEntries,
       paymentAccount,
+      receiptWaived,
     }),
     [
       entries,
@@ -176,6 +180,7 @@ export function SchoolEntryListProvider({
       clearEditing,
       clearEntries,
       paymentAccount,
+      receiptWaived,
     ],
   );
 
@@ -370,6 +375,7 @@ function SchoolEntryDrawer() {
     removeEntry,
     beginEdit,
     paymentAccount,
+    receiptWaived,
   } = useSchoolEntryList();
   const router = useRouter();
   const titleId = useId();
@@ -450,7 +456,12 @@ function SchoolEntryDrawer() {
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <StepMotion step={drawerView} direction={viewDirection} className="flex min-h-0 flex-1 flex-col">
             {checkout ? (
-              <SchoolEntryPayment paymentAccount={paymentAccount} variant="sheet" onBack={backToHamper} />
+              <SchoolEntryPayment
+                paymentAccount={paymentAccount}
+                receiptWaived={receiptWaived}
+                variant="sheet"
+                onBack={backToHamper}
+              />
             ) : (
               <>
                 <MenuScroll frameClassName="flex min-h-0 flex-1 flex-col" className="min-h-0 flex-1 space-y-2 px-5 py-4">

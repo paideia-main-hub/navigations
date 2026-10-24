@@ -5,6 +5,7 @@ import { getCoordinatorSchool } from "@/domain/schools/service";
 import { listSchoolRoster } from "@/domain/students/service";
 import { listSchoolTeams } from "@/domain/teams/service";
 import { CreateTeamForm } from "@/ui/components/dashboard/CreateTeamForm";
+import { SchoolTeamEditor } from "@/ui/components/dashboard/SchoolTeamEditor";
 import { DashboardHero } from "@/ui/components/dashboard/DashboardHero";
 import { DashboardPage } from "@/ui/components/dashboard/DashboardShell";
 
@@ -21,9 +22,9 @@ export default async function TeamsPage() {
   const school = await getCoordinatorSchool(supabase, user.id);
   if (!school) {
     return (
-        <DashboardPage title="Teams">
-          <p className="text-muted">No school found for this coordinator account.</p>
-        </DashboardPage>
+      <DashboardPage title="Teams">
+        <p className="text-muted">No school found for this coordinator account.</p>
+      </DashboardPage>
     );
   }
 
@@ -42,9 +43,17 @@ export default async function TeamsPage() {
             >
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-base font-extrabold tracking-tight text-foreground">{team.name}</h3>
-                <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent-strong">
-                  {memberCountLabel(team.members.length)}
-                </span>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent-strong">
+                    {memberCountLabel(team.members.length)}
+                  </span>
+                  <SchoolTeamEditor
+                    roster={roster}
+                    mode={{ kind: "edit", team }}
+                    trigger="Edit"
+                    triggerClassName="cursor-pointer rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong"
+                  />
+                </div>
               </div>
               {team.members.length === 0 ? (
                 <p className="mt-3 text-sm text-muted">No members yet.</p>

@@ -66,6 +66,61 @@ export async function createTeamAction(_prevState: ActionState, formData: FormDa
   return { error: null, success: true };
 }
 
+/** Creates a school-wide team (Teams page) — no competition scope. */
+export async function createSchoolWideTeamAction(input: {
+  name: string;
+  memberStudentIds: string[];
+}): Promise<{ team: Team | null; error: string | null }> {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "school_coordinator") return { team: null, error: "Not authorized." };
+
+  const name = input.name.trim();
+  const memberStudentIds = [...new Set(input.memberStudentIds.filter(Boolean))];
+  if (!name) return { team: null, error: "Team name is required." };
+  if (memberStudentIds.length < 2) return { team: null, error: "Select at least 2 students for a team." };
+
+  const supabase = await createClient();
+  const school = await getCoordinatorSchool(supabase, user.id);
+  if (!school) return { team: null, error: "No school found for this coordinator." };
+
+  const { data: students, error: studentError } = await supabase
+    .from("students")
+    .select("id, full_name, grade")
+    .eq("school_id", school.id)
+    .in("id", memberStudentIds);
+  if (studentError) return { team: null, error: studentError.message };
+  if ((students ?? []).length !== memberStudentIds.length) {
+    return { team: null, error: "Choose students from your school roster." };
+  }
+
+  const { teamId, error } = await createTeam(supabase, {
+    name,
+    schoolId: school.id,
+    memberStudentIds,
+  });
+  if (error || !teamId) return { team: null, error: error ?? "Could not create the team." };
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/teams");
+  const byId = new Map((students ?? []).map((row) => [row.id as string, row]));
+  return {
+    team: {
+      id: teamId,
+      name,
+      competitionId: null,
+      members: memberStudentIds.map((id) => {
+        const row = byId.get(id);
+        return {
+          studentId: id,
+          studentName: typeof row?.full_name === "string" ? row.full_name : "Student",
+          grade: typeof row?.grade === "string" ? row.grade : null,
+        };
+      }),
+    },
+    error: null,
+  };
+}
+
 /** Creates a school team and returns it so registration can list it immediately. */
 export async function createSchoolTeamAction(input: {
   name: string;

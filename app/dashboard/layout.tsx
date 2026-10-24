@@ -8,7 +8,7 @@ import { getCoordinatorAvatarUrl } from "@/domain/profiles/avatar";
 import { getCoordinatorSchool } from "@/domain/schools/service";
 import { getOwnStudentProfile } from "@/domain/students/service";
 import { listHeaderNotices } from "@/domain/announcements/service";
-import { getPaymentAccount } from "@/domain/payments/service";
+import { getPaymentAccount, isSchoolReceiptWaived } from "@/domain/payments/service";
 import { Header } from "@/ui/components/Header";
 import { Footer } from "@/ui/components/Footer";
 import { LoginModalProvider } from "@/ui/components/LoginModalContext";
@@ -58,8 +58,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const schoolName = school?.officialName.trim() || null;
   const notices =
     isCoordinator || user.role === "student" ? await listHeaderNotices(await createClient()) : undefined;
+  const supabase = await createClient();
   const paymentAccount =
-    isCoordinator || user.role === "student" ? await getPaymentAccount(await createClient()) : null;
+    isCoordinator || user.role === "student" ? await getPaymentAccount(supabase) : null;
+  const receiptWaived =
+    isCoordinator && school ? await isSchoolReceiptWaived(supabase, school.id) : false;
   const headerUser = { id: user.id, fullName: user.fullName, role: user.role, photoUrl, subtitle: schoolName, notices };
   const accountEmail =
     user.email && !user.email.endsWith("@students.navigations.com.pk") ? user.email : null;
@@ -86,7 +89,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const withHamper =
     isCoordinator && paymentAccount ? (
-      <SchoolEntryListProvider storageKey={school?.id ?? user.id} paymentAccount={paymentAccount}>
+      <SchoolEntryListProvider
+        storageKey={school?.id ?? user.id}
+        paymentAccount={paymentAccount}
+        receiptWaived={receiptWaived}
+      >
         {frame}
       </SchoolEntryListProvider>
     ) : user.role === "student" && paymentAccount ? (

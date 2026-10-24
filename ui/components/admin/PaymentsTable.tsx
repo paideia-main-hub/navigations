@@ -35,10 +35,13 @@ function CompetitionLabel({ title }: { title: string }) {
   );
 }
 
-function isPdfPath(path: string) {
+function isPdfPath(path: string | null) {
+  if (!path) return false;
   const file = path.split("?")[0]?.split("/").pop() ?? "";
   return file.toLowerCase().endsWith(".pdf");
 }
+
+const RECEIPT_WAIVED_NOTE = "Receipt waived — no upload required for this coordinator.";
 
 function escapeAttr(value: string) {
   return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
@@ -157,24 +160,30 @@ function ReceiptReviewBody({
   }, [showReason]);
 
   useEffect(() => {
-    const cached = shownReceipts.get(payment.receiptPath);
+    if (payment.receiptWaived || !payment.receiptPath) {
+      setUrl(null);
+      setLoadError(null);
+      return;
+    }
+    const path = payment.receiptPath;
+    const cached = shownReceipts.get(path);
     if (cached) {
       setUrl(cached);
       return;
     }
     let cancelled = false;
-    getReceiptViewUrlAction(payment.receiptPath).then(({ url: nextUrl, error }) => {
+    getReceiptViewUrlAction(path).then(({ url: nextUrl, error }) => {
       if (cancelled) return;
       if (error || !nextUrl) setLoadError(error ?? "Could not open the receipt.");
       else {
-        shownReceipts.set(payment.receiptPath, nextUrl);
+        shownReceipts.set(path, nextUrl);
         setUrl(nextUrl);
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [payment.receiptPath]);
+  }, [payment.receiptPath, payment.receiptWaived]);
 
   async function approve() {
     setPending("approve");
@@ -257,7 +266,9 @@ function ReceiptReviewBody({
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto bg-background px-5 py-4">
-        {loadError ? (
+        {payment.receiptWaived || !payment.receiptPath ? (
+          <p className="text-sm text-muted">{RECEIPT_WAIVED_NOTE}</p>
+        ) : loadError ? (
           <p className="text-sm text-red-600 dark:text-red-400">{loadError}</p>
         ) : !url ? (
           <p className="text-sm text-muted">Loading receipt…</p>
@@ -293,14 +304,16 @@ function ReceiptReviewBody({
         ) : null}
         {actionError ? <p className="mb-3 text-sm text-red-600 dark:text-red-400">{actionError}</p> : null}
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={print}
-            disabled={!url || pending !== null}
-            className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong disabled:opacity-50"
-          >
-            Print receipt
-          </button>
+          {payment.receiptWaived || !payment.receiptPath ? null : (
+            <button
+              type="button"
+              onClick={print}
+              disabled={!url || pending !== null}
+              className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-strong disabled:opacity-50"
+            >
+              Print receipt
+            </button>
+          )}
           {pendingReview ? (
             <div className="ml-auto flex flex-wrap gap-2">
               {rejecting ? (
@@ -401,16 +414,23 @@ export function PaymentsTable({ payments }: { payments: RegistrationPayment[] })
                     <td className="px-4 py-3 text-muted">{payment.entryCount}</td>
                     <td className="px-4 py-3 text-muted">{payment.amountExpected ?? "—"}</td>
                     <td className="px-4 py-3">
-                      <button
-                        type="button"
-                        onClick={() => setModal({ id: payment.id, showReason: false })}
-                        className="text-sm font-semibold text-accent-strong hover:underline"
-                      >
-                        View receipt
-                      </button>
+                      {payment.receiptWaived || !payment.receiptPath ? (
+                        <span className="text-sm text-muted">No receipt</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setModal({ id: payment.id, showReason: false })}
+                          className="text-sm font-semibold text-accent-strong hover:underline"
+                        >
+                          View receipt
+                        </button>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <Badge tone={statusTone[payment.status] ?? "neutral"}>{paymentStatusLabels[payment.status]}</Badge>
+                      {payment.receiptWaived ? (
+                        <p className="mt-1 max-w-[16rem] text-xs text-muted">{RECEIPT_WAIVED_NOTE}</p>
+                      ) : null}
                       {payment.reviewNote && <p className="mt-1 max-w-[16rem] text-xs text-muted">{payment.reviewNote}</p>}
                     </td>
                     <td className="px-4 py-3">

@@ -21,3 +21,7 @@ export const insertPaymentAndLink = repo.insertPaymentAndLink;
 export const listOwnPaymentStatuses = repo.listOwnPaymentStatuses;
 export const getPaymentAccount = repo.getPaymentAccount;
 export const savePaymentAccount = repo.savePaymentAccount;
+export const isSchoolReceiptWaived = repo.isSchoolReceiptWaived;
+export const listReceiptExemptions = repo.listReceiptExemptions;
+export const addReceiptExemption = repo.addReceiptExemption;
+export const removeReceiptExemption = repo.removeReceiptExemption;

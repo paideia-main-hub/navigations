@@ -6,24 +6,47 @@ import { createAdminClient } from "@/data/supabase/admin";
 import { getCurrentUser } from "@/domain/auth/session";
 import { requireAdminSession } from "@/domain/admin-auth/guard";
 import { uploadReceiptFile, getReceiptSignedUrl } from "@/domain/storage/actions";
-import { insertPaymentAndLink, savePaymentAccount } from "./service";
+import {
+  addReceiptExemption,
+  insertPaymentAndLink,
+  isSchoolReceiptWaived,
+  removeReceiptExemption,
+  savePaymentAccount,
+} from "./service";
 import { reviewPayment as reviewPaymentService } from "./service";
 import type { SubmitPaymentInput } from "./types";
 
-/** Uploads the receipt and records the payment against every registration
- * listed — the wizard's final step calls this once the registration(s) it
- * covers already exist. */
+/** Uploads the receipt (unless waived) and records the payment against every
+ * registration listed — the wizard's final step calls this once the
+ * registration(s) it covers already exist. */
 export async function submitPaymentAction(
-  input: Omit<SubmitPaymentInput, "receiptFile"> & { receiptFile: File },
+  input: SubmitPaymentInput,
 ): Promise<{ paymentId: string | null; error: string | null }> {
   const user = await getCurrentUser();
   if (!user) return { paymentId: null, error: "You must be logged in to submit a payment." };
   if (input.registrationIds.length === 0) return { paymentId: null, error: "No registration to attach this payment to." };
 
-  const { path, error: uploadError } = await uploadReceiptFile(input.receiptFile, user.id);
-  if (uploadError || !path) return { paymentId: null, error: uploadError ?? "Failed to upload the receipt." };
-
   const supabase = await createClient();
+  let receiptPath: string | null = null;
+  let receiptWaived = false;
+
+  if (input.receiptWaived) {
+    if (!input.schoolId) return { paymentId: null, error: "Receipt waiver only applies to a school payment." };
+    const waived = await isSchoolReceiptWaived(supabase, input.schoolId);
+    if (!waived) {
+      return { paymentId: null, error: "This school is not exempt from uploading a fee receipt." };
+    }
+    receiptWaived = true;
+  } else {
+    const file = input.receiptFile;
+    if (!(file instanceof File) || file.size === 0) {
+      return { paymentId: null, error: "Please attach your fee receipt." };
+    }
+    const { path, error: uploadError } = await uploadReceiptFile(file, user.id);
+    if (uploadError || !path) return { paymentId: null, error: uploadError ?? "Failed to upload the receipt." };
+    receiptPath = path;
+  }
+
   const { id, error } = await insertPaymentAndLink(
     supabase,
     {
@@ -35,7 +58,8 @@ export async function submitPaymentAction(
       schoolName: input.schoolName,
       entryCount: input.entryCount,
       amountExpected: input.amountExpected,
-      receiptPath: path,
+      receiptPath,
+      receiptWaived,
     },
     input.registrationIds,
   );
@@ -45,6 +69,34 @@ export async function submitPaymentAction(
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/registrations");
   return { paymentId: id, error: null };
+}
+
+export async function addReceiptExemptionAction(
+  schoolId: string,
+): Promise<{ error: string | null }> {
+  const admin = await requireAdminSession();
+  const id = schoolId.trim();
+  if (!id) return { error: "Choose a school to exempt." };
+  const { error } = await addReceiptExemption(createAdminClient(), id, admin.id);
+  if (!error) {
+    revalidatePath("/admin/payment-account");
+    revalidatePath("/dashboard");
+  }
+  return { error };
+}
+
+export async function removeReceiptExemptionAction(
+  schoolId: string,
+): Promise<{ error: string | null }> {
+  await requireAdminSession();
+  const id = schoolId.trim();
+  if (!id) return { error: "Missing school." };
+  const { error } = await removeReceiptExemption(createAdminClient(), id);
+  if (!error) {
+    revalidatePath("/admin/payment-account");
+    revalidatePath("/dashboard");
+  }
+  return { error };
 }
 
 /** Admin-only: resolves a receipt's storage path to a short-lived viewable
