@@ -17,7 +17,13 @@ function formatDomainLabel(domain: string): string {
   return domain.replace(/^\s*D\d+\s*[–—-]\s*/i, "").trim() || domain;
 }
 
-function ManualPanel({ item }: { item: ManualCompetition }) {
+function ManualPanel({
+  item,
+  hideDownloadManuals = false,
+}: {
+  item: ManualCompetition;
+  hideDownloadManuals?: boolean;
+}) {
   const domain = item.domain ? formatDomainLabel(item.domain) : null;
 
   return (
@@ -30,7 +36,42 @@ function ManualPanel({ item }: { item: ManualCompetition }) {
         {domain ? <p className="mt-1.5 text-sm text-muted">{domain}</p> : null}
       </div>
 
-      {item.completeManual ? (
+      {hideDownloadManuals ? (
+        <div className="rounded-xl border border-dashed border-accent/40 bg-accent-soft/30 p-5 sm:p-6">
+          <div className="flex items-start gap-3.5">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent-strong">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-xs font-bold tracking-[0.14em] text-accent-strong uppercase">Notice</p>
+              <h4 className="text-base font-bold text-foreground">Downloadable Content Coming Soon</h4>
+              <p className="text-sm leading-relaxed text-muted">
+                The official competition manuals and downloadable guidelines are currently being finalized and will be available for download soon. Please check back shortly or explore the competition details below.
+              </p>
+              <div className="pt-2">
+                <Link
+                  href={`/competitions/${item.slug}`}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-strong hover:underline"
+                >
+                  See competition details →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : item.completeManual ? (
         <>
           <div className="rounded-xl border border-accent/30 bg-surface p-4 sm:p-5">
             <p className="text-sm leading-relaxed text-foreground">
@@ -95,7 +136,13 @@ function ManualPanel({ item }: { item: ManualCompetition }) {
   );
 }
 
-export function ManualsLibrary({ competitions }: { competitions: ManualCompetition[] }) {
+export function ManualsLibrary({
+  competitions,
+  hideDownloadManuals = false,
+}: {
+  competitions: ManualCompetition[];
+  hideDownloadManuals?: boolean;
+}) {
   const sorted = useMemo(
     () => [...competitions].sort((a, b) => a.title.localeCompare(b.title)),
     [competitions],
@@ -229,7 +276,7 @@ export function ManualsLibrary({ competitions }: { competitions: ManualCompetiti
                   >
                     <div className="min-h-0 overflow-hidden">
                       <div className="border-t border-border px-4 pt-4 pb-5">
-                        {open ? <ManualPanel item={item} /> : null}
+                        {open ? <ManualPanel item={item} hideDownloadManuals={hideDownloadManuals} /> : null}
                       </div>
                     </div>
                   </div>
@@ -284,7 +331,7 @@ export function ManualsLibrary({ competitions }: { competitions: ManualCompetiti
             <div className="px-6 py-6 sm:px-8 sm:py-8">
               {active ? (
                 <div key={active.slug} className="animate-faq-answer-in motion-reduce:animate-none">
-                  <ManualPanel item={active} />
+                  <ManualPanel item={active} hideDownloadManuals={hideDownloadManuals} />
                 </div>
               ) : (
                 emptyState

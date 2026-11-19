@@ -1,5 +1,6 @@
 import { createClient } from "@/data/supabase/server";
 import { listCompetitionIndex } from "@/domain/competitions/service";
+import { getSiteSettings } from "@/domain/settings/service";
 import { manualTypeLabels, type ManualType } from "@/domain/competitions/types";
 import { pageMetadata } from "@/lib/seo";
 import { ClosingCta } from "@/ui/components/marketing/ClosingCta";
@@ -60,14 +61,21 @@ function ManualsDocStack() {
 
 export default async function ManualsPage() {
   const supabase = await createClient();
-  const competitions = await listCompetitionIndex(supabase);
+  const [competitions, settings] = await Promise.all([
+    listCompetitionIndex(supabase),
+    getSiteSettings(supabase),
+  ]);
 
   return (
     <div className="bg-background">
       <PageBanner
         eyebrow="Manuals & Rulebook"
         title="Manuals & Guidelines"
-        subtitle="The season’s official documents in one place — eligibility rules, guiding principles, complete manuals and judging rubrics. Open any competition below to download what is published on its Manual tab."
+        subtitle={
+          settings.hideDownloadManuals
+            ? "The season’s official documents in one place — eligibility rules, guiding principles, complete manuals and judging rubrics. Official downloadable manuals are currently being finalized and will be available soon."
+            : "The season’s official documents in one place — eligibility rules, guiding principles, complete manuals and judging rubrics. Open any competition below to download what is published on its Manual tab."
+        }
         className="-mt-24 pt-24 pb-20 sm:-mt-28 sm:pt-28 sm:pb-24 lg:pt-28 lg:pb-28"
         showNet
         netLattice="angular"
@@ -80,7 +88,10 @@ export default async function ManualsPage() {
           <h2 id="manuals-library-heading" className="sr-only">
             Competition manuals library
           </h2>
-          <ManualsLibrary competitions={competitions} />
+          <ManualsLibrary
+            competitions={competitions}
+            hideDownloadManuals={settings.hideDownloadManuals}
+          />
         </div>
       </section>
 

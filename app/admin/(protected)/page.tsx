@@ -1,6 +1,8 @@
 import { createAdminClient } from "@/data/supabase/admin";
+import { getSiteSettings } from "@/domain/settings/service";
 import { StatCard } from "@/ui/components/dashboard/StatCard";
 import { QuickLink } from "@/ui/components/dashboard/QuickLink";
+import { SiteSettingsPanel } from "@/ui/components/admin/SiteSettingsPanel";
 
 async function countRows(
   admin: ReturnType<typeof createAdminClient>,
@@ -13,11 +15,12 @@ async function countRows(
 
 export default async function AdminDashboardPage() {
   const admin = createAdminClient();
-  const [competitions, schools, students, registrations] = await Promise.all([
+  const [competitions, schools, students, registrations, settings] = await Promise.all([
     countRows(admin, "competitions"),
     countRows(admin, "schools"),
     countRows(admin, "students"),
     countRows(admin, "registrations"),
+    getSiteSettings(admin),
   ]);
 
   return (
@@ -32,6 +35,10 @@ export default async function AdminDashboardPage() {
         <StatCard label="Students" value={students} />
         <StatCard label="Registrations" value={registrations} />
       </div>
+
+      <section className="mt-8">
+        <SiteSettingsPanel initialSettings={settings} />
+      </section>
 
       <section className="mt-8">
         <h2 className="mb-3 text-lg font-semibold text-foreground">Quick Links</h2>

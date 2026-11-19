@@ -4,6 +4,7 @@ import Link from "next/link";
 import { createClient } from "@/data/supabase/server";
 import { getCurrentUser } from "@/domain/auth/session";
 import { getPublicCompetitionBySlug, registrationDeadlineOf } from "@/domain/competitions/service";
+import { getSiteSettings } from "@/domain/settings/service";
 import { isDefaultEventTitle } from "@/domain/competitions/dateLabels";
 import { categoryLabels, statusLabels, awardLabels, eventTypeLabels, resourceTypeLabels } from "@/domain/competitions/types";
 import { announcementsForCompetition } from "@/domain/announcements/service";
@@ -51,15 +52,18 @@ export default async function CompetitionPage({
   const { slug } = await params;
   const supabase = await createClient();
 
-  // All three reads are independent, so they go out together rather than
-  // paying three round trips of latency in series.
-  const [competition, competitionAnnouncements, allComputedWinners, user] = await Promise.all([
+  // All reads are independent, so they go out together rather than
+  // paying multiple round trips of latency in series.
+  const [competition, competitionAnnouncements, allComputedWinners, user, settings] = await Promise.all([
     getPublicCompetitionBySlug(supabase, slug),
     announcementsForCompetition(supabase, slug),
     listPublishedComputedWinners(supabase),
     getCurrentUser(),
+    getSiteSettings(supabase),
   ]);
   if (!competition) notFound();
+
+  const hideDownloadManuals = settings.hideDownloadManuals;
 
   const structuredData = competitionJsonLd({
     title: competition.title,
@@ -403,7 +407,42 @@ export default async function CompetitionPage({
       id: "manual",
       label: "Manual",
       group: "Prepare",
-      content: completeManual ? (
+      content: hideDownloadManuals ? (
+        <div className="max-w-2xl space-y-4">
+          <div className={card}>
+            <p className="text-sm leading-relaxed text-foreground">
+              The official competition manual includes eligibility and registration rules, guiding principles and
+              conduct, and the full operations guide for this competition.
+            </p>
+          </div>
+          <div className="rounded-xl border border-dashed border-accent/40 bg-accent-soft/30 p-5 sm:p-6">
+            <div className="flex items-start gap-3.5">
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent-strong">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs font-bold tracking-[0.14em] text-accent-strong uppercase">Notice</p>
+                <h4 className="mt-1 text-base font-bold text-foreground">Downloadable Content Coming Soon</h4>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                  The official competition manual and downloadable resources are currently being finalized and will be available for download soon. In the meantime, please review the competition overview, eligibility, and stage details above.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : completeManual ? (
         <div className="max-w-2xl space-y-4">
           <div className={card}>
             <p className="text-sm leading-relaxed text-foreground">
@@ -750,7 +789,7 @@ export default async function CompetitionPage({
         <ArenaTabs tabs={tabs} />
       </div>
 
-      {completeManual ? (
+      {!hideDownloadManuals && completeManual ? (
         <CompetitionManualFloat fileUrl={completeManual.fileUrl} title={completeManual.title} />
       ) : null}
     </div>
